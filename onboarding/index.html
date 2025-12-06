@@ -41,6 +41,46 @@
       z-index: 50 !important;
     }
     
+    /* Edge-to-edge horizontal scrolling */
+    .stages-container {
+      margin-left: -40px !important;
+      margin-right: -40px !important;
+      padding-left: 40px !important;
+      padding-right: 40px !important;
+      width: calc(100% + 80px) !important;
+      scroll-padding-left: 40px;
+      scroll-padding-right: 40px;
+    }
+    
+    /* Fade hint at edges to show scrollability */
+    .scroll-container-wrapper {
+      position: relative;
+    }
+    .scroll-container-wrapper::before,
+    .scroll-container-wrapper::after {
+      content: '';
+      position: absolute;
+      top: 0;
+      bottom: 20px;
+      width: 40px;
+      pointer-events: none;
+      z-index: 10;
+      opacity: 0;
+      transition: opacity 0.2s;
+    }
+    .scroll-container-wrapper::before {
+      left: 0;
+      background: linear-gradient(to right, #FAFAFA, transparent);
+    }
+    .scroll-container-wrapper::after {
+      right: 0;
+      background: linear-gradient(to left, #FAFAFA, transparent);
+    }
+    .scroll-container-wrapper.can-scroll-left::before,
+    .scroll-container-wrapper.can-scroll-right::after {
+      opacity: 1;
+    }
+    
     /* Mobile Responsive Styles */
     @media (max-width: 768px) {
       /* Header */
@@ -88,6 +128,22 @@
       /* Main content - keep horizontal scroll */
       .main-content {
         padding: 20px 16px !important;
+      }
+      
+      /* Adjust edge-to-edge for mobile padding */
+      .stages-container {
+        margin-left: -16px !important;
+        margin-right: -16px !important;
+        padding-left: 16px !important;
+        padding-right: 16px !important;
+        width: calc(100% + 32px) !important;
+        scroll-padding-left: 16px;
+        scroll-padding-right: 16px;
+      }
+      
+      .scroll-container-wrapper::before,
+      .scroll-container-wrapper::after {
+        width: 24px;
       }
     }
     
@@ -186,7 +242,7 @@
       meta: {
         title: "Client Onboarding Journey",
         version: "2.0",
-        product: "Steve's Journey Map v5.3",
+        product: "Steve's Journey Map v5.4",
         lastUpdated: new Date().toISOString(),
         audience: "Internal Operations",
         perspective: "client"
