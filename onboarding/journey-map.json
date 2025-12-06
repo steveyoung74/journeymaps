@@ -3,7 +3,7 @@
     "title": "Client Onboarding Journey",
     "version": "2.0",
     "product": "Steve's Journey Map v2.0",
-    "lastUpdated": "2025-12-06T10:44:57.160Z",
+    "lastUpdated": "2025-12-06T10:48:34.085Z",
     "audience": "Internal Operations",
     "perspective": "client"
   },
@@ -54,7 +54,7 @@
   "stages": [
     {
       "id": "lead-receipt",
-      "name": "Lead Receipt",
+      "name": "Lead Receipt - 1",
       "steps": [
         {
           "id": "triage",
