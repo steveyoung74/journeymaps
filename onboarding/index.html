@@ -41,6 +41,77 @@
       z-index: 50 !important;
     }
     
+    /* Mobile Responsive Styles */
+    @media (max-width: 768px) {
+      /* Header */
+      .header-container {
+        padding: 16px !important;
+        gap: 12px !important;
+      }
+      
+      .header-logo-title {
+        gap: 16px !important;
+      }
+      
+      .header-logo-title svg {
+        width: 90px !important;
+        height: auto !important;
+      }
+      
+      .header-logo-title h1 {
+        font-size: 20px !important;
+      }
+      
+      /* View toggle buttons */
+      .header-buttons {
+        gap: 6px !important;
+      }
+      
+      .header-buttons button {
+        padding: 7px 10px !important;
+        font-size: 11px !important;
+      }
+      
+      /* Stats bar */
+      .stats-bar {
+        padding: 12px 16px !important;
+        gap: 12px !important;
+        flex-wrap: wrap !important;
+        justify-content: space-between !important;
+      }
+      
+      .stats-bar > div {
+        flex: 0 0 calc(50% - 8px) !important;
+        min-width: 100px !important;
+      }
+      
+      /* Main content - keep horizontal scroll */
+      .main-content {
+        padding: 20px 16px !important;
+      }
+    }
+    
+    /* Small mobile */
+    @media (max-width: 480px) {
+      .header-logo-title svg {
+        width: 80px !important;
+      }
+      
+      .header-logo-title h1 {
+        font-size: 18px !important;
+      }
+      
+      .header-buttons button {
+        padding: 6px 8px !important;
+        font-size: 10px !important;
+      }
+      
+      .stats-bar > div {
+        flex: 0 0 calc(50% - 6px) !important;
+        min-width: 90px !important;
+      }
+    }
+    
     /* Print Styles */
     @media print {
       body { 
@@ -112,1200 +183,731 @@
     // Sample configuration JSON
     // __CONFIG_START__
     const defaultConfig = {
-          "meta": {
-                "title": "Client Onboarding Journey",
-                "version": "2.0",
-                "product": "Steve's Journey Map v5.0",
-                "lastUpdated": "2025-12-06T11:13:14.646Z",
-                "audience": "Internal Operations",
-                "perspective": "client"
-          },
-          "personas": [
-                {
-                      "id": "client",
-                      "label": "Client",
-                      "color": "#2D5A4B",
-                      "annualSalary": 0,
-                      "isExternal": true
-                },
-                {
-                      "id": "fp",
-                      "label": "Financial Planner",
-                      "color": "#8B4513",
-                      "annualSalary": 85000,
-                      "isExternal": false
-                },
-                {
-                      "id": "im",
-                      "label": "Investment Manager",
-                      "color": "#1E40AF",
-                      "annualSalary": 95000,
-                      "isExternal": false
-                },
-                {
-                      "id": "ops",
-                      "label": "Operations",
-                      "color": "#6B46C1",
-                      "annualSalary": 35000,
-                      "isExternal": false
-                },
-                {
-                      "id": "administrator",
-                      "label": "Administrator",
-                      "color": "#4A5568",
-                      "annualSalary": 32000,
-                      "isExternal": false
-                },
-                {
-                      "id": "compliance",
-                      "label": "Compliance",
-                      "color": "#C53030",
-                      "annualSalary": 55000,
-                      "isExternal": false
-                }
-          ],
-          "stages": [
-                {
-                      "id": "lead-receipt",
-                      "name": "Lead Receipt",
-                      "steps": [
-                            {
-                                  "id": "triage",
-                                  "name": "Triage",
-                                  "description": "Initial assessment of incoming prospect enquiries",
-                                  "timeMinutes": 5,
-                                  "owner": "ops",
-                                  "touchpoints": [
-                                        "CRM",
-                                        "Email"
-                                  ],
-                                  "painPoints": [],
-                                  "emotions": "neutral",
-                                  "effortScore": 1,
-                                  "automationOpportunity": "high",
-                                  "automationNotes": "Could be automated with AI triage system",
-                                  "regulatoryRequirements": [],
-                                  "roleInvolvement": {
-                                        "fp": {
-                                              "timeMinutes": 0,
-                                              "headcount": 1
-                                        },
-                                        "im": {
-                                              "timeMinutes": 0,
-                                              "headcount": 1
-                                        },
-                                        "ops": {
-                                              "timeMinutes": 5,
-                                              "headcount": 1
-                                        }
-                                  },
-                                  "actions": {
-                                        "ops": "Reviews and categorises incoming enquiries"
-                                  }
-                            },
-                            {
-                                  "id": "fast-track",
-                                  "name": "Fast Track",
-                                  "description": "Determine if client has provided enough information to directly contact FP to check availability for immediate call",
-                                  "timeMinutes": 10,
-                                  "owner": "ops",
-                                  "touchpoints": [
-                                        "CRM",
-                                        "Phone",
-                                        "Email"
-                                  ],
-                                  "painPoints": [],
-                                  "emotions": "hopeful",
-                                  "effortScore": 2,
-                                  "automationOpportunity": "high",
-                                  "automationNotes": "AI could assess client information completeness and check FP calendar availability automatically",
-                                  "regulatoryRequirements": [],
-                                  "roleInvolvement": {
-                                        "fp": {
-                                              "timeMinutes": 0,
-                                              "headcount": 1
-                                        },
-                                        "im": {
-                                              "timeMinutes": 0,
-                                              "headcount": 1
-                                        },
-                                        "ops": {
-                                              "timeMinutes": 10,
-                                              "headcount": 1
-                                        }
-                                  },
-                                  "actions": {
-                                        "ops": "Assesses client information quality, checks FP availability, routes accordingly"
-                                  }
-                            }
-                      ]
-                },
-                {
-                      "id": "opportunity-qualification",
-                      "name": "Opportunity Qualification",
-                      "steps": [
-                            {
-                                  "id": "initial-call",
-                                  "name": "Initial Call",
-                                  "description": "First contact call with prospect",
-                                  "timeMinutes": 20,
-                                  "owner": "ops",
-                                  "touchpoints": [
-                                        "Phone"
-                                  ],
-                                  "painPoints": [],
-                                  "emotions": "curious",
-                                  "effortScore": 2,
-                                  "automationOpportunity": "low",
-                                  "automationNotes": "Human interaction important for first contact",
-                                  "regulatoryRequirements": [],
-                                  "clientTouchpoint": true,
-                                  "roleInvolvement": {
-                                        "fp": {
-                                              "timeMinutes": 0,
-                                              "headcount": 1
-                                        },
-                                        "im": {
-                                              "timeMinutes": 0,
-                                              "headcount": 1
-                                        },
-                                        "ops": {
-                                              "timeMinutes": 20,
-                                              "headcount": 1
-                                        }
-                                  },
-                                  "actions": {
-                                        "ops": "Conducts initial call, gathers basic information"
-                                  }
-                            },
-                            {
-                                  "id": "update-systems",
-                                  "name": "Update Excel, Xplan etc",
-                                  "description": "Update CRM and planning systems with prospect details",
-                                  "timeMinutes": 12,
-                                  "owner": "ops",
-                                  "touchpoints": [
-                                        "Xplan",
-                                        "Excel",
-                                        "CRM"
-                                  ],
-                                  "painPoints": [
-                                        "Manual data entry across multiple systems"
-                                  ],
-                                  "emotions": "neutral",
-                                  "effortScore": 2,
-                                  "automationOpportunity": "high",
-                                  "automationNotes": "System integration could eliminate duplicate entry",
-                                  "regulatoryRequirements": [],
-                                  "roleInvolvement": {
-                                        "fp": {
-                                              "timeMinutes": 0,
-                                              "headcount": 1
-                                        },
-                                        "im": {
-                                              "timeMinutes": 0,
-                                              "headcount": 1
-                                        },
-                                        "ops": {
-                                              "timeMinutes": 12,
-                                              "headcount": 1
-                                        }
-                                  },
-                                  "actions": {
-                                        "ops": "Updates all relevant systems with prospect information"
-                                  }
-                            },
-                            {
-                                  "id": "review-prospect-email",
-                                  "name": "Review Prospect Email",
-                                  "description": "FP and IM review prospect communications",
-                                  "timeMinutes": 20,
-                                  "owner": "fp",
-                                  "touchpoints": [
-                                        "Email"
-                                  ],
-                                  "painPoints": [],
-                                  "emotions": "curious",
-                                  "effortScore": 2,
-                                  "automationOpportunity": "medium",
-                                  "automationNotes": "AI could summarise and flag key points",
-                                  "regulatoryRequirements": [],
-                                  "roleInvolvement": {
-                                        "fp": {
-                                              "timeMinutes": 10,
-                                              "headcount": 1
-                                        },
-                                        "im": {
-                                              "timeMinutes": 10,
-                                              "headcount": 1
-                                        },
-                                        "ops": {
-                                              "timeMinutes": 0,
-                                              "headcount": 1
-                                        }
-                                  },
-                                  "actions": {
-                                        "fp": "Reviews prospect email and requirements",
-                                        "im": "Reviews prospect email for investment needs"
-                                  }
-                            },
-                            {
-                                  "id": "prospect-call",
-                                  "name": "Prospect Call",
-                                  "description": "Detailed discovery call with prospect",
-                                  "timeMinutes": 90,
-                                  "owner": "fp",
-                                  "touchpoints": [
-                                        "Phone",
-                                        "Teams"
-                                  ],
-                                  "painPoints": [
-                                        "Scheduling can be difficult"
-                                  ],
-                                  "emotions": "engaged",
-                                  "effortScore": 3,
-                                  "automationOpportunity": "low",
-                                  "automationNotes": "Human interaction essential",
-                                  "regulatoryRequirements": [
-                                        "Record keeping"
-                                  ],
-                                  "clientTouchpoint": true,
-                                  "roleInvolvement": {
-                                        "fp": {
-                                              "timeMinutes": 45,
-                                              "headcount": 1
-                                        },
-                                        "im": {
-                                              "timeMinutes": 45,
-                                              "headcount": 1
-                                        },
-                                        "ops": {
-                                              "timeMinutes": 0,
-                                              "headcount": 1
-                                        }
-                                  },
-                                  "actions": {
-                                        "fp": "Conducts discovery call, understands financial goals",
-                                        "im": "Discusses investment approach and philosophy"
-                                  }
-                            },
-                            {
-                                  "id": "update-xplan-triage",
-                                  "name": "Update Xplan Task (Triage)",
-                                  "description": "Update Xplan with triage outcome and next steps",
-                                  "timeMinutes": 20,
-                                  "owner": "fp",
-                                  "touchpoints": [
-                                        "Xplan"
-                                  ],
-                                  "painPoints": [],
-                                  "emotions": "neutral",
-                                  "effortScore": 2,
-                                  "automationOpportunity": "high",
-                                  "automationNotes": "Could auto-populate from call notes",
-                                  "regulatoryRequirements": [],
-                                  "roleInvolvement": {
-                                        "fp": {
-                                              "timeMinutes": 10,
-                                              "headcount": 1
-                                        },
-                                        "im": {
-                                              "timeMinutes": 10,
-                                              "headcount": 1
-                                        },
-                                        "ops": {
-                                              "timeMinutes": 0,
-                                              "headcount": 1
-                                        }
-                                  },
-                                  "actions": {
-                                        "fp": "Updates Xplan with triage notes",
-                                        "im": "Adds investment-related notes"
-                                  }
-                            }
-                      ]
-                },
-                {
-                      "id": "fact-find-collateral",
-                      "name": "Fact Find & Collateral Gathering",
-                      "steps": [
-                            {
-                                  "id": "client-portal-enrolment",
-                                  "name": "Client Portal Enrolment",
-                                  "description": "Set up client on secure portal",
-                                  "timeMinutes": 40,
-                                  "owner": "fp",
-                                  "touchpoints": [
-                                        "Client Portal"
-                                  ],
-                                  "painPoints": [
-                                        "Technical issues with portal setup"
-                                  ],
-                                  "emotions": "hopeful",
-                                  "effortScore": 2,
-                                  "automationOpportunity": "high",
-                                  "automationNotes": "Self-service portal registration possible",
-                                  "regulatoryRequirements": [
-                                        "GDPR consent"
-                                  ],
-                                  "clientTouchpoint": true,
-                                  "roleInvolvement": {
-                                        "fp": {
-                                              "timeMinutes": 20,
-                                              "headcount": 1
-                                        },
-                                        "im": {
-                                              "timeMinutes": 20,
-                                              "headcount": 1
-                                        },
-                                        "ops": {
-                                              "timeMinutes": 0,
-                                              "headcount": 1
-                                        }
-                                  },
-                                  "actions": {
-                                        "fp": "Initiates portal enrolment",
-                                        "im": "Reviews investment preferences setup"
-                                  }
-                            },
-                            {
-                                  "id": "tax-residency",
-                                  "name": "Tax Residency Self Cert",
-                                  "description": "Complete tax residency self-certification",
-                                  "timeMinutes": 30,
-                                  "owner": "fp",
-                                  "touchpoints": [
-                                        "Client Portal",
-                                        "Forms"
-                                  ],
-                                  "painPoints": [
-                                        "Clients confused by tax questions"
-                                  ],
-                                  "emotions": "uncertain",
-                                  "effortScore": 2,
-                                  "automationOpportunity": "medium",
-                                  "automationNotes": "Digital forms with guidance",
-                                  "regulatoryRequirements": [
-                                        "CRS/FATCA requirements"
-                                  ],
-                                  "roleInvolvement": {
-                                        "fp": {
-                                              "timeMinutes": 15,
-                                              "headcount": 1
-                                        },
-                                        "im": {
-                                              "timeMinutes": 15,
-                                              "headcount": 1
-                                        },
-                                        "ops": {
-                                              "timeMinutes": 0,
-                                              "headcount": 1
-                                        }
-                                  },
-                                  "actions": {
-                                        "fp": "Guides client through tax residency forms",
-                                        "im": "Reviews for investment implications"
-                                  }
-                            },
-                            {
-                                  "id": "idv",
-                                  "name": "ID&V",
-                                  "description": "Identity and verification checks",
-                                  "timeMinutes": 36,
-                                  "owner": "ops",
-                                  "touchpoints": [
-                                        "Verification Platform",
-                                        "Client Portal"
-                                  ],
-                                  "painPoints": [
-                                        "Document quality issues",
-                                        "Multiple attempts needed"
-                                  ],
-                                  "emotions": "neutral",
-                                  "effortScore": 2,
-                                  "automationOpportunity": "high",
-                                  "automationNotes": "Automated ID verification services available",
-                                  "regulatoryRequirements": [
-                                        "AML/KYC",
-                                        "MLR 2017"
-                                  ],
-                                  "isHardCheckpoint": true,
-                                  "checkpointType": "compliance",
-                                  "checkpointDetails": "Client identity must be verified to AML/KYC standards before any financial advice can be provided. Requires valid government ID and proof of address dated within 3 months.",
-                                  "roleInvolvement": {
-                                        "fp": {
-                                              "timeMinutes": 7.5,
-                                              "headcount": 1
-                                        },
-                                        "im": {
-                                              "timeMinutes": 7.5,
-                                              "headcount": 1
-                                        },
-                                        "ops": {
-                                              "timeMinutes": 28.5,
-                                              "headcount": 1
-                                        }
-                                  },
-                                  "actions": {
-                                        "fp": "Initiates ID verification request",
-                                        "im": "Reviews verification for investment accounts",
-                                        "ops": "Processes and validates ID documents"
-                                  }
-                            },
-                            {
-                                  "id": "screening",
-                                  "name": "Screening",
-                                  "description": "Screen for Politically Exposed Persons and sanctions",
-                                  "timeMinutes": 36,
-                                  "owner": "ops",
-                                  "touchpoints": [
-                                        "Screening Platform"
-                                  ],
-                                  "painPoints": [
-                                        "False positives require manual review"
-                                  ],
-                                  "emotions": "neutral",
-                                  "effortScore": 2,
-                                  "automationOpportunity": "medium",
-                                  "automationNotes": "Automated screening with manual exception handling",
-                                  "regulatoryRequirements": [
-                                        "AML regulations",
-                                        "Sanctions compliance"
-                                  ],
-                                  "isHardCheckpoint": true,
-                                  "checkpointType": "regulatory",
-                                  "checkpointDetails": "PEP and sanctions screening must be completed and cleared before proceeding. Any matches require escalation to Compliance for review and sign-off.",
-                                  "roleInvolvement": {
-                                        "fp": {
-                                              "timeMinutes": 7.5,
-                                              "headcount": 1
-                                        },
-                                        "im": {
-                                              "timeMinutes": 7.5,
-                                              "headcount": 1
-                                        },
-                                        "ops": {
-                                              "timeMinutes": 28.5,
-                                              "headcount": 1
-                                        }
-                                  },
-                                  "actions": {
-                                        "fp": "Reviews screening results",
-                                        "im": "Assesses investment risk implications",
-                                        "ops": "Runs screening checks and documents results"
-                                  }
-                            },
-                            {
-                                  "id": "loas",
-                                  "name": "LOAs",
-                                  "description": "Letters of Authority for existing providers",
-                                  "timeMinutes": 488,
-                                  "owner": "ops",
-                                  "touchpoints": [
-                                        "Provider Portals",
-                                        "Post",
-                                        "Email"
-                                  ],
-                                  "painPoints": [
-                                        "Provider delays",
-                                        "Chasing responses",
-                                        "Different provider processes"
-                                  ],
-                                  "emotions": "waiting",
-                                  "effortScore": 4,
-                                  "automationOpportunity": "medium",
-                                  "automationNotes": "Origo integration for some providers",
-                                  "regulatoryRequirements": [
-                                        "Client consent",
-                                        "Data protection"
-                                  ],
-                                  "roleInvolvement": {
-                                        "fp": {
-                                              "timeMinutes": 87.5,
-                                              "headcount": 1
-                                        },
-                                        "im": {
-                                              "timeMinutes": 35,
-                                              "headcount": 1
-                                        },
-                                        "ops": {
-                                              "timeMinutes": 365,
-                                              "headcount": 1
-                                        }
-                                  },
-                                  "actions": {
-                                        "fp": "Prepares LOA requests, reviews returned information",
-                                        "im": "Reviews existing investment information",
-                                        "ops": "Sends LOAs, chases providers, logs responses"
-                                  }
-                            },
-                            {
-                                  "id": "fact-find-a",
-                                  "name": "Fact Find A",
-                                  "description": "Comprehensive fact find - Part A",
-                                  "timeMinutes": 780,
-                                  "owner": "fp",
-                                  "touchpoints": [
-                                        "In-person",
-                                        "Teams",
-                                        "Xplan"
-                                  ],
-                                  "painPoints": [
-                                        "Time intensive",
-                                        "Client preparation varies"
-                                  ],
-                                  "emotions": "engaged",
-                                  "effortScore": 5,
-                                  "automationOpportunity": "medium",
-                                  "automationNotes": "Digital fact find with pre-population",
-                                  "regulatoryRequirements": [
-                                        "COBS suitability",
-                                        "Know Your Client"
-                                  ],
-                                  "clientTouchpoint": true,
-                                  "roleInvolvement": {
-                                        "fp": {
-                                              "timeMinutes": 390,
-                                              "headcount": 1
-                                        },
-                                        "im": {
-                                              "timeMinutes": 390,
-                                              "headcount": 1
-                                        },
-                                        "ops": {
-                                              "timeMinutes": 0,
-                                              "headcount": 1
-                                        }
-                                  },
-                                  "actions": {
-                                        "fp": "Conducts comprehensive fact find meeting",
-                                        "im": "Gathers investment-specific information"
-                                  }
-                            },
-                            {
-                                  "id": "craf",
-                                  "name": "CRAF",
-                                  "description": "Client Risk Assessment Framework",
-                                  "timeMinutes": 104,
-                                  "owner": "fp",
-                                  "touchpoints": [
-                                        "Risk Assessment Tool"
-                                  ],
-                                  "painPoints": [
-                                        "Complex risk scoring"
-                                  ],
-                                  "emotions": "uncertain",
-                                  "effortScore": 3,
-                                  "automationOpportunity": "medium",
-                                  "automationNotes": "Automated risk profiling tools available",
-                                  "regulatoryRequirements": [
-                                        "FCA ATR requirements",
-                                        "Capacity for loss"
-                                  ],
-                                  "roleInvolvement": {
-                                        "fp": {
-                                              "timeMinutes": 90,
-                                              "headcount": 1
-                                        },
-                                        "im": {
-                                              "timeMinutes": 90,
-                                              "headcount": 1
-                                        },
-                                        "ops": {
-                                              "timeMinutes": 13.5,
-                                              "headcount": 1
-                                        }
-                                  },
-                                  "actions": {
-                                        "fp": "Completes client risk assessment",
-                                        "im": "Validates investment risk alignment",
-                                        "ops": "Documents and files assessment"
-                                  }
-                            },
-                            {
-                                  "id": "fact-find-b",
-                                  "name": "Fact Find B",
-                                  "description": "Comprehensive fact find - Part B (follow-up)",
-                                  "timeMinutes": 90,
-                                  "owner": "fp",
-                                  "touchpoints": [
-                                        "In-person",
-                                        "Teams"
-                                  ],
-                                  "painPoints": [],
-                                  "emotions": "engaged",
-                                  "effortScore": 3,
-                                  "automationOpportunity": "medium",
-                                  "automationNotes": "Could be combined with Part A in some cases",
-                                  "regulatoryRequirements": [
-                                        "COBS suitability"
-                                  ],
-                                  "clientTouchpoint": true,
-                                  "roleInvolvement": {
-                                        "fp": {
-                                              "timeMinutes": 60,
-                                              "headcount": 1
-                                        },
-                                        "im": {
-                                              "timeMinutes": 30,
-                                              "headcount": 1
-                                        },
-                                        "ops": {
-                                              "timeMinutes": 0,
-                                              "headcount": 1
-                                        }
-                                  },
-                                  "actions": {
-                                        "fp": "Completes follow-up fact find items",
-                                        "im": "Clarifies investment requirements"
-                                  }
-                            }
-                      ]
-                },
-                {
-                      "id": "advice",
-                      "name": "Advice / Contract",
-                      "steps": [
-                            {
-                                  "id": "pricing-propositions",
-                                  "name": "Pricing & Propositions",
-                                  "description": "Research and analysis for pricing and investment propositions",
-                                  "timeMinutes": 864,
-                                  "owner": "fp",
-                                  "touchpoints": [
-                                        "Research Tools",
-                                        "Planning Software"
-                                  ],
-                                  "painPoints": [
-                                        "Time intensive research",
-                                        "Complex analysis"
-                                  ],
-                                  "emotions": "waiting",
-                                  "effortScore": 5,
-                                  "automationOpportunity": "medium",
-                                  "automationNotes": "AI-assisted research and analysis tools",
-                                  "regulatoryRequirements": [
-                                        "Best execution",
-                                        "Suitability"
-                                  ],
-                                  "roleInvolvement": {
-                                        "fp": {
-                                              "timeMinutes": 834,
-                                              "headcount": 1
-                                        },
-                                        "im": {
-                                              "timeMinutes": 30,
-                                              "headcount": 1
-                                        },
-                                        "ops": {
-                                              "timeMinutes": 0,
-                                              "headcount": 1
-                                        }
-                                  },
-                                  "actions": {
-                                        "fp": "Conducts research and develops propositions",
-                                        "im": "Provides investment input and validation"
-                                  }
-                            },
-                            {
-                                  "id": "fee-illustration",
-                                  "name": "Fee Illustration",
-                                  "description": "Prepare fee illustrations and cost disclosures",
-                                  "timeMinutes": 86,
-                                  "owner": "fp",
-                                  "touchpoints": [
-                                        "Illustration Software"
-                                  ],
-                                  "painPoints": [],
-                                  "emotions": "neutral",
-                                  "effortScore": 2,
-                                  "automationOpportunity": "high",
-                                  "automationNotes": "Template-based generation",
-                                  "regulatoryRequirements": [
-                                        "MiFID II cost disclosure",
-                                        "Consumer Duty"
-                                  ],
-                                  "roleInvolvement": {
-                                        "fp": {
-                                              "timeMinutes": 83.4,
-                                              "headcount": 1
-                                        },
-                                        "im": {
-                                              "timeMinutes": 3,
-                                              "headcount": 1
-                                        },
-                                        "ops": {
-                                              "timeMinutes": 0,
-                                              "headcount": 1
-                                        }
-                                  },
-                                  "actions": {
-                                        "fp": "Prepares fee illustrations",
-                                        "im": "Reviews investment cost components"
-                                  }
-                            },
-                            {
-                                  "id": "advice-report",
-                                  "name": "Advice Report",
-                                  "description": "Comprehensive suitability and advice report",
-                                  "timeMinutes": 778,
-                                  "owner": "fp",
-                                  "touchpoints": [
-                                        "Report Software"
-                                  ],
-                                  "painPoints": [
-                                        "Report writing time intensive",
-                                        "Compliance review delays"
-                                  ],
-                                  "emotions": "waiting",
-                                  "effortScore": 5,
-                                  "automationOpportunity": "high",
-                                  "automationNotes": "AI-assisted report generation",
-                                  "regulatoryRequirements": [
-                                        "COBS 9.4 suitability reports",
-                                        "Clear, fair, not misleading"
-                                  ],
-                                  "roleInvolvement": {
-                                        "fp": {
-                                              "timeMinutes": 750.6,
-                                              "headcount": 1
-                                        },
-                                        "im": {
-                                              "timeMinutes": 27,
-                                              "headcount": 1
-                                        },
-                                        "ops": {
-                                              "timeMinutes": 0,
-                                              "headcount": 1
-                                        }
-                                  },
-                                  "actions": {
-                                        "fp": "Writes comprehensive advice report",
-                                        "im": "Contributes investment rationale section"
-                                  }
-                            },
-                            {
-                                  "id": "account-opening-forms",
-                                  "name": "Application Forms",
-                                  "description": "Complete account opening applications",
-                                  "timeMinutes": 183,
-                                  "owner": "ops",
-                                  "touchpoints": [
-                                        "Provider Portals",
-                                        "DocuSign"
-                                  ],
-                                  "painPoints": [
-                                        "Different provider formats",
-                                        "Portal technical issues"
-                                  ],
-                                  "emotions": "neutral",
-                                  "effortScore": 3,
-                                  "automationOpportunity": "high",
-                                  "automationNotes": "API integration for straight-through processing",
-                                  "regulatoryRequirements": [
-                                        "Client consent",
-                                        "Accurate data"
-                                  ],
-                                  "roleInvolvement": {
-                                        "fp": {
-                                              "timeMinutes": 40,
-                                              "headcount": 1
-                                        },
-                                        "im": {
-                                              "timeMinutes": 40,
-                                              "headcount": 1
-                                        },
-                                        "ops": {
-                                              "timeMinutes": 102.6,
-                                              "headcount": 1
-                                        }
-                                  },
-                                  "actions": {
-                                        "fp": "Reviews and approves applications",
-                                        "im": "Confirms investment selections",
-                                        "ops": "Prepares and submits application forms"
-                                  }
-                            },
-                            {
-                                  "id": "vetting",
-                                  "name": "Vetting",
-                                  "description": "Internal vetting and compliance review",
-                                  "timeMinutes": 240,
-                                  "owner": "fp",
-                                  "touchpoints": [
-                                        "Internal Systems"
-                                  ],
-                                  "painPoints": [
-                                        "Bottleneck in compliance review"
-                                  ],
-                                  "emotions": "waiting",
-                                  "effortScore": 4,
-                                  "automationOpportunity": "medium",
-                                  "automationNotes": "Automated compliance checklists",
-                                  "regulatoryRequirements": [
-                                        "Internal compliance",
-                                        "Sign-off requirements"
-                                  ],
-                                  "roleInvolvement": {
-                                        "fp": {
-                                              "timeMinutes": 100,
-                                              "headcount": 1
-                                        },
-                                        "im": {
-                                              "timeMinutes": 100,
-                                              "headcount": 1
-                                        },
-                                        "ops": {
-                                              "timeMinutes": 40,
-                                              "headcount": 1
-                                        }
-                                  },
-                                  "actions": {
-                                        "fp": "Completes vetting checklist",
-                                        "im": "Reviews investment rationale",
-                                        "ops": "Coordinates vetting process"
-                                  }
-                            },
-                            {
-                                  "id": "account-opening",
-                                  "name": "Account Opening",
-                                  "description": "Finalise account opening with providers",
-                                  "timeMinutes": 115,
-                                  "owner": "ops",
-                                  "touchpoints": [
-                                        "Provider Portals"
-                                  ],
-                                  "painPoints": [
-                                        "Provider processing delays"
-                                  ],
-                                  "emotions": "hopeful",
-                                  "effortScore": 2,
-                                  "automationOpportunity": "high",
-                                  "automationNotes": "API submission and tracking",
-                                  "regulatoryRequirements": [
-                                        "Provider requirements"
-                                  ],
-                                  "roleInvolvement": {
-                                        "fp": {
-                                              "timeMinutes": 0,
-                                              "headcount": 1
-                                        },
-                                        "im": {
-                                              "timeMinutes": 0,
-                                              "headcount": 1
-                                        },
-                                        "ops": {
-                                              "timeMinutes": 115.2,
-                                              "headcount": 1
-                                        }
-                                  },
-                                  "actions": {
-                                        "ops": "Processes account openings, tracks status"
-                                  }
-                            }
-                      ]
-                },
-                {
-                      "id": "transfers-in",
-                      "name": "Transfers In",
-                      "steps": [
-                            {
-                                  "id": "initiation",
-                                  "name": "Initiation",
-                                  "description": "Initiate transfer requests",
-                                  "timeMinutes": 49,
-                                  "owner": "ops",
-                                  "touchpoints": [
-                                        "Provider Portals",
-                                        "Origo"
-                                  ],
-                                  "painPoints": [],
-                                  "emotions": "hopeful",
-                                  "effortScore": 2,
-                                  "automationOpportunity": "high",
-                                  "automationNotes": "Origo/PPEX automation",
-                                  "regulatoryRequirements": [
-                                        "Transfer procedures"
-                                  ],
-                                  "roleInvolvement": {
-                                        "fp": {
-                                              "timeMinutes": 8.7,
-                                              "headcount": 1
-                                        },
-                                        "im": {
-                                              "timeMinutes": 8.7,
-                                              "headcount": 1
-                                        },
-                                        "ops": {
-                                              "timeMinutes": 40,
-                                              "headcount": 1
-                                        }
-                                  },
-                                  "actions": {
-                                        "fp": "Approves transfer initiation",
-                                        "im": "Confirms transfer requirements",
-                                        "ops": "Submits transfer requests"
-                                  }
-                            },
-                            {
-                                  "id": "new-transfer-validation",
-                                  "name": "New Transfer / Validation",
-                                  "description": "Validate incoming transfer details",
-                                  "timeMinutes": 25,
-                                  "owner": "ops",
-                                  "touchpoints": [
-                                        "Back Office Systems"
-                                  ],
-                                  "painPoints": [
-                                        "Data validation issues"
-                                  ],
-                                  "emotions": "neutral",
-                                  "effortScore": 2,
-                                  "automationOpportunity": "high",
-                                  "automationNotes": "Automated validation rules",
-                                  "regulatoryRequirements": [],
-                                  "roleInvolvement": {
-                                        "fp": {
-                                              "timeMinutes": 0,
-                                              "headcount": 1
-                                        },
-                                        "im": {
-                                              "timeMinutes": 0,
-                                              "headcount": 1
-                                        },
-                                        "ops": {
-                                              "timeMinutes": 25,
-                                              "headcount": 1
-                                        }
-                                  },
-                                  "actions": {
-                                        "ops": "Validates transfer data and documentation"
-                                  }
-                            },
-                            {
-                                  "id": "chase-counterparty",
-                                  "name": "Chase Counterparty",
-                                  "description": "Follow up with ceding providers",
-                                  "timeMinutes": 66,
-                                  "owner": "ops",
-                                  "touchpoints": [
-                                        "Phone",
-                                        "Email",
-                                        "Provider Portals"
-                                  ],
-                                  "painPoints": [
-                                        "Provider delays",
-                                        "Difficult to reach providers"
-                                  ],
-                                  "emotions": "frustrated",
-                                  "effortScore": 3,
-                                  "automationOpportunity": "medium",
-                                  "automationNotes": "Automated chase sequences",
-                                  "regulatoryRequirements": [],
-                                  "roleInvolvement": {
-                                        "fp": {
-                                              "timeMinutes": 0,
-                                              "headcount": 1
-                                        },
-                                        "im": {
-                                              "timeMinutes": 0,
-                                              "headcount": 1
-                                        },
-                                        "ops": {
-                                              "timeMinutes": 66,
-                                              "headcount": 1
-                                        }
-                                  },
-                                  "actions": {
-                                        "ops": "Chases ceding providers for transfer progress"
-                                  }
-                            },
-                            {
-                                  "id": "check-valuation",
-                                  "name": "Check Valuation",
-                                  "description": "Verify transfer valuations",
-                                  "timeMinutes": 74,
-                                  "owner": "ops",
-                                  "touchpoints": [
-                                        "Provider Portals",
-                                        "Back Office"
-                                  ],
-                                  "painPoints": [
-                                        "Valuation discrepancies"
-                                  ],
-                                  "emotions": "neutral",
-                                  "effortScore": 2,
-                                  "automationOpportunity": "medium",
-                                  "automationNotes": "Automated valuation comparison",
-                                  "regulatoryRequirements": [
-                                        "Accurate record keeping"
-                                  ],
-                                  "roleInvolvement": {
-                                        "fp": {
-                                              "timeMinutes": 30,
-                                              "headcount": 1
-                                        },
-                                        "im": {
-                                              "timeMinutes": 30,
-                                              "headcount": 1
-                                        },
-                                        "ops": {
-                                              "timeMinutes": 44,
-                                              "headcount": 1
-                                        }
-                                  },
-                                  "actions": {
-                                        "fp": "Reviews valuation accuracy",
-                                        "im": "Confirms investment valuations",
-                                        "ops": "Checks and reconciles valuations"
-                                  }
-                            },
-                            {
-                                  "id": "trades-acceptance",
-                                  "name": "Trades / Acceptance",
-                                  "description": "Accept transfers and execute trades",
-                                  "timeMinutes": 125,
-                                  "owner": "ops",
-                                  "touchpoints": [
-                                        "Trading Platform",
-                                        "Back Office"
-                                  ],
-                                  "painPoints": [
-                                        "Market timing considerations"
-                                  ],
-                                  "emotions": "neutral",
-                                  "effortScore": 3,
-                                  "automationOpportunity": "medium",
-                                  "automationNotes": "Automated trade execution rules",
-                                  "regulatoryRequirements": [
-                                        "Best execution",
-                                        "Trade reporting"
-                                  ],
-                                  "roleInvolvement": {
-                                        "fp": {
-                                              "timeMinutes": 5,
-                                              "headcount": 1
-                                        },
-                                        "im": {
-                                              "timeMinutes": 5,
-                                              "headcount": 1
-                                        },
-                                        "ops": {
-                                              "timeMinutes": 120,
-                                              "headcount": 1
-                                        }
-                                  },
-                                  "actions": {
-                                        "fp": "Approves trade execution",
-                                        "im": "Confirms investment allocation",
-                                        "ops": "Executes trades and processes transfers"
-                                  }
-                            },
-                            {
-                                  "id": "update-portfolio",
-                                  "name": "Update Portfolio",
-                                  "description": "Update portfolio systems with transferred assets",
-                                  "timeMinutes": 15,
-                                  "owner": "ops",
-                                  "touchpoints": [
-                                        "Portfolio Management System"
-                                  ],
-                                  "painPoints": [],
-                                  "emotions": "neutral",
-                                  "effortScore": 1,
-                                  "automationOpportunity": "high",
-                                  "automationNotes": "Automated portfolio updates",
-                                  "regulatoryRequirements": [],
-                                  "roleInvolvement": {
-                                        "fp": {
-                                              "timeMinutes": 0,
-                                              "headcount": 1
-                                        },
-                                        "im": {
-                                              "timeMinutes": 0,
-                                              "headcount": 1
-                                        },
-                                        "ops": {
-                                              "timeMinutes": 15,
-                                              "headcount": 1
-                                        }
-                                  },
-                                  "actions": {
-                                        "ops": "Updates portfolio records"
-                                  }
-                            },
-                            {
-                                  "id": "check-transfer-status",
-                                  "name": "Check Transfer Status",
-                                  "description": "Monitor and verify transfer completion",
-                                  "timeMinutes": 5,
-                                  "owner": "ops",
-                                  "touchpoints": [
-                                        "Provider Portals"
-                                  ],
-                                  "painPoints": [],
-                                  "emotions": "neutral",
-                                  "effortScore": 1,
-                                  "automationOpportunity": "high",
-                                  "automationNotes": "Automated status tracking",
-                                  "regulatoryRequirements": [],
-                                  "roleInvolvement": {
-                                        "fp": {
-                                              "timeMinutes": 0,
-                                              "headcount": 1
-                                        },
-                                        "im": {
-                                              "timeMinutes": 0,
-                                              "headcount": 1
-                                        },
-                                        "ops": {
-                                              "timeMinutes": 5,
-                                              "headcount": 1
-                                        }
-                                  },
-                                  "actions": {
-                                        "ops": "Monitors transfer status"
-                                  }
-                            },
-                            {
-                                  "id": "closure",
-                                  "name": "Closure",
-                                  "description": "Complete transfer and close out process",
-                                  "timeMinutes": 44,
-                                  "owner": "ops",
-                                  "touchpoints": [
-                                        "Back Office",
-                                        "CRM"
-                                  ],
-                                  "painPoints": [],
-                                  "emotions": "satisfied",
-                                  "effortScore": 2,
-                                  "automationOpportunity": "medium",
-                                  "automationNotes": "Automated completion workflow",
-                                  "regulatoryRequirements": [
-                                        "Record keeping"
-                                  ],
-                                  "roleInvolvement": {
-                                        "fp": {
-                                              "timeMinutes": 0,
-                                              "headcount": 1
-                                        },
-                                        "im": {
-                                              "timeMinutes": 0,
-                                              "headcount": 1
-                                        },
-                                        "ops": {
-                                              "timeMinutes": 44,
-                                              "headcount": 1
-                                        }
-                                  },
-                                  "actions": {
-                                        "ops": "Closes transfer case, updates records"
-                                  }
-                            }
-                      ]
-                }
+      meta: {
+        title: "Client Onboarding Journey",
+        version: "2.0",
+        product: "Steve's Journey Map v5.3",
+        lastUpdated: new Date().toISOString(),
+        audience: "Internal Operations",
+        perspective: "client"
+      },
+      personas: [
+        { id: "client", label: "Client", color: "#2D5A4B", annualSalary: 0, isExternal: true },
+        { id: "fp", label: "Financial Planner", color: "#8B4513", annualSalary: 85000, isExternal: false },
+        { id: "im", label: "Investment Manager", color: "#1E40AF", annualSalary: 95000, isExternal: false },
+        { id: "ops", label: "Operations", color: "#6B46C1", annualSalary: 35000, isExternal: false },
+        { id: "administrator", label: "Administrator", color: "#4A5568", annualSalary: 32000, isExternal: false },
+        { id: "compliance", label: "Compliance", color: "#C53030", annualSalary: 55000, isExternal: false }
+      ],
+      stages: [
+        {
+          id: "lead-receipt",
+          name: "Lead Receipt",
+          steps: [
+            {
+              id: "triage",
+              name: "Triage",
+              description: "Initial assessment of incoming prospect enquiries",
+              timeMinutes: 5,
+              owner: "ops",
+              touchpoints: ["CRM", "Email"],
+              painPoints: [],
+              emotions: "neutral",
+              effortScore: 1,
+              automationOpportunity: "high",
+              automationNotes: "Could be automated with AI triage system",
+              regulatoryRequirements: [],
+              roleInvolvement: {
+                fp: { timeMinutes: 0, headcount: 1 },
+                im: { timeMinutes: 0, headcount: 1 },
+                ops: { timeMinutes: 5, headcount: 1 }
+              },
+              actions: {
+                ops: "Reviews and categorises incoming enquiries"
+              }
+            },
+            {
+              id: "fast-track",
+              name: "Fast Track",
+              description: "Determine if client has provided enough information to directly contact FP to check availability for immediate call",
+              timeMinutes: 10,
+              owner: "ops",
+              touchpoints: ["CRM", "Phone", "Email"],
+              painPoints: [],
+              emotions: "hopeful",
+              effortScore: 2,
+              automationOpportunity: "high",
+              automationNotes: "AI could assess client information completeness and check FP calendar availability automatically",
+              regulatoryRequirements: [],
+              roleInvolvement: {
+                fp: { timeMinutes: 0, headcount: 1 },
+                im: { timeMinutes: 0, headcount: 1 },
+                ops: { timeMinutes: 10, headcount: 1 }
+              },
+              actions: {
+                ops: "Assesses client information quality, checks FP availability, routes accordingly"
+              }
+            }
           ]
+        },
+        {
+          id: "opportunity-qualification",
+          name: "Opportunity Qualification",
+          steps: [
+            {
+              id: "initial-call",
+              name: "Initial Call",
+              description: "First contact call with prospect",
+              timeMinutes: 20,
+              owner: "ops",
+              touchpoints: ["Phone"],
+              painPoints: [],
+              emotions: "curious",
+              effortScore: 2,
+              automationOpportunity: "low",
+              automationNotes: "Human interaction important for first contact",
+              regulatoryRequirements: [],
+              clientTouchpoint: true,
+              roleInvolvement: {
+                fp: { timeMinutes: 0, headcount: 1 },
+                im: { timeMinutes: 0, headcount: 1 },
+                ops: { timeMinutes: 20, headcount: 1 }
+              },
+              actions: {
+                ops: "Conducts initial call, gathers basic information"
+              }
+            },
+            {
+              id: "update-systems",
+              name: "Update Excel, Xplan etc",
+              description: "Update CRM and planning systems with prospect details",
+              timeMinutes: 12,
+              owner: "ops",
+              touchpoints: ["Xplan", "Excel", "CRM"],
+              painPoints: ["Manual data entry across multiple systems"],
+              emotions: "neutral",
+              effortScore: 2,
+              automationOpportunity: "high",
+              automationNotes: "System integration could eliminate duplicate entry",
+              regulatoryRequirements: [],
+              roleInvolvement: {
+                fp: { timeMinutes: 0, headcount: 1 },
+                im: { timeMinutes: 0, headcount: 1 },
+                ops: { timeMinutes: 12, headcount: 1 }
+              },
+              actions: {
+                ops: "Updates all relevant systems with prospect information"
+              }
+            },
+            {
+              id: "review-prospect-email",
+              name: "Review Prospect Email",
+              description: "FP and IM review prospect communications",
+              timeMinutes: 20,
+              owner: "fp",
+              touchpoints: ["Email"],
+              painPoints: [],
+              emotions: "curious",
+              effortScore: 2,
+              automationOpportunity: "medium",
+              automationNotes: "AI could summarise and flag key points",
+              regulatoryRequirements: [],
+              roleInvolvement: {
+                fp: { timeMinutes: 10, headcount: 1 },
+                im: { timeMinutes: 10, headcount: 1 },
+                ops: { timeMinutes: 0, headcount: 1 }
+              },
+              actions: {
+                fp: "Reviews prospect email and requirements",
+                im: "Reviews prospect email for investment needs"
+              }
+            },
+            {
+              id: "prospect-call",
+              name: "Prospect Call",
+              description: "Detailed discovery call with prospect",
+              timeMinutes: 90,
+              owner: "fp",
+              touchpoints: ["Phone", "Teams"],
+              painPoints: ["Scheduling can be difficult"],
+              emotions: "engaged",
+              effortScore: 3,
+              automationOpportunity: "low",
+              automationNotes: "Human interaction essential",
+              regulatoryRequirements: ["Record keeping"],
+              clientTouchpoint: true,
+              roleInvolvement: {
+                fp: { timeMinutes: 45, headcount: 1 },
+                im: { timeMinutes: 45, headcount: 1 },
+                ops: { timeMinutes: 0, headcount: 1 }
+              },
+              actions: {
+                fp: "Conducts discovery call, understands financial goals",
+                im: "Discusses investment approach and philosophy"
+              }
+            },
+            {
+              id: "update-xplan-triage",
+              name: "Update Xplan Task (Triage)",
+              description: "Update Xplan with triage outcome and next steps",
+              timeMinutes: 20,
+              owner: "fp",
+              touchpoints: ["Xplan"],
+              painPoints: [],
+              emotions: "neutral",
+              effortScore: 2,
+              automationOpportunity: "high",
+              automationNotes: "Could auto-populate from call notes",
+              regulatoryRequirements: [],
+              roleInvolvement: {
+                fp: { timeMinutes: 10, headcount: 1 },
+                im: { timeMinutes: 10, headcount: 1 },
+                ops: { timeMinutes: 0, headcount: 1 }
+              },
+              actions: {
+                fp: "Updates Xplan with triage notes",
+                im: "Adds investment-related notes"
+              }
+            }
+          ]
+        },
+        {
+          id: "fact-find-collateral",
+          name: "Fact Find & Collateral Gathering",
+          steps: [
+            {
+              id: "client-portal-enrolment",
+              name: "Client Portal Enrolment",
+              description: "Set up client on secure portal",
+              timeMinutes: 40,
+              owner: "fp",
+              touchpoints: ["Client Portal"],
+              painPoints: ["Technical issues with portal setup"],
+              emotions: "hopeful",
+              effortScore: 2,
+              automationOpportunity: "high",
+              automationNotes: "Self-service portal registration possible",
+              regulatoryRequirements: ["GDPR consent"],
+              clientTouchpoint: true,
+              roleInvolvement: {
+                fp: { timeMinutes: 20, headcount: 1 },
+                im: { timeMinutes: 20, headcount: 1 },
+                ops: { timeMinutes: 0, headcount: 1 }
+              },
+              actions: {
+                fp: "Initiates portal enrolment",
+                im: "Reviews investment preferences setup"
+              }
+            },
+            {
+              id: "tax-residency",
+              name: "Tax Residency Self Cert",
+              description: "Complete tax residency self-certification",
+              timeMinutes: 30,
+              owner: "fp",
+              touchpoints: ["Client Portal", "Forms"],
+              painPoints: ["Clients confused by tax questions"],
+              emotions: "uncertain",
+              effortScore: 2,
+              automationOpportunity: "medium",
+              automationNotes: "Digital forms with guidance",
+              regulatoryRequirements: ["CRS/FATCA requirements"],
+              roleInvolvement: {
+                fp: { timeMinutes: 15, headcount: 1 },
+                im: { timeMinutes: 15, headcount: 1 },
+                ops: { timeMinutes: 0, headcount: 1 }
+              },
+              actions: {
+                fp: "Guides client through tax residency forms",
+                im: "Reviews for investment implications"
+              }
+            },
+            {
+              id: "idv",
+              name: "ID&V",
+              description: "Identity and verification checks",
+              timeMinutes: 36,
+              owner: "ops",
+              touchpoints: ["Verification Platform", "Client Portal"],
+              painPoints: ["Document quality issues", "Multiple attempts needed"],
+              emotions: "neutral",
+              effortScore: 2,
+              automationOpportunity: "high",
+              automationNotes: "Automated ID verification services available",
+              regulatoryRequirements: ["AML/KYC", "MLR 2017"],
+              isHardCheckpoint: true,
+              checkpointType: "compliance",
+              checkpointDetails: "Client identity must be verified to AML/KYC standards before any financial advice can be provided. Requires valid government ID and proof of address dated within 3 months.",
+              roleInvolvement: {
+                fp: { timeMinutes: 7.5, headcount: 1 },
+                im: { timeMinutes: 7.5, headcount: 1 },
+                ops: { timeMinutes: 28.5, headcount: 1 }
+              },
+              actions: {
+                fp: "Initiates ID verification request",
+                im: "Reviews verification for investment accounts",
+                ops: "Processes and validates ID documents"
+              }
+            },
+            {
+              id: "screening",
+              name: "Screening",
+              description: "Screen for Politically Exposed Persons and sanctions",
+              timeMinutes: 36,
+              owner: "ops",
+              touchpoints: ["Screening Platform"],
+              painPoints: ["False positives require manual review"],
+              emotions: "neutral",
+              effortScore: 2,
+              automationOpportunity: "medium",
+              automationNotes: "Automated screening with manual exception handling",
+              regulatoryRequirements: ["AML regulations", "Sanctions compliance"],
+              isHardCheckpoint: true,
+              checkpointType: "regulatory",
+              checkpointDetails: "PEP and sanctions screening must be completed and cleared before proceeding. Any matches require escalation to Compliance for review and sign-off.",
+              roleInvolvement: {
+                fp: { timeMinutes: 7.5, headcount: 1 },
+                im: { timeMinutes: 7.5, headcount: 1 },
+                ops: { timeMinutes: 28.5, headcount: 1 }
+              },
+              actions: {
+                fp: "Reviews screening results",
+                im: "Assesses investment risk implications",
+                ops: "Runs screening checks and documents results"
+              }
+            },
+            {
+              id: "loas",
+              name: "LOAs",
+              description: "Letters of Authority for existing providers",
+              timeMinutes: 488,
+              owner: "ops",
+              touchpoints: ["Provider Portals", "Post", "Email"],
+              painPoints: ["Provider delays", "Chasing responses", "Different provider processes"],
+              emotions: "waiting",
+              effortScore: 4,
+              automationOpportunity: "medium",
+              automationNotes: "Origo integration for some providers",
+              regulatoryRequirements: ["Client consent", "Data protection"],
+              roleInvolvement: {
+                fp: { timeMinutes: 87.5, headcount: 1 },
+                im: { timeMinutes: 35, headcount: 1 },
+                ops: { timeMinutes: 365, headcount: 1 }
+              },
+              actions: {
+                fp: "Prepares LOA requests, reviews returned information",
+                im: "Reviews existing investment information",
+                ops: "Sends LOAs, chases providers, logs responses"
+              }
+            },
+            {
+              id: "fact-find-a",
+              name: "Fact Find A",
+              description: "Comprehensive fact find - Part A",
+              timeMinutes: 780,
+              owner: "fp",
+              touchpoints: ["In-person", "Teams", "Xplan"],
+              painPoints: ["Time intensive", "Client preparation varies"],
+              emotions: "engaged",
+              effortScore: 5,
+              automationOpportunity: "medium",
+              automationNotes: "Digital fact find with pre-population",
+              regulatoryRequirements: ["COBS suitability", "Know Your Client"],
+              clientTouchpoint: true,
+              roleInvolvement: {
+                fp: { timeMinutes: 390, headcount: 1 },
+                im: { timeMinutes: 390, headcount: 1 },
+                ops: { timeMinutes: 0, headcount: 1 }
+              },
+              actions: {
+                fp: "Conducts comprehensive fact find meeting",
+                im: "Gathers investment-specific information"
+              }
+            },
+            {
+              id: "craf",
+              name: "CRAF",
+              description: "Client Risk Assessment Framework",
+              timeMinutes: 104,
+              owner: "fp",
+              touchpoints: ["Risk Assessment Tool"],
+              painPoints: ["Complex risk scoring"],
+              emotions: "uncertain",
+              effortScore: 3,
+              automationOpportunity: "medium",
+              automationNotes: "Automated risk profiling tools available",
+              regulatoryRequirements: ["FCA ATR requirements", "Capacity for loss"],
+              roleInvolvement: {
+                fp: { timeMinutes: 90, headcount: 1 },
+                im: { timeMinutes: 90, headcount: 1 },
+                ops: { timeMinutes: 13.5, headcount: 1 }
+              },
+              actions: {
+                fp: "Completes client risk assessment",
+                im: "Validates investment risk alignment",
+                ops: "Documents and files assessment"
+              }
+            },
+            {
+              id: "fact-find-b",
+              name: "Fact Find B",
+              description: "Comprehensive fact find - Part B (follow-up)",
+              timeMinutes: 90,
+              owner: "fp",
+              touchpoints: ["In-person", "Teams"],
+              painPoints: [],
+              emotions: "engaged",
+              effortScore: 3,
+              automationOpportunity: "medium",
+              automationNotes: "Could be combined with Part A in some cases",
+              regulatoryRequirements: ["COBS suitability"],
+              clientTouchpoint: true,
+              roleInvolvement: {
+                fp: { timeMinutes: 60, headcount: 1 },
+                im: { timeMinutes: 30, headcount: 1 },
+                ops: { timeMinutes: 0, headcount: 1 }
+              },
+              actions: {
+                fp: "Completes follow-up fact find items",
+                im: "Clarifies investment requirements"
+              }
+            }
+          ]
+        },
+        {
+          id: "advice",
+          name: "Advice / Contract",
+          steps: [
+            {
+              id: "pricing-propositions",
+              name: "Pricing & Propositions",
+              description: "Research and analysis for pricing and investment propositions",
+              timeMinutes: 864,
+              owner: "fp",
+              touchpoints: ["Research Tools", "Planning Software"],
+              painPoints: ["Time intensive research", "Complex analysis"],
+              emotions: "waiting",
+              effortScore: 5,
+              automationOpportunity: "medium",
+              automationNotes: "AI-assisted research and analysis tools",
+              regulatoryRequirements: ["Best execution", "Suitability"],
+              roleInvolvement: {
+                fp: { timeMinutes: 834, headcount: 1 },
+                im: { timeMinutes: 30, headcount: 1 },
+                ops: { timeMinutes: 0, headcount: 1 }
+              },
+              actions: {
+                fp: "Conducts research and develops propositions",
+                im: "Provides investment input and validation"
+              }
+            },
+            {
+              id: "fee-illustration",
+              name: "Fee Illustration",
+              description: "Prepare fee illustrations and cost disclosures",
+              timeMinutes: 86,
+              owner: "fp",
+              touchpoints: ["Illustration Software"],
+              painPoints: [],
+              emotions: "neutral",
+              effortScore: 2,
+              automationOpportunity: "high",
+              automationNotes: "Template-based generation",
+              regulatoryRequirements: ["MiFID II cost disclosure", "Consumer Duty"],
+              roleInvolvement: {
+                fp: { timeMinutes: 83.4, headcount: 1 },
+                im: { timeMinutes: 3, headcount: 1 },
+                ops: { timeMinutes: 0, headcount: 1 }
+              },
+              actions: {
+                fp: "Prepares fee illustrations",
+                im: "Reviews investment cost components"
+              }
+            },
+            {
+              id: "advice-report",
+              name: "Advice Report",
+              description: "Comprehensive suitability and advice report",
+              timeMinutes: 778,
+              owner: "fp",
+              touchpoints: ["Report Software"],
+              painPoints: ["Report writing time intensive", "Compliance review delays"],
+              emotions: "waiting",
+              effortScore: 5,
+              automationOpportunity: "high",
+              automationNotes: "AI-assisted report generation",
+              regulatoryRequirements: ["COBS 9.4 suitability reports", "Clear, fair, not misleading"],
+              roleInvolvement: {
+                fp: { timeMinutes: 750.6, headcount: 1 },
+                im: { timeMinutes: 27, headcount: 1 },
+                ops: { timeMinutes: 0, headcount: 1 }
+              },
+              actions: {
+                fp: "Writes comprehensive advice report",
+                im: "Contributes investment rationale section"
+              }
+            },
+            {
+              id: "account-opening-forms",
+              name: "Application Forms",
+              description: "Complete account opening applications",
+              timeMinutes: 183,
+              owner: "ops",
+              touchpoints: ["Provider Portals", "DocuSign"],
+              painPoints: ["Different provider formats", "Portal technical issues"],
+              emotions: "neutral",
+              effortScore: 3,
+              automationOpportunity: "high",
+              automationNotes: "API integration for straight-through processing",
+              regulatoryRequirements: ["Client consent", "Accurate data"],
+              roleInvolvement: {
+                fp: { timeMinutes: 40, headcount: 1 },
+                im: { timeMinutes: 40, headcount: 1 },
+                ops: { timeMinutes: 102.6, headcount: 1 }
+              },
+              actions: {
+                fp: "Reviews and approves applications",
+                im: "Confirms investment selections",
+                ops: "Prepares and submits application forms"
+              }
+            },
+            {
+              id: "vetting",
+              name: "Vetting",
+              description: "Internal vetting and compliance review",
+              timeMinutes: 240,
+              owner: "fp",
+              touchpoints: ["Internal Systems"],
+              painPoints: ["Bottleneck in compliance review"],
+              emotions: "waiting",
+              effortScore: 4,
+              automationOpportunity: "medium",
+              automationNotes: "Automated compliance checklists",
+              regulatoryRequirements: ["Internal compliance", "Sign-off requirements"],
+              roleInvolvement: {
+                fp: { timeMinutes: 100, headcount: 1 },
+                im: { timeMinutes: 100, headcount: 1 },
+                ops: { timeMinutes: 40, headcount: 1 }
+              },
+              actions: {
+                fp: "Completes vetting checklist",
+                im: "Reviews investment rationale",
+                ops: "Coordinates vetting process"
+              }
+            },
+            {
+              id: "account-opening",
+              name: "Account Opening",
+              description: "Finalise account opening with providers",
+              timeMinutes: 115,
+              owner: "ops",
+              touchpoints: ["Provider Portals"],
+              painPoints: ["Provider processing delays"],
+              emotions: "hopeful",
+              effortScore: 2,
+              automationOpportunity: "high",
+              automationNotes: "API submission and tracking",
+              regulatoryRequirements: ["Provider requirements"],
+              roleInvolvement: {
+                fp: { timeMinutes: 0, headcount: 1 },
+                im: { timeMinutes: 0, headcount: 1 },
+                ops: { timeMinutes: 115.2, headcount: 1 }
+              },
+              actions: {
+                ops: "Processes account openings, tracks status"
+              }
+            }
+          ]
+        },
+        {
+          id: "transfers-in",
+          name: "Transfers In",
+          steps: [
+            {
+              id: "initiation",
+              name: "Initiation",
+              description: "Initiate transfer requests",
+              timeMinutes: 49,
+              owner: "ops",
+              touchpoints: ["Provider Portals", "Origo"],
+              painPoints: [],
+              emotions: "hopeful",
+              effortScore: 2,
+              automationOpportunity: "high",
+              automationNotes: "Origo/PPEX automation",
+              regulatoryRequirements: ["Transfer procedures"],
+              roleInvolvement: {
+                fp: { timeMinutes: 8.7, headcount: 1 },
+                im: { timeMinutes: 8.7, headcount: 1 },
+                ops: { timeMinutes: 40, headcount: 1 }
+              },
+              actions: {
+                fp: "Approves transfer initiation",
+                im: "Confirms transfer requirements",
+                ops: "Submits transfer requests"
+              }
+            },
+            {
+              id: "new-transfer-validation",
+              name: "New Transfer / Validation",
+              description: "Validate incoming transfer details",
+              timeMinutes: 25,
+              owner: "ops",
+              touchpoints: ["Back Office Systems"],
+              painPoints: ["Data validation issues"],
+              emotions: "neutral",
+              effortScore: 2,
+              automationOpportunity: "high",
+              automationNotes: "Automated validation rules",
+              regulatoryRequirements: [],
+              roleInvolvement: {
+                fp: { timeMinutes: 0, headcount: 1 },
+                im: { timeMinutes: 0, headcount: 1 },
+                ops: { timeMinutes: 25, headcount: 1 }
+              },
+              actions: {
+                ops: "Validates transfer data and documentation"
+              }
+            },
+            {
+              id: "chase-counterparty",
+              name: "Chase Counterparty",
+              description: "Follow up with ceding providers",
+              timeMinutes: 66,
+              owner: "ops",
+              touchpoints: ["Phone", "Email", "Provider Portals"],
+              painPoints: ["Provider delays", "Difficult to reach providers"],
+              emotions: "frustrated",
+              effortScore: 3,
+              automationOpportunity: "medium",
+              automationNotes: "Automated chase sequences",
+              regulatoryRequirements: [],
+              roleInvolvement: {
+                fp: { timeMinutes: 0, headcount: 1 },
+                im: { timeMinutes: 0, headcount: 1 },
+                ops: { timeMinutes: 66, headcount: 1 }
+              },
+              actions: {
+                ops: "Chases ceding providers for transfer progress"
+              }
+            },
+            {
+              id: "check-valuation",
+              name: "Check Valuation",
+              description: "Verify transfer valuations",
+              timeMinutes: 74,
+              owner: "ops",
+              touchpoints: ["Provider Portals", "Back Office"],
+              painPoints: ["Valuation discrepancies"],
+              emotions: "neutral",
+              effortScore: 2,
+              automationOpportunity: "medium",
+              automationNotes: "Automated valuation comparison",
+              regulatoryRequirements: ["Accurate record keeping"],
+              roleInvolvement: {
+                fp: { timeMinutes: 30, headcount: 1 },
+                im: { timeMinutes: 30, headcount: 1 },
+                ops: { timeMinutes: 44, headcount: 1 }
+              },
+              actions: {
+                fp: "Reviews valuation accuracy",
+                im: "Confirms investment valuations",
+                ops: "Checks and reconciles valuations"
+              }
+            },
+            {
+              id: "trades-acceptance",
+              name: "Trades / Acceptance",
+              description: "Accept transfers and execute trades",
+              timeMinutes: 125,
+              owner: "ops",
+              touchpoints: ["Trading Platform", "Back Office"],
+              painPoints: ["Market timing considerations"],
+              emotions: "neutral",
+              effortScore: 3,
+              automationOpportunity: "medium",
+              automationNotes: "Automated trade execution rules",
+              regulatoryRequirements: ["Best execution", "Trade reporting"],
+              roleInvolvement: {
+                fp: { timeMinutes: 5, headcount: 1 },
+                im: { timeMinutes: 5, headcount: 1 },
+                ops: { timeMinutes: 120, headcount: 1 }
+              },
+              actions: {
+                fp: "Approves trade execution",
+                im: "Confirms investment allocation",
+                ops: "Executes trades and processes transfers"
+              }
+            },
+            {
+              id: "update-portfolio",
+              name: "Update Portfolio",
+              description: "Update portfolio systems with transferred assets",
+              timeMinutes: 15,
+              owner: "ops",
+              touchpoints: ["Portfolio Management System"],
+              painPoints: [],
+              emotions: "neutral",
+              effortScore: 1,
+              automationOpportunity: "high",
+              automationNotes: "Automated portfolio updates",
+              regulatoryRequirements: [],
+              roleInvolvement: {
+                fp: { timeMinutes: 0, headcount: 1 },
+                im: { timeMinutes: 0, headcount: 1 },
+                ops: { timeMinutes: 15, headcount: 1 }
+              },
+              actions: {
+                ops: "Updates portfolio records"
+              }
+            },
+            {
+              id: "check-transfer-status",
+              name: "Check Transfer Status",
+              description: "Monitor and verify transfer completion",
+              timeMinutes: 5,
+              owner: "ops",
+              touchpoints: ["Provider Portals"],
+              painPoints: [],
+              emotions: "neutral",
+              effortScore: 1,
+              automationOpportunity: "high",
+              automationNotes: "Automated status tracking",
+              regulatoryRequirements: [],
+              roleInvolvement: {
+                fp: { timeMinutes: 0, headcount: 1 },
+                im: { timeMinutes: 0, headcount: 1 },
+                ops: { timeMinutes: 5, headcount: 1 }
+              },
+              actions: {
+                ops: "Monitors transfer status"
+              }
+            },
+            {
+              id: "closure",
+              name: "Closure",
+              description: "Complete transfer and close out process",
+              timeMinutes: 44,
+              owner: "ops",
+              touchpoints: ["Back Office", "CRM"],
+              painPoints: [],
+              emotions: "satisfied",
+              effortScore: 2,
+              automationOpportunity: "medium",
+              automationNotes: "Automated completion workflow",
+              regulatoryRequirements: ["Record keeping"],
+              roleInvolvement: {
+                fp: { timeMinutes: 0, headcount: 1 },
+                im: { timeMinutes: 0, headcount: 1 },
+                ops: { timeMinutes: 44, headcount: 1 }
+              },
+              actions: {
+                ops: "Closes transfer case, updates records"
+              }
+            }
+          ]
+        }
+      ]
     };
     // __CONFIG_END__
 
@@ -3075,7 +2677,29 @@
           
           if (!response.ok) {
             const error = await response.json();
-            throw new Error(error.message || 'Failed to save');
+            // If SHA mismatch, it might be a new file - retry without SHA
+            if (error.message && error.message.includes('does not match') && sha) {
+              console.log('SHA mismatch, retrying without SHA for new file creation...');
+              const retryResponse = await fetch(apiUrl, {
+                method: 'PUT',
+                headers: {
+                  'Authorization': `token ${token}`,
+                  'Accept': 'application/vnd.github.v3+json',
+                  'Content-Type': 'application/json'
+                },
+                body: JSON.stringify({
+                  message: commitMessage,
+                  content: content,
+                  branch: branch
+                })
+              });
+              if (!retryResponse.ok) {
+                const retryError = await retryResponse.json();
+                throw new Error(retryError.message || 'Failed to save');
+              }
+            } else {
+              throw new Error(error.message || 'Failed to save');
+            }
           }
           
           setGitHubStatus({ loading: false, message: '✓ Saved to GitHub!', error: false });
@@ -3745,19 +3369,18 @@
           color: '#1A1A1A'
         }}>
           {/* Header */}
-          <header style={{
+          <header className="header-container" style={{
             background: '#1A1A1A',
             color: '#FAFAFA',
-            padding: '24px 40px',
+            padding: '16px 24px',
             display: 'flex',
-            justifyContent: 'space-between',
-            alignItems: 'center',
-            flexWrap: 'wrap',
-            gap: '16px'
+            flexDirection: 'column',
+            gap: '12px'
           }}>
-            <div style={{ display: 'flex', alignItems: 'center', gap: '32px' }}>
-              {/* Evelyn Partners Logo - evelyn in white */}
-              <svg width="140" height="50" viewBox="0 0 173.61 65.85" fill="none" xmlns="http://www.w3.org/2000/svg">
+            {/* Row 1: Logo (left) + Export/Settings (right) */}
+            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+              {/* Evelyn Partners Logo */}
+              <svg width="110" height="40" viewBox="0 0 173.61 65.85" fill="none" xmlns="http://www.w3.org/2000/svg">
                 <g clipPath="url(#clip0_logo)">
                   <path d="M69.2642 56.0118V54.4309H61.6699V65.723H69.4058V64.1421H63.4496V60.6973H68.4753V59.2007H63.4496V56.0118H69.2642Z" fill="#C69D64"/>
                   <path d="M49.6732 57.7613L56.054 65.723H57.5475V54.4309H55.7408V62.5612L49.2787 54.4309H47.8936V65.723H49.6732V57.7613Z" fill="#C69D64"/>
@@ -3780,140 +3403,147 @@
                   </clipPath>
                 </defs>
               </svg>
-              <div style={{ borderLeft: '1px solid rgba(255,255,255,0.2)', paddingLeft: '32px' }}>
-                <h1 style={{ margin: 0, fontSize: '28px', fontWeight: 400, letterSpacing: '-0.5px' }}>
-                  {editMode ? (
-                    <input 
-                      type="text" 
-                      value={config.meta.title} 
-                      onChange={(e) => setConfig(prev => ({ ...prev, meta: { ...prev.meta, title: e.target.value } }))}
-                      style={{ background: 'rgba(255,255,255,0.1)', border: '1px solid rgba(255,255,255,0.3)', borderRadius: '4px', padding: '4px 8px', fontSize: '28px', fontWeight: 400, letterSpacing: '-0.5px', color: '#FAFAFA', fontFamily: 'Georgia, serif', width: '400px' }}
-                    />
-                  ) : config.meta.title}
-                </h1>
-                <p style={{ margin: '8px 0 0', opacity: 0.7, fontSize: '14px', fontFamily: "'Helvetica Neue', Arial, sans-serif" }}>
-                  {formatTime(totalTime)} · {config.stages.length} stages · {stats.totalSteps} steps · {stats.totalPainPoints} pain points
-                </p>
+              
+              {/* Right side: Export & Settings */}
+              <div className="no-print" style={{ display: 'flex', gap: '6px', alignItems: 'center' }}>
+                {editMode ? (
+                  <>
+                    <span style={{ fontFamily: "'Helvetica Neue', Arial, sans-serif", fontSize: '11px', color: '#FAFAFA', opacity: 0.7, marginRight: '4px' }}>✏️ Editing</span>
+                    <button onClick={cancelEdit} style={{ padding: '6px 12px', background: 'transparent', color: '#FAFAFA', border: '1px solid rgba(255,255,255,0.4)', borderRadius: '4px', cursor: 'pointer', fontFamily: "'Helvetica Neue', Arial, sans-serif", fontSize: '11px' }}>
+                      Cancel
+                    </button>
+                    <button onClick={saveEdit} style={{ padding: '6px 12px', background: '#2D5A4B', color: '#FAFAFA', border: 'none', borderRadius: '4px', cursor: 'pointer', fontFamily: "'Helvetica Neue', Arial, sans-serif", fontSize: '11px', fontWeight: 500, display: 'flex', alignItems: 'center', gap: '4px' }}>
+                      💾 Save {gitHubConfig.token && <span style={{ opacity: 0.7 }}>→ 🐙</span>}
+                    </button>
+                  </>
+                ) : (
+                  <>
+                    {/* Export Dropdown */}
+                    <div style={{ position: 'relative' }}>
+                      <button onClick={(e) => { e.stopPropagation(); setShowExportMenu(!showExportMenu); setShowSettingsMenu(false); }} style={{ padding: '6px 10px', background: showExportMenu ? '#4A5568' : 'transparent', color: '#FAFAFA', border: '1px solid rgba(255,255,255,0.4)', borderRadius: '4px', cursor: 'pointer', fontFamily: "'Helvetica Neue', Arial, sans-serif", fontSize: '11px', display: 'flex', alignItems: 'center', gap: '4px' }}>
+                        📤 <span style={{ fontSize: '8px' }}>▼</span>
+                      </button>
+                      {showExportMenu && (
+                        <div onClick={(e) => e.stopPropagation()} style={{ position: 'absolute', top: '100%', right: 0, marginTop: '4px', background: '#FFF', borderRadius: '8px', boxShadow: '0 4px 20px rgba(0,0,0,0.2)', overflow: 'hidden', zIndex: 100, minWidth: '180px' }}>
+                          <button onClick={() => { generatePDF('summary'); setShowExportMenu(false); }} style={{ display: 'flex', alignItems: 'center', gap: '10px', width: '100%', padding: '10px 14px', border: 'none', background: '#FFF', cursor: 'pointer', textAlign: 'left', fontFamily: "'Helvetica Neue', Arial, sans-serif", fontSize: '13px', color: '#333', borderBottom: '1px solid #EEE' }} onMouseOver={(e) => e.currentTarget.style.background = '#F5F5F5'} onMouseOut={(e) => e.currentTarget.style.background = '#FFF'}>
+                            <span>📋</span> Summary Report
+                          </button>
+                          <button onClick={() => { generatePDF('detailed'); setShowExportMenu(false); }} style={{ display: 'flex', alignItems: 'center', gap: '10px', width: '100%', padding: '10px 14px', border: 'none', background: '#FFF', cursor: 'pointer', textAlign: 'left', fontFamily: "'Helvetica Neue', Arial, sans-serif", fontSize: '13px', color: '#333', borderBottom: '1px solid #EEE' }} onMouseOver={(e) => e.currentTarget.style.background = '#F5F5F5'} onMouseOut={(e) => e.currentTarget.style.background = '#FFF'}>
+                            <span>📄</span> Detailed Report
+                          </button>
+                          <button onClick={() => { generatePDF('cost-analysis'); setShowExportMenu(false); }} style={{ display: 'flex', alignItems: 'center', gap: '10px', width: '100%', padding: '10px 14px', border: 'none', background: '#FFF', cursor: 'pointer', textAlign: 'left', fontFamily: "'Helvetica Neue', Arial, sans-serif", fontSize: '13px', color: '#333' }} onMouseOver={(e) => e.currentTarget.style.background = '#F5F5F5'} onMouseOut={(e) => e.currentTarget.style.background = '#FFF'}>
+                            <span>💰</span> Cost Analysis
+                          </button>
+                        </div>
+                      )}
+                    </div>
+
+                    {/* Settings Dropdown */}
+                    <div style={{ position: 'relative' }}>
+                      <button onClick={(e) => { e.stopPropagation(); setShowSettingsMenu(!showSettingsMenu); setShowExportMenu(false); }} style={{ padding: '6px 10px', background: showSettingsMenu ? '#4A5568' : 'transparent', color: '#FAFAFA', border: '1px solid rgba(255,255,255,0.4)', borderRadius: '4px', cursor: 'pointer', fontFamily: "'Helvetica Neue', Arial, sans-serif", fontSize: '11px', display: 'flex', alignItems: 'center', gap: '4px' }}>
+                        ⚙️ <span style={{ fontSize: '8px' }}>▼</span>
+                      </button>
+                      {showSettingsMenu && (
+                        <div onClick={(e) => e.stopPropagation()} style={{ position: 'absolute', top: '100%', right: 0, marginTop: '4px', background: '#FFF', borderRadius: '8px', boxShadow: '0 4px 20px rgba(0,0,0,0.2)', overflow: 'hidden', zIndex: 100, minWidth: '180px' }}>
+                          <button onClick={enterEditMode} style={{ display: 'flex', alignItems: 'center', gap: '10px', width: '100%', padding: '10px 14px', border: 'none', background: '#FFF', cursor: 'pointer', textAlign: 'left', fontFamily: "'Helvetica Neue', Arial, sans-serif", fontSize: '13px', color: '#333', borderBottom: '1px solid #EEE' }} onMouseOver={(e) => e.currentTarget.style.background = '#F5F5F5'} onMouseOut={(e) => e.currentTarget.style.background = '#FFF'}>
+                            <span>✏️</span> Edit Mode
+                          </button>
+                          <button onClick={() => { setShowSalarySettings(true); setShowSettingsMenu(false); }} style={{ display: 'flex', alignItems: 'center', gap: '10px', width: '100%', padding: '10px 14px', border: 'none', background: '#FFF', cursor: 'pointer', textAlign: 'left', fontFamily: "'Helvetica Neue', Arial, sans-serif", fontSize: '13px', color: '#333', borderBottom: '1px solid #EEE' }} onMouseOver={(e) => e.currentTarget.style.background = '#F5F5F5'} onMouseOut={(e) => e.currentTarget.style.background = '#FFF'}>
+                            <span>👥</span> Manage Roles
+                          </button>
+                          <button onClick={() => { setShowStructurePanel(true); setShowSettingsMenu(false); }} style={{ display: 'flex', alignItems: 'center', gap: '10px', width: '100%', padding: '10px 14px', border: 'none', background: '#FFF', cursor: 'pointer', textAlign: 'left', fontFamily: "'Helvetica Neue', Arial, sans-serif", fontSize: '13px', color: '#333', borderBottom: '1px solid #EEE' }} onMouseOver={(e) => e.currentTarget.style.background = '#F5F5F5'} onMouseOut={(e) => e.currentTarget.style.background = '#FFF'}>
+                            <span>🏗️</span> Configure Structure
+                          </button>
+                          <div style={{ height: '1px', background: '#EEE', margin: '4px 0' }}></div>
+                          <button onClick={() => { setShowGitHubSettings(true); setShowSettingsMenu(false); }} style={{ display: 'flex', alignItems: 'center', gap: '10px', width: '100%', padding: '10px 14px', border: 'none', background: '#FFF', cursor: 'pointer', textAlign: 'left', fontFamily: "'Helvetica Neue', Arial, sans-serif", fontSize: '13px', color: '#333', borderBottom: '1px solid #EEE' }} onMouseOver={(e) => e.currentTarget.style.background = '#F5F5F5'} onMouseOut={(e) => e.currentTarget.style.background = '#FFF'}>
+                            <span>🐙</span> GitHub Settings
+                          </button>
+                          <button onClick={() => { saveToGitHub(); setShowSettingsMenu(false); }} disabled={!gitHubConfig.token} style={{ display: 'flex', alignItems: 'center', gap: '10px', width: '100%', padding: '10px 14px', border: 'none', background: '#FFF', cursor: gitHubConfig.token ? 'pointer' : 'not-allowed', textAlign: 'left', fontFamily: "'Helvetica Neue', Arial, sans-serif", fontSize: '13px', color: gitHubConfig.token ? '#333' : '#AAA', borderBottom: '1px solid #EEE' }} onMouseOver={(e) => gitHubConfig.token && (e.currentTarget.style.background = '#F5F5F5')} onMouseOut={(e) => e.currentTarget.style.background = '#FFF'}>
+                            <span style={{ opacity: gitHubConfig.token ? 1 : 0.5 }}>📤</span> Save to GitHub
+                          </button>
+                          <button onClick={() => { loadFromGitHub(); setShowSettingsMenu(false); }} disabled={!gitHubConfig.token} style={{ display: 'flex', alignItems: 'center', gap: '10px', width: '100%', padding: '10px 14px', border: 'none', background: '#FFF', cursor: gitHubConfig.token ? 'pointer' : 'not-allowed', textAlign: 'left', fontFamily: "'Helvetica Neue', Arial, sans-serif", fontSize: '13px', color: gitHubConfig.token ? '#333' : '#AAA', borderBottom: '1px solid #EEE' }} onMouseOver={(e) => gitHubConfig.token && (e.currentTarget.style.background = '#F5F5F5')} onMouseOut={(e) => e.currentTarget.style.background = '#FFF'}>
+                            <span style={{ opacity: gitHubConfig.token ? 1 : 0.5 }}>📥</span> Load from GitHub
+                          </button>
+                          <div style={{ height: '1px', background: '#EEE', margin: '4px 0' }}></div>
+                          <button onClick={() => { exportConfig(); setShowSettingsMenu(false); }} style={{ display: 'flex', alignItems: 'center', gap: '10px', width: '100%', padding: '10px 14px', border: 'none', background: '#FFF', cursor: 'pointer', textAlign: 'left', fontFamily: "'Helvetica Neue', Arial, sans-serif", fontSize: '13px', color: '#333', borderBottom: '1px solid #EEE' }} onMouseOver={(e) => e.currentTarget.style.background = '#F5F5F5'} onMouseOut={(e) => e.currentTarget.style.background = '#FFF'}>
+                            <span>💾</span> Export JSON
+                          </button>
+                          <label style={{ display: 'flex', alignItems: 'center', gap: '10px', width: '100%', padding: '10px 14px', border: 'none', background: '#FFF', cursor: 'pointer', textAlign: 'left', fontFamily: "'Helvetica Neue', Arial, sans-serif", fontSize: '13px', color: '#333', borderBottom: '1px solid #EEE' }} onMouseOver={(e) => e.currentTarget.style.background = '#F5F5F5'} onMouseOut={(e) => e.currentTarget.style.background = '#FFF'}>
+                            <span>📂</span> Import JSON
+                            <input type="file" accept=".json" onChange={(e) => { importConfig(e); setShowSettingsMenu(false); }} style={{ display: 'none' }} />
+                          </label>
+                          <button onClick={() => { setShowJson(!showJson); setShowSettingsMenu(false); }} style={{ display: 'flex', alignItems: 'center', gap: '10px', width: '100%', padding: '10px 14px', border: 'none', background: '#FFF', cursor: 'pointer', textAlign: 'left', fontFamily: "'Helvetica Neue', Arial, sans-serif", fontSize: '13px', color: '#333' }} onMouseOver={(e) => e.currentTarget.style.background = '#F5F5F5'} onMouseOut={(e) => e.currentTarget.style.background = '#FFF'}>
+                            <span>{'{ }'}</span> {showJson ? 'Hide' : 'View'} JSON
+                          </button>
+                        </div>
+                      )}
+                    </div>
+                  </>
+                )}
               </div>
             </div>
-            <div className="no-print" style={{ display: 'flex', gap: '8px', alignItems: 'center' }}>
-              {editMode ? (
-                /* Edit Mode Buttons */
-                <>
-                  <div style={{ fontFamily: "'Helvetica Neue', Arial, sans-serif", fontSize: '13px', color: '#FAFAFA', opacity: 0.8, marginRight: '8px' }}>
-                    ✏️ Edit Mode
-                  </div>
-                  <button onClick={cancelEdit} style={{ padding: '10px 20px', background: 'transparent', color: '#FAFAFA', border: '1px solid #FAFAFA', borderRadius: '4px', cursor: 'pointer', fontFamily: "'Helvetica Neue', Arial, sans-serif", fontSize: '13px' }}>
-                    Cancel
-                  </button>
-                  <button onClick={saveEdit} style={{ padding: '10px 20px', background: '#2D5A4B', color: '#FAFAFA', border: 'none', borderRadius: '4px', cursor: 'pointer', fontFamily: "'Helvetica Neue', Arial, sans-serif", fontSize: '13px', fontWeight: 500, display: 'flex', alignItems: 'center', gap: '6px' }}>
-                    💾 Save {gitHubConfig.token && <span style={{ opacity: 0.8 }}>→ 🐙</span>}
-                  </button>
-                </>
-              ) : (
-                /* Normal Mode Buttons */
-                <>
-                  {/* View Mode Toggle */}
-                  <div style={{ display: 'flex', borderRadius: '4px', overflow: 'hidden', border: '1px solid #FAFAFA' }}>
-                    <button onClick={() => { setViewMode('stages'); setHighlightOpportunities(false); }} style={{ padding: '10px 14px', background: viewMode === 'stages' ? '#4A5568' : 'transparent', color: '#FAFAFA', border: 'none', cursor: 'pointer', fontFamily: "'Helvetica Neue', Arial, sans-serif", fontSize: '13px' }}>
-                      📁 Stages
-                    </button>
-                    <button onClick={() => setViewMode('steps')} style={{ padding: '10px 14px', background: viewMode === 'steps' ? '#4A5568' : 'transparent', color: '#FAFAFA', border: 'none', borderLeft: '1px solid rgba(255,255,255,0.3)', cursor: 'pointer', fontFamily: "'Helvetica Neue', Arial, sans-serif", fontSize: '13px' }}>
-                      📋 Steps
-                    </button>
-                  </div>
-                  <button onClick={() => setShowTimeline(!showTimeline)} style={{ padding: '10px 16px', background: showTimeline ? '#4A5568' : 'transparent', color: '#FAFAFA', border: '1px solid #FAFAFA', borderRadius: '4px', cursor: 'pointer', fontFamily: "'Helvetica Neue', Arial, sans-serif", fontSize: '13px' }}>
-                    📅 Timeline
-                  </button>
-                  <button onClick={() => setShowCostAnalysis(!showCostAnalysis)} style={{ padding: '10px 16px', background: showCostAnalysis ? '#4A5568' : 'transparent', color: '#FAFAFA', border: '1px solid #FAFAFA', borderRadius: '4px', cursor: 'pointer', fontFamily: "'Helvetica Neue', Arial, sans-serif", fontSize: '13px' }}>
-                    📊 Analysis
-                  </button>
-                  <button 
-                    onClick={() => viewMode === 'steps' && setHighlightOpportunities(!highlightOpportunities)} 
-                    disabled={viewMode === 'stages'}
-                    style={{ 
-                      padding: '10px 16px', 
-                      background: highlightOpportunities && viewMode === 'steps' ? '#4A5568' : 'transparent', 
-                      color: viewMode === 'stages' ? 'rgba(250,250,250,0.4)' : '#FAFAFA', 
-                      border: viewMode === 'stages' ? '1px solid rgba(250,250,250,0.3)' : '1px solid #FAFAFA', 
-                      borderRadius: '4px', 
-                      cursor: viewMode === 'stages' ? 'not-allowed' : 'pointer', 
-                      fontFamily: "'Helvetica Neue', Arial, sans-serif", 
-                      fontSize: '13px',
-                      opacity: viewMode === 'stages' ? 0.5 : 1
-                    }}
-                    title={viewMode === 'stages' ? 'Switch to Steps view to use this feature' : ''}
-                  >
-                    🎯 Opportunities
-                  </button>
-                  
-                  {/* Export Dropdown */}
-                  <div style={{ position: 'relative' }}>
-                    <button onClick={(e) => { e.stopPropagation(); setShowExportMenu(!showExportMenu); setShowSettingsMenu(false); }} style={{ padding: '10px 16px', background: showExportMenu ? '#4A5568' : 'transparent', color: '#FAFAFA', border: '1px solid #FAFAFA', borderRadius: '4px', cursor: 'pointer', fontFamily: "'Helvetica Neue', Arial, sans-serif", fontSize: '13px', display: 'flex', alignItems: 'center', gap: '6px' }}>
-                      📤 Export
-                      <span style={{ fontSize: '10px' }}>▼</span>
-                    </button>
-                    {showExportMenu && (
-                      <div onClick={(e) => e.stopPropagation()} style={{ position: 'absolute', top: '100%', right: 0, marginTop: '4px', background: '#FFF', borderRadius: '8px', boxShadow: '0 4px 20px rgba(0,0,0,0.2)', overflow: 'hidden', zIndex: 100, minWidth: '220px' }}>
-                        <button onClick={() => { generatePDF('summary'); setShowExportMenu(false); }} style={{ display: 'flex', alignItems: 'center', gap: '12px', width: '100%', padding: '12px 16px', border: 'none', background: '#FFF', cursor: 'pointer', textAlign: 'left', fontFamily: "'Helvetica Neue', Arial, sans-serif", fontSize: '13px', color: '#333', borderBottom: '1px solid #EEE' }} onMouseOver={(e) => e.currentTarget.style.background = '#F5F5F5'} onMouseOut={(e) => e.currentTarget.style.background = '#FFF'}>
-                          <span>📋</span>
-                          <div><div style={{ fontWeight: 500 }}>Summary Report</div><div style={{ fontSize: '11px', color: '#999' }}>Overview with costs & stats</div></div>
-                        </button>
-                        <button onClick={() => { generatePDF('detailed'); setShowExportMenu(false); }} style={{ display: 'flex', alignItems: 'center', gap: '12px', width: '100%', padding: '12px 16px', border: 'none', background: '#FFF', cursor: 'pointer', textAlign: 'left', fontFamily: "'Helvetica Neue', Arial, sans-serif", fontSize: '13px', color: '#333', borderBottom: '1px solid #EEE' }} onMouseOver={(e) => e.currentTarget.style.background = '#F5F5F5'} onMouseOut={(e) => e.currentTarget.style.background = '#FFF'}>
-                          <span>📄</span>
-                          <div><div style={{ fontWeight: 500 }}>Detailed Report</div><div style={{ fontSize: '11px', color: '#999' }}>Full step details & pain points</div></div>
-                        </button>
-                        <button onClick={() => { generatePDF('cost-analysis'); setShowExportMenu(false); }} style={{ display: 'flex', alignItems: 'center', gap: '12px', width: '100%', padding: '12px 16px', border: 'none', background: '#FFF', cursor: 'pointer', textAlign: 'left', fontFamily: "'Helvetica Neue', Arial, sans-serif", fontSize: '13px', color: '#333' }} onMouseOver={(e) => e.currentTarget.style.background = '#F5F5F5'} onMouseOut={(e) => e.currentTarget.style.background = '#FFF'}>
-                          <span>💰</span>
-                          <div><div style={{ fontWeight: 500 }}>Cost Analysis</div><div style={{ fontSize: '11px', color: '#999' }}>Role costs & opportunities</div></div>
-                        </button>
-                      </div>
-                    )}
-                  </div>
-
-                  {/* Settings Dropdown */}
-                  <div style={{ position: 'relative' }}>
-                    <button onClick={(e) => { e.stopPropagation(); setShowSettingsMenu(!showSettingsMenu); setShowExportMenu(false); }} style={{ padding: '10px 16px', background: showSettingsMenu ? '#4A5568' : 'transparent', color: '#FAFAFA', border: '1px solid #FAFAFA', borderRadius: '4px', cursor: 'pointer', fontFamily: "'Helvetica Neue', Arial, sans-serif", fontSize: '13px', display: 'flex', alignItems: 'center', gap: '6px' }}>
-                      ⚙️
-                      <span style={{ fontSize: '10px' }}>▼</span>
-                    </button>
-                    {showSettingsMenu && (
-                      <div onClick={(e) => e.stopPropagation()} style={{ position: 'absolute', top: '100%', right: 0, marginTop: '4px', background: '#FFF', borderRadius: '8px', boxShadow: '0 4px 20px rgba(0,0,0,0.2)', overflow: 'hidden', zIndex: 100, minWidth: '180px' }}>
-                        <button onClick={enterEditMode} style={{ display: 'flex', alignItems: 'center', gap: '10px', width: '100%', padding: '12px 16px', border: 'none', background: '#FFF', cursor: 'pointer', textAlign: 'left', fontFamily: "'Helvetica Neue', Arial, sans-serif", fontSize: '13px', color: '#333', borderBottom: '1px solid #EEE' }} onMouseOver={(e) => e.currentTarget.style.background = '#F5F5F5'} onMouseOut={(e) => e.currentTarget.style.background = '#FFF'}>
-                          <span>✏️</span> Edit Mode
-                        </button>
-                        <button onClick={() => { setShowSalarySettings(true); setShowSettingsMenu(false); }} style={{ display: 'flex', alignItems: 'center', gap: '10px', width: '100%', padding: '12px 16px', border: 'none', background: '#FFF', cursor: 'pointer', textAlign: 'left', fontFamily: "'Helvetica Neue', Arial, sans-serif", fontSize: '13px', color: '#333', borderBottom: '1px solid #EEE' }} onMouseOver={(e) => e.currentTarget.style.background = '#F5F5F5'} onMouseOut={(e) => e.currentTarget.style.background = '#FFF'}>
-                          <span>👥</span> Manage Roles
-                        </button>
-                        <button onClick={() => { setShowStructurePanel(true); setShowSettingsMenu(false); }} style={{ display: 'flex', alignItems: 'center', gap: '10px', width: '100%', padding: '12px 16px', border: 'none', background: '#FFF', cursor: 'pointer', textAlign: 'left', fontFamily: "'Helvetica Neue', Arial, sans-serif", fontSize: '13px', color: '#333', borderBottom: '1px solid #EEE' }} onMouseOver={(e) => e.currentTarget.style.background = '#F5F5F5'} onMouseOut={(e) => e.currentTarget.style.background = '#FFF'}>
-                          <span>🏗️</span> Configure Structure
-                        </button>
-                        <div style={{ borderBottom: '1px solid #EEE', margin: '4px 0' }}></div>
-                        <button onClick={() => { setShowGitHubSettings(true); setShowSettingsMenu(false); }} style={{ display: 'flex', alignItems: 'center', gap: '10px', width: '100%', padding: '12px 16px', border: 'none', background: '#FFF', cursor: 'pointer', textAlign: 'left', fontFamily: "'Helvetica Neue', Arial, sans-serif", fontSize: '13px', color: '#333', borderBottom: '1px solid #EEE' }} onMouseOver={(e) => e.currentTarget.style.background = '#F5F5F5'} onMouseOut={(e) => e.currentTarget.style.background = '#FFF'}>
-                          <span>🐙</span> GitHub Settings
-                        </button>
-                        <button onClick={() => { saveToGitHub(); setShowSettingsMenu(false); }} disabled={!gitHubConfig.token} style={{ display: 'flex', alignItems: 'center', gap: '10px', width: '100%', padding: '12px 16px', border: 'none', background: '#FFF', cursor: gitHubConfig.token ? 'pointer' : 'not-allowed', textAlign: 'left', fontFamily: "'Helvetica Neue', Arial, sans-serif", fontSize: '13px', color: gitHubConfig.token ? '#333' : '#999', borderBottom: '1px solid #EEE', opacity: gitHubConfig.token ? 1 : 0.6 }} onMouseOver={(e) => gitHubConfig.token && (e.currentTarget.style.background = '#F0FDF4')} onMouseOut={(e) => e.currentTarget.style.background = '#FFF'}>
-                          <span>📤</span> Save to GitHub
-                        </button>
-                        <button onClick={() => { loadFromGitHub(); setShowSettingsMenu(false); }} disabled={!gitHubConfig.token} style={{ display: 'flex', alignItems: 'center', gap: '10px', width: '100%', padding: '12px 16px', border: 'none', background: '#FFF', cursor: gitHubConfig.token ? 'pointer' : 'not-allowed', textAlign: 'left', fontFamily: "'Helvetica Neue', Arial, sans-serif", fontSize: '13px', color: gitHubConfig.token ? '#333' : '#999', borderBottom: '1px solid #EEE', opacity: gitHubConfig.token ? 1 : 0.6 }} onMouseOver={(e) => gitHubConfig.token && (e.currentTarget.style.background = '#F0F9FF')} onMouseOut={(e) => e.currentTarget.style.background = '#FFF'}>
-                          <span>📥</span> Load from GitHub
-                        </button>
-                        <button onClick={() => { exportConfig(); setShowSettingsMenu(false); }} style={{ display: 'flex', alignItems: 'center', gap: '10px', width: '100%', padding: '12px 16px', border: 'none', background: '#FFF', cursor: 'pointer', textAlign: 'left', fontFamily: "'Helvetica Neue', Arial, sans-serif", fontSize: '13px', color: '#333', borderBottom: '1px solid #EEE' }} onMouseOver={(e) => e.currentTarget.style.background = '#F5F5F5'} onMouseOut={(e) => e.currentTarget.style.background = '#FFF'}>
-                          <span>💾</span> Export JSON
-                        </button>
-                        <label style={{ display: 'flex', alignItems: 'center', gap: '10px', width: '100%', padding: '12px 16px', border: 'none', background: '#FFF', cursor: 'pointer', textAlign: 'left', fontFamily: "'Helvetica Neue', Arial, sans-serif", fontSize: '13px', color: '#333', borderBottom: '1px solid #EEE' }} onMouseOver={(e) => e.currentTarget.style.background = '#F5F5F5'} onMouseOut={(e) => e.currentTarget.style.background = '#FFF'}>
-                          <span>📂</span> Import JSON
-                          <input type="file" accept=".json" onChange={(e) => { importConfig(e); setShowSettingsMenu(false); }} style={{ display: 'none' }} />
-                        </label>
-                        <button onClick={() => { setShowJson(!showJson); setShowSettingsMenu(false); }} style={{ display: 'flex', alignItems: 'center', gap: '10px', width: '100%', padding: '12px 16px', border: 'none', background: '#FFF', cursor: 'pointer', textAlign: 'left', fontFamily: "'Helvetica Neue', Arial, sans-serif", fontSize: '13px', color: '#333' }} onMouseOver={(e) => e.currentTarget.style.background = '#F5F5F5'} onMouseOut={(e) => e.currentTarget.style.background = '#FFF'}>
-                          <span>{'{ }'}</span> {showJson ? 'Hide' : 'View'} JSON
-                        </button>
-                      </div>
-                    )}
-                  </div>
-                </>
-              )}
+            
+            {/* Row 2: Title and key stats */}
+            <div className="header-title-row">
+              <h1 style={{ margin: 0, fontSize: '22px', fontWeight: 400, letterSpacing: '-0.5px' }}>
+                {editMode ? (
+                  <input 
+                    type="text" 
+                    value={config.meta.title} 
+                    onChange={(e) => setConfig(prev => ({ ...prev, meta: { ...prev.meta, title: e.target.value } }))}
+                    style={{ background: 'rgba(255,255,255,0.1)', border: '1px solid rgba(255,255,255,0.3)', borderRadius: '4px', padding: '4px 8px', fontSize: '22px', fontWeight: 400, letterSpacing: '-0.5px', color: '#FAFAFA', fontFamily: 'Georgia, serif', width: '100%', maxWidth: '400px' }}
+                  />
+                ) : config.meta.title}
+              </h1>
+              <p style={{ margin: '4px 0 0', opacity: 0.6, fontSize: '12px', fontFamily: "'Helvetica Neue', Arial, sans-serif" }}>
+                {formatTime(totalTime)} · {config.stages.length} stages · {stats.totalSteps} steps · {stats.totalPainPoints} pain points
+              </p>
             </div>
+            
+            {/* Row 3: View Toggles */}
+            {!editMode && (
+              <div className="no-print header-buttons" style={{ display: 'flex', gap: '6px', alignItems: 'center', flexWrap: 'wrap' }}>
+                {/* Stages/Steps Toggle */}
+                <div style={{ display: 'flex', borderRadius: '5px', overflow: 'hidden', border: '1px solid rgba(255,255,255,0.35)' }}>
+                  <button onClick={() => { setViewMode('stages'); setHighlightOpportunities(false); }} style={{ padding: '7px 12px', background: viewMode === 'stages' ? '#4A5568' : 'transparent', color: '#FAFAFA', border: 'none', cursor: 'pointer', fontFamily: "'Helvetica Neue', Arial, sans-serif", fontSize: '11px', display: 'flex', alignItems: 'center', gap: '5px' }}>
+                    📁 Stages
+                  </button>
+                  <button onClick={() => setViewMode('steps')} style={{ padding: '7px 12px', background: viewMode === 'steps' ? '#4A5568' : 'transparent', color: '#FAFAFA', border: 'none', borderLeft: '1px solid rgba(255,255,255,0.25)', cursor: 'pointer', fontFamily: "'Helvetica Neue', Arial, sans-serif", fontSize: '11px', display: 'flex', alignItems: 'center', gap: '5px' }}>
+                    📋 Steps
+                  </button>
+                </div>
+                
+                <button onClick={() => setShowTimeline(!showTimeline)} style={{ padding: '7px 12px', background: showTimeline ? '#4A5568' : 'transparent', color: '#FAFAFA', border: '1px solid rgba(255,255,255,0.35)', borderRadius: '5px', cursor: 'pointer', fontFamily: "'Helvetica Neue', Arial, sans-serif", fontSize: '11px', display: 'flex', alignItems: 'center', gap: '5px' }}>
+                  📅 Timeline
+                </button>
+                
+                <button onClick={() => setShowCostAnalysis(!showCostAnalysis)} style={{ padding: '7px 12px', background: showCostAnalysis ? '#4A5568' : 'transparent', color: '#FAFAFA', border: '1px solid rgba(255,255,255,0.35)', borderRadius: '5px', cursor: 'pointer', fontFamily: "'Helvetica Neue', Arial, sans-serif", fontSize: '11px', display: 'flex', alignItems: 'center', gap: '5px' }}>
+                  📊 Analysis
+                </button>
+                
+                <button 
+                  onClick={() => viewMode === 'steps' && setHighlightOpportunities(!highlightOpportunities)} 
+                  disabled={viewMode === 'stages'}
+                  style={{ 
+                    padding: '7px 12px', 
+                    background: highlightOpportunities && viewMode === 'steps' ? '#4A5568' : 'transparent', 
+                    color: viewMode === 'stages' ? 'rgba(250,250,250,0.4)' : '#FAFAFA', 
+                    border: viewMode === 'stages' ? '1px solid rgba(250,250,250,0.15)' : '1px solid rgba(255,255,255,0.35)', 
+                    borderRadius: '5px', 
+                    cursor: viewMode === 'stages' ? 'not-allowed' : 'pointer', 
+                    fontFamily: "'Helvetica Neue', Arial, sans-serif", 
+                    fontSize: '11px',
+                    display: 'flex',
+                    alignItems: 'center',
+                    gap: '5px',
+                    opacity: viewMode === 'stages' ? 0.5 : 1
+                  }}
+                  title={viewMode === 'stages' ? 'Switch to Steps view to use this feature' : ''}
+                >
+                  🎯 Opportunities
+                </button>
+              </div>
+            )}
           </header>
 
           {/* GitHub Status Toast */}
@@ -3940,7 +3570,7 @@
           )}
 
           {/* Stats Bar */}
-          <div style={{ background: '#FFF', borderBottom: '1px solid #E0E0E0', padding: '16px 40px', display: 'flex', gap: '32px', alignItems: 'center', flexWrap: 'wrap' }}>
+          <div className="stats-bar" style={{ background: '#FFF', borderBottom: '1px solid #E0E0E0', padding: '16px 40px', display: 'flex', gap: '32px', alignItems: 'center', flexWrap: 'wrap' }}>
             <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
               <span style={{ fontSize: '20px' }}>⏱️</span>
               <div>
@@ -4004,12 +3634,12 @@
           )}
 
           {/* Main Journey Map */}
-          <main style={{ padding: '40px' }}>
+          <main className="main-content" style={{ padding: '40px' }}>
             {showTimeline && <Timeline stages={config.stages} totalTime={totalTime} formatTime={formatTime} personas={config.personas} />}
             
             {showCostAnalysis && <CostAnalysisPanel stages={config.stages} personas={config.personas} formatTime={formatTime} onClose={() => setShowCostAnalysis(false)} />}
 
-            <div style={{ display: 'flex', gap: '16px', overflowX: 'auto', paddingBottom: '20px' }}>
+            <div className="stages-container" style={{ display: 'flex', gap: '16px', overflowX: 'auto', paddingBottom: '20px' }}>
               {viewMode === 'stages' ? (
                 /* Stages Summary View */
                 config.stages.map((stage, stageIndex) => {
@@ -4022,7 +3652,7 @@
                   const checkpointCount = stage.steps.filter(step => step.isHardCheckpoint).length;
                   
                   return (
-                    <div key={stage.id} style={{ 
+                    <div key={stage.id} className="stage-card" style={{ 
                       flex: '1 1 300px', 
                       minWidth: '280px',
                       maxWidth: '400px',
@@ -4914,7 +4544,7 @@
 
           {/* Footer */}
           <footer style={{ background: '#1A1A1A', color: '#999', padding: '20px 40px', fontFamily: "'Helvetica Neue', Arial, sans-serif", fontSize: '12px', display: 'flex', justifyContent: 'space-between' }}>
-            <span>{config.meta.product || "Steve's Journey Map v5.0"}</span>
+            <span>{config.meta.product || "Steve's Journey Map v5.3"}</span>
             <span>Last updated: {new Date(config.meta.lastUpdated).toLocaleDateString('en-GB')}</span>
           </footer>
 
