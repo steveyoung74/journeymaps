@@ -110,11 +110,12 @@
     const generateId = () => Math.random().toString(36).substr(2, 9);
 
     // Sample configuration JSON
+    // __CONFIG_START__
     const defaultConfig = {
       meta: {
         title: "Client Onboarding Journey",
         version: "2.0",
-        product: "Steve's Journey Map v2.0",
+        product: "Steve's Journey Map v5.0",
         lastUpdated: new Date().toISOString(),
         audience: "Internal Operations",
         perspective: "client"
@@ -837,6 +838,7 @@
         }
       ]
     };
+    // __CONFIG_END__
 
     const emotionColors = {
       hopeful: { bg: '#E6F4EA', text: '#137333', icon: '🌱' },
@@ -2516,12 +2518,24 @@
         return saved ? JSON.parse(saved) : {
           owner: 'steveyoung74',
           repo: 'journeymaps',
-          path: 'onboarding/journey-map.json',
+          path: 'onboarding/index.html',
           branch: 'main',
           token: ''
         };
       });
       const [gitHubStatus, setGitHubStatus] = useState({ loading: false, message: '', error: false });
+      const [htmlTemplate, setHtmlTemplate] = useState(null);
+
+      // Fetch and store original HTML template on mount
+      useEffect(() => {
+        fetch(window.location.href)
+          .then(res => res.text())
+          .then(html => setHtmlTemplate(html))
+          .catch(() => {
+            // Fallback: use document source (less reliable but works offline)
+            setHtmlTemplate(document.documentElement.outerHTML);
+          });
+      }, []);
 
       // Save GitHub config to localStorage
       useEffect(() => {
@@ -2532,6 +2546,11 @@
       const saveToGitHub = useCallback(async () => {
         if (!gitHubConfig.token) {
           setShowGitHubSettings(true);
+          return;
+        }
+        
+        if (!htmlTemplate) {
+          setGitHubStatus({ loading: false, message: 'Error: HTML template not loaded', error: true });
           return;
         }
         
@@ -2558,9 +2577,16 @@
             // File doesn't exist yet, that's fine
           }
           
+          // Generate full HTML with updated config
+          const configString = JSON.stringify(config, null, 6).replace(/\n/g, '\n    '); // Indent for HTML
+          const newHtml = htmlTemplate.replace(
+            /\/\/ __CONFIG_START__[\s\S]*?\/\/ __CONFIG_END__/,
+            `// __CONFIG_START__\n    const defaultConfig = ${configString};\n    // __CONFIG_END__`
+          );
+          
           // Prepare content
-          const content = btoa(unescape(encodeURIComponent(JSON.stringify(config, null, 2))));
-          const commitMessage = `Update journey map - ${new Date().toLocaleString()}`;
+          const content = btoa(unescape(encodeURIComponent(newHtml)));
+          const commitMessage = `Update journey map v${config.meta.product?.match(/v([\d.]+)/)?.[1] || '5.0'} - ${new Date().toLocaleString()}`;
           
           // Create or update file
           const response = await fetch(apiUrl, {
@@ -2588,7 +2614,7 @@
         } catch (error) {
           setGitHubStatus({ loading: false, message: `Error: ${error.message}`, error: true });
         }
-      }, [gitHubConfig, config]);
+      }, [gitHubConfig, config, htmlTemplate]);
 
       const loadFromGitHub = useCallback(async () => {
         if (!gitHubConfig.token) {
@@ -2619,9 +2645,24 @@
           
           const data = await response.json();
           const content = decodeURIComponent(escape(atob(data.content)));
-          const loadedConfig = JSON.parse(content);
           
-          setConfig(loadedConfig);
+          // Check if it's HTML (contains config markers) or JSON
+          if (content.includes('__CONFIG_START__')) {
+            // Extract config from HTML
+            const configMatch = content.match(/const defaultConfig = ([\s\S]*?);[\s\S]*?\/\/ __CONFIG_END__/);
+            if (configMatch) {
+              const loadedConfig = eval('(' + configMatch[1] + ')');
+              setConfig(loadedConfig);
+              setHtmlTemplate(content); // Update template for future saves
+            } else {
+              throw new Error('Could not parse config from HTML');
+            }
+          } else {
+            // Legacy JSON format
+            const loadedConfig = JSON.parse(content);
+            setConfig(loadedConfig);
+          }
+          
           setGitHubStatus({ loading: false, message: '✓ Loaded from GitHub!', error: false });
           setTimeout(() => setGitHubStatus({ loading: false, message: '', error: false }), 3000);
         } catch (error) {
@@ -2671,7 +2712,12 @@
         setEditMode(false);
         setSelectedStep(null);
         setPreEditState(null);
-      }, [preEditState]);
+        
+        // Auto-save to GitHub if token is configured
+        if (gitHubConfig.token) {
+          setTimeout(() => saveToGitHub(), 100);
+        }
+      }, [preEditState, gitHubConfig.token, saveToGitHub]);
 
       // Close menus when clicking outside
       useEffect(() => {
@@ -3291,8 +3337,8 @@
                   <button onClick={cancelEdit} style={{ padding: '10px 20px', background: 'transparent', color: '#FAFAFA', border: '1px solid #FAFAFA', borderRadius: '4px', cursor: 'pointer', fontFamily: "'Helvetica Neue', Arial, sans-serif", fontSize: '13px' }}>
                     Cancel
                   </button>
-                  <button onClick={saveEdit} style={{ padding: '10px 20px', background: '#2D5A4B', color: '#FAFAFA', border: 'none', borderRadius: '4px', cursor: 'pointer', fontFamily: "'Helvetica Neue', Arial, sans-serif", fontSize: '13px', fontWeight: 500 }}>
-                    💾 Save Changes
+                  <button onClick={saveEdit} style={{ padding: '10px 20px', background: '#2D5A4B', color: '#FAFAFA', border: 'none', borderRadius: '4px', cursor: 'pointer', fontFamily: "'Helvetica Neue', Arial, sans-serif", fontSize: '13px', fontWeight: 500, display: 'flex', alignItems: 'center', gap: '6px' }}>
+                    💾 Save {gitHubConfig.token && <span style={{ opacity: 0.8 }}>→ 🐙</span>}
                   </button>
                 </>
               ) : (
@@ -4399,7 +4445,7 @@
 
           {/* Footer */}
           <footer style={{ background: '#1A1A1A', color: '#999', padding: '20px 40px', fontFamily: "'Helvetica Neue', Arial, sans-serif", fontSize: '12px', display: 'flex', justifyContent: 'space-between' }}>
-            <span>{config.meta.product || "Steve's Journey Map v2.0"}</span>
+            <span>{config.meta.product || "Steve's Journey Map v5.0"}</span>
             <span>Last updated: {new Date(config.meta.lastUpdated).toLocaleDateString('en-GB')}</span>
           </footer>
 
