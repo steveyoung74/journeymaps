@@ -83,6 +83,17 @@
     
     /* Mobile Responsive Styles */
     @media (max-width: 768px) {
+      /* Perspective filter: show dropdown, hide buttons */
+      .perspective-buttons {
+        display: none !important;
+      }
+      .perspective-dropdown {
+        display: block !important;
+      }
+      .perspective-filter {
+        padding: 12px 16px !important;
+      }
+      
       /* Header */
       .header-container {
         padding: 16px !important;
@@ -242,7 +253,7 @@
       meta: {
         title: "Client Onboarding Journey",
         version: "2.0",
-        product: "Steve's Journey Map v5.4",
+        product: "Steve's Journey Map v5.5",
         lastUpdated: new Date().toISOString(),
         audience: "Internal Operations",
         perspective: "client"
@@ -3673,12 +3684,44 @@
 
           {/* Perspective Filter - only show in steps view */}
           {viewMode === 'steps' && (
-            <div className="no-print" style={{ background: '#F9F9F9', borderBottom: '1px solid #E0E0E0', padding: '12px 40px', display: 'flex', gap: '12px', alignItems: 'center', flexWrap: 'wrap' }}>
+            <div className="perspective-filter no-print" style={{ background: '#F9F9F9', borderBottom: '1px solid #E0E0E0', padding: '12px 40px', display: 'flex', gap: '12px', alignItems: 'center', flexWrap: 'wrap' }}>
               <span style={{ fontFamily: "'Helvetica Neue', Arial, sans-serif", fontSize: '13px', color: '#666', marginRight: '8px' }}>Filter by perspective:</span>
-              <button onClick={() => setActivePerspective('all')} style={{ padding: '8px 16px', background: activePerspective === 'all' ? '#1A1A1A' : '#FFF', color: activePerspective === 'all' ? '#FFF' : '#1A1A1A', border: '1px solid #DDD', borderRadius: '20px', cursor: 'pointer', fontFamily: "'Helvetica Neue', Arial, sans-serif", fontSize: '12px', fontWeight: 500 }}>All</button>
-              {config.personas.map(persona => (
-                <button key={persona.id} onClick={() => setActivePerspective(persona.id)} style={{ padding: '8px 16px', background: activePerspective === persona.id ? persona.color : '#FFF', color: activePerspective === persona.id ? '#FFF' : '#1A1A1A', border: '1px solid #DDD', borderRadius: '20px', cursor: 'pointer', fontFamily: "'Helvetica Neue', Arial, sans-serif", fontSize: '12px', fontWeight: 500 }}>{persona.label}</button>
-              ))}
+              
+              {/* Desktop: Button row */}
+              <div className="perspective-buttons" style={{ display: 'flex', gap: '8px', flexWrap: 'wrap' }}>
+                <button onClick={() => setActivePerspective('all')} style={{ padding: '8px 16px', background: activePerspective === 'all' ? '#1A1A1A' : '#FFF', color: activePerspective === 'all' ? '#FFF' : '#1A1A1A', border: '1px solid #DDD', borderRadius: '20px', cursor: 'pointer', fontFamily: "'Helvetica Neue', Arial, sans-serif", fontSize: '12px', fontWeight: 500 }}>All</button>
+                {config.personas.map(persona => (
+                  <button key={persona.id} onClick={() => setActivePerspective(persona.id)} style={{ padding: '8px 16px', background: activePerspective === persona.id ? persona.color : '#FFF', color: activePerspective === persona.id ? '#FFF' : '#1A1A1A', border: '1px solid #DDD', borderRadius: '20px', cursor: 'pointer', fontFamily: "'Helvetica Neue', Arial, sans-serif", fontSize: '12px', fontWeight: 500 }}>{persona.label}</button>
+                ))}
+              </div>
+              
+              {/* Mobile: Dropdown */}
+              <div className="perspective-dropdown" style={{ display: 'none' }}>
+                <select 
+                  value={activePerspective} 
+                  onChange={(e) => setActivePerspective(e.target.value)}
+                  style={{ 
+                    padding: '8px 32px 8px 12px', 
+                    background: activePerspective === 'all' ? '#1A1A1A' : (config.personas.find(p => p.id === activePerspective)?.color || '#1A1A1A'),
+                    color: '#FFF',
+                    border: 'none',
+                    borderRadius: '20px',
+                    cursor: 'pointer',
+                    fontFamily: "'Helvetica Neue', Arial, sans-serif",
+                    fontSize: '12px',
+                    fontWeight: 500,
+                    appearance: 'none',
+                    backgroundImage: `url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 12 12'%3E%3Cpath fill='white' d='M3 5l3 3 3-3'/%3E%3C/svg%3E")`,
+                    backgroundRepeat: 'no-repeat',
+                    backgroundPosition: 'right 10px center'
+                  }}
+                >
+                  <option value="all" style={{ background: '#FFF', color: '#1A1A1A' }}>All Perspectives</option>
+                  {config.personas.map(persona => (
+                    <option key={persona.id} value={persona.id} style={{ background: '#FFF', color: '#1A1A1A' }}>{persona.label}</option>
+                  ))}
+                </select>
+              </div>
             </div>
           )}
 
