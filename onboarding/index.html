@@ -307,6 +307,13 @@
                       "annualSalary": 45000,
                       "isExternal": false,
                       "id": "paraplanner"
+                },
+                {
+                      "label": "New Business Exec",
+                      "color": "#7C3AED",
+                      "annualSalary": 25000,
+                      "isExternal": false,
+                      "id": "new-business-exec"
                 }
           ],
           "stages": [
@@ -319,7 +326,7 @@
                                   "name": "Triage",
                                   "description": "Initial assessment of incoming prospect enquiries",
                                   "timeMinutes": 5,
-                                  "owner": "ops",
+                                  "owner": "new-business-exec",
                                   "touchpoints": [
                                         "CRM",
                                         "Email"
@@ -340,20 +347,27 @@
                                               "headcount": 1
                                         },
                                         "ops": {
-                                              "timeMinutes": 5,
+                                              "timeMinutes": 0,
+                                              "headcount": 1
+                                        },
+                                        "new-business-exec": {
+                                              "timeMinutes": 10,
                                               "headcount": 1
                                         }
                                   },
                                   "actions": {
-                                        "ops": "Reviews and categorises incoming enquiries"
-                                  }
+                                        "ops": "",
+                                        "new-business-exec": "Reviews and categorises incoming enquiries",
+                                        "client": "Inputs information into our contact form"
+                                  },
+                                  "clientTouchpoint": true
                             },
                             {
                                   "id": "fast-track",
                                   "name": "Fast Track",
                                   "description": "Determine if client has provided enough information to directly contact FP to check availability for immediate call",
                                   "timeMinutes": 10,
-                                  "owner": "ops",
+                                  "owner": "new-business-exec",
                                   "touchpoints": [
                                         "CRM",
                                         "Phone",
@@ -375,12 +389,17 @@
                                               "headcount": 1
                                         },
                                         "ops": {
+                                              "timeMinutes": 0,
+                                              "headcount": 1
+                                        },
+                                        "new-business-exec": {
                                               "timeMinutes": 10,
                                               "headcount": 1
                                         }
                                   },
                                   "actions": {
-                                        "ops": "Assesses client information quality, checks FP availability, routes accordingly"
+                                        "ops": "",
+                                        "new-business-exec": "Assesses client information quality, checks FP availability, routes accordingly"
                                   }
                             }
                       ]
@@ -394,7 +413,7 @@
                                   "name": "Initial Call",
                                   "description": "First contact call with prospect",
                                   "timeMinutes": 20,
-                                  "owner": "ops",
+                                  "owner": "new-business-exec",
                                   "touchpoints": [
                                         "Phone"
                                   ],
@@ -415,12 +434,18 @@
                                               "headcount": 1
                                         },
                                         "ops": {
-                                              "timeMinutes": 20,
+                                              "timeMinutes": 0,
+                                              "headcount": 1
+                                        },
+                                        "new-business-exec": {
+                                              "timeMinutes": 15,
                                               "headcount": 1
                                         }
                                   },
                                   "actions": {
-                                        "ops": "Conducts initial call, gathers basic information"
+                                        "ops": "",
+                                        "new-business-exec": "Conducts initial call, gathers basic information, listens to client carefully",
+                                        "client": "Answers questions and describes the outcome they want"
                                   }
                             },
                             {
@@ -428,7 +453,7 @@
                                   "name": "Update Excel, Xplan etc",
                                   "description": "Update CRM and planning systems with prospect details",
                                   "timeMinutes": 12,
-                                  "owner": "ops",
+                                  "owner": "new-business-exec",
                                   "touchpoints": [
                                         "Xplan",
                                         "Excel",
@@ -440,7 +465,7 @@
                                   "emotions": "neutral",
                                   "frictionScore": 2,
                                   "automationOpportunity": "high",
-                                  "automationNotes": "System integration could eliminate duplicate entry",
+                                  "automationNotes": "System integration could eliminate duplicate entry, looking to implement Evaluagent to transcribe the call information into Xplan",
                                   "regulatoryRequirements": [],
                                   "roleInvolvement": {
                                         "fp": {
@@ -452,12 +477,17 @@
                                               "headcount": 1
                                         },
                                         "ops": {
+                                              "timeMinutes": 0,
+                                              "headcount": 1
+                                        },
+                                        "new-business-exec": {
                                               "timeMinutes": 12,
                                               "headcount": 1
                                         }
                                   },
                                   "actions": {
-                                        "ops": "Updates all relevant systems with prospect information"
+                                        "ops": "",
+                                        "new-business-exec": "Updates all relevant systems with prospect information"
                                   }
                             },
                             {
