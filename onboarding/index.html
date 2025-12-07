@@ -279,7 +279,7 @@
     const { useState, useCallback, useMemo, useEffect, useRef } = React;
     
     // Current app version - always displayed in footer
-    const APP_VERSION = "6.3";
+    const APP_VERSION = "6.4";
 
     const generateId = () => Math.random().toString(36).substr(2, 9);
 
@@ -2705,6 +2705,11 @@
       const [showSettingsMenu, setShowSettingsMenu] = useState(false);
       const [showStructurePanel, setShowStructurePanel] = useState(false);
       const [showGitHubSettings, setShowGitHubSettings] = useState(false);
+      const [showPasswordPrompt, setShowPasswordPrompt] = useState(false);
+      const [isSettingsUnlocked, setIsSettingsUnlocked] = useState(() => {
+        return localStorage.getItem('journeymap-settings-unlocked') === 'true';
+      });
+      const SETTINGS_PASSWORD = '5t3v3';
       const [gitHubConfig, setGitHubConfig] = useState(() => {
         const saved = localStorage.getItem('journeymap-github-config');
         return saved ? JSON.parse(saved) : {
@@ -3566,10 +3571,18 @@
 
                     {/* Settings Dropdown */}
                     <div style={{ position: 'relative' }}>
-                      <button onClick={(e) => { e.stopPropagation(); setShowSettingsMenu(!showSettingsMenu); setShowExportMenu(false); }} style={{ padding: '6px 10px', background: showSettingsMenu ? '#4A5568' : 'transparent', color: '#FAFAFA', border: '1px solid rgba(255,255,255,0.4)', borderRadius: '4px', cursor: 'pointer', fontFamily: "'Helvetica Neue', Arial, sans-serif", fontSize: '11px', display: 'flex', alignItems: 'center', gap: '4px' }}>
-                        ⚙️ <span style={{ fontSize: '8px' }}>▼</span>
+                      <button onClick={(e) => { 
+                        e.stopPropagation(); 
+                        if (isSettingsUnlocked) {
+                          setShowSettingsMenu(!showSettingsMenu); 
+                          setShowExportMenu(false);
+                        } else {
+                          setShowPasswordPrompt(true);
+                        }
+                      }} style={{ padding: '6px 10px', background: showSettingsMenu ? '#4A5568' : 'transparent', color: '#FAFAFA', border: '1px solid rgba(255,255,255,0.4)', borderRadius: '4px', cursor: 'pointer', fontFamily: "'Helvetica Neue', Arial, sans-serif", fontSize: '11px', display: 'flex', alignItems: 'center', gap: '4px' }}>
+                        {isSettingsUnlocked ? '⚙️' : '🔒'} <span style={{ fontSize: '8px' }}>▼</span>
                       </button>
-                      {showSettingsMenu && (
+                      {showSettingsMenu && isSettingsUnlocked && (
                         <div onClick={(e) => e.stopPropagation()} style={{ position: 'absolute', top: '100%', right: 0, marginTop: '4px', background: '#FFF', borderRadius: '8px', boxShadow: '0 4px 20px rgba(0,0,0,0.2)', overflow: 'hidden', zIndex: 100, minWidth: '180px' }}>
                           <button onClick={enterEditMode} style={{ display: 'flex', alignItems: 'center', gap: '10px', width: '100%', padding: '10px 14px', border: 'none', background: '#FFF', cursor: 'pointer', textAlign: 'left', fontFamily: "'Helvetica Neue', Arial, sans-serif", fontSize: '13px', color: '#333', borderBottom: '1px solid #EEE' }} onMouseOver={(e) => e.currentTarget.style.background = '#F5F5F5'} onMouseOut={(e) => e.currentTarget.style.background = '#FFF'}>
                             <span>✏️</span> Edit Mode
@@ -4736,6 +4749,71 @@
             status={gitHubStatus}
             onClose={() => setShowGitHubSettings(false)} 
           />}
+          
+          {/* Password Prompt Modal */}
+          {showPasswordPrompt && (
+            <div style={{ position: 'fixed', top: 0, left: 0, right: 0, bottom: 0, background: 'rgba(0,0,0,0.5)', display: 'flex', alignItems: 'center', justifyContent: 'center', zIndex: 10000 }} onClick={() => setShowPasswordPrompt(false)}>
+              <div onClick={(e) => e.stopPropagation()} style={{ background: '#FFF', borderRadius: '12px', padding: '32px', width: '320px', maxWidth: '90%', boxShadow: '0 20px 60px rgba(0,0,0,0.3)' }}>
+                <h3 style={{ margin: '0 0 8px', fontSize: '18px', fontWeight: 600 }}>🔒 Settings Locked</h3>
+                <p style={{ margin: '0 0 20px', fontSize: '14px', color: '#666', fontFamily: "'Helvetica Neue', Arial, sans-serif" }}>Enter password to access settings</p>
+                <input 
+                  type="password" 
+                  id="settings-password"
+                  placeholder="Password"
+                  autoFocus
+                  onKeyDown={(e) => {
+                    if (e.key === 'Enter') {
+                      if (e.target.value === SETTINGS_PASSWORD) {
+                        setIsSettingsUnlocked(true);
+                        localStorage.setItem('journeymap-settings-unlocked', 'true');
+                        setShowPasswordPrompt(false);
+                        setShowSettingsMenu(true);
+                      } else {
+                        e.target.value = '';
+                        e.target.placeholder = 'Incorrect password';
+                        e.target.style.borderColor = '#C53030';
+                      }
+                    }
+                  }}
+                  style={{ 
+                    width: '100%', 
+                    padding: '12px 16px', 
+                    border: '2px solid #E5E5E5', 
+                    borderRadius: '8px', 
+                    fontSize: '16px', 
+                    marginBottom: '16px',
+                    fontFamily: "'Helvetica Neue', Arial, sans-serif"
+                  }} 
+                />
+                <div style={{ display: 'flex', gap: '12px' }}>
+                  <button 
+                    onClick={() => setShowPasswordPrompt(false)}
+                    style={{ flex: 1, padding: '12px', background: '#F3F4F6', border: 'none', borderRadius: '8px', cursor: 'pointer', fontFamily: "'Helvetica Neue', Arial, sans-serif", fontSize: '14px', fontWeight: 500 }}
+                  >
+                    Cancel
+                  </button>
+                  <button 
+                    onClick={() => {
+                      const input = document.getElementById('settings-password');
+                      if (input.value === SETTINGS_PASSWORD) {
+                        setIsSettingsUnlocked(true);
+                        localStorage.setItem('journeymap-settings-unlocked', 'true');
+                        setShowPasswordPrompt(false);
+                        setShowSettingsMenu(true);
+                      } else {
+                        input.value = '';
+                        input.placeholder = 'Incorrect password';
+                        input.style.borderColor = '#C53030';
+                      }
+                    }}
+                    style={{ flex: 1, padding: '12px', background: '#1A1A1A', color: '#FFF', border: 'none', borderRadius: '8px', cursor: 'pointer', fontFamily: "'Helvetica Neue', Arial, sans-serif", fontSize: '14px', fontWeight: 500 }}
+                  >
+                    Unlock
+                  </button>
+                </div>
+              </div>
+            </div>
+          )}
         </div>
       );
     }
