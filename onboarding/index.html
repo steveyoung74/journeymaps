@@ -254,7 +254,7 @@
                 "title": "Client Onboarding Journey",
                 "version": "2.0",
                 "product": "Steve's Journey Map v6.1",
-                "lastUpdated": "2025-12-07T06:48:35.160Z",
+                "lastUpdated": "2025-12-07T07:02:54.605Z",
                 "audience": "Internal Operations",
                 "perspective": "client"
           },
@@ -922,7 +922,7 @@
                                   "name": "Pricing & Propositions",
                                   "description": "Research and analysis for pricing and investment propositions",
                                   "timeMinutes": 864,
-                                  "owner": "fp",
+                                  "owner": "paraplanner",
                                   "touchpoints": [
                                         "Research Tools",
                                         "Planning Software"
@@ -941,7 +941,7 @@
                                   ],
                                   "roleInvolvement": {
                                         "fp": {
-                                              "timeMinutes": 834,
+                                              "timeMinutes": 30,
                                               "headcount": 1
                                         },
                                         "im": {
@@ -951,11 +951,16 @@
                                         "ops": {
                                               "timeMinutes": 0,
                                               "headcount": 1
+                                        },
+                                        "paraplanner": {
+                                              "timeMinutes": 864,
+                                              "headcount": 1
                                         }
                                   },
                                   "actions": {
-                                        "fp": "Conducts research and develops propositions",
-                                        "im": "Provides investment input and validation"
+                                        "fp": "Submits request to Paraplanner",
+                                        "im": "Provides investment input and validation",
+                                        "paraplanner": "Conducts research and develops propositions"
                                   }
                             },
                             {
@@ -963,7 +968,7 @@
                                   "name": "Fee Illustration",
                                   "description": "Prepare fee illustrations and cost disclosures",
                                   "timeMinutes": 86,
-                                  "owner": "fp",
+                                  "owner": "paraplanner",
                                   "touchpoints": [
                                         "Illustration Software"
                                   ],
@@ -978,7 +983,7 @@
                                   ],
                                   "roleInvolvement": {
                                         "fp": {
-                                              "timeMinutes": 83.4,
+                                              "timeMinutes": 10,
                                               "headcount": 1
                                         },
                                         "im": {
@@ -988,11 +993,16 @@
                                         "ops": {
                                               "timeMinutes": 0,
                                               "headcount": 1
+                                        },
+                                        "paraplanner": {
+                                              "timeMinutes": 86,
+                                              "headcount": 1
                                         }
                                   },
                                   "actions": {
-                                        "fp": "Prepares fee illustrations",
-                                        "im": "Reviews investment cost components"
+                                        "fp": "Reviews Fee Illustration",
+                                        "im": "Reviews investment cost components",
+                                        "paraplanner": "Prepares fee illustrations"
                                   }
                             },
                             {
@@ -1018,7 +1028,7 @@
                                   ],
                                   "roleInvolvement": {
                                         "fp": {
-                                              "timeMinutes": 750.6,
+                                              "timeMinutes": 30,
                                               "headcount": 1
                                         },
                                         "im": {
@@ -1028,11 +1038,17 @@
                                         "ops": {
                                               "timeMinutes": 0,
                                               "headcount": 1
+                                        },
+                                        "paraplanner": {
+                                              "timeMinutes": 750,
+                                              "headcount": 1
                                         }
                                   },
                                   "actions": {
-                                        "fp": "Writes comprehensive advice report",
-                                        "im": "Contributes investment rationale section"
+                                        "fp": "Reviews and sends report to Client",
+                                        "im": "Contributes investment rationale section",
+                                        "paraplanner": "Writes comprehensive suitability and advice report",
+                                        "client": "Reviews report"
                                   }
                             },
                             {
@@ -1040,7 +1056,7 @@
                                   "name": "Application Forms",
                                   "description": "Complete account opening applications",
                                   "timeMinutes": 183,
-                                  "owner": "ops",
+                                  "owner": "administrator",
                                   "touchpoints": [
                                         "Provider Portals",
                                         "DocuSign"
@@ -1050,9 +1066,9 @@
                                         "Portal technical issues"
                                   ],
                                   "emotions": "neutral",
-                                  "frictionScore": 3,
+                                  "frictionScore": 5,
                                   "automationOpportunity": "high",
-                                  "automationNotes": "API integration for straight-through processing",
+                                  "automationNotes": "Digital Dynamic Forms prepopulate all Application forms with API integration for straight-through processing to and from xplan",
                                   "regulatoryRequirements": [
                                         "Client consent",
                                         "Accurate data"
@@ -1067,15 +1083,22 @@
                                               "headcount": 1
                                         },
                                         "ops": {
-                                              "timeMinutes": 102.6,
+                                              "timeMinutes": 0,
+                                              "headcount": 1
+                                        },
+                                        "administrator": {
+                                              "timeMinutes": 102,
                                               "headcount": 1
                                         }
                                   },
                                   "actions": {
                                         "fp": "Reviews and approves applications",
                                         "im": "Confirms investment selections",
-                                        "ops": "Prepares and submits application forms"
-                                  }
+                                        "ops": "",
+                                        "administrator": "Prepares and submits application forms",
+                                        "client": "Receives Application Forms to review/complete"
+                                  },
+                                  "clientTouchpoint": true
                             },
                             {
                                   "id": "vetting",
