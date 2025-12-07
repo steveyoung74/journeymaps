@@ -38,7 +38,7 @@
       pointer-events: none;
     }
     .step-card:hover {
-      z-index: 50 !important;
+      z-index: 1050 !important;
     }
     
     /* Edge-to-edge horizontal scrolling */
@@ -279,7 +279,7 @@
     const { useState, useCallback, useMemo, useEffect, useRef } = React;
     
     // Current app version - always displayed in footer
-    const APP_VERSION = "6.4";
+    const APP_VERSION = "6.7";
 
     const generateId = () => Math.random().toString(36).substr(2, 9);
 
@@ -3831,6 +3831,9 @@
                   const highAutoOps = stage.steps.filter(step => step.automationOpportunity === 'high').length;
                   const medAutoOps = stage.steps.filter(step => step.automationOpportunity === 'medium').length;
                   const checkpointCount = stage.steps.filter(step => step.isHardCheckpoint).length;
+                  const maxStepTime = Math.max(...stage.steps.map(s => s.timeMinutes), 1);
+                  const stageColor = `hsl(${stageIndex * 45 + 180}, 35%, 45%)`;
+                  const stageColorLight = `hsl(${stageIndex * 45 + 180}, 35%, 85%)`;
                   
                   return (
                     <div key={stage.id} className="stage-card" style={{ 
@@ -3868,7 +3871,9 @@
                             {stage.steps.length} Steps
                           </div>
                           <div style={{ display: 'flex', flexDirection: 'column', gap: '6px' }}>
-                            {stage.steps.map((step, idx) => (
+                            {stage.steps.map((step, idx) => {
+                              const timeBarWidth = maxStepTime > 0 ? (step.timeMinutes / maxStepTime) * 100 : 0;
+                              return (
                               <div key={step.id} style={{ 
                                 display: 'flex', 
                                 alignItems: 'center', 
@@ -3877,14 +3882,28 @@
                                 background: step.isHardCheckpoint ? '#FDF2F8' : '#F8F8F8',
                                 borderRadius: '6px',
                                 fontSize: '13px',
-                                border: step.isHardCheckpoint ? '1px solid #FBCFE8' : 'none'
+                                border: step.isHardCheckpoint ? '1px solid #FBCFE8' : 'none',
+                                position: 'relative',
+                                overflow: 'hidden'
                               }}>
-                                <span style={{ color: '#999', fontWeight: 500, minWidth: '24px' }}>{stageIndex + 1}.{idx + 1}</span>
-                                {step.isHardCheckpoint && <span style={{ fontSize: '12px' }}>🚧</span>}
-                                <span style={{ flex: 1, color: step.isHardCheckpoint ? '#BE185D' : '#333' }}>{step.name}</span>
-                                <span style={{ color: '#666', fontSize: '12px' }}>{formatTime(step.timeMinutes)}</span>
+                                {/* Time Bar Background */}
+                                <div style={{
+                                  position: 'absolute',
+                                  top: 0,
+                                  left: 0,
+                                  width: `${timeBarWidth}%`,
+                                  height: '100%',
+                                  background: stageColorLight,
+                                  opacity: 0.5,
+                                  transition: 'width 0.3s ease',
+                                  zIndex: 0
+                                }} />
+                                <span style={{ color: '#999', fontWeight: 500, minWidth: '24px', position: 'relative', zIndex: 1 }}>{stageIndex + 1}.{idx + 1}</span>
+                                {step.isHardCheckpoint && <span style={{ fontSize: '12px', position: 'relative', zIndex: 1 }}>🚧</span>}
+                                <span style={{ flex: 1, color: step.isHardCheckpoint ? '#BE185D' : '#333', position: 'relative', zIndex: 1 }}>{step.name}</span>
+                                <span style={{ color: '#666', fontSize: '12px', position: 'relative', zIndex: 1 }}>{formatTime(step.timeMinutes)}</span>
                               </div>
-                            ))}
+                            );})}
                           </div>
                         </div>
                         
