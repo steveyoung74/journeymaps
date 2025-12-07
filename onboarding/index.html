@@ -810,21 +810,27 @@
                                   "clientTouchpoint": true,
                                   "roleInvolvement": {
                                         "fp": {
-                                              "timeMinutes": 390,
+                                              "timeMinutes": 330,
                                               "headcount": 1
                                         },
                                         "im": {
-                                              "timeMinutes": 390,
+                                              "timeMinutes": 300,
                                               "headcount": 1
                                         },
                                         "ops": {
                                               "timeMinutes": 0,
                                               "headcount": 1
+                                        },
+                                        "administrator": {
+                                              "timeMinutes": 60,
+                                              "headcount": 1
                                         }
                                   },
                                   "actions": {
-                                        "fp": "Conducts comprehensive fact find meeting",
-                                        "im": "Gathers investment-specific information"
+                                        "fp": "Conducts comprehensive fact find meeting, takes notes or updates forms",
+                                        "im": "Gathers investment-specific information",
+                                        "client": "Answers all questions asked",
+                                        "administrator": "Updates the Fact Find A form information into Xplan"
                                   }
                             },
                             {
@@ -3119,11 +3125,14 @@
         const saved = localStorage.getItem('journeymap-config');
         if (saved) {
           try {
-            return JSON.parse(saved);
+            const parsed = JSON.parse(saved);
+            console.log('📂 Loaded config from localStorage');
+            return parsed;
           } catch (e) {
             console.warn('Failed to parse saved config, using default');
           }
         }
+        console.log('📄 Using default config (no localStorage data found)');
         return defaultConfig;
       });
       const [selectedStep, setSelectedStep] = useState(null);
@@ -4035,8 +4044,18 @@
                             <span>📂</span> Import JSON
                             <input type="file" accept=".json" onChange={(e) => { importConfig(e); setShowSettingsMenu(false); }} style={{ display: 'none' }} />
                           </label>
-                          <button onClick={() => { setShowJson(!showJson); setShowSettingsMenu(false); }} style={{ display: 'flex', alignItems: 'center', gap: '10px', width: '100%', padding: '10px 14px', border: 'none', background: '#FFF', cursor: 'pointer', textAlign: 'left', fontFamily: "'Helvetica Neue', Arial, sans-serif", fontSize: '13px', color: '#333' }} onMouseOver={(e) => e.currentTarget.style.background = '#F5F5F5'} onMouseOut={(e) => e.currentTarget.style.background = '#FFF'}>
+                          <button onClick={() => { setShowJson(!showJson); setShowSettingsMenu(false); }} style={{ display: 'flex', alignItems: 'center', gap: '10px', width: '100%', padding: '10px 14px', border: 'none', background: '#FFF', cursor: 'pointer', textAlign: 'left', fontFamily: "'Helvetica Neue', Arial, sans-serif", fontSize: '13px', color: '#333', borderBottom: '1px solid #EEE' }} onMouseOver={(e) => e.currentTarget.style.background = '#F5F5F5'} onMouseOut={(e) => e.currentTarget.style.background = '#FFF'}>
                             <span>{'{ }'}</span> {showJson ? 'Hide' : 'View'} JSON
+                          </button>
+                          <div style={{ height: '1px', background: '#EEE', margin: '4px 0' }}></div>
+                          <button onClick={() => { 
+                            if (confirm('Clear local data and reload from defaults? Your GitHub data will not be affected.')) {
+                              localStorage.removeItem('journeymap-config');
+                              window.location.reload();
+                            }
+                            setShowSettingsMenu(false); 
+                          }} style={{ display: 'flex', alignItems: 'center', gap: '10px', width: '100%', padding: '10px 14px', border: 'none', background: '#FFF', cursor: 'pointer', textAlign: 'left', fontFamily: "'Helvetica Neue', Arial, sans-serif", fontSize: '13px', color: '#C53030' }} onMouseOver={(e) => e.currentTarget.style.background = '#FEE2E2'} onMouseOut={(e) => e.currentTarget.style.background = '#FFF'}>
+                            <span>🗑️</span> Clear Local Data
                           </button>
                         </div>
                       )}
