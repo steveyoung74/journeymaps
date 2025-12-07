@@ -279,7 +279,7 @@
     const { useState, useCallback, useMemo, useEffect, useRef } = React;
     
     // Current app version - always displayed in footer
-    const APP_VERSION = "6.2";
+    const APP_VERSION = "6.3";
 
     const generateId = () => Math.random().toString(36).substr(2, 9);
 
@@ -1647,7 +1647,7 @@
               <div style={{ fontSize: '12px', color: '#1E40AF', fontFamily: "'Helvetica Neue', Arial, sans-serif", marginTop: '4px' }}>Avg Cost/Minute</div>
             </div>
             <div style={{ background: '#D1FAE5', padding: '20px', borderRadius: '12px', textAlign: 'center' }}>
-              <div style={{ fontSize: '28px', fontWeight: 700, color: '#065F46' }}>{formatCurrency(totalAutomationSavings)}</div>
+              <div style={{ fontSize: '28px', fontWeight: 700, color: '#065F46' }}>{formatCurrency(totalAutomationSavings)} <span style={{ fontSize: '16px', opacity: 0.8 }}>({totalCost > 0 ? Math.round((totalAutomationSavings / totalCost) * 100) : 0}%)</span></div>
               <div style={{ fontSize: '12px', color: '#065F46', fontFamily: "'Helvetica Neue', Arial, sans-serif", marginTop: '4px' }}>Potential Savings</div>
             </div>
             <div style={{ background: '#F3E8FF', padding: '20px', borderRadius: '12px', textAlign: 'center' }}>
@@ -1868,7 +1868,7 @@
                     </div>
                     <div style={{ textAlign: 'right' }}>
                       <div style={{ fontWeight: 700, fontSize: '16px', color: '#065F46' }}>
-                        {formatCurrency(step.automationSavings)}
+                        {formatCurrency(step.automationSavings)} <span style={{ fontSize: '12px', opacity: 0.8 }}>({step.automationOpportunity === 'high' ? '70' : step.automationOpportunity === 'medium' ? '40' : '10'}%)</span>
                       </div>
                       <div style={{ fontSize: '10px', color: '#047857', fontFamily: "'Helvetica Neue', Arial, sans-serif" }}>
                         potential savings
@@ -3374,7 +3374,7 @@
           html += '<div class="summary-grid">';
           html += '<div class="summary-card"><div class="summary-value">' + totalPainPoints + '</div><div class="summary-label">Pain Points</div></div>';
           html += '<div class="summary-card"><div class="summary-value">' + highAutomationCount + '</div><div class="summary-label">High Auto Opps</div></div>';
-          html += '<div class="summary-card success"><div class="summary-value">' + formatCurrency(potentialSavings) + '</div><div class="summary-label">Potential Savings</div></div>';
+          html += '<div class="summary-card success"><div class="summary-value">' + formatCurrency(potentialSavings) + ' (' + (totalCost > 0 ? Math.round((potentialSavings / totalCost) * 100) : 0) + '%)</div><div class="summary-label">Potential Savings</div></div>';
           html += '<div class="summary-card"><div class="summary-value">' + formatCurrencyDetailed(totalCost / totalTime) + '/m</div><div class="summary-label">Cost per Minute</div></div>';
           html += '</div>';
 
@@ -4048,7 +4048,7 @@
                                 gap: '4px',
                                 boxShadow: '0 2px 4px rgba(0,0,0,0.1)'
                               }}>
-                                🎯 Save {formatCurrency(automationSavings)}
+                                🎯 Save {formatCurrency(automationSavings)} ({step.automationOpportunity === 'high' ? '70' : '40'}%)
                               </div>
                             )}
                             {editMode && (
@@ -4369,7 +4369,7 @@
                               {formatCurrency(
                                 calculateStepCost(selectedStep, config.personas) * 
                                 (selectedStep.automationOpportunity === 'high' ? 0.7 : selectedStep.automationOpportunity === 'medium' ? 0.4 : 0.1)
-                              )}
+                              )} <span style={{ fontSize: '14px', opacity: 0.8 }}>({selectedStep.automationOpportunity === 'high' ? '70' : selectedStep.automationOpportunity === 'medium' ? '40' : '10'}%)</span>
                             </div>
                             <div style={{ fontFamily: "'Helvetica Neue', Arial, sans-serif", fontSize: '10px', color: '#047857' }}>potential savings</div>
                           </div>
