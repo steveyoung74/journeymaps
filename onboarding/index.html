@@ -285,7 +285,7 @@
     const { useState, useCallback, useMemo, useEffect, useRef } = React;
     
     // Current app version - always displayed in footer
-    const APP_VERSION = "7.0";
+    const APP_VERSION = "7.1";
 
     const generateId = () => Math.random().toString(36).substr(2, 9);
 
@@ -3572,6 +3572,54 @@
                 </div>
               </div>
               
+              {/* Desktop Menu - between title and export */}
+              {!isMobile && !editMode && (
+                <>
+                  <div className="header-divider" style={{ width: '1px', height: '40px', background: 'rgba(255,255,255,0.3)', flexShrink: 0 }} />
+                  <div className="no-print" style={{ display: 'flex', gap: '6px', alignItems: 'center', flexShrink: 0 }}>
+                    {/* Stages/Steps Toggle */}
+                    <div style={{ display: 'flex', borderRadius: '5px', overflow: 'hidden', border: '1px solid rgba(255,255,255,0.35)' }}>
+                      <button onClick={() => { setViewMode('stages'); setHighlightOpportunities(false); }} style={{ padding: '7px 12px', background: viewMode === 'stages' ? '#4A5568' : 'transparent', color: '#FAFAFA', border: 'none', cursor: 'pointer', fontFamily: "'Helvetica Neue', Arial, sans-serif", fontSize: '11px', display: 'flex', alignItems: 'center', gap: '5px' }}>
+                        📁 Stages
+                      </button>
+                      <button onClick={() => setViewMode('steps')} style={{ padding: '7px 12px', background: viewMode === 'steps' ? '#4A5568' : 'transparent', color: '#FAFAFA', border: 'none', borderLeft: '1px solid rgba(255,255,255,0.25)', cursor: 'pointer', fontFamily: "'Helvetica Neue', Arial, sans-serif", fontSize: '11px', display: 'flex', alignItems: 'center', gap: '5px' }}>
+                        📋 Steps
+                      </button>
+                    </div>
+                    
+                    <button onClick={() => setShowTimeline(!showTimeline)} style={{ padding: '7px 12px', background: showTimeline ? '#4A5568' : 'transparent', color: '#FAFAFA', border: '1px solid rgba(255,255,255,0.35)', borderRadius: '5px', cursor: 'pointer', fontFamily: "'Helvetica Neue', Arial, sans-serif", fontSize: '11px', display: 'flex', alignItems: 'center', gap: '5px' }}>
+                      📅 Timeline
+                    </button>
+                    
+                    <button onClick={() => setShowCostAnalysis(!showCostAnalysis)} style={{ padding: '7px 12px', background: showCostAnalysis ? '#4A5568' : 'transparent', color: '#FAFAFA', border: '1px solid rgba(255,255,255,0.35)', borderRadius: '5px', cursor: 'pointer', fontFamily: "'Helvetica Neue', Arial, sans-serif", fontSize: '11px', display: 'flex', alignItems: 'center', gap: '5px' }}>
+                      📊 Analysis
+                    </button>
+                    
+                    <button 
+                      onClick={() => viewMode === 'steps' && setHighlightOpportunities(!highlightOpportunities)} 
+                      disabled={viewMode === 'stages'}
+                      style={{ 
+                        padding: '7px 12px', 
+                        background: highlightOpportunities && viewMode === 'steps' ? '#4A5568' : 'transparent', 
+                        color: viewMode === 'stages' ? 'rgba(250,250,250,0.4)' : '#FAFAFA', 
+                        border: viewMode === 'stages' ? '1px solid rgba(250,250,250,0.15)' : '1px solid rgba(255,255,255,0.35)', 
+                        borderRadius: '5px', 
+                        cursor: viewMode === 'stages' ? 'not-allowed' : 'pointer', 
+                        fontFamily: "'Helvetica Neue', Arial, sans-serif", 
+                        fontSize: '11px',
+                        display: 'flex',
+                        alignItems: 'center',
+                        gap: '5px',
+                        opacity: viewMode === 'stages' ? 0.5 : 1
+                      }}
+                      title={viewMode === 'stages' ? 'Switch to Steps view to use this feature' : ''}
+                    >
+                      🎯 Opportunities
+                    </button>
+                  </div>
+                </>
+              )}
+              
               {/* Right side: Export & Settings */}
               <div className="no-print" style={{ display: 'flex', gap: '6px', alignItems: 'center', flexShrink: 0 }}>
                 {editMode ? (
@@ -3669,8 +3717,8 @@
               </div>
             </div>
             
-            {/* Row 2: View Toggles */}
-            {!editMode && (
+            {/* Row 2: View Toggles - Mobile only */}
+            {isMobile && !editMode && (
               <div className="no-print header-buttons" style={{ display: 'flex', gap: '6px', alignItems: 'center', flexWrap: 'wrap' }}>
                 {/* Stages/Steps Toggle */}
                 <div style={{ display: 'flex', borderRadius: '5px', overflow: 'hidden', border: '1px solid rgba(255,255,255,0.35)' }}>
