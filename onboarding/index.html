@@ -285,7 +285,7 @@
     const { useState, useCallback, useMemo, useEffect, useRef } = React;
     
     // Current app version - always displayed in footer
-    const APP_VERSION = "6.9.1";
+    const APP_VERSION = "7.0";
 
     const generateId = () => Math.random().toString(36).substr(2, 9);
 
@@ -2706,9 +2706,18 @@
       const [showStructurePanel, setShowStructurePanel] = useState(false);
       const [showGitHubSettings, setShowGitHubSettings] = useState(false);
       const [showPasswordPrompt, setShowPasswordPrompt] = useState(false);
+      const [isMobile, setIsMobile] = useState(() => window.innerWidth < 768);
       const [isSettingsUnlocked, setIsSettingsUnlocked] = useState(() => {
         return localStorage.getItem('journeymap-settings-unlocked') === 'true';
       });
+      
+      // Mobile detection effect
+      React.useEffect(() => {
+        const handleResize = () => setIsMobile(window.innerWidth < 768);
+        window.addEventListener('resize', handleResize);
+        return () => window.removeEventListener('resize', handleResize);
+      }, []);
+      
       const SETTINGS_PASSWORD = '5t3v3';
       const [gitHubConfig, setGitHubConfig] = useState(() => {
         const saved = localStorage.getItem('journeymap-github-config');
@@ -3494,13 +3503,14 @@
 
       return (
         <div style={{
-          height: '100vh',
+          height: isMobile ? 'auto' : '100vh',
+          minHeight: isMobile ? '100vh' : 'auto',
           display: 'flex',
           flexDirection: 'column',
           background: 'linear-gradient(135deg, #FAFAFA 0%, #F0F0F0 100%)',
           fontFamily: "'Georgia', 'Times New Roman', serif",
           color: '#1A1A1A',
-          overflow: 'hidden'
+          overflow: isMobile ? 'auto' : 'hidden'
         }}>
           {/* Header */}
           <header className="header-container" style={{
@@ -3825,8 +3835,34 @@
           )}
 
           {/* Main Journey Map */}
-          <main className="main-content" style={{ padding: '40px', flex: 1, overflow: 'hidden', display: 'flex', flexDirection: 'column' }}>
-            <div className="stages-container" style={{ display: 'flex', gap: '16px', overflowX: 'auto', paddingBottom: '20px', flex: 1, alignItems: 'stretch' }}>
+          <main className="main-content" style={{ 
+            padding: isMobile ? '20px 16px' : '40px', 
+            flex: isMobile ? 'none' : 1, 
+            overflow: isMobile ? 'visible' : 'hidden', 
+            display: 'flex', 
+            flexDirection: 'column' 
+          }}>
+            {/* Timeline - inline on mobile with card styling */}
+            {isMobile && showTimeline && (
+              <div style={{ background: '#FFF', borderRadius: '12px', marginBottom: '24px', boxShadow: '0 2px 8px rgba(0,0,0,0.04)' }}>
+                <Timeline stages={config.stages} totalTime={totalTime} formatTime={formatTime} personas={config.personas} onClose={() => setShowTimeline(false)} />
+              </div>
+            )}
+            
+            {/* Cost Analysis - inline on mobile with card styling */}
+            {isMobile && showCostAnalysis && (
+              <div style={{ background: '#FFF', borderRadius: '12px', marginBottom: '24px', boxShadow: '0 4px 24px rgba(0,0,0,0.08)', border: '2px solid #FDE68A' }}>
+                <CostAnalysisPanel stages={config.stages} personas={config.personas} formatTime={formatTime} onClose={() => setShowCostAnalysis(false)} />
+              </div>
+            )}
+            <div className="stages-container" style={{ 
+              display: 'flex', 
+              gap: '16px', 
+              overflowX: 'auto', 
+              paddingBottom: '20px', 
+              flex: isMobile ? 'none' : 1, 
+              alignItems: isMobile ? 'flex-start' : 'stretch' 
+            }}>
               {viewMode === 'stages' ? (
                 /* Stages Summary View */
                 config.stages.map((stage, stageIndex) => {
@@ -3852,7 +3888,7 @@
                       boxShadow: '0 2px 8px rgba(0,0,0,0.06)',
                       display: 'flex',
                       flexDirection: 'column',
-                      maxHeight: '100%'
+                      maxHeight: isMobile ? 'none' : '100%'
                     }}>
                       {/* Stage Header */}
                       <div style={{ 
@@ -3874,7 +3910,7 @@
                       </div>
                       
                       {/* Stage Body */}
-                      <div style={{ padding: '20px 24px', flex: 1, overflowY: 'auto' }}>
+                      <div style={{ padding: '20px 24px', flex: isMobile ? 'none' : 1, overflowY: isMobile ? 'visible' : 'auto' }}>
                         {/* Steps List */}
                         <div style={{ marginBottom: '16px' }}>
                           <div style={{ fontSize: '11px', color: '#999', textTransform: 'uppercase', letterSpacing: '0.5px', marginBottom: '8px' }}>
@@ -4229,24 +4265,32 @@
               )}
             </div>
 
-            {/* Selected Step Detail Panel - Now a slide-out modal */}
+            {/* Selected Step Detail Panel - slide-out modal on desktop, inline on mobile */}
             {selectedStep && (
               <>
-                {/* Overlay */}
-                <div 
-                  onClick={() => setSelectedStep(null)} 
-                  style={{ 
-                    position: 'fixed', 
-                    top: 0, 
-                    left: 0, 
-                    right: 0, 
-                    bottom: 0, 
-                    background: 'rgba(0,0,0,0.3)', 
-                    zIndex: 1999 
-                  }} 
-                />
+                {/* Overlay - desktop only */}
+                {!isMobile && (
+                  <div 
+                    onClick={() => setSelectedStep(null)} 
+                    style={{ 
+                      position: 'fixed', 
+                      top: 0, 
+                      left: 0, 
+                      right: 0, 
+                      bottom: 0, 
+                      background: 'rgba(0,0,0,0.3)', 
+                      zIndex: 1999 
+                    }} 
+                  />
+                )}
                 {/* Panel */}
-                <div className="no-print" style={{ 
+                <div className="no-print" style={ isMobile ? {
+                  marginTop: '32px',
+                  background: '#FFF', 
+                  borderRadius: '12px',
+                  boxShadow: '0 4px 24px rgba(0,0,0,0.08)',
+                  overflow: 'hidden'
+                } : { 
                   position: 'fixed', 
                   top: 0, 
                   right: 0, 
@@ -4260,14 +4304,14 @@
                   flexDirection: 'column',
                   overflow: 'hidden'
                 }}>
-                <div style={{ background: `hsl(${(selectedStep.stageIndex || 0) * 45 + 180}, 35%, 40%)`, color: '#FFF', padding: '24px 32px', display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexShrink: 0 }}>
+                <div style={{ background: `hsl(${(selectedStep.stageIndex || 0) * 45 + 180}, 35%, 40%)`, color: '#FFF', padding: isMobile ? '20px 24px' : '24px 32px', display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexShrink: 0 }}>
                   <div>
-                    <h2 style={{ margin: 0, fontSize: '24px', fontWeight: 400 }}>{selectedStep.name}</h2>
+                    <h2 style={{ margin: 0, fontSize: isMobile ? '20px' : '24px', fontWeight: 400 }}>{selectedStep.name}</h2>
                     <p style={{ margin: '8px 0 0', opacity: 0.7, fontFamily: "'Helvetica Neue', Arial, sans-serif", fontSize: '14px' }}>{selectedStep.description}</p>
                   </div>
                   <button onClick={() => setSelectedStep(null)} style={{ background: 'transparent', border: 'none', color: '#FFF', fontSize: '28px', cursor: 'pointer', opacity: 0.7, padding: '0 8px' }}>×</button>
                 </div>
-                <div style={{ padding: '32px', flex: 1, overflowY: 'auto' }}>
+                <div style={{ padding: isMobile ? '24px' : '32px', flex: isMobile ? 'none' : 1, overflowY: isMobile ? 'visible' : 'auto' }}>
                   <div style={{ display: 'flex', flexDirection: 'column', gap: '24px' }}>
                     <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '16px' }}>
                       <div style={{ padding: '16px', background: '#F9FAFB', borderRadius: '8px' }}>
@@ -4776,8 +4820,8 @@
           </footer>
 
           {/* Modals */}
-          {/* Timeline Modal */}
-          {showTimeline && (
+          {/* Timeline Modal - desktop only */}
+          {!isMobile && showTimeline && (
             <div style={{ position: 'fixed', top: 0, left: 0, right: 0, bottom: 0, background: 'rgba(0,0,0,0.5)', display: 'flex', alignItems: 'center', justifyContent: 'center', zIndex: 3000, padding: '40px' }} onClick={() => setShowTimeline(false)}>
               <div onClick={(e) => e.stopPropagation()} style={{ background: '#FFF', borderRadius: '12px', maxWidth: '1200px', width: '100%', maxHeight: '90vh', overflow: 'auto', boxShadow: '0 20px 60px rgba(0,0,0,0.3)' }}>
                 <Timeline stages={config.stages} totalTime={totalTime} formatTime={formatTime} personas={config.personas} onClose={() => setShowTimeline(false)} />
@@ -4785,8 +4829,8 @@
             </div>
           )}
           
-          {/* Cost Analysis Modal */}
-          {showCostAnalysis && (
+          {/* Cost Analysis Modal - desktop only */}
+          {!isMobile && showCostAnalysis && (
             <div style={{ position: 'fixed', top: 0, left: 0, right: 0, bottom: 0, background: 'rgba(0,0,0,0.5)', display: 'flex', alignItems: 'center', justifyContent: 'center', zIndex: 3000, padding: '40px' }} onClick={() => setShowCostAnalysis(false)}>
               <div onClick={(e) => e.stopPropagation()} style={{ background: '#FFF', borderRadius: '12px', maxWidth: '1400px', width: '100%', maxHeight: '90vh', overflow: 'auto', boxShadow: '0 20px 60px rgba(0,0,0,0.3)' }}>
                 <CostAnalysisPanel stages={config.stages} personas={config.personas} formatTime={formatTime} onClose={() => setShowCostAnalysis(false)} />
