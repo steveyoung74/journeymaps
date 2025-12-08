@@ -285,7 +285,7 @@
     const { useState, useCallback, useMemo, useEffect, useRef } = React;
     
     // Current app version - always displayed in footer
-    const APP_VERSION = "7.6";
+    const APP_VERSION = "7.6.1";
 
     const generateId = () => Math.random().toString(36).substr(2, 9);
 
@@ -3752,7 +3752,18 @@
                         type="text" 
                         value={config.meta.title} 
                         onChange={(e) => setConfig(prev => ({ ...prev, meta: { ...prev.meta, title: e.target.value } }))}
-                        style={{ background: 'rgba(255,255,255,0.1)', border: '1px solid rgba(255,255,255,0.3)', borderRadius: '4px', padding: '4px 8px', fontSize: '20px', fontWeight: 400, letterSpacing: '-0.5px', color: '#FAFAFA', fontFamily: 'Georgia, serif', width: '100%', maxWidth: '400px' }}
+                        style={{ 
+                          background: 'rgba(255,255,255,0.1)', 
+                          border: '1px solid rgba(255,255,255,0.3)', 
+                          borderRadius: '4px', 
+                          padding: '4px 8px', 
+                          fontSize: '20px', 
+                          fontWeight: 400, 
+                          letterSpacing: '-0.5px', 
+                          color: '#FAFAFA', 
+                          fontFamily: 'Georgia, serif', 
+                          width: `${Math.max(200, Math.min(500, config.meta.title.length * 12 + 20))}px`
+                        }}
                       />
                     ) : config.meta.title}
                   </h1>
@@ -4336,7 +4347,17 @@
                               value={stage.name} 
                               onChange={(e) => updateStage(stage.id, { name: e.target.value })}
                               onClick={(e) => e.stopPropagation()}
-                              style={{ background: 'rgba(255,255,255,0.9)', border: 'none', borderRadius: '4px', padding: '6px 10px', fontSize: '18px', fontWeight: 600, color: '#1A1A1A', fontFamily: 'Georgia, serif', width: '100%', maxWidth: '300px' }}
+                              style={{ 
+                                background: 'rgba(255,255,255,0.9)', 
+                                border: 'none', 
+                                borderRadius: '4px', 
+                                padding: '6px 10px', 
+                                fontSize: '18px', 
+                                fontWeight: 600, 
+                                color: '#1A1A1A', 
+                                fontFamily: 'Georgia, serif', 
+                                width: `${Math.max(120, Math.min(300, stage.name.length * 11 + 20))}px`
+                              }}
                             />
                           ) : (
                             <h2 style={{ margin: 0, fontSize: '18px', fontWeight: 600 }}>{stage.name}</h2>
@@ -4424,12 +4445,24 @@
                               </div>
                             </div>
                             {editMode ? (
-                              <input 
-                                type="text" 
+                              <textarea 
                                 value={step.name} 
                                 onChange={(e) => updateStep(stage.id, step.id, { name: e.target.value })}
                                 onClick={(e) => e.stopPropagation()}
-                                style={{ margin: '0 0 8px', fontSize: '16px', fontWeight: 600, lineHeight: 1.3, width: '100%', padding: '4px 6px', border: '1px solid #DDD', borderRadius: '4px', fontFamily: 'Georgia, serif' }}
+                                rows={step.name.length > 25 ? 2 : 1}
+                                style={{ 
+                                  margin: '0 0 8px', 
+                                  fontSize: '16px', 
+                                  fontWeight: 600, 
+                                  lineHeight: 1.3, 
+                                  width: '100%', 
+                                  padding: '4px 6px', 
+                                  border: '1px solid #DDD', 
+                                  borderRadius: '4px', 
+                                  fontFamily: 'Georgia, serif',
+                                  resize: 'none',
+                                  overflow: 'hidden'
+                                }}
                               />
                             ) : (
                               <h3 style={{ margin: '0 0 8px', fontSize: '16px', fontWeight: 600, lineHeight: 1.3, paddingRight: '20px' }}>{step.name}</h3>
