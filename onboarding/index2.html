@@ -285,7 +285,7 @@
     const { useState, useCallback, useMemo, useEffect, useRef } = React;
     
     // Current app version - always displayed in footer
-    const APP_VERSION = "7.5.2";
+    const APP_VERSION = "7.6";
 
     const generateId = () => Math.random().toString(36).substr(2, 9);
 
@@ -3257,20 +3257,29 @@
             stage.id === stageId 
               ? {
                   ...stage,
-                  steps: stage.steps.map(step =>
-                    step.id === stepId 
-                      ? { 
-                          ...step, 
-                          roleInvolvement: {
-                            ...(step.roleInvolvement || {}),
-                            [roleId]: {
-                              ...(step.roleInvolvement?.[roleId] || { timeMinutes: 0, headcount: 1 }),
-                              [field]: value
-                            }
-                          }
-                        }
-                      : step
-                  )
+                  steps: stage.steps.map(step => {
+                    if (step.id !== stepId) return step;
+                    
+                    // Update the roleInvolvement
+                    const newRoleInvolvement = {
+                      ...(step.roleInvolvement || {}),
+                      [roleId]: {
+                        ...(step.roleInvolvement?.[roleId] || { timeMinutes: 0, headcount: 1 }),
+                        [field]: value
+                      }
+                    };
+                    
+                    // Calculate total timeMinutes from all roles
+                    const totalTime = Object.values(newRoleInvolvement).reduce(
+                      (sum, inv) => sum + (inv.timeMinutes || 0), 0
+                    );
+                    
+                    return { 
+                      ...step, 
+                      roleInvolvement: newRoleInvolvement,
+                      timeMinutes: totalTime
+                    };
+                  })
                 }
               : stage
           )
@@ -4402,9 +4411,6 @@
                                 🎯 Save {formatCurrency(automationSavings)} ({step.automationOpportunity === 'high' ? '70' : '40'}%)
                               </div>
                             )}
-                            {editMode && (
-                              <button onClick={(e) => { e.stopPropagation(); removeStep(stage.id, step.id); }} style={{ position: 'absolute', top: '8px', right: '8px', width: '20px', height: '20px', borderRadius: '50%', border: 'none', background: '#C53030', color: '#FFF', cursor: 'pointer', fontSize: '12px', display: 'flex', alignItems: 'center', justifyContent: 'center' }} title="Delete step">×</button>
-                            )}
                             <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '12px' }}>
                               <span style={{ fontFamily: "'Helvetica Neue', Arial, sans-serif", fontSize: '11px', color: '#999', textTransform: 'uppercase', letterSpacing: '0.5px' }}>Step {stageIndex + 1}.{stepIndex + 1}</span>
                               <div style={{ display: 'flex', gap: '6px', alignItems: 'center' }}>
@@ -4591,10 +4597,11 @@
                     <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '16px' }}>
                       <div style={{ padding: '16px', background: '#F9FAFB', borderRadius: '8px' }}>
                         <label style={{ display: 'block', fontFamily: "'Helvetica Neue', Arial, sans-serif", fontSize: '11px', color: '#666', textTransform: 'uppercase', letterSpacing: '0.5px', marginBottom: '8px' }}>Time Required</label>
-                        {editMode ? (
-                          <input type="number" value={selectedStep.timeMinutes} onChange={(e) => { const newTime = parseInt(e.target.value) || 0; updateStep(selectedStep.stageId, selectedStep.id, { timeMinutes: newTime }); setSelectedStep(prev => ({ ...prev, timeMinutes: newTime })); }} style={{ width: '100%', padding: '8px', border: '1px solid #DDD', borderRadius: '4px', fontSize: '18px', fontFamily: 'Georgia, serif' }} />
-                        ) : (
-                          <span style={{ fontSize: '24px', fontWeight: 600 }}>{formatTime(selectedStep.timeMinutes)}</span>
+                        <span style={{ fontSize: '24px', fontWeight: 600 }}>{formatTime(selectedStep.timeMinutes)}</span>
+                        {editMode && (
+                          <div style={{ fontFamily: "'Helvetica Neue', Arial, sans-serif", fontSize: '10px', color: '#999', marginTop: '4px' }}>
+                            Auto-calculated from roles below
+                          </div>
                         )}
                       </div>
                       <div style={{ padding: '16px', background: '#F9FAFB', borderRadius: '8px' }}>
@@ -4811,13 +4818,20 @@
                                       onChange={(e) => {
                                         const newVal = parseInt(e.target.value) || 0;
                                         updateRoleInvolvement(selectedStep.stageId, selectedStep.id, persona.id, 'timeMinutes', newVal);
-                                        setSelectedStep(prev => ({
-                                          ...prev,
-                                          roleInvolvement: {
+                                        setSelectedStep(prev => {
+                                          const newRoleInvolvement = {
                                             ...(prev.roleInvolvement || {}),
                                             [persona.id]: { ...involvement, timeMinutes: newVal }
-                                          }
-                                        }));
+                                          };
+                                          const totalTime = Object.values(newRoleInvolvement).reduce(
+                                            (sum, inv) => sum + (inv.timeMinutes || 0), 0
+                                          );
+                                          return {
+                                            ...prev,
+                                            roleInvolvement: newRoleInvolvement,
+                                            timeMinutes: totalTime
+                                          };
+                                        });
                                       }}
                                       style={{
                                         width: '60px',
