@@ -3,7 +3,7 @@
     "title": "Client Onboarding Journey Scope & Requirements",
     "version": "2.0",
     "product": "Steve's Journey Map v6.1",
-    "lastUpdated": "2025-12-08T16:11:00.768Z",
+    "lastUpdated": "2025-12-08T11:51:39.085Z",
     "audience": "Internal Operations",
     "perspective": "client"
   },
@@ -38,8 +38,8 @@
     },
     {
       "id": "administrator",
-      "label": "Administrator",
-      "color": "#4A5568",
+      "label": "FP Administrator",
+      "color": "#8B4513",
       "annualSalary": 35000,
       "isExternal": false
     },
@@ -63,6 +63,13 @@
       "annualSalary": 25000,
       "isExternal": false,
       "id": "new-business-exec"
+    },
+    {
+      "label": "IM Adminitrator",
+      "color": "#1E40AF",
+      "annualSalary": 35000,
+      "isExternal": false,
+      "id": "im-adminitrator"
     }
   ],
   "stages": [
