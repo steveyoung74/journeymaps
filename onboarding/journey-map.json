@@ -362,8 +362,8 @@
       "steps": [
         {
           "id": "tax-residency",
-          "name": "Tax Residency Self Cert",
-          "description": "Complete tax residency self-certification",
+          "name": "Tax Residency Self Cert & GDPR",
+          "description": "Complete tax residency self-certification and GDPR ",
           "timeMinutes": 15,
           "owner": "fp",
           "touchpoints": [
