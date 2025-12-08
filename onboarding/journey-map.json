@@ -361,45 +361,6 @@
       "name": "Fact Find & Collateral Gathering",
       "steps": [
         {
-          "id": "client-portal-enrolment",
-          "name": "Client Portal Enrolment",
-          "description": "Set up client on secure portal",
-          "timeMinutes": 40,
-          "owner": "fp",
-          "touchpoints": [
-            "Client Portal"
-          ],
-          "painPoints": [
-            "Technical issues with portal setup"
-          ],
-          "emotions": "hopeful",
-          "frictionScore": 2,
-          "automationOpportunity": "high",
-          "automationNotes": "Self-service portal registration possible",
-          "regulatoryRequirements": [
-            "GDPR consent"
-          ],
-          "clientTouchpoint": true,
-          "roleInvolvement": {
-            "fp": {
-              "timeMinutes": 20,
-              "headcount": 1
-            },
-            "im": {
-              "timeMinutes": 20,
-              "headcount": 1
-            },
-            "ops": {
-              "timeMinutes": 0,
-              "headcount": 1
-            }
-          },
-          "actions": {
-            "fp": "Initiates portal enrolment",
-            "im": "Reviews investment preferences setup"
-          }
-        },
-        {
           "id": "tax-residency",
           "name": "Tax Residency Self Cert",
           "description": "Complete tax residency self-certification",
