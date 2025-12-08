@@ -1,9 +1,9 @@
 {
   "meta": {
-    "title": "Client Onboarding Journey - Scope & Requirements",
-    "version": "6.2",
-    "product": "Steve's Journey Map v6.2",
-    "lastUpdated": "2025-12-08T11:55:39.157Z",
+    "title": "Client Onboarding Journey Scope & Requirements",
+    "version": "2.0",
+    "product": "Steve's Journey Map v6.1",
+    "lastUpdated": "2025-12-08T16:11:00.768Z",
     "audience": "Internal Operations",
     "perspective": "client"
   },
@@ -19,28 +19,28 @@
       "id": "fp",
       "label": "Financial Planner",
       "color": "#8B4513",
-      "annualSalary": 85000,
+      "annualSalary": 75000,
       "isExternal": false
     },
     {
       "id": "im",
       "label": "Investment Manager",
       "color": "#1E40AF",
-      "annualSalary": 95000,
+      "annualSalary": 80000,
       "isExternal": false
     },
     {
       "id": "ops",
       "label": "Operations",
       "color": "#6B46C1",
-      "annualSalary": 35000,
+      "annualSalary": 25000,
       "isExternal": false
     },
     {
       "id": "administrator",
       "label": "Administrator",
       "color": "#4A5568",
-      "annualSalary": 32000,
+      "annualSalary": 35000,
       "isExternal": false
     },
     {
@@ -52,10 +52,17 @@
     },
     {
       "label": "Paraplanner",
-      "color": "#7C3AED",
+      "color": "#B45309",
       "annualSalary": 45000,
       "isExternal": false,
       "id": "paraplanner"
+    },
+    {
+      "label": "New Business Exec",
+      "color": "#7C3AED",
+      "annualSalary": 25000,
+      "isExternal": false,
+      "id": "new-business-exec"
     }
   ],
   "stages": [
@@ -68,7 +75,7 @@
           "name": "Triage",
           "description": "Initial assessment of incoming prospect enquiries",
           "timeMinutes": 5,
-          "owner": "ops",
+          "owner": "new-business-exec",
           "touchpoints": [
             "CRM",
             "Email"
@@ -89,20 +96,27 @@
               "headcount": 1
             },
             "ops": {
-              "timeMinutes": 5,
+              "timeMinutes": 0,
+              "headcount": 1
+            },
+            "new-business-exec": {
+              "timeMinutes": 10,
               "headcount": 1
             }
           },
           "actions": {
-            "ops": "Reviews and categorises incoming enquiries"
-          }
+            "ops": "",
+            "new-business-exec": "Reviews and categorises incoming enquiries",
+            "client": "Inputs information into our contact form"
+          },
+          "clientTouchpoint": true
         },
         {
           "id": "fast-track",
           "name": "Fast Track",
           "description": "Determine if client has provided enough information to directly contact FP to check availability for immediate call",
           "timeMinutes": 10,
-          "owner": "ops",
+          "owner": "new-business-exec",
           "touchpoints": [
             "CRM",
             "Phone",
@@ -124,12 +138,17 @@
               "headcount": 1
             },
             "ops": {
+              "timeMinutes": 0,
+              "headcount": 1
+            },
+            "new-business-exec": {
               "timeMinutes": 10,
               "headcount": 1
             }
           },
           "actions": {
-            "ops": "Assesses client information quality, checks FP availability, routes accordingly"
+            "ops": "",
+            "new-business-exec": "Assesses client information quality, checks FP availability, routes accordingly"
           }
         }
       ]
@@ -143,7 +162,7 @@
           "name": "Initial Call",
           "description": "First contact call with prospect",
           "timeMinutes": 20,
-          "owner": "ops",
+          "owner": "new-business-exec",
           "touchpoints": [
             "Phone"
           ],
@@ -164,12 +183,18 @@
               "headcount": 1
             },
             "ops": {
-              "timeMinutes": 20,
+              "timeMinutes": 0,
+              "headcount": 1
+            },
+            "new-business-exec": {
+              "timeMinutes": 15,
               "headcount": 1
             }
           },
           "actions": {
-            "ops": "Conducts initial call, gathers basic information"
+            "ops": "",
+            "new-business-exec": "Conducts initial call, gathers basic information, listens to client carefully",
+            "client": "Answers questions and describes the outcome they want"
           }
         },
         {
@@ -177,7 +202,7 @@
           "name": "Update Excel, Xplan etc",
           "description": "Update CRM and planning systems with prospect details",
           "timeMinutes": 12,
-          "owner": "ops",
+          "owner": "new-business-exec",
           "touchpoints": [
             "Xplan",
             "Excel",
@@ -189,7 +214,7 @@
           "emotions": "neutral",
           "frictionScore": 2,
           "automationOpportunity": "high",
-          "automationNotes": "System integration could eliminate duplicate entry",
+          "automationNotes": "System integration could eliminate duplicate entry, looking to implement Evaluagent to transcribe the call information into Xplan",
           "regulatoryRequirements": [],
           "roleInvolvement": {
             "fp": {
@@ -201,12 +226,17 @@
               "headcount": 1
             },
             "ops": {
+              "timeMinutes": 0,
+              "headcount": 1
+            },
+            "new-business-exec": {
               "timeMinutes": 12,
               "headcount": 1
             }
           },
           "actions": {
-            "ops": "Updates all relevant systems with prospect information"
+            "ops": "",
+            "new-business-exec": "Updates all relevant systems with prospect information"
           }
         },
         {
@@ -366,46 +396,54 @@
           "id": "tax-residency",
           "name": "Tax Residency Self Cert",
           "description": "Complete tax residency self-certification",
-          "timeMinutes": 30,
+          "timeMinutes": 15,
           "owner": "fp",
           "touchpoints": [
             "Client Portal",
             "Forms"
           ],
           "painPoints": [
-            "Clients confused by tax questions"
+            "Clients confused by tax questions",
+            "No clear details of downstream impact on other processes"
           ],
           "emotions": "uncertain",
           "frictionScore": 2,
-          "automationOpportunity": "medium",
-          "automationNotes": "Digital forms with guidance",
+          "automationOpportunity": "high",
+          "automationNotes": "Digital forms with guidance, validation and automated triggers for downstream processes",
           "regulatoryRequirements": [
             "CRS/FATCA requirements"
           ],
           "roleInvolvement": {
             "fp": {
-              "timeMinutes": 15,
+              "timeMinutes": 0,
               "headcount": 1
             },
             "im": {
-              "timeMinutes": 15,
+              "timeMinutes": 0,
               "headcount": 1
             },
             "ops": {
               "timeMinutes": 0,
               "headcount": 1
+            },
+            "administrator": {
+              "timeMinutes": 15,
+              "headcount": 1
             }
           },
           "actions": {
             "fp": "Guides client through tax residency forms",
-            "im": "Reviews for investment implications"
-          }
+            "im": "Reviews for investment implications",
+            "client": "Completes or provides the information required by this form",
+            "administrator": "1, Sends the form to the client via adobe sign to complete and sign.\n2, Once completed, saves form to the clients GNL."
+          },
+          "clientTouchpoint": true
         },
         {
           "id": "idv",
           "name": "ID&V",
           "description": "Identity and verification checks",
-          "timeMinutes": 36,
+          "timeMinutes": 12,
           "owner": "ops",
           "touchpoints": [
             "Verification Platform",
@@ -432,7 +470,7 @@
               "headcount": 1
             },
             "im": {
-              "timeMinutes": 7.5,
+              "timeMinutes": 0,
               "headcount": 1
             },
             "ops": {
@@ -443,8 +481,10 @@
           "actions": {
             "fp": "Initiates ID verification request",
             "im": "Reviews verification for investment accounts",
-            "ops": "Processes and validates ID documents"
-          }
+            "ops": "Processes and validates ID documents",
+            "client": "Provides initial 5 bits of info\nProvides further documented ID or proof if required"
+          },
+          "clientTouchpoint": true
         },
         {
           "id": "screening",
@@ -559,21 +599,27 @@
           "clientTouchpoint": true,
           "roleInvolvement": {
             "fp": {
-              "timeMinutes": 390,
+              "timeMinutes": 330,
               "headcount": 1
             },
             "im": {
-              "timeMinutes": 390,
+              "timeMinutes": 300,
               "headcount": 1
             },
             "ops": {
               "timeMinutes": 0,
               "headcount": 1
+            },
+            "administrator": {
+              "timeMinutes": 60,
+              "headcount": 1
             }
           },
           "actions": {
-            "fp": "Conducts comprehensive fact find meeting",
-            "im": "Gathers investment-specific information"
+            "fp": "Conducts comprehensive fact find meeting, takes notes or updates forms",
+            "im": "Gathers investment-specific information",
+            "client": "Answers all questions asked",
+            "administrator": "Updates the Fact Find A form information into Xplan"
           }
         },
         {
@@ -665,7 +711,7 @@
           "name": "Pricing & Propositions",
           "description": "Research and analysis for pricing and investment propositions",
           "timeMinutes": 864,
-          "owner": "fp",
+          "owner": "paraplanner",
           "touchpoints": [
             "Research Tools",
             "Planning Software"
@@ -684,7 +730,7 @@
           ],
           "roleInvolvement": {
             "fp": {
-              "timeMinutes": 834,
+              "timeMinutes": 30,
               "headcount": 1
             },
             "im": {
@@ -694,11 +740,16 @@
             "ops": {
               "timeMinutes": 0,
               "headcount": 1
+            },
+            "paraplanner": {
+              "timeMinutes": 864,
+              "headcount": 1
             }
           },
           "actions": {
-            "fp": "Conducts research and develops propositions",
-            "im": "Provides investment input and validation"
+            "fp": "Submits request to Paraplanner",
+            "im": "Provides investment input and validation",
+            "paraplanner": "Conducts research and develops propositions"
           }
         },
         {
@@ -706,7 +757,7 @@
           "name": "Fee Illustration",
           "description": "Prepare fee illustrations and cost disclosures",
           "timeMinutes": 86,
-          "owner": "fp",
+          "owner": "paraplanner",
           "touchpoints": [
             "Illustration Software"
           ],
@@ -721,7 +772,7 @@
           ],
           "roleInvolvement": {
             "fp": {
-              "timeMinutes": 83.4,
+              "timeMinutes": 10,
               "headcount": 1
             },
             "im": {
@@ -731,11 +782,16 @@
             "ops": {
               "timeMinutes": 0,
               "headcount": 1
+            },
+            "paraplanner": {
+              "timeMinutes": 86,
+              "headcount": 1
             }
           },
           "actions": {
-            "fp": "Prepares fee illustrations",
-            "im": "Reviews investment cost components"
+            "fp": "Reviews Fee Illustration",
+            "im": "Reviews investment cost components",
+            "paraplanner": "Prepares fee illustrations"
           }
         },
         {
@@ -743,7 +799,7 @@
           "name": "Advice Report",
           "description": "Comprehensive suitability and advice report",
           "timeMinutes": 778,
-          "owner": "fp",
+          "owner": "paraplanner",
           "touchpoints": [
             "Report Software"
           ],
@@ -761,7 +817,7 @@
           ],
           "roleInvolvement": {
             "fp": {
-              "timeMinutes": 750.6,
+              "timeMinutes": 30,
               "headcount": 1
             },
             "im": {
@@ -771,11 +827,17 @@
             "ops": {
               "timeMinutes": 0,
               "headcount": 1
+            },
+            "paraplanner": {
+              "timeMinutes": 750,
+              "headcount": 1
             }
           },
           "actions": {
-            "fp": "Writes comprehensive advice report",
-            "im": "Contributes investment rationale section"
+            "fp": "Reviews and sends report to Client",
+            "im": "Contributes investment rationale section",
+            "paraplanner": "Writes comprehensive suitability and advice report",
+            "client": "Reviews report"
           }
         },
         {
@@ -783,7 +845,7 @@
           "name": "Application Forms",
           "description": "Complete account opening applications",
           "timeMinutes": 183,
-          "owner": "ops",
+          "owner": "administrator",
           "touchpoints": [
             "Provider Portals",
             "DocuSign"
@@ -793,9 +855,9 @@
             "Portal technical issues"
           ],
           "emotions": "neutral",
-          "frictionScore": 3,
+          "frictionScore": 5,
           "automationOpportunity": "high",
-          "automationNotes": "API integration for straight-through processing",
+          "automationNotes": "Digital Dynamic Forms prepopulate all Application forms with API integration for straight-through processing to and from xplan",
           "regulatoryRequirements": [
             "Client consent",
             "Accurate data"
@@ -810,15 +872,22 @@
               "headcount": 1
             },
             "ops": {
-              "timeMinutes": 102.6,
+              "timeMinutes": 0,
+              "headcount": 1
+            },
+            "administrator": {
+              "timeMinutes": 102,
               "headcount": 1
             }
           },
           "actions": {
             "fp": "Reviews and approves applications",
             "im": "Confirms investment selections",
-            "ops": "Prepares and submits application forms"
-          }
+            "ops": "",
+            "administrator": "Prepares and submits application forms",
+            "client": "Receives Application Forms to review/complete"
+          },
+          "clientTouchpoint": true
         },
         {
           "id": "vetting",
