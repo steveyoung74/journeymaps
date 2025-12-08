@@ -285,7 +285,7 @@
     const { useState, useCallback, useMemo, useEffect, useRef } = React;
     
     // Current app version - always displayed in footer
-    const APP_VERSION = "7.6.1";
+    const APP_VERSION = "7.6.2";
 
     const generateId = () => Math.random().toString(36).substr(2, 9);
 
@@ -4366,9 +4366,6 @@
                         <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
                           <span style={{ fontFamily: "'Helvetica Neue', Arial, sans-serif", fontSize: '13px', color: '#FFF', background: 'rgba(255,255,255,0.2)', padding: '4px 10px', borderRadius: '12px' }}>{formatTime(stageTime)}</span>
                           {showCosts && <span style={{ fontFamily: "'Helvetica Neue', Arial, sans-serif", fontSize: '12px', color: '#FFF', background: 'rgba(255,255,255,0.2)', padding: '4px 10px', borderRadius: '12px', fontWeight: 500 }}>{formatCurrency(stageCost)}</span>}
-                          {editMode && (
-                            <button onClick={() => removeStage(stage.id)} style={{ width: '24px', height: '24px', borderRadius: '50%', border: 'none', background: 'rgba(255,255,255,0.3)', color: '#FFF', cursor: 'pointer', fontSize: '14px', display: 'flex', alignItems: 'center', justifyContent: 'center' }} title="Delete stage">×</button>
-                          )}
                         </div>
                       </div>
                     </div>
