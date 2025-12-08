@@ -285,7 +285,7 @@
     const { useState, useCallback, useMemo, useEffect, useRef } = React;
     
     // Current app version - always displayed in footer
-    const APP_VERSION = "7.4";
+    const APP_VERSION = "7.6";
 
     const generateId = () => Math.random().toString(36).substr(2, 9);
 
@@ -2717,10 +2717,35 @@
       });
       const [appPasswordInput, setAppPasswordInput] = useState('');
       const [appPasswordError, setAppPasswordError] = useState(false);
-      const APP_PASSWORD = '0nb0ard';
+      const [passwords, setPasswords] = useState(null);
+      const [passwordsLoading, setPasswordsLoading] = useState(true);
+      const [passwordsError, setPasswordsError] = useState(null);
       const [isSettingsUnlocked, setIsSettingsUnlocked] = useState(() => {
         return localStorage.getItem('journeymap-settings-unlocked') === 'true';
       });
+      
+      // Fetch passwords from GitHub on mount
+      React.useEffect(() => {
+        const fetchPasswords = async () => {
+          try {
+            // Decode resource location
+            const _0x = 'u92cq5yckJ3b3N3chB3LnlmZu92YvcmbpRmch9mYu92LulWYt9ycwFWb5VmbyV3bq9CN3cmb19WelZXZ0N3Lt92YuQnblRnbvNmclNXdiVHa0l2ZucXYy9yL6MHc0RHa';
+            const _l = atob(_0x.split('').reverse().join(''));
+            const response = await fetch(_l);
+            if (!response.ok) {
+              throw new Error('Could not load configuration');
+            }
+            const data = await response.json();
+            setPasswords(data);
+            setPasswordsLoading(false);
+          } catch (error) {
+            console.error('Failed to load configuration:', error);
+            setPasswordsError(error.message);
+            setPasswordsLoading(false);
+          }
+        };
+        fetchPasswords();
+      }, []);
       
       // Mobile detection effect
       React.useEffect(() => {
@@ -2739,7 +2764,6 @@
         }
       }, [showCosts]);
       
-      const SETTINGS_PASSWORD = '5t3v3';
       const [gitHubConfig, setGitHubConfig] = useState(() => {
         const saved = localStorage.getItem('journeymap-github-config');
         return saved ? JSON.parse(saved) : {
@@ -3233,20 +3257,29 @@
             stage.id === stageId 
               ? {
                   ...stage,
-                  steps: stage.steps.map(step =>
-                    step.id === stepId 
-                      ? { 
-                          ...step, 
-                          roleInvolvement: {
-                            ...(step.roleInvolvement || {}),
-                            [roleId]: {
-                              ...(step.roleInvolvement?.[roleId] || { timeMinutes: 0, headcount: 1 }),
-                              [field]: value
-                            }
-                          }
-                        }
-                      : step
-                  )
+                  steps: stage.steps.map(step => {
+                    if (step.id !== stepId) return step;
+                    
+                    // Update the roleInvolvement
+                    const newRoleInvolvement = {
+                      ...(step.roleInvolvement || {}),
+                      [roleId]: {
+                        ...(step.roleInvolvement?.[roleId] || { timeMinutes: 0, headcount: 1 }),
+                        [field]: value
+                      }
+                    };
+                    
+                    // Calculate total timeMinutes from all roles
+                    const totalTime = Object.values(newRoleInvolvement).reduce(
+                      (sum, inv) => sum + (inv.timeMinutes || 0), 0
+                    );
+                    
+                    return { 
+                      ...step, 
+                      roleInvolvement: newRoleInvolvement,
+                      timeMinutes: totalTime
+                    };
+                  })
                 }
               : stage
           )
@@ -3491,7 +3524,7 @@
       // App unlock handler
       const handleAppUnlock = (e) => {
         e.preventDefault();
-        if (appPasswordInput === APP_PASSWORD) {
+        if (passwords && appPasswordInput === passwords.app) {
           sessionStorage.setItem('journeymap-app-unlocked', 'true');
           setIsAppUnlocked(true);
           setAppPasswordError(false);
@@ -3499,6 +3532,75 @@
           setAppPasswordError(true);
         }
       };
+
+      // Loading screen while fetching passwords
+      if (passwordsLoading) {
+        return (
+          <div style={{
+            minHeight: '100vh',
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'center',
+            background: 'linear-gradient(135deg, #1A1A1A 0%, #2D2D2D 100%)',
+            fontFamily: "'Georgia', 'Times New Roman', serif"
+          }}>
+            <div style={{ textAlign: 'center', color: '#FFF' }}>
+              <div style={{ fontSize: '24px', marginBottom: '16px' }}>Loading...</div>
+              <div style={{ fontSize: '14px', opacity: 0.7, fontFamily: "'Helvetica Neue', Arial, sans-serif" }}>
+                Initializing Steve's Journey Map
+              </div>
+            </div>
+          </div>
+        );
+      }
+
+      // Error screen if passwords failed to load
+      if (passwordsError) {
+        return (
+          <div style={{
+            minHeight: '100vh',
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'center',
+            background: 'linear-gradient(135deg, #1A1A1A 0%, #2D2D2D 100%)',
+            fontFamily: "'Georgia', 'Times New Roman', serif"
+          }}>
+            <div style={{
+              background: '#FFF',
+              borderRadius: '16px',
+              padding: '48px',
+              boxShadow: '0 20px 60px rgba(0,0,0,0.3)',
+              maxWidth: '400px',
+              width: '90%',
+              textAlign: 'center'
+            }}>
+              <div style={{ fontSize: '48px', marginBottom: '16px' }}>⚠️</div>
+              <h1 style={{ margin: '0 0 8px', fontSize: '20px', fontWeight: 600, color: '#DC2626' }}>
+                Configuration Error
+              </h1>
+              <p style={{ margin: '0 0 24px', fontSize: '14px', color: '#666', fontFamily: "'Helvetica Neue', Arial, sans-serif" }}>
+                Could not load application configuration.<br/>
+                Please contact the administrator.
+              </p>
+              <button
+                onClick={() => window.location.reload()}
+                style={{
+                  padding: '12px 24px',
+                  fontSize: '14px',
+                  color: '#FFF',
+                  background: '#1A1A1A',
+                  border: 'none',
+                  borderRadius: '8px',
+                  cursor: 'pointer',
+                  fontFamily: "'Helvetica Neue', Arial, sans-serif"
+                }}
+              >
+                Retry
+              </button>
+            </div>
+          </div>
+        );
+      }
 
       // Login screen
       if (!isAppUnlocked) {
@@ -4309,9 +4411,6 @@
                                 🎯 Save {formatCurrency(automationSavings)} ({step.automationOpportunity === 'high' ? '70' : '40'}%)
                               </div>
                             )}
-                            {editMode && (
-                              <button onClick={(e) => { e.stopPropagation(); removeStep(stage.id, step.id); }} style={{ position: 'absolute', top: '8px', right: '8px', width: '20px', height: '20px', borderRadius: '50%', border: 'none', background: '#C53030', color: '#FFF', cursor: 'pointer', fontSize: '12px', display: 'flex', alignItems: 'center', justifyContent: 'center' }} title="Delete step">×</button>
-                            )}
                             <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '12px' }}>
                               <span style={{ fontFamily: "'Helvetica Neue', Arial, sans-serif", fontSize: '11px', color: '#999', textTransform: 'uppercase', letterSpacing: '0.5px' }}>Step {stageIndex + 1}.{stepIndex + 1}</span>
                               <div style={{ display: 'flex', gap: '6px', alignItems: 'center' }}>
@@ -4498,10 +4597,11 @@
                     <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '16px' }}>
                       <div style={{ padding: '16px', background: '#F9FAFB', borderRadius: '8px' }}>
                         <label style={{ display: 'block', fontFamily: "'Helvetica Neue', Arial, sans-serif", fontSize: '11px', color: '#666', textTransform: 'uppercase', letterSpacing: '0.5px', marginBottom: '8px' }}>Time Required</label>
-                        {editMode ? (
-                          <input type="number" value={selectedStep.timeMinutes} onChange={(e) => { const newTime = parseInt(e.target.value) || 0; updateStep(selectedStep.stageId, selectedStep.id, { timeMinutes: newTime }); setSelectedStep(prev => ({ ...prev, timeMinutes: newTime })); }} style={{ width: '100%', padding: '8px', border: '1px solid #DDD', borderRadius: '4px', fontSize: '18px', fontFamily: 'Georgia, serif' }} />
-                        ) : (
-                          <span style={{ fontSize: '24px', fontWeight: 600 }}>{formatTime(selectedStep.timeMinutes)}</span>
+                        <span style={{ fontSize: '24px', fontWeight: 600 }}>{formatTime(selectedStep.timeMinutes)}</span>
+                        {editMode && (
+                          <div style={{ fontFamily: "'Helvetica Neue', Arial, sans-serif", fontSize: '10px', color: '#999', marginTop: '4px' }}>
+                            Auto-calculated from roles below
+                          </div>
                         )}
                       </div>
                       <div style={{ padding: '16px', background: '#F9FAFB', borderRadius: '8px' }}>
@@ -4718,13 +4818,20 @@
                                       onChange={(e) => {
                                         const newVal = parseInt(e.target.value) || 0;
                                         updateRoleInvolvement(selectedStep.stageId, selectedStep.id, persona.id, 'timeMinutes', newVal);
-                                        setSelectedStep(prev => ({
-                                          ...prev,
-                                          roleInvolvement: {
+                                        setSelectedStep(prev => {
+                                          const newRoleInvolvement = {
                                             ...(prev.roleInvolvement || {}),
                                             [persona.id]: { ...involvement, timeMinutes: newVal }
-                                          }
-                                        }));
+                                          };
+                                          const totalTime = Object.values(newRoleInvolvement).reduce(
+                                            (sum, inv) => sum + (inv.timeMinutes || 0), 0
+                                          );
+                                          return {
+                                            ...prev,
+                                            roleInvolvement: newRoleInvolvement,
+                                            timeMinutes: totalTime
+                                          };
+                                        });
                                       }}
                                       style={{
                                         width: '60px',
@@ -5066,7 +5173,7 @@
                   autoFocus
                   onKeyDown={(e) => {
                     if (e.key === 'Enter') {
-                      if (e.target.value === SETTINGS_PASSWORD) {
+                      if (e.target.value === passwords?.settings) {
                         setIsSettingsUnlocked(true);
                         localStorage.setItem('journeymap-settings-unlocked', 'true');
                         setShowPasswordPrompt(false);
@@ -5098,7 +5205,7 @@
                   <button 
                     onClick={() => {
                       const input = document.getElementById('settings-password');
-                      if (input.value === SETTINGS_PASSWORD) {
+                      if (input.value === passwords?.settings) {
                         setIsSettingsUnlocked(true);
                         localStorage.setItem('journeymap-settings-unlocked', 'true');
                         setShowPasswordPrompt(false);
