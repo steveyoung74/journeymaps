@@ -3,7 +3,7 @@
     "title": "Client Onboarding Journey Scope & Requirements",
     "version": "2.0",
     "product": "Steve's Journey Map v6.1",
-    "lastUpdated": "2025-12-08T16:57:20.898Z",
+    "lastUpdated": "2025-12-08T17:04:51.722Z",
     "audience": "Internal Operations",
     "perspective": "client"
   },
@@ -461,7 +461,7 @@
           "id": "screening",
           "name": "Screening",
           "description": "Screen for Politically Exposed Persons and sanctions",
-          "timeMinutes": 36,
+          "timeMinutes": 37,
           "owner": "ops",
           "touchpoints": [
             "Screening Platform"
