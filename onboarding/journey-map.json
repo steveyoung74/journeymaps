@@ -49,6 +49,13 @@
       "color": "#C53030",
       "annualSalary": 55000,
       "isExternal": false
+    },
+    {
+      "label": "Paraplanner",
+      "color": "#7C3AED",
+      "annualSalary": 45000,
+      "isExternal": false,
+      "id": "paraplanner"
     }
   ],
   "stages": [
