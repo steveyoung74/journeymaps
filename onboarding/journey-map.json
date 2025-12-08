@@ -3,7 +3,7 @@
     "title": "Client Onboarding Journey Scope & Requirements",
     "version": "2.0",
     "product": "Steve's Journey Map v6.1",
-    "lastUpdated": "2025-12-08T17:04:51.722Z",
+    "lastUpdated": "2025-12-08T11:51:39.085Z",
     "audience": "Internal Operations",
     "perspective": "client"
   },
@@ -168,7 +168,7 @@
           "id": "initial-call",
           "name": "Initial Call",
           "description": "First contact call with prospect",
-          "timeMinutes": 20,
+          "timeMinutes": 15,
           "owner": "new-business-exec",
           "touchpoints": [
             "Phone"
@@ -362,11 +362,12 @@
       "steps": [
         {
           "id": "tax-residency",
-          "name": "Tax Residency Self Cert & GDPR",
-          "description": "Complete tax residency self-certification and GDPR ",
+          "name": "Tax Residency Self Cert",
+          "description": "Complete tax residency self-certification",
           "timeMinutes": 15,
           "owner": "fp",
           "touchpoints": [
+            "Client Portal",
             "Forms"
           ],
           "painPoints": [
@@ -399,8 +400,8 @@
             }
           },
           "actions": {
-            "fp": "",
-            "im": "",
+            "fp": "Guides client through tax residency forms",
+            "im": "Reviews for investment implications",
             "client": "Completes or provides the information required by this form",
             "administrator": "1, Sends the form to the client via adobe sign to complete and sign.\n2, Once completed, saves form to the clients GNL."
           },
@@ -410,19 +411,20 @@
           "id": "idv",
           "name": "ID&V",
           "description": "Identity and verification checks",
-          "timeMinutes": 37,
+          "timeMinutes": 12,
           "owner": "ops",
           "touchpoints": [
-            "Refinitiv Platform"
+            "Verification Platform",
+            "Client Portal"
           ],
           "painPoints": [
-            "Manual process to trigger ID&V",
-            "Manual Process to copy across from xplan to Refinitiv"
+            "Document quality issues",
+            "Multiple attempts needed"
           ],
           "emotions": "neutral",
-          "frictionScore": 3,
+          "frictionScore": 2,
           "automationOpportunity": "high",
-          "automationNotes": "Straight through processing for the majority of cases,",
+          "automationNotes": "Automated ID verification services available",
           "regulatoryRequirements": [
             "AML/KYC",
             "MLR 2017"
@@ -432,7 +434,7 @@
           "checkpointDetails": "Client identity must be verified to AML/KYC standards before any financial advice can be provided. Requires valid government ID and proof of address dated within 3 months.",
           "roleInvolvement": {
             "fp": {
-              "timeMinutes": 0,
+              "timeMinutes": 7.5,
               "headcount": 1
             },
             "im": {
@@ -442,18 +444,13 @@
             "ops": {
               "timeMinutes": 28.5,
               "headcount": 1
-            },
-            "administrator": {
-              "timeMinutes": 8,
-              "headcount": 1
             }
           },
           "actions": {
-            "fp": "",
-            "im": "",
-            "ops": "Manage the ID&V case via the Refinitiv portal and feed back to front office",
-            "client": "Provides initial 5 bits of info\nProvides further documented ID or proof if required",
-            "administrator": "Initiates ID verification request\nCo-ordinates with client for further documentation"
+            "fp": "Initiates ID verification request",
+            "im": "Reviews verification for investment accounts",
+            "ops": "Processes and validates ID documents",
+            "client": "Provides initial 5 bits of info\nProvides further documented ID or proof if required"
           },
           "clientTouchpoint": true
         },
@@ -461,7 +458,7 @@
           "id": "screening",
           "name": "Screening",
           "description": "Screen for Politically Exposed Persons and sanctions",
-          "timeMinutes": 37,
+          "timeMinutes": 36,
           "owner": "ops",
           "touchpoints": [
             "Screening Platform"
@@ -470,9 +467,9 @@
             "False positives require manual review"
           ],
           "emotions": "neutral",
-          "frictionScore": 3,
-          "automationOpportunity": "high",
-          "automationNotes": "Straight through processing for the majority of cases,",
+          "frictionScore": 2,
+          "automationOpportunity": "medium",
+          "automationNotes": "Automated screening with manual exception handling",
           "regulatoryRequirements": [
             "AML regulations",
             "Sanctions compliance"
@@ -482,19 +479,15 @@
           "checkpointDetails": "PEP and sanctions screening must be completed and cleared before proceeding. Any matches require escalation to Compliance for review and sign-off.",
           "roleInvolvement": {
             "fp": {
-              "timeMinutes": 0,
+              "timeMinutes": 7.5,
               "headcount": 1
             },
             "im": {
-              "timeMinutes": 0,
+              "timeMinutes": 7.5,
               "headcount": 1
             },
             "ops": {
               "timeMinutes": 28.5,
-              "headcount": 1
-            },
-            "administrator": {
-              "timeMinutes": 8,
               "headcount": 1
             }
           },
