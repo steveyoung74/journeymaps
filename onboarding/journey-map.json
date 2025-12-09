@@ -3,7 +3,7 @@
     "title": "Client Onboarding Journey Scope & Requirements",
     "version": "2.0",
     "product": "Steve's Journey Map v6.1",
-    "lastUpdated": "2025-12-08T17:05:26.652Z",
+    "lastUpdated": "2025-12-09T11:37:42.765Z",
     "audience": "Internal Operations",
     "perspective": "client"
   },
@@ -513,40 +513,51 @@
           "touchpoints": [
             "Provider Portals",
             "Post",
-            "Email"
+            "Email",
+            "secure messaging"
           ],
           "painPoints": [
             "Provider delays",
             "Chasing responses",
-            "Different provider processes"
+            "Different provider processes",
+            "3rd parties require wet signatures",
+            "Manual internal processes"
           ],
           "emotions": "waiting",
-          "frictionScore": 4,
+          "frictionScore": 5,
           "automationOpportunity": "medium",
-          "automationNotes": "Origo integration for some providers",
+          "automationNotes": "Opportunity to digitise internal Evelyn manual processes.  However a lot of the delays come from 3rd parties which is not within our control to fix.",
           "regulatoryRequirements": [
             "Client consent",
             "Data protection"
           ],
           "roleInvolvement": {
             "fp": {
-              "timeMinutes": 87.5,
+              "timeMinutes": 0,
               "headcount": 1
             },
             "im": {
-              "timeMinutes": 35,
+              "timeMinutes": 0,
               "headcount": 1
             },
             "ops": {
               "timeMinutes": 365,
               "headcount": 1
+            },
+            "administrator": {
+              "timeMinutes": 88,
+              "headcount": 1
             }
           },
           "actions": {
-            "fp": "Prepares LOA requests, reviews returned information",
+            "fp": "",
             "im": "Reviews existing investment information",
-            "ops": "Sends LOAs, chases providers, logs responses"
-          }
+            "ops": "1, Script team will follow up  to check that the 3rd party received the LOA and find out timescales for info return3, Once the info is returned by the provider, script team then create a \"script\" filling in the info provided and then they will contact the 3rd party to get any information that is missing.\n3, Once complete, the script team then re-key the information back into xplan",
+            "client": "Client will receive a LOA to physically sign that covers each provider that they have current holdings with.  They will need to print out the letter, sign it, scan it and then send it back to us.",
+            "administrator": "1. Prepares LOA letter to send to clients.  \n2. Once retuned, send LOA along with a covering letter to each provider to request asset info\n3, Create a task for the script team* to chase providers and create script for more info if required "
+          },
+          "isHardCheckpoint": true,
+          "clientTouchpoint": true
         },
         {
           "id": "fact-find-a",
