@@ -283,7 +283,7 @@
     const { useState, useCallback, useMemo, useEffect, useRef } = React;
     
     // Current app version - always displayed in footer
-    const APP_VERSION = "7.7.5";
+    const APP_VERSION = "7.7.6";
 
     const generateId = () => Math.random().toString(36).substr(2, 9);
 
@@ -4508,6 +4508,9 @@
                         const automationSavings = step.automationOpportunity === 'high' ? stepCost * 0.7 
                           : step.automationOpportunity === 'medium' ? stepCost * 0.4 
                           : step.automationOpportunity === 'low' ? stepCost * 0.1 : 0;
+                        const timeSavings = step.automationOpportunity === 'high' ? step.timeMinutes * 0.7 
+                          : step.automationOpportunity === 'medium' ? step.timeMinutes * 0.4 
+                          : step.automationOpportunity === 'low' ? step.timeMinutes * 0.1 : 0;
                         const isHighOpportunity = highlightOpportunities && step.automationOpportunity === 'high' && stepCost > 50;
                         const isMediumOpportunity = highlightOpportunities && step.automationOpportunity === 'medium' && stepCost > 100;
                         const stageColor = `hsl(${stageIndex * 45 + 180}, 35%, 45%)`;
@@ -4554,7 +4557,7 @@
                                 gap: '4px',
                                 boxShadow: '0 2px 4px rgba(0,0,0,0.1)'
                               }}>
-                                🎯 Save {formatCurrency(automationSavings)} ({step.automationOpportunity === 'high' ? '70' : '40'}%)
+                                🎯 Save {formatTime(Math.round(timeSavings))} · {formatCurrency(automationSavings)} ({step.automationOpportunity === 'high' ? '70' : '40'}%)
                               </div>
                             )}
                             <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '12px' }}>
@@ -4928,6 +4931,9 @@
                             </div>
                           </div>
                           <div style={{ textAlign: 'right' }}>
+                            <div style={{ fontFamily: "'Helvetica Neue', Arial, sans-serif", fontSize: '14px', fontWeight: 600, color: '#065F46', marginBottom: '2px' }}>
+                              {formatTime(Math.round(selectedStep.timeMinutes * (selectedStep.automationOpportunity === 'high' ? 0.7 : selectedStep.automationOpportunity === 'medium' ? 0.4 : 0.1)))}
+                            </div>
                             <div style={{ fontFamily: "'Helvetica Neue', Arial, sans-serif", fontSize: '18px', fontWeight: 700, color: '#065F46' }}>
                               {formatCurrency(
                                 calculateStepCost(selectedStep, config.personas) * 
