@@ -3,7 +3,7 @@
     "title": "Client Onboarding Journey Scope & Requirements",
     "version": "2.0",
     "product": "Steve's Journey Map v6.1",
-    "lastUpdated": "2025-12-09T16:03:22.215Z",
+    "lastUpdated": "2025-12-09T16:18:41.940Z",
     "audience": "Internal Operations",
     "perspective": "client"
   },
@@ -923,41 +923,55 @@
           "id": "vetting",
           "name": "Vetting",
           "description": "Internal vetting and compliance review",
-          "timeMinutes": 240,
+          "timeMinutes": 139,
           "owner": "fp",
           "touchpoints": [
-            "Internal Systems"
+            "xplan",
+            "Case Manager",
+            "Excel"
           ],
           "painPoints": [
-            "Bottleneck in compliance review"
+            "Manual vetting checks using excel",
+            "Each account to be opened has it's own set of checks",
+            "Checking Front Office work",
+            "vetting done at the very end of the process rather than inline",
+            "High failure rates (60%)"
           ],
           "emotions": "waiting",
-          "frictionScore": 4,
-          "automationOpportunity": "medium",
-          "automationNotes": "Automated compliance checklists",
+          "frictionScore": 5,
+          "automationOpportunity": "high",
+          "automationNotes": "Automated asynchronous vetting checks done digitally throughout the process rather than at the end,  ",
           "regulatoryRequirements": [
             "Internal compliance",
             "Sign-off requirements"
           ],
           "roleInvolvement": {
             "fp": {
-              "timeMinutes": 100,
+              "timeMinutes": 20,
               "headcount": 1
             },
             "im": {
-              "timeMinutes": 100,
+              "timeMinutes": 0,
               "headcount": 1
             },
             "ops": {
               "timeMinutes": 40,
               "headcount": 1
+            },
+            "administrator": {
+              "timeMinutes": 79,
+              "headcount": 1
             }
           },
           "actions": {
-            "fp": "Completes vetting checklist",
-            "im": "Reviews investment rationale",
-            "ops": "Coordinates vetting process"
-          }
+            "fp": "Liaise with Administrator and client when needed",
+            "im": "",
+            "ops": "Undertakes vetting checks",
+            "administrator": "Raise Account Opening Request\nLiaise with client and Vetting team to resolve issues, gather more info"
+          },
+          "isHardCheckpoint": true,
+          "checkpointType": "vetting",
+          "checkpointDetails": "Cannot commence account opening until the case has passed vetting"
         },
         {
           "id": "account-opening",
