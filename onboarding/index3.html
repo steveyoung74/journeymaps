@@ -285,7 +285,7 @@
     const { useState, useCallback, useMemo, useEffect, useRef } = React;
     
     // Current app version - always displayed in footer
-    const APP_VERSION = "7.7";
+    const APP_VERSION = "7.7.1";
 
     const generateId = () => Math.random().toString(36).substr(2, 9);
 
@@ -5288,7 +5288,7 @@
           {/* Timeline Modal - desktop only */}
           {!isMobile && showTimeline && (
             <div style={{ position: 'fixed', top: 0, left: 0, right: 0, bottom: 0, background: 'rgba(0,0,0,0.5)', display: 'flex', alignItems: 'center', justifyContent: 'center', zIndex: 3000, padding: '40px' }} onClick={() => setShowTimeline(false)}>
-              <div onClick={(e) => e.stopPropagation()} style={{ background: '#FFF', borderRadius: '12px', maxWidth: '1200px', width: '100%', maxHeight: '90vh', overflow: 'auto', boxShadow: '0 20px 60px rgba(0,0,0,0.3)' }}>
+              <div onClick={(e) => e.stopPropagation()} style={{ background: '#FFF', borderRadius: '12px', maxWidth: '1400px', width: '100%', maxHeight: '90vh', overflow: 'auto', boxShadow: '0 20px 60px rgba(0,0,0,0.3)' }}>
                 <Timeline stages={config.stages} totalTime={totalTime} formatTime={formatTime} personas={config.personas} onClose={() => setShowTimeline(false)} showCosts={showCosts} />
               </div>
             </div>
