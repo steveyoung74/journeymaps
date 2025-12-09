@@ -285,7 +285,7 @@
     const { useState, useCallback, useMemo, useEffect, useRef } = React;
     
     // Current app version - always displayed in footer
-    const APP_VERSION = "7.7.1";
+    const APP_VERSION = "7.7.2";
 
     const generateId = () => Math.random().toString(36).substr(2, 9);
 
@@ -3194,7 +3194,7 @@
           owner: stepData.owner,
           touchpoints: [],
           painPoints: [],
-          emotions: 'neutral',
+          emotions: [],
           frictionScore: stepData.frictionScore || 3,
           automationOpportunity: stepData.automationOpportunity || 'medium',
           automationNotes: '',
@@ -3279,7 +3279,7 @@
           owner: stepData.owner || 'ops',
           touchpoints: [],
           painPoints: [],
-          emotions: 'neutral',
+          emotions: [],
           frictionScore: stepData.frictionScore || 3,
           automationOpportunity: stepData.automationOpportunity || 'medium',
           automationNotes: '',
@@ -4667,10 +4667,19 @@
                                 </div>
                               )}
                             </div>
-                            <div style={{ display: 'inline-flex', alignItems: 'center', gap: '6px', padding: '6px 10px', background: emotionColors[step.emotions]?.bg || '#F5F5F5', borderRadius: '16px', marginBottom: '8px', alignSelf: 'flex-start' }}>
-                              <span>{emotionColors[step.emotions]?.icon || '😐'}</span>
-                              <span style={{ fontFamily: "'Helvetica Neue', Arial, sans-serif", fontSize: '11px', color: emotionColors[step.emotions]?.text || '#666', textTransform: 'capitalize', fontWeight: 500 }}>{step.emotions}</span>
-                            </div>
+                            {(() => {
+                              const stepEmotions = Array.isArray(step.emotions) ? step.emotions : (step.emotions ? [step.emotions] : []);
+                              return stepEmotions.length > 0 && (
+                                <div style={{ display: 'flex', flexWrap: 'wrap', gap: '4px', marginBottom: '8px' }}>
+                                  {stepEmotions.map(emotion => (
+                                    <div key={emotion} style={{ display: 'inline-flex', alignItems: 'center', gap: '4px', padding: '4px 8px', background: emotionColors[emotion]?.bg || '#F5F5F5', borderRadius: '12px' }}>
+                                      <span style={{ fontSize: '12px' }}>{emotionColors[emotion]?.icon || '😐'}</span>
+                                      <span style={{ fontFamily: "'Helvetica Neue', Arial, sans-serif", fontSize: '10px', color: emotionColors[emotion]?.text || '#666', textTransform: 'capitalize', fontWeight: 500 }}>{emotion}</span>
+                                    </div>
+                                  ))}
+                                </div>
+                              );
+                            })()}
                             {/* Spacer to push reg reqs and pain points to bottom */}
                             <div style={{ flex: 1 }} />
                             {/* Hard Checkpoint indicator */}
@@ -5254,20 +5263,42 @@
                     </div>
                     {/* Emotion */}
                     <div style={{ marginTop: '24px' }}>
-                      <label style={{ display: 'block', fontFamily: "'Helvetica Neue', Arial, sans-serif", fontSize: '11px', color: '#666', textTransform: 'uppercase', letterSpacing: '0.5px', marginBottom: '12px' }}>Client Emotion</label>
+                      <label style={{ display: 'block', fontFamily: "'Helvetica Neue', Arial, sans-serif", fontSize: '11px', color: '#666', textTransform: 'uppercase', letterSpacing: '0.5px', marginBottom: '12px' }}>Client Emotions <span style={{ fontWeight: 400, textTransform: 'none' }}>(select multiple)</span></label>
                       {editMode ? (
                         <div style={{ display: 'flex', flexWrap: 'wrap', gap: '8px' }}>
-                          {Object.entries(emotionColors).map(([emotion, colors]) => (
-                            <button key={emotion} onClick={() => { updateStep(selectedStep.stageId, selectedStep.id, { emotions: emotion }); setSelectedStep(prev => ({ ...prev, emotions: emotion })); }} style={{ padding: '8px 14px', background: selectedStep.emotions === emotion ? colors.bg : '#F5F5F5', border: '2px solid', borderColor: selectedStep.emotions === emotion ? colors.text : 'transparent', borderRadius: '20px', cursor: 'pointer', display: 'flex', alignItems: 'center', gap: '6px' }}>
-                              <span>{colors.icon}</span>
-                              <span style={{ fontFamily: "'Helvetica Neue', Arial, sans-serif", fontSize: '12px', color: selectedStep.emotions === emotion ? colors.text : '#666', textTransform: 'capitalize' }}>{emotion}</span>
-                            </button>
-                          ))}
+                          {Object.entries(emotionColors).map(([emotion, colors]) => {
+                            const currentEmotions = Array.isArray(selectedStep.emotions) ? selectedStep.emotions : (selectedStep.emotions ? [selectedStep.emotions] : []);
+                            const isSelected = currentEmotions.includes(emotion);
+                            return (
+                              <button key={emotion} onClick={() => { 
+                                const newEmotions = isSelected 
+                                  ? currentEmotions.filter(e => e !== emotion)
+                                  : [...currentEmotions, emotion];
+                                updateStep(selectedStep.stageId, selectedStep.id, { emotions: newEmotions }); 
+                                setSelectedStep(prev => ({ ...prev, emotions: newEmotions })); 
+                              }} style={{ padding: '8px 14px', background: isSelected ? colors.bg : '#F5F5F5', border: '2px solid', borderColor: isSelected ? colors.text : 'transparent', borderRadius: '20px', cursor: 'pointer', display: 'flex', alignItems: 'center', gap: '6px' }}>
+                                <span>{colors.icon}</span>
+                                <span style={{ fontFamily: "'Helvetica Neue', Arial, sans-serif", fontSize: '12px', color: isSelected ? colors.text : '#666', textTransform: 'capitalize' }}>{emotion}</span>
+                              </button>
+                            );
+                          })}
                         </div>
                       ) : (
-                        <div style={{ display: 'inline-flex', alignItems: 'center', gap: '8px', padding: '10px 16px', background: emotionColors[selectedStep.emotions]?.bg || '#F5F5F5', borderRadius: '20px' }}>
-                          <span style={{ fontSize: '18px' }}>{emotionColors[selectedStep.emotions]?.icon || '😐'}</span>
-                          <span style={{ fontFamily: "'Helvetica Neue', Arial, sans-serif", fontSize: '14px', color: emotionColors[selectedStep.emotions]?.text || '#666', textTransform: 'capitalize', fontWeight: 500 }}>{selectedStep.emotions}</span>
+                        <div style={{ display: 'flex', flexWrap: 'wrap', gap: '8px' }}>
+                          {(() => {
+                            const displayEmotions = Array.isArray(selectedStep.emotions) ? selectedStep.emotions : (selectedStep.emotions ? [selectedStep.emotions] : []);
+                            return displayEmotions.length > 0 ? displayEmotions.map(emotion => (
+                              <div key={emotion} style={{ display: 'inline-flex', alignItems: 'center', gap: '8px', padding: '10px 16px', background: emotionColors[emotion]?.bg || '#F5F5F5', borderRadius: '20px' }}>
+                                <span style={{ fontSize: '18px' }}>{emotionColors[emotion]?.icon || '😐'}</span>
+                                <span style={{ fontFamily: "'Helvetica Neue', Arial, sans-serif", fontSize: '14px', color: emotionColors[emotion]?.text || '#666', textTransform: 'capitalize', fontWeight: 500 }}>{emotion}</span>
+                              </div>
+                            )) : (
+                              <div style={{ display: 'inline-flex', alignItems: 'center', gap: '8px', padding: '10px 16px', background: '#F5F5F5', borderRadius: '20px' }}>
+                                <span style={{ fontSize: '18px' }}>😐</span>
+                                <span style={{ fontFamily: "'Helvetica Neue', Arial, sans-serif", fontSize: '14px', color: '#666', fontWeight: 500 }}>No emotion set</span>
+                              </div>
+                            );
+                          })()}
                         </div>
                       )}
                     </div>
