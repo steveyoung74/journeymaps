@@ -3,7 +3,7 @@
     "title": "Client Onboarding Journey Scope & Requirements",
     "version": "2.0",
     "product": "Steve's Journey Map v6.1",
-    "lastUpdated": "2025-12-09T14:58:07.364Z",
+    "lastUpdated": "2025-12-09T16:03:22.215Z",
     "audience": "Internal Operations",
     "perspective": "client"
   },
@@ -708,7 +708,10 @@
             "fp": "Completes the Fact Find B on xplan.  This is essentially and review and overview of the information collected during Fact Find A including Oxford Risk, Client Vulnerabilities Objectives, Investment knowledge etc, ",
             "im": "",
             "paraplanner": "Uses Fact Find B as the summary that to feeds into Advice research and analysis"
-          }
+          },
+          "isHardCheckpoint": true,
+          "checkpointType": "vetting",
+          "checkpointDetails": "FFB needs to be in place before Stage 4 can commence"
         }
       ]
     },
