@@ -3,7 +3,7 @@
     "title": "Client Onboarding Journey Scope & Requirements",
     "version": "2.0",
     "product": "Steve's Journey Map v6.1",
-    "lastUpdated": "2025-12-09T14:00:02.562Z",
+    "lastUpdated": "2025-12-09T14:16:26.578Z",
     "audience": "Internal Operations",
     "perspective": "client"
   },
@@ -714,7 +714,7 @@
           "id": "pricing-propositions",
           "name": "Pricing & Propositions",
           "description": "Research and analysis for pricing and investment propositions",
-          "timeMinutes": 864,
+          "timeMinutes": 894,
           "owner": "paraplanner",
           "touchpoints": [
             "Research Tools",
@@ -722,7 +722,9 @@
           ],
           "painPoints": [
             "Time intensive research",
-            "Complex analysis"
+            "Complex analysis",
+            "Paraplanners often have to request updated valuations from 3rd parties due to time lapsed since LOA",
+            "Long wait times for clients due to Paraplanner backlogs"
           ],
           "emotions": "waiting",
           "frictionScore": 5,
@@ -738,7 +740,7 @@
               "headcount": 1
             },
             "im": {
-              "timeMinutes": 30,
+              "timeMinutes": 0,
               "headcount": 1
             },
             "ops": {
@@ -752,8 +754,8 @@
           },
           "actions": {
             "fp": "Submits request to Paraplanner",
-            "im": "Provides investment input and validation",
-            "paraplanner": "Conducts research and develops propositions"
+            "im": "",
+            "paraplanner": "1, Checks that all correct information has been collected by FP\n2, Conducts research and develops propositions"
           }
         },
         {
