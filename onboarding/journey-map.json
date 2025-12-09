@@ -3,7 +3,7 @@
     "title": "Client Onboarding Journey Scope & Requirements",
     "version": "2.0",
     "product": "Steve's Journey Map v6.1",
-    "lastUpdated": "2025-12-09T14:16:26.578Z",
+    "lastUpdated": "2025-12-09T14:27:50.972Z",
     "audience": "Internal Operations",
     "perspective": "client"
   },
@@ -762,13 +762,17 @@
           "id": "fee-illustration",
           "name": "Fee Illustration",
           "description": "Prepare fee illustrations and cost disclosures",
-          "timeMinutes": 86,
+          "timeMinutes": 84,
           "owner": "paraplanner",
           "touchpoints": [
             "Illustration Software"
           ],
-          "painPoints": [],
-          "emotions": "neutral",
+          "painPoints": [
+            "complex process"
+          ],
+          "emotions": [
+            "waiting"
+          ],
           "frictionScore": 2,
           "automationOpportunity": "high",
           "automationNotes": "Template-based generation",
@@ -778,11 +782,11 @@
           ],
           "roleInvolvement": {
             "fp": {
-              "timeMinutes": 10,
+              "timeMinutes": 0,
               "headcount": 1
             },
             "im": {
-              "timeMinutes": 3,
+              "timeMinutes": 0,
               "headcount": 1
             },
             "ops": {
@@ -790,13 +794,13 @@
               "headcount": 1
             },
             "paraplanner": {
-              "timeMinutes": 86,
+              "timeMinutes": 84,
               "headcount": 1
             }
           },
           "actions": {
-            "fp": "Reviews Fee Illustration",
-            "im": "Reviews investment cost components",
+            "fp": "",
+            "im": "",
             "paraplanner": "Prepares fee illustrations"
           }
         },
@@ -804,14 +808,16 @@
           "id": "advice-report",
           "name": "Advice Report",
           "description": "Comprehensive suitability and advice report",
-          "timeMinutes": 778,
+          "timeMinutes": 750,
           "owner": "paraplanner",
           "touchpoints": [
-            "Report Software"
+            "Report Software",
+            "Siesmic"
           ],
           "painPoints": [
             "Report writing time intensive",
-            "Compliance review delays"
+            "Compliance review delays",
+            "Rekeying info"
           ],
           "emotions": "waiting",
           "frictionScore": 5,
@@ -827,7 +833,7 @@
               "headcount": 1
             },
             "im": {
-              "timeMinutes": 27,
+              "timeMinutes": 0,
               "headcount": 1
             },
             "ops": {
@@ -835,7 +841,7 @@
               "headcount": 1
             },
             "paraplanner": {
-              "timeMinutes": 750,
+              "timeMinutes": 720,
               "headcount": 1
             }
           },
@@ -850,17 +856,23 @@
           "id": "account-opening-forms",
           "name": "Application Forms",
           "description": "Complete account opening applications",
-          "timeMinutes": 183,
+          "timeMinutes": 142,
           "owner": "administrator",
           "touchpoints": [
-            "Provider Portals",
-            "DocuSign"
+            "AdobeSign",
+            "xplan",
+            "Form finder"
           ],
           "painPoints": [
-            "Different provider formats",
-            "Portal technical issues"
+            "Adobesign only allows 1 single person to manage that document",
+            "Multiple versions of each form depending on service, account type and entity",
+            "Form finder can be complex to find the correct form",
+            "Manual rekeying from xplan into adobe sign to prepopulate for client",
+            "Duplication of information that already exists"
           ],
-          "emotions": "neutral",
+          "emotions": [
+            "neutral"
+          ],
           "frictionScore": 5,
           "automationOpportunity": "high",
           "automationNotes": "Digital Dynamic Forms prepopulate all Application forms with API integration for straight-through processing to and from xplan",
@@ -870,30 +882,33 @@
           ],
           "roleInvolvement": {
             "fp": {
-              "timeMinutes": 40,
-              "headcount": 1
-            },
-            "im": {
-              "timeMinutes": 40,
-              "headcount": 1
-            },
-            "ops": {
               "timeMinutes": 0,
               "headcount": 1
             },
-            "administrator": {
+            "im": {
+              "timeMinutes": 0,
+              "headcount": 1
+            },
+            "ops": {
               "timeMinutes": 102,
+              "headcount": 1
+            },
+            "administrator": {
+              "timeMinutes": 40,
               "headcount": 1
             }
           },
           "actions": {
-            "fp": "Reviews and approves applications",
-            "im": "Confirms investment selections",
-            "ops": "",
-            "administrator": "Prepares and submits application forms",
-            "client": "Receives Application Forms to review/complete"
+            "fp": "",
+            "im": "",
+            "ops": "TBC",
+            "administrator": "Manages completion of the forms with the client",
+            "client": "Receives Application Forms to review/complete and sign"
           },
-          "clientTouchpoint": true
+          "clientTouchpoint": true,
+          "isHardCheckpoint": true,
+          "checkpointType": "vetting",
+          "checkpointDetails": "Cannot open the accounts if the Account opening form has not been completed or signed"
         },
         {
           "id": "vetting",
