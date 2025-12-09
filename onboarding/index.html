@@ -285,7 +285,7 @@
     const { useState, useCallback, useMemo, useEffect, useRef } = React;
     
     // Current app version - always displayed in footer
-    const APP_VERSION = "7.7.3";
+    const APP_VERSION = "7.7.4";
 
     const generateId = () => Math.random().toString(36).substr(2, 9);
 
@@ -1218,8 +1218,8 @@
             display: 'flex',
             height: '48px',
             borderRadius: '8px',
-            overflow: 'hidden',
-            background: '#F5F5F5'
+            background: '#F5F5F5',
+            position: 'relative'
           }}>
             {stages.map((stage, i) => {
               const stageTime = stage.steps.reduce((acc, step) => acc + step.timeMinutes, 0);
@@ -1230,7 +1230,7 @@
                 <div
                   key={stage.id}
                   className="tooltip"
-                  data-tooltip={`${stage.name}: ${formatTime(stageTime)}`}
+                  data-tooltip={`${stage.name}: ${formatTime(stageTime)} (${Math.round(percentage)}%)`}
                   style={{
                     width: `${percentage}%`,
                     background: `hsl(${i * 45 + 180}, 35%, 55%)`,
@@ -1243,7 +1243,8 @@
                     fontWeight: 500,
                     cursor: 'pointer',
                     transition: 'filter 0.2s',
-                    borderRight: i < stages.length - 1 ? '2px solid #FFF' : 'none'
+                    borderRight: i < stages.length - 1 ? '2px solid #FFF' : 'none',
+                    borderRadius: i === 0 ? '8px 0 0 8px' : i === stages.length - 1 ? '0 8px 8px 0' : '0'
                   }}
                   onMouseOver={(e) => e.currentTarget.style.filter = 'brightness(1.1)'}
                   onMouseOut={(e) => e.currentTarget.style.filter = 'brightness(1)'}
