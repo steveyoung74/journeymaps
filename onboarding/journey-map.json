@@ -507,7 +507,7 @@
         {
           "id": "loas",
           "name": "LOAs",
-          "description": "Letters of Authority for existing providers",
+          "description": "Letters of Authority.  Client must provide their authorisation for us to gather information from other suppliers.",
           "timeMinutes": 488,
           "owner": "ops",
           "touchpoints": [
