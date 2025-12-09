@@ -3,7 +3,7 @@
     "title": "Client Onboarding Journey Scope & Requirements",
     "version": "2.0",
     "product": "Steve's Journey Map v6.1",
-    "lastUpdated": "2025-12-09T14:55:48.035Z",
+    "lastUpdated": "2025-12-09T14:58:07.364Z",
     "audience": "Internal Operations",
     "perspective": "client"
   },
@@ -406,8 +406,8 @@
           },
           "clientTouchpoint": true,
           "isHardCheckpoint": true,
-          "checkpointType": "vetting",
-          "checkpointDetails": "Documents should exist on the DNL"
+          "checkpointType": "compliance",
+          "checkpointDetails": "Clients must have access to our Privacy Policy before we do ID&V / Screening\n"
         },
         {
           "id": "idv",
