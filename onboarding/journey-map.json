@@ -3,7 +3,7 @@
     "title": "Client Onboarding Journey Scope & Requirements",
     "version": "2.0",
     "product": "Steve's Journey Map v6.1",
-    "lastUpdated": "2025-12-09T16:18:41.940Z",
+    "lastUpdated": "2025-12-09T16:28:17.735Z",
     "audience": "Internal Operations",
     "perspective": "client"
   },
@@ -980,15 +980,19 @@
           "timeMinutes": 115,
           "owner": "ops",
           "touchpoints": [
-            "Provider Portals"
+            "xplan",
+            "SEI",
+            "Avaloq"
           ],
           "painPoints": [
-            "Provider processing delays"
+            "Manual rekeying of data from xplan into Avaloq or SEI to open accounts"
           ],
-          "emotions": "hopeful",
+          "emotions": [
+            "neutral"
+          ],
           "frictionScore": 2,
-          "automationOpportunity": "high",
-          "automationNotes": "API submission and tracking",
+          "automationOpportunity": "medium",
+          "automationNotes": "API submission to appropriate systems",
           "regulatoryRequirements": [
             "Provider requirements"
           ],
@@ -1007,7 +1011,7 @@
             }
           },
           "actions": {
-            "ops": "Processes account openings, tracks status"
+            "ops": "Key data from xplan to Avaloq or SEI to open the accounts"
           }
         }
       ]
