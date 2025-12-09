@@ -3,7 +3,7 @@
     "title": "Client Onboarding Journey - Scope & Requirements",
     "version": "2.0",
     "product": "Steve's Journey Map v6.1",
-    "lastUpdated": "2025-12-08T22:31:55.435Z",
+    "lastUpdated": "2025-12-09T08:45:09.127Z",
     "audience": "Internal Operations",
     "perspective": "client"
   },
@@ -600,12 +600,14 @@
             "Risk Assessment Tool"
           ],
           "painPoints": [
-            "Complex risk scoring"
+            "Complex risk scoring",
+            "\"This is a horrendous experience!\" All front office.",
+            "Vetting kick back applications for trivial amounts of Total Wealth"
           ],
           "emotions": "uncertain",
           "frictionScore": 3,
-          "automationOpportunity": "medium",
-          "automationNotes": "Automated risk profiling tools available",
+          "automationOpportunity": "high",
+          "automationNotes": "Risk profiling can be completed through the dynamic forms by improving the logic in the Source of Wealth questions in Fact Find A. Aided by Jonathan Palin and Fin Crime Team.",
           "regulatoryRequirements": [
             "FCA ATR requirements",
             "Capacity for loss"
