@@ -285,7 +285,7 @@
     const { useState, useCallback, useMemo, useEffect, useRef } = React;
     
     // Current app version - always displayed in footer
-    const APP_VERSION = "7.7.2";
+    const APP_VERSION = "7.7.3";
 
     const generateId = () => Math.random().toString(36).substr(2, 9);
 
@@ -3993,12 +3993,14 @@
                           <button onClick={() => { generatePDF('summary'); setShowExportMenu(false); }} style={{ display: 'flex', alignItems: 'center', gap: '10px', width: '100%', padding: '10px 14px', border: 'none', background: '#FFF', cursor: 'pointer', textAlign: 'left', fontFamily: "'Helvetica Neue', Arial, sans-serif", fontSize: '13px', color: '#333', borderBottom: '1px solid #EEE' }} onMouseOver={(e) => e.currentTarget.style.background = '#F5F5F5'} onMouseOut={(e) => e.currentTarget.style.background = '#FFF'}>
                             <span>📋</span> Summary Report
                           </button>
-                          <button onClick={() => { generatePDF('detailed'); setShowExportMenu(false); }} style={{ display: 'flex', alignItems: 'center', gap: '10px', width: '100%', padding: '10px 14px', border: 'none', background: '#FFF', cursor: 'pointer', textAlign: 'left', fontFamily: "'Helvetica Neue', Arial, sans-serif", fontSize: '13px', color: '#333', borderBottom: '1px solid #EEE' }} onMouseOver={(e) => e.currentTarget.style.background = '#F5F5F5'} onMouseOut={(e) => e.currentTarget.style.background = '#FFF'}>
+                          <button onClick={() => { generatePDF('detailed'); setShowExportMenu(false); }} style={{ display: 'flex', alignItems: 'center', gap: '10px', width: '100%', padding: '10px 14px', border: 'none', background: '#FFF', cursor: 'pointer', textAlign: 'left', fontFamily: "'Helvetica Neue', Arial, sans-serif", fontSize: '13px', color: '#333', borderBottom: showCosts ? '1px solid #EEE' : 'none' }} onMouseOver={(e) => e.currentTarget.style.background = '#F5F5F5'} onMouseOut={(e) => e.currentTarget.style.background = '#FFF'}>
                             <span>📄</span> Detailed Report
                           </button>
-                          <button onClick={() => { generatePDF('cost-analysis'); setShowExportMenu(false); }} style={{ display: 'flex', alignItems: 'center', gap: '10px', width: '100%', padding: '10px 14px', border: 'none', background: '#FFF', cursor: 'pointer', textAlign: 'left', fontFamily: "'Helvetica Neue', Arial, sans-serif", fontSize: '13px', color: '#333' }} onMouseOver={(e) => e.currentTarget.style.background = '#F5F5F5'} onMouseOut={(e) => e.currentTarget.style.background = '#FFF'}>
-                            <span>💰</span> Cost Analysis
-                          </button>
+                          {showCosts && (
+                            <button onClick={() => { generatePDF('cost-analysis'); setShowExportMenu(false); }} style={{ display: 'flex', alignItems: 'center', gap: '10px', width: '100%', padding: '10px 14px', border: 'none', background: '#FFF', cursor: 'pointer', textAlign: 'left', fontFamily: "'Helvetica Neue', Arial, sans-serif", fontSize: '13px', color: '#333' }} onMouseOver={(e) => e.currentTarget.style.background = '#F5F5F5'} onMouseOut={(e) => e.currentTarget.style.background = '#FFF'}>
+                              <span>💰</span> Cost Analysis
+                            </button>
+                          )}
                         </div>
                       )}
                     </div>
