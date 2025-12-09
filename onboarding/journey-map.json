@@ -630,7 +630,9 @@
             "fp": "Completes client risk assessment",
             "im": "Validates investment risk alignment",
             "ops": "Documents and files assessment"
-          }
+          },
+          "isHardCheckpoint": true,
+          "checkpointDetails": "Must adhere to Fin Crime algorythm."
         },
         {
           "id": "fact-find-b",
