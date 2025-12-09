@@ -285,7 +285,7 @@
     const { useState, useCallback, useMemo, useEffect, useRef } = React;
     
     // Current app version - always displayed in footer
-    const APP_VERSION = "7.6.2";
+    const APP_VERSION = "7.6.3";
 
     const generateId = () => Math.random().toString(36).substr(2, 9);
 
@@ -1833,10 +1833,10 @@
               </div>
             </div>
             
-            {/* Best Automation Opportunities */}
+            {/* Best Improvement Opportunities */}
             <div className="cost-automation-section" style={{ gridColumn: 'span 2' }}>
               <h4 style={{ margin: '0 0 16px', fontSize: '14px', fontFamily: "'Helvetica Neue', Arial, sans-serif", textTransform: 'uppercase', letterSpacing: '0.5px', color: '#065F46' }}>
-                🤖 Top Automation Opportunities (by potential savings)
+                💡 Top Improvement Opportunities (by potential savings)
               </h4>
               <div className="cost-automation-grid" style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(280px, 1fr))', gap: '12px' }}>
                 {byAutomationSavings.filter(s => s.automationSavings > 0).slice(0, 6).map((step, i) => (
@@ -1860,12 +1860,12 @@
                       justifyContent: 'center',
                       fontSize: '18px'
                     }}>
-                      🤖
+                      💡
                     </div>
                     <div style={{ flex: 1 }}>
                       <div style={{ fontWeight: 600, fontSize: '14px', color: '#065F46' }}>{step.name}</div>
                       <div style={{ fontSize: '11px', color: '#047857', fontFamily: "'Helvetica Neue', Arial, sans-serif" }}>
-                        {step.stageName} · {step.automationOpportunity} automation potential
+                        {step.stageName} · {step.automationOpportunity} improvement potential
                       </div>
                     </div>
                     <div style={{ textAlign: 'right' }}>
@@ -2166,7 +2166,7 @@
                     textTransform: 'uppercase',
                     letterSpacing: '0.5px'
                   }}>
-                    Automation Potential
+                    Improvement Potential
                   </label>
                   <select
                     value={step.automationOpportunity}
@@ -3407,7 +3407,7 @@
           // Second row of summary cards
           html += '<div class="summary-grid">';
           html += '<div class="summary-card"><div class="summary-value">' + totalPainPoints + '</div><div class="summary-label">Pain Points</div></div>';
-          html += '<div class="summary-card"><div class="summary-value">' + highAutomationCount + '</div><div class="summary-label">High Auto Opps</div></div>';
+          html += '<div class="summary-card"><div class="summary-value">' + highAutomationCount + '</div><div class="summary-label">High Improv Opps</div></div>';
           html += '<div class="summary-card success"><div class="summary-value">' + formatCurrency(potentialSavings) + ' (' + (totalCost > 0 ? Math.round((potentialSavings / totalCost) * 100) : 0) + '%)</div><div class="summary-label">Potential Savings</div></div>';
           html += '<div class="summary-card"><div class="summary-value">' + formatCurrencyDetailed(totalCost / totalTime) + '/m</div><div class="summary-label">Cost per Minute</div></div>';
           html += '</div>';
@@ -3424,7 +3424,7 @@
             if (reportType === 'detailed') {
               html += '<th>Pain Points</th><th>Reg Requirements</th>';
             } else {
-              html += '<th style="width:90px">Automation</th>';
+              html += '<th style="width:90px">Improvement</th>';
             }
             html += '</tr></thead><tbody>';
             
@@ -3463,8 +3463,8 @@
             html += '</div></div>';
           });
 
-          // Top automation opportunities
-          html += '<h2>Top Automation Opportunities</h2>';
+          // Top improvement opportunities
+          html += '<h2>Top Improvement Opportunities</h2>';
           const opportunities = allSteps
             .filter(s => s.automationOpportunity === 'high' || s.automationOpportunity === 'medium')
             .map(step => {
@@ -4053,9 +4053,9 @@
               </div>
             </div>
             <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
-              <span style={{ fontSize: '20px' }}>🤖</span>
+              <span style={{ fontSize: '20px' }}>💡</span>
               <div>
-                <div style={{ fontFamily: "'Helvetica Neue', Arial, sans-serif", fontSize: '11px', color: '#999', textTransform: 'uppercase' }}>High Automation</div>
+                <div style={{ fontFamily: "'Helvetica Neue', Arial, sans-serif", fontSize: '11px', color: '#999', textTransform: 'uppercase' }}>High Improvement</div>
                 <div style={{ fontWeight: 600 }}>{stats.highAutomation} steps</div>
               </div>
             </div>
@@ -4260,7 +4260,7 @@
                               color: '#065F46'
                             }}>
                               <span>🎯</span>
-                              <span>{highAutoOps} high automation</span>
+                              <span>{highAutoOps} high improvement</span>
                             </div>
                           )}
                           {medAutoOps > 0 && (
@@ -4275,7 +4275,7 @@
                               color: '#92400E'
                             }}>
                               <span>🎯</span>
-                              <span>{medAutoOps} medium automation</span>
+                              <span>{medAutoOps} medium improvement</span>
                             </div>
                           )}
                           {totalPainPoints > 0 && (
@@ -4513,7 +4513,7 @@
                                 </div>
                               </div>
                               <div style={{ display: 'flex', alignItems: 'center', gap: '4px', padding: '4px 8px', background: automationColors[step.automationOpportunity]?.bg || '#F5F5F5', borderRadius: '12px' }}>
-                                <span style={{ fontSize: '10px' }}>🤖</span>
+                                <span style={{ fontSize: '10px' }}>💡</span>
                                 <span style={{ fontFamily: "'Helvetica Neue', Arial, sans-serif", fontSize: '10px', color: automationColors[step.automationOpportunity]?.text || '#666', fontWeight: 500 }}>{automationColors[step.automationOpportunity]?.label || 'N/A'}</span>
                               </div>
                               {step.clientTouchpoint && (
@@ -4663,9 +4663,9 @@
                         ))}
                       </div>
                     </div>
-                    {/* Automation */}
+                    {/* Improvement Opportunity */}
                     <div style={{ padding: '16px', background: '#F9FAFB', borderRadius: '8px', marginBottom: '16px' }}>
-                      <label style={{ display: 'block', fontFamily: "'Helvetica Neue', Arial, sans-serif", fontSize: '11px', color: '#666', textTransform: 'uppercase', letterSpacing: '0.5px', marginBottom: '12px' }}>Automation Opportunity</label>
+                      <label style={{ display: 'block', fontFamily: "'Helvetica Neue', Arial, sans-serif", fontSize: '11px', color: '#666', textTransform: 'uppercase', letterSpacing: '0.5px', marginBottom: '12px' }}>Improvement Opportunity</label>
                       {editMode ? (
                         <>
                           <div style={{ display: 'flex', gap: '8px', marginBottom: '12px' }}>
@@ -4673,12 +4673,12 @@
                               <button key={level} onClick={() => { updateStep(selectedStep.stageId, selectedStep.id, { automationOpportunity: level }); setSelectedStep(prev => ({ ...prev, automationOpportunity: level })); }} style={{ padding: '8px 16px', border: '2px solid', borderColor: selectedStep.automationOpportunity === level ? automationColors[level].text : '#E5E5E5', borderRadius: '20px', background: selectedStep.automationOpportunity === level ? automationColors[level].bg : '#FFF', color: selectedStep.automationOpportunity === level ? automationColors[level].text : '#666', cursor: 'pointer', fontFamily: "'Helvetica Neue', Arial, sans-serif", fontSize: '12px', fontWeight: 500, textTransform: 'capitalize' }}>{level}</button>
                             ))}
                           </div>
-                          <textarea value={selectedStep.automationNotes || ''} onChange={(e) => { updateStep(selectedStep.stageId, selectedStep.id, { automationNotes: e.target.value }); setSelectedStep(prev => ({ ...prev, automationNotes: e.target.value })); }} placeholder="Notes on automation potential..." style={{ width: '100%', padding: '10px', border: '1px solid #DDD', borderRadius: '6px', fontSize: '13px', fontFamily: "'Helvetica Neue', Arial, sans-serif", resize: 'vertical', minHeight: '60px' }} />
+                          <textarea value={selectedStep.automationNotes || ''} onChange={(e) => { updateStep(selectedStep.stageId, selectedStep.id, { automationNotes: e.target.value }); setSelectedStep(prev => ({ ...prev, automationNotes: e.target.value })); }} placeholder="Notes on improvement potential..." style={{ width: '100%', padding: '10px', border: '1px solid #DDD', borderRadius: '6px', fontSize: '13px', fontFamily: "'Helvetica Neue', Arial, sans-serif", resize: 'vertical', minHeight: '60px' }} />
                         </>
                       ) : (
                         <>
                           <div style={{ display: 'inline-flex', alignItems: 'center', gap: '8px', padding: '8px 16px', background: automationColors[selectedStep.automationOpportunity]?.bg, borderRadius: '20px', marginBottom: selectedStep.automationNotes ? '12px' : 0 }}>
-                            <span>🤖</span>
+                            <span>💡</span>
                             <span style={{ fontFamily: "'Helvetica Neue', Arial, sans-serif", fontSize: '14px', color: automationColors[selectedStep.automationOpportunity]?.text, fontWeight: 500, textTransform: 'capitalize' }}>{selectedStep.automationOpportunity} potential</span>
                           </div>
                           {selectedStep.automationNotes && <p style={{ margin: 0, fontSize: '13px', color: '#666', fontFamily: "'Helvetica Neue', Arial, sans-serif", lineHeight: 1.5 }}>{selectedStep.automationNotes}</p>}
@@ -4783,7 +4783,7 @@
                             <span style={{ fontSize: '20px' }}>🎯</span>
                             <div>
                               <div style={{ fontFamily: "'Helvetica Neue', Arial, sans-serif", fontSize: '12px', fontWeight: 600, color: '#065F46' }}>
-                                Automation Opportunity ({selectedStep.automationOpportunity})
+                                Improvement Opportunity ({selectedStep.automationOpportunity})
                               </div>
                               <div style={{ fontFamily: "'Helvetica Neue', Arial, sans-serif", fontSize: '11px', color: '#047857' }}>
                                 {selectedStep.automationOpportunity === 'high' ? '~70%' : selectedStep.automationOpportunity === 'medium' ? '~40%' : '~10%'} potential reduction
