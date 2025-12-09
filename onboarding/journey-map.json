@@ -3,7 +3,7 @@
     "title": "Client Onboarding Journey Scope & Requirements",
     "version": "2.0",
     "product": "Steve's Journey Map v6.1",
-    "lastUpdated": "2025-12-09T13:45:20.832Z",
+    "lastUpdated": "2025-12-09T14:00:02.562Z",
     "audience": "Internal Operations",
     "perspective": "client"
   },
@@ -668,28 +668,29 @@
           "id": "fact-find-b",
           "name": "Fact Find B",
           "description": "Comprehensive fact find - Part B (follow-up)",
-          "timeMinutes": 90,
+          "timeMinutes": 60,
           "owner": "fp",
           "touchpoints": [
-            "In-person",
-            "Teams"
+            "xplan"
           ],
           "painPoints": [],
-          "emotions": "engaged",
+          "emotions": [
+            "neutral"
+          ],
           "frictionScore": 3,
-          "automationOpportunity": "medium",
-          "automationNotes": "Could be combined with Part A in some cases",
+          "automationOpportunity": "low",
+          "automationNotes": "Some digitisation potential.  Further discovery required.",
           "regulatoryRequirements": [
             "COBS suitability"
           ],
-          "clientTouchpoint": true,
+          "clientTouchpoint": false,
           "roleInvolvement": {
             "fp": {
               "timeMinutes": 60,
               "headcount": 1
             },
             "im": {
-              "timeMinutes": 30,
+              "timeMinutes": 0,
               "headcount": 1
             },
             "ops": {
@@ -698,8 +699,9 @@
             }
           },
           "actions": {
-            "fp": "Completes follow-up fact find items",
-            "im": "Clarifies investment requirements"
+            "fp": "Completes the Fact Find B on xplan.  This is essentially and review and overview of the information collected during Fact Find A including Oxford Risk, Client Vulnerabilities Objectives, Investment knowledge etc, ",
+            "im": "",
+            "paraplanner": "Uses Fact Find B as the summary that to feeds into Advice research and analysis"
           }
         }
       ]
