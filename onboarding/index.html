@@ -18,7 +18,7 @@
     .tooltip:hover::after {
       content: attr(data-tooltip);
       position: absolute;
-      bottom: 100%;
+      top: 100%;
       left: 50%;
       transform: translateX(-50%);
       background: #1A1A1A;
@@ -26,15 +26,13 @@
       padding: 8px 12px;
       border-radius: 6px;
       font-size: 12px;
-      white-space: normal;
-      max-width: 280px;
-      width: max-content;
+      white-space: nowrap;
       z-index: 9999;
       font-family: 'Helvetica Neue', Arial, sans-serif;
       line-height: 1.4;
       text-align: left;
       box-shadow: 0 4px 12px rgba(0,0,0,0.15);
-      margin-bottom: 6px;
+      margin-top: 6px;
       pointer-events: none;
     }
     .step-card:hover {
@@ -285,7 +283,7 @@
     const { useState, useCallback, useMemo, useEffect, useRef } = React;
     
     // Current app version - always displayed in footer
-    const APP_VERSION = "7.7.4";
+    const APP_VERSION = "7.7.5";
 
     const generateId = () => Math.random().toString(36).substr(2, 9);
 
@@ -1255,24 +1253,7 @@
             })}
           </div>
           
-          {/* Time markers */}
-          <div style={{
-            display: 'flex',
-            justifyContent: 'space-between',
-            marginTop: '8px',
-            marginBottom: '24px',
-            fontFamily: "'Helvetica Neue', Arial, sans-serif",
-            fontSize: '11px',
-            color: '#999'
-          }}>
-            <span>0m</span>
-            <span>{formatTime(Math.round(totalTime * 0.25))}</span>
-            <span>{formatTime(Math.round(totalTime * 0.5))}</span>
-            <span>{formatTime(Math.round(totalTime * 0.75))}</span>
-            <span>{formatTime(totalTime)}</span>
-          </div>
-          
-          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(280px, 1fr))', gap: '24px' }}>
+          <div style={{ marginTop: '24px', display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(280px, 1fr))', gap: '24px' }}>
             {/* Top 5 Longest Steps */}
             <div>
               <h4 style={{ margin: '0 0 12px', fontSize: '13px', fontFamily: "'Helvetica Neue', Arial, sans-serif", textTransform: 'uppercase', letterSpacing: '0.5px', color: '#666' }}>
