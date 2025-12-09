@@ -3,7 +3,7 @@
     "title": "Client Onboarding Journey Scope & Requirements",
     "version": "2.0",
     "product": "Steve's Journey Map v6.1",
-    "lastUpdated": "2025-12-09T11:37:42.765Z",
+    "lastUpdated": "2025-12-09T13:13:03.823Z",
     "audience": "Internal Operations",
     "perspective": "client"
   },
@@ -557,7 +557,8 @@
             "administrator": "1. Prepares LOA letter to send to clients.  \n2. Once retuned, send LOA along with a covering letter to each provider to request asset info\n3, Create a task for the script team* to chase providers and create script for more info if required "
           },
           "isHardCheckpoint": true,
-          "clientTouchpoint": true
+          "clientTouchpoint": true,
+          "checkpointType": "regulatory"
         },
         {
           "id": "fact-find-a",
