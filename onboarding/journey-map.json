@@ -3,7 +3,7 @@
     "title": "Client Onboarding Journey Scope & Requirements",
     "version": "2.0",
     "product": "Steve's Journey Map v6.1",
-    "lastUpdated": "2025-12-09T13:21:41.311Z",
+    "lastUpdated": "2025-12-09T13:42:49.549Z",
     "audience": "Internal Operations",
     "perspective": "client"
   },
@@ -564,7 +564,7 @@
           "id": "fact-find-a",
           "name": "Fact Find A",
           "description": "Comprehensive fact find - Part A",
-          "timeMinutes": 780,
+          "timeMinutes": 390,
           "owner": "fp",
           "touchpoints": [
             "In-person",
@@ -573,12 +573,18 @@
           ],
           "painPoints": [
             "Time intensive",
-            "Client preparation varies"
+            "Client preparation varies",
+            "Large volumes of data to collect",
+            "Manual rekeyng into xplan",
+            "Asking for information already gathered elsewhere"
           ],
-          "emotions": "engaged",
+          "emotions": [
+            "engaged",
+            "overwhelmed"
+          ],
           "frictionScore": 5,
           "automationOpportunity": "medium",
-          "automationNotes": "Digital fact find with pre-population",
+          "automationNotes": "Digital fact find with pre-population.  Improved Source of Wealth questions.",
           "regulatoryRequirements": [
             "COBS suitability",
             "Know Your Client"
@@ -590,7 +596,7 @@
               "headcount": 1
             },
             "im": {
-              "timeMinutes": 300,
+              "timeMinutes": 0,
               "headcount": 1
             },
             "ops": {
@@ -603,9 +609,9 @@
             }
           },
           "actions": {
-            "fp": "Conducts comprehensive fact find meeting, takes notes or updates forms",
-            "im": "Gathers investment-specific information",
-            "client": "Answers all questions asked",
+            "fp": "Conducts comprehensive fact find meeting (s), takes notes or updates forms",
+            "im": "",
+            "client": "Provides information required",
             "administrator": "Updates the Fact Find A form information into Xplan"
           }
         },
