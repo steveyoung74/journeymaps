@@ -3,7 +3,7 @@
     "title": "Client Onboarding Journey Scope & Requirements",
     "version": "2.0",
     "product": "Steve's Journey Map v6.1",
-    "lastUpdated": "2025-12-09T13:42:49.549Z",
+    "lastUpdated": "2025-12-09T13:45:20.832Z",
     "audience": "Internal Operations",
     "perspective": "client"
   },
@@ -618,19 +618,25 @@
         {
           "id": "craf",
           "name": "CRAF",
-          "description": "Client Risk Assessment Framework",
-          "timeMinutes": 104,
+          "description": "Client Risk Assessment Form",
+          "timeMinutes": 103.5,
           "owner": "fp",
           "touchpoints": [
-            "Risk Assessment Tool"
+            "xplan"
           ],
           "painPoints": [
-            "Complex risk scoring"
+            "Complex risk scoring",
+            "Poor explanation of clients Source of Wealth",
+            "Highest cause of vetting failures",
+            "Large amounts of back and forth with the client",
+            "Large gap in time between gathering SOW and vetting CRAF"
           ],
-          "emotions": "uncertain",
-          "frictionScore": 3,
-          "automationOpportunity": "medium",
-          "automationNotes": "Automated risk profiling tools available",
+          "emotions": [
+            "frustrated"
+          ],
+          "frictionScore": 4,
+          "automationOpportunity": "high",
+          "automationNotes": "Potential to remove the CRAF form completely, automate the risk calculation from Source of wealth on FFA and introduce a new CRA approval process",
           "regulatoryRequirements": [
             "FCA ATR requirements",
             "Capacity for loss"
@@ -641,7 +647,7 @@
               "headcount": 1
             },
             "im": {
-              "timeMinutes": 90,
+              "timeMinutes": 0,
               "headcount": 1
             },
             "ops": {
@@ -650,10 +656,13 @@
             }
           },
           "actions": {
-            "fp": "Completes client risk assessment",
-            "im": "Validates investment risk alignment",
-            "ops": "Documents and files assessment"
-          }
+            "fp": "1. Completes the CRAF based on the information provided by the client.\n2. Uses Financial Crime guidance document to calculate the risk level\n3, Liaises with client to provide any additional info\n4. Approves final risk level",
+            "im": "",
+            "ops": "1. Vetting- reviews the CRAF to ensure that it meets the Financial Crime Guidance and cross checks the info provided with LOAs and My Wealth.  \n2. Works with Front office to get more information from the client when required."
+          },
+          "isHardCheckpoint": true,
+          "checkpointType": "regulatory",
+          "checkpointDetails": "Client Risk Assessment needs to be completed (including any enhanced due diligence and approvals) and signed off by Front Office prior to completing Fact Find B."
         },
         {
           "id": "fact-find-b",
