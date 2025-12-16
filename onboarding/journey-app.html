@@ -1,0 +1,1447 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Journey Maps</title>
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+  <script src="https://unpkg.com/react@18/umd/react.production.min.js"></script>
+  <script src="https://unpkg.com/react-dom@18/umd/react-dom.production.min.js"></script>
+  <script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+  <style>
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    body { font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif; background: #F5F5F5; }
+    input:focus, button:focus, textarea:focus { outline: none; }
+    .btn { 
+      padding: 10px 20px; 
+      border-radius: 8px; 
+      font-size: 14px; 
+      font-weight: 500; 
+      cursor: pointer; 
+      transition: all 0.15s;
+      border: none;
+    }
+    .btn-primary { background: #2D5A4B; color: #FFF; }
+    .btn-primary:hover { background: #234839; }
+    .btn-secondary { background: #FFF; color: #333; border: 1px solid #DDD; }
+    .btn-secondary:hover { background: #F5F5F5; }
+    .btn-danger { background: #DC2626; color: #FFF; }
+    .btn-danger:hover { background: #B91C1C; }
+    .btn-ghost { background: transparent; color: #666; }
+    .btn-ghost:hover { background: #F0F0F0; }
+    .card {
+      background: #FFF;
+      border-radius: 12px;
+      box-shadow: 0 2px 8px rgba(0,0,0,0.06);
+      transition: all 0.2s;
+    }
+    .card:hover {
+      box-shadow: 0 4px 16px rgba(0,0,0,0.1);
+    }
+    .input {
+      width: 100%;
+      padding: 12px 16px;
+      border: 1px solid #DDD;
+      border-radius: 8px;
+      font-size: 14px;
+      font-family: inherit;
+      transition: border-color 0.15s;
+    }
+    .input:focus {
+      border-color: #2D5A4B;
+    }
+    .input-error {
+      border-color: #DC2626;
+    }
+    .label {
+      display: block;
+      font-size: 13px;
+      font-weight: 500;
+      color: #333;
+      margin-bottom: 6px;
+    }
+    .text-error { color: #DC2626; font-size: 13px; }
+    .text-muted { color: #666; }
+    .text-small { font-size: 13px; }
+    .badge {
+      display: inline-flex;
+      align-items: center;
+      padding: 4px 10px;
+      border-radius: 20px;
+      font-size: 12px;
+      font-weight: 500;
+    }
+    .badge-admin { background: #FEF3C7; color: #92400E; }
+    .badge-owner { background: #DBEAFE; color: #1E40AF; }
+    .badge-shared { background: #E0E7FF; color: #4338CA; }
+    .badge-edit { background: #D1FAE5; color: #065F46; }
+    .badge-view { background: #F3F4F6; color: #4B5563; }
+    
+    /* Modal styles */
+    .modal-overlay {
+      position: fixed;
+      inset: 0;
+      background: rgba(0,0,0,0.5);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      z-index: 1000;
+      padding: 20px;
+    }
+    .modal {
+      background: #FFF;
+      border-radius: 16px;
+      max-width: 480px;
+      width: 100%;
+      max-height: 90vh;
+      overflow: auto;
+    }
+    .modal-header {
+      padding: 24px 24px 0;
+    }
+    .modal-body {
+      padding: 24px;
+    }
+    .modal-footer {
+      padding: 0 24px 24px;
+      display: flex;
+      gap: 12px;
+      justify-content: flex-end;
+    }
+
+    /* Animations */
+    @keyframes fadeIn {
+      from { opacity: 0; }
+      to { opacity: 1; }
+    }
+    @keyframes slideUp {
+      from { opacity: 0; transform: translateY(20px); }
+      to { opacity: 1; transform: translateY(0); }
+    }
+    .animate-fade { animation: fadeIn 0.2s ease-out; }
+    .animate-slide { animation: slideUp 0.3s ease-out; }
+
+    /* Loading spinner */
+    .spinner {
+      width: 24px;
+      height: 24px;
+      border: 3px solid #E5E5E5;
+      border-top-color: #2D5A4B;
+      border-radius: 50%;
+      animation: spin 0.8s linear infinite;
+    }
+    @keyframes spin {
+      to { transform: rotate(360deg); }
+    }
+  </style>
+</head>
+<body>
+  <div id="root"></div>
+  <script type="text/babel">
+    const { useState, useEffect, createContext, useContext, useCallback } = React;
+    
+    // ============================================
+    // CONFIGURATION
+    // ============================================
+    const SUPABASE_URL = 'https://sweekrbmfdpnemiykjct.supabase.co';
+    const SUPABASE_ANON_KEY = 'sb_publishable_SaU135xIfCtl7l2h03Jpmw_3IgECJpB';
+    const APP_VERSION = '1.0.0';
+    
+    // Initialize Supabase client
+    const supabase = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+
+    // ============================================
+    // AUTH CONTEXT
+    // ============================================
+    const AuthContext = createContext(null);
+
+    function AuthProvider({ children }) {
+      const [user, setUser] = useState(null);
+      const [profile, setProfile] = useState(null);
+      const [loading, setLoading] = useState(true);
+
+      useEffect(() => {
+        // Check active session
+        supabase.auth.getSession().then(({ data: { session } }) => {
+          setUser(session?.user ?? null);
+          if (session?.user) {
+            fetchProfile(session.user.id);
+          } else {
+            setLoading(false);
+          }
+        });
+
+        // Listen for auth changes
+        const { data: { subscription } } = supabase.auth.onAuthStateChange(async (event, session) => {
+          setUser(session?.user ?? null);
+          if (session?.user) {
+            await fetchProfile(session.user.id);
+          } else {
+            setProfile(null);
+            setLoading(false);
+          }
+        });
+
+        return () => subscription.unsubscribe();
+      }, []);
+
+      const fetchProfile = async (userId) => {
+        const { data, error } = await supabase
+          .from('profiles')
+          .select('*')
+          .eq('id', userId)
+          .single();
+        
+        if (data) {
+          setProfile(data);
+        }
+        setLoading(false);
+      };
+
+      const signUp = async (email, password, displayName) => {
+        const { data, error } = await supabase.auth.signUp({
+          email,
+          password,
+          options: {
+            data: { display_name: displayName }
+          }
+        });
+        return { data, error };
+      };
+
+      const signIn = async (email, password) => {
+        const { data, error } = await supabase.auth.signInWithPassword({
+          email,
+          password
+        });
+        return { data, error };
+      };
+
+      const signOut = async () => {
+        await supabase.auth.signOut();
+        setUser(null);
+        setProfile(null);
+      };
+
+      const value = {
+        user,
+        profile,
+        loading,
+        signUp,
+        signIn,
+        signOut,
+        isAdmin: profile?.role === 'admin'
+      };
+
+      return (
+        <AuthContext.Provider value={value}>
+          {children}
+        </AuthContext.Provider>
+      );
+    }
+
+    function useAuth() {
+      const context = useContext(AuthContext);
+      if (!context) {
+        throw new Error('useAuth must be used within AuthProvider');
+      }
+      return context;
+    }
+
+    // ============================================
+    // LOGIN / SIGNUP SCREEN
+    // ============================================
+    function AuthScreen() {
+      const [mode, setMode] = useState('login'); // 'login' or 'signup'
+      const [email, setEmail] = useState('');
+      const [password, setPassword] = useState('');
+      const [displayName, setDisplayName] = useState('');
+      const [error, setError] = useState('');
+      const [loading, setLoading] = useState(false);
+      const [successMessage, setSuccessMessage] = useState('');
+      const { signIn, signUp } = useAuth();
+
+      const handleSubmit = async (e) => {
+        e.preventDefault();
+        setError('');
+        setSuccessMessage('');
+        setLoading(true);
+
+        try {
+          if (mode === 'login') {
+            const { error } = await signIn(email, password);
+            if (error) throw error;
+          } else {
+            const { data, error } = await signUp(email, password, displayName);
+            if (error) throw error;
+            if (data?.user?.identities?.length === 0) {
+              throw new Error('An account with this email already exists');
+            }
+            setSuccessMessage('Account created! Please check your email to verify your account.');
+            setMode('login');
+          }
+        } catch (err) {
+          setError(err.message);
+        } finally {
+          setLoading(false);
+        }
+      };
+
+      return (
+        <div style={{
+          minHeight: '100vh',
+          display: 'flex',
+          alignItems: 'center',
+          justifyContent: 'center',
+          background: 'linear-gradient(135deg, #1A1A1A 0%, #2D3748 100%)',
+          padding: '20px'
+        }}>
+          <div className="card animate-slide" style={{ maxWidth: '420px', width: '100%', padding: '40px' }}>
+            <div style={{ textAlign: 'center', marginBottom: '32px' }}>
+              <div style={{ fontSize: '32px', marginBottom: '8px' }}>🗺️</div>
+              <h1 style={{ fontSize: '24px', fontWeight: 600, color: '#1A1A1A', marginBottom: '4px' }}>
+                Journey Maps
+              </h1>
+              <p className="text-muted text-small">
+                {mode === 'login' ? 'Sign in to your account' : 'Create a new account'}
+              </p>
+            </div>
+
+            {successMessage && (
+              <div style={{ 
+                padding: '12px 16px', 
+                background: '#D1FAE5', 
+                borderRadius: '8px', 
+                marginBottom: '20px',
+                color: '#065F46',
+                fontSize: '13px'
+              }}>
+                {successMessage}
+              </div>
+            )}
+
+            {error && (
+              <div style={{ 
+                padding: '12px 16px', 
+                background: '#FEE2E2', 
+                borderRadius: '8px', 
+                marginBottom: '20px',
+                color: '#DC2626',
+                fontSize: '13px'
+              }}>
+                {error}
+              </div>
+            )}
+
+            <form onSubmit={handleSubmit}>
+              {mode === 'signup' && (
+                <div style={{ marginBottom: '16px' }}>
+                  <label className="label">Display Name</label>
+                  <input
+                    type="text"
+                    className="input"
+                    value={displayName}
+                    onChange={(e) => setDisplayName(e.target.value)}
+                    placeholder="Your name"
+                    required
+                  />
+                </div>
+              )}
+
+              <div style={{ marginBottom: '16px' }}>
+                <label className="label">Email</label>
+                <input
+                  type="email"
+                  className="input"
+                  value={email}
+                  onChange={(e) => setEmail(e.target.value)}
+                  placeholder="you@example.com"
+                  required
+                />
+              </div>
+
+              <div style={{ marginBottom: '24px' }}>
+                <label className="label">Password</label>
+                <input
+                  type="password"
+                  className="input"
+                  value={password}
+                  onChange={(e) => setPassword(e.target.value)}
+                  placeholder="••••••••"
+                  required
+                  minLength={6}
+                />
+              </div>
+
+              <button 
+                type="submit" 
+                className="btn btn-primary" 
+                style={{ width: '100%', padding: '12px' }}
+                disabled={loading}
+              >
+                {loading ? (
+                  <span style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '8px' }}>
+                    <span className="spinner" style={{ width: '16px', height: '16px', borderWidth: '2px' }}></span>
+                    {mode === 'login' ? 'Signing in...' : 'Creating account...'}
+                  </span>
+                ) : (
+                  mode === 'login' ? 'Sign In' : 'Create Account'
+                )}
+              </button>
+            </form>
+
+            <div style={{ marginTop: '24px', textAlign: 'center' }}>
+              <button 
+                className="btn btn-ghost"
+                onClick={() => { setMode(mode === 'login' ? 'signup' : 'login'); setError(''); }}
+              >
+                {mode === 'login' ? "Don't have an account? Sign up" : 'Already have an account? Sign in'}
+              </button>
+            </div>
+          </div>
+        </div>
+      );
+    }
+
+    // ============================================
+    // DASHBOARD
+    // ============================================
+    function Dashboard({ onOpenMap, onCreateMap }) {
+      const { user, profile, signOut, isAdmin } = useAuth();
+      const [maps, setMaps] = useState([]);
+      const [sharedMaps, setSharedMaps] = useState([]);
+      const [loading, setLoading] = useState(true);
+      const [showCreateModal, setShowCreateModal] = useState(false);
+      const [showDeleteModal, setShowDeleteModal] = useState(null);
+      const [showShareModal, setShowShareModal] = useState(null);
+      const [activeTab, setActiveTab] = useState('my-maps');
+
+      useEffect(() => {
+        fetchMaps();
+      }, []);
+
+      const fetchMaps = async () => {
+        setLoading(true);
+        
+        // Fetch user's own maps
+        const { data: ownMaps, error: ownError } = await supabase
+          .from('journey_maps')
+          .select('*, profiles!owner_id(email, display_name)')
+          .eq('owner_id', user.id)
+          .order('updated_at', { ascending: false });
+
+        if (ownMaps) setMaps(ownMaps);
+
+        // Fetch maps shared with user
+        const { data: shared, error: sharedError } = await supabase
+          .from('shares')
+          .select(`
+            permission,
+            journey_maps (
+              *,
+              profiles!owner_id(email, display_name)
+            )
+          `)
+          .eq('shared_with_id', user.id);
+
+        if (shared) {
+          setSharedMaps(shared.map(s => ({ ...s.journey_maps, permission: s.permission })));
+        }
+
+        setLoading(false);
+      };
+
+      const handleDelete = async (map) => {
+        const { error } = await supabase
+          .from('journey_maps')
+          .delete()
+          .eq('id', map.id);
+
+        if (!error) {
+          setMaps(maps.filter(m => m.id !== map.id));
+          setShowDeleteModal(null);
+        }
+      };
+
+      const formatDate = (dateStr) => {
+        const date = new Date(dateStr);
+        return date.toLocaleDateString('en-GB', { 
+          day: 'numeric', 
+          month: 'short', 
+          year: 'numeric',
+          hour: '2-digit',
+          minute: '2-digit'
+        });
+      };
+
+      return (
+        <div style={{ minHeight: '100vh', background: '#F5F5F5' }}>
+          {/* Header */}
+          <header style={{ 
+            background: '#1A1A1A', 
+            color: '#FFF', 
+            padding: '16px 40px',
+            display: 'flex',
+            justifyContent: 'space-between',
+            alignItems: 'center'
+          }}>
+            <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
+              <span style={{ fontSize: '24px' }}>🗺️</span>
+              <h1 style={{ fontSize: '18px', fontWeight: 600 }}>Journey Maps</h1>
+            </div>
+            <div style={{ display: 'flex', alignItems: 'center', gap: '16px' }}>
+              <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+                <div style={{ 
+                  width: '32px', 
+                  height: '32px', 
+                  borderRadius: '50%', 
+                  background: '#2D5A4B',
+                  display: 'flex',
+                  alignItems: 'center',
+                  justifyContent: 'center',
+                  fontSize: '14px',
+                  fontWeight: 600
+                }}>
+                  {profile?.display_name?.[0]?.toUpperCase() || user?.email?.[0]?.toUpperCase()}
+                </div>
+                <div>
+                  <div style={{ fontSize: '14px', fontWeight: 500 }}>{profile?.display_name || user?.email}</div>
+                  {isAdmin && <span className="badge badge-admin" style={{ fontSize: '10px', padding: '2px 6px' }}>Admin</span>}
+                </div>
+              </div>
+              <button onClick={signOut} className="btn btn-ghost" style={{ color: '#999' }}>
+                Sign Out
+              </button>
+            </div>
+          </header>
+
+          {/* Main Content */}
+          <main style={{ maxWidth: '1200px', margin: '0 auto', padding: '40px' }}>
+            {/* Actions Bar */}
+            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '32px' }}>
+              <div style={{ display: 'flex', gap: '8px' }}>
+                <button 
+                  className={`btn ${activeTab === 'my-maps' ? 'btn-primary' : 'btn-secondary'}`}
+                  onClick={() => setActiveTab('my-maps')}
+                >
+                  My Maps ({maps.length})
+                </button>
+                <button 
+                  className={`btn ${activeTab === 'shared' ? 'btn-primary' : 'btn-secondary'}`}
+                  onClick={() => setActiveTab('shared')}
+                >
+                  Shared with Me ({sharedMaps.length})
+                </button>
+                {isAdmin && (
+                  <button 
+                    className={`btn ${activeTab === 'admin' ? 'btn-primary' : 'btn-secondary'}`}
+                    onClick={() => setActiveTab('admin')}
+                  >
+                    ⚙️ Admin
+                  </button>
+                )}
+              </div>
+              <button className="btn btn-primary" onClick={() => setShowCreateModal(true)}>
+                + New Journey Map
+              </button>
+            </div>
+
+            {/* Loading State */}
+            {loading ? (
+              <div style={{ display: 'flex', justifyContent: 'center', padding: '60px' }}>
+                <div className="spinner"></div>
+              </div>
+            ) : (
+              <>
+                {/* My Maps Tab */}
+                {activeTab === 'my-maps' && (
+                  <div>
+                    {maps.length === 0 ? (
+                      <div className="card" style={{ padding: '60px', textAlign: 'center' }}>
+                        <div style={{ fontSize: '48px', marginBottom: '16px' }}>🗺️</div>
+                        <h3 style={{ fontSize: '18px', fontWeight: 600, marginBottom: '8px' }}>No journey maps yet</h3>
+                        <p className="text-muted" style={{ marginBottom: '24px' }}>Create your first journey map to get started</p>
+                        <button className="btn btn-primary" onClick={() => setShowCreateModal(true)}>
+                          + Create Journey Map
+                        </button>
+                      </div>
+                    ) : (
+                      <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(320px, 1fr))', gap: '20px' }}>
+                        {maps.map(map => (
+                          <MapCard 
+                            key={map.id} 
+                            map={map} 
+                            isOwner={true}
+                            onOpen={() => onOpenMap(map)}
+                            onShare={() => setShowShareModal(map)}
+                            onDelete={() => setShowDeleteModal(map)}
+                          />
+                        ))}
+                      </div>
+                    )}
+                  </div>
+                )}
+
+                {/* Shared with Me Tab */}
+                {activeTab === 'shared' && (
+                  <div>
+                    {sharedMaps.length === 0 ? (
+                      <div className="card" style={{ padding: '60px', textAlign: 'center' }}>
+                        <div style={{ fontSize: '48px', marginBottom: '16px' }}>📬</div>
+                        <h3 style={{ fontSize: '18px', fontWeight: 600, marginBottom: '8px' }}>No shared maps</h3>
+                        <p className="text-muted">Maps that others share with you will appear here</p>
+                      </div>
+                    ) : (
+                      <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(320px, 1fr))', gap: '20px' }}>
+                        {sharedMaps.map(map => (
+                          <MapCard 
+                            key={map.id} 
+                            map={map} 
+                            isOwner={false}
+                            permission={map.permission}
+                            onOpen={() => onOpenMap(map)}
+                          />
+                        ))}
+                      </div>
+                    )}
+                  </div>
+                )}
+
+                {/* Admin Tab */}
+                {activeTab === 'admin' && isAdmin && (
+                  <AdminPanel />
+                )}
+              </>
+            )}
+          </main>
+
+          {/* Create Modal */}
+          {showCreateModal && (
+            <CreateMapModal 
+              onClose={() => setShowCreateModal(false)}
+              onCreate={(newMap) => {
+                setMaps([newMap, ...maps]);
+                setShowCreateModal(false);
+                onOpenMap(newMap);
+              }}
+            />
+          )}
+
+          {/* Delete Modal */}
+          {showDeleteModal && (
+            <DeleteMapModal 
+              map={showDeleteModal}
+              onClose={() => setShowDeleteModal(null)}
+              onDelete={() => handleDelete(showDeleteModal)}
+            />
+          )}
+
+          {/* Share Modal */}
+          {showShareModal && (
+            <ShareMapModal 
+              map={showShareModal}
+              onClose={() => setShowShareModal(null)}
+            />
+          )}
+        </div>
+      );
+    }
+
+    // ============================================
+    // MAP CARD COMPONENT
+    // ============================================
+    function MapCard({ map, isOwner, permission, onOpen, onShare, onDelete }) {
+      const stageCount = map.config?.stages?.length || 0;
+      const stepCount = map.config?.stages?.reduce((acc, s) => acc + (s.steps?.length || 0), 0) || 0;
+      
+      const formatDate = (dateStr) => {
+        const date = new Date(dateStr);
+        const now = new Date();
+        const diffMs = now - date;
+        const diffMins = Math.floor(diffMs / 60000);
+        const diffHours = Math.floor(diffMs / 3600000);
+        const diffDays = Math.floor(diffMs / 86400000);
+
+        if (diffMins < 1) return 'Just now';
+        if (diffMins < 60) return `${diffMins}m ago`;
+        if (diffHours < 24) return `${diffHours}h ago`;
+        if (diffDays < 7) return `${diffDays}d ago`;
+        return date.toLocaleDateString('en-GB', { day: 'numeric', month: 'short' });
+      };
+
+      return (
+        <div className="card" style={{ overflow: 'hidden' }}>
+          {/* Card Header with color bar */}
+          <div style={{ 
+            height: '8px', 
+            background: `linear-gradient(90deg, hsl(180, 35%, 45%), hsl(${45 * stageCount + 180}, 35%, 45%))`
+          }} />
+          
+          <div style={{ padding: '20px' }}>
+            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: '12px' }}>
+              <h3 style={{ fontSize: '16px', fontWeight: 600, color: '#1A1A1A', flex: 1 }}>
+                {map.title || 'Untitled Journey Map'}
+              </h3>
+              {isOwner ? (
+                <span className="badge badge-owner">Owner</span>
+              ) : (
+                <span className={`badge ${permission === 'edit' ? 'badge-edit' : 'badge-view'}`}>
+                  {permission === 'edit' ? 'Can Edit' : 'View Only'}
+                </span>
+              )}
+            </div>
+
+            {map.description && (
+              <p className="text-muted text-small" style={{ marginBottom: '12px', lineHeight: 1.5 }}>
+                {map.description}
+              </p>
+            )}
+
+            <div style={{ display: 'flex', gap: '16px', marginBottom: '16px' }}>
+              <span className="text-muted text-small">📊 {stageCount} stages</span>
+              <span className="text-muted text-small">📋 {stepCount} steps</span>
+            </div>
+
+            {!isOwner && map.profiles && (
+              <div className="text-muted text-small" style={{ marginBottom: '16px' }}>
+                Shared by {map.profiles.display_name || map.profiles.email}
+              </div>
+            )}
+
+            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', paddingTop: '16px', borderTop: '1px solid #EEE' }}>
+              <span className="text-muted text-small">Updated {formatDate(map.updated_at)}</span>
+              <div style={{ display: 'flex', gap: '8px' }}>
+                {isOwner && onShare && (
+                  <button className="btn btn-ghost" style={{ padding: '6px 12px', fontSize: '13px' }} onClick={onShare}>
+                    Share
+                  </button>
+                )}
+                {isOwner && onDelete && (
+                  <button className="btn btn-ghost" style={{ padding: '6px 12px', fontSize: '13px', color: '#DC2626' }} onClick={onDelete}>
+                    Delete
+                  </button>
+                )}
+                <button className="btn btn-primary" style={{ padding: '6px 16px', fontSize: '13px' }} onClick={onOpen}>
+                  Open
+                </button>
+              </div>
+            </div>
+          </div>
+        </div>
+      );
+    }
+
+    // ============================================
+    // CREATE MAP MODAL
+    // ============================================
+    function CreateMapModal({ onClose, onCreate }) {
+      const { user } = useAuth();
+      const [title, setTitle] = useState('');
+      const [description, setDescription] = useState('');
+      const [template, setTemplate] = useState('blank');
+      const [loading, setLoading] = useState(false);
+      const [error, setError] = useState('');
+
+      const templates = {
+        blank: { 
+          name: 'Blank', 
+          icon: '📄',
+          config: {
+            meta: { title: '', description: '' },
+            stages: [],
+            personas: [
+              { id: 'client', label: 'Client', color: '#2D5A4B', isExternal: true },
+              { id: 'advisor', label: 'Advisor', color: '#1E40AF', annualSalary: 60000 },
+              { id: 'ops', label: 'Operations', color: '#8B4513', annualSalary: 35000 }
+            ]
+          }
+        },
+        onboarding: { 
+          name: 'Client Onboarding', 
+          icon: '🤝',
+          config: {
+            meta: { title: 'Client Onboarding Journey', description: 'Standard client onboarding process' },
+            stages: [
+              { id: 'lead', name: 'Lead Receipt', steps: [] },
+              { id: 'qualify', name: 'Qualification', steps: [] },
+              { id: 'factfind', name: 'Fact Find', steps: [] },
+              { id: 'advice', name: 'Advice & Contract', steps: [] },
+              { id: 'implement', name: 'Implementation', steps: [] }
+            ],
+            personas: [
+              { id: 'client', label: 'Client', color: '#2D5A4B', isExternal: true },
+              { id: 'planner', label: 'Financial Planner', color: '#1E40AF', annualSalary: 65000 },
+              { id: 'para', label: 'Paraplanner', color: '#6B46C1', annualSalary: 45000 },
+              { id: 'ops', label: 'Operations', color: '#8B4513', annualSalary: 35000 },
+              { id: 'admin', label: 'Administrator', color: '#047857', annualSalary: 28000 }
+            ]
+          }
+        },
+        service: { 
+          name: 'Service Delivery', 
+          icon: '⚙️',
+          config: {
+            meta: { title: 'Service Delivery Journey', description: 'End-to-end service delivery process' },
+            stages: [
+              { id: 'request', name: 'Request', steps: [] },
+              { id: 'assess', name: 'Assessment', steps: [] },
+              { id: 'deliver', name: 'Delivery', steps: [] },
+              { id: 'review', name: 'Review', steps: [] }
+            ],
+            personas: [
+              { id: 'customer', label: 'Customer', color: '#2D5A4B', isExternal: true },
+              { id: 'manager', label: 'Manager', color: '#1E40AF', annualSalary: 55000 },
+              { id: 'team', label: 'Team Member', color: '#8B4513', annualSalary: 35000 }
+            ]
+          }
+        }
+      };
+
+      const handleCreate = async () => {
+        if (!title.trim()) {
+          setError('Please enter a title');
+          return;
+        }
+
+        setLoading(true);
+        setError('');
+
+        const templateConfig = templates[template].config;
+        const config = {
+          ...templateConfig,
+          meta: {
+            ...templateConfig.meta,
+            title: title.trim(),
+            description: description.trim()
+          }
+        };
+
+        const { data, error: createError } = await supabase
+          .from('journey_maps')
+          .insert({
+            title: title.trim(),
+            description: description.trim(),
+            config,
+            owner_id: user.id
+          })
+          .select()
+          .single();
+
+        if (createError) {
+          setError(createError.message);
+          setLoading(false);
+        } else {
+          onCreate(data);
+        }
+      };
+
+      return (
+        <div className="modal-overlay animate-fade" onClick={onClose}>
+          <div className="modal animate-slide" onClick={e => e.stopPropagation()}>
+            <div className="modal-header">
+              <h2 style={{ fontSize: '20px', fontWeight: 600 }}>Create New Journey Map</h2>
+            </div>
+            
+            <div className="modal-body">
+              {error && (
+                <div style={{ padding: '12px', background: '#FEE2E2', borderRadius: '8px', marginBottom: '20px', color: '#DC2626', fontSize: '13px' }}>
+                  {error}
+                </div>
+              )}
+
+              <div style={{ marginBottom: '20px' }}>
+                <label className="label">Title *</label>
+                <input
+                  type="text"
+                  className="input"
+                  value={title}
+                  onChange={(e) => setTitle(e.target.value)}
+                  placeholder="e.g., Client Onboarding Journey"
+                  autoFocus
+                />
+              </div>
+
+              <div style={{ marginBottom: '20px' }}>
+                <label className="label">Description</label>
+                <textarea
+                  className="input"
+                  value={description}
+                  onChange={(e) => setDescription(e.target.value)}
+                  placeholder="Brief description of this journey map..."
+                  rows={3}
+                  style={{ resize: 'vertical' }}
+                />
+              </div>
+
+              <div>
+                <label className="label">Start from template</label>
+                <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: '12px' }}>
+                  {Object.entries(templates).map(([key, tmpl]) => (
+                    <button
+                      key={key}
+                      onClick={() => setTemplate(key)}
+                      style={{
+                        padding: '16px',
+                        border: template === key ? '2px solid #2D5A4B' : '1px solid #DDD',
+                        borderRadius: '8px',
+                        background: template === key ? '#F0FDF4' : '#FFF',
+                        cursor: 'pointer',
+                        textAlign: 'center'
+                      }}
+                    >
+                      <div style={{ fontSize: '24px', marginBottom: '8px' }}>{tmpl.icon}</div>
+                      <div style={{ fontSize: '13px', fontWeight: 500 }}>{tmpl.name}</div>
+                    </button>
+                  ))}
+                </div>
+              </div>
+            </div>
+
+            <div className="modal-footer">
+              <button className="btn btn-secondary" onClick={onClose}>Cancel</button>
+              <button className="btn btn-primary" onClick={handleCreate} disabled={loading}>
+                {loading ? 'Creating...' : 'Create Map'}
+              </button>
+            </div>
+          </div>
+        </div>
+      );
+    }
+
+    // ============================================
+    // DELETE MAP MODAL
+    // ============================================
+    function DeleteMapModal({ map, onClose, onDelete }) {
+      const [confirmText, setConfirmText] = useState('');
+      const [loading, setLoading] = useState(false);
+      const expectedText = map.title || 'Untitled';
+
+      const handleDelete = async () => {
+        if (confirmText !== expectedText) return;
+        setLoading(true);
+        await onDelete();
+        setLoading(false);
+      };
+
+      return (
+        <div className="modal-overlay animate-fade" onClick={onClose}>
+          <div className="modal animate-slide" onClick={e => e.stopPropagation()}>
+            <div className="modal-header">
+              <h2 style={{ fontSize: '20px', fontWeight: 600, color: '#DC2626' }}>🗑️ Delete Journey Map</h2>
+            </div>
+            
+            <div className="modal-body">
+              <p style={{ marginBottom: '16px' }}>
+                This action <strong>cannot be undone</strong>. This will permanently delete the journey map 
+                <strong> "{map.title || 'Untitled'}"</strong> and remove all associated data.
+              </p>
+
+              <p style={{ marginBottom: '16px', color: '#666' }}>
+                Please type <strong>{expectedText}</strong> to confirm:
+              </p>
+
+              <input
+                type="text"
+                className={`input ${confirmText && confirmText !== expectedText ? 'input-error' : ''}`}
+                value={confirmText}
+                onChange={(e) => setConfirmText(e.target.value)}
+                placeholder={expectedText}
+              />
+            </div>
+
+            <div className="modal-footer">
+              <button className="btn btn-secondary" onClick={onClose}>Cancel</button>
+              <button 
+                className="btn btn-danger" 
+                onClick={handleDelete} 
+                disabled={confirmText !== expectedText || loading}
+              >
+                {loading ? 'Deleting...' : 'Delete Forever'}
+              </button>
+            </div>
+          </div>
+        </div>
+      );
+    }
+
+    // ============================================
+    // SHARE MAP MODAL
+    // ============================================
+    function ShareMapModal({ map, onClose }) {
+      const [email, setEmail] = useState('');
+      const [permission, setPermission] = useState('view');
+      const [shares, setShares] = useState([]);
+      const [loading, setLoading] = useState(false);
+      const [error, setError] = useState('');
+      const [success, setSuccess] = useState('');
+
+      useEffect(() => {
+        fetchShares();
+      }, []);
+
+      const fetchShares = async () => {
+        const { data, error } = await supabase
+          .from('shares')
+          .select('*, profiles!shared_with_id(email, display_name)')
+          .eq('journey_map_id', map.id);
+
+        if (data) setShares(data);
+      };
+
+      const handleShare = async () => {
+        if (!email.trim()) {
+          setError('Please enter an email address');
+          return;
+        }
+
+        setLoading(true);
+        setError('');
+        setSuccess('');
+
+        // Find user by email
+        const { data: userData, error: userError } = await supabase
+          .from('profiles')
+          .select('id')
+          .eq('email', email.trim().toLowerCase())
+          .single();
+
+        if (userError || !userData) {
+          setError('No user found with that email address');
+          setLoading(false);
+          return;
+        }
+
+        // Create share
+        const { error: shareError } = await supabase
+          .from('shares')
+          .insert({
+            journey_map_id: map.id,
+            shared_with_id: userData.id,
+            permission
+          });
+
+        if (shareError) {
+          if (shareError.code === '23505') {
+            setError('This map is already shared with that user');
+          } else {
+            setError(shareError.message);
+          }
+        } else {
+          setSuccess('Map shared successfully!');
+          setEmail('');
+          fetchShares();
+        }
+
+        setLoading(false);
+      };
+
+      const handleRemoveShare = async (shareId) => {
+        await supabase.from('shares').delete().eq('id', shareId);
+        fetchShares();
+      };
+
+      const handleUpdatePermission = async (shareId, newPermission) => {
+        await supabase
+          .from('shares')
+          .update({ permission: newPermission })
+          .eq('id', shareId);
+        fetchShares();
+      };
+
+      return (
+        <div className="modal-overlay animate-fade" onClick={onClose}>
+          <div className="modal animate-slide" onClick={e => e.stopPropagation()} style={{ maxWidth: '520px' }}>
+            <div className="modal-header">
+              <h2 style={{ fontSize: '20px', fontWeight: 600 }}>Share "{map.title}"</h2>
+            </div>
+            
+            <div className="modal-body">
+              {error && (
+                <div style={{ padding: '12px', background: '#FEE2E2', borderRadius: '8px', marginBottom: '16px', color: '#DC2626', fontSize: '13px' }}>
+                  {error}
+                </div>
+              )}
+              {success && (
+                <div style={{ padding: '12px', background: '#D1FAE5', borderRadius: '8px', marginBottom: '16px', color: '#065F46', fontSize: '13px' }}>
+                  {success}
+                </div>
+              )}
+
+              <div style={{ display: 'flex', gap: '12px', marginBottom: '24px' }}>
+                <input
+                  type="email"
+                  className="input"
+                  value={email}
+                  onChange={(e) => setEmail(e.target.value)}
+                  placeholder="Enter email address"
+                  style={{ flex: 1 }}
+                />
+                <select
+                  className="input"
+                  value={permission}
+                  onChange={(e) => setPermission(e.target.value)}
+                  style={{ width: '120px' }}
+                >
+                  <option value="view">Can View</option>
+                  <option value="edit">Can Edit</option>
+                </select>
+                <button className="btn btn-primary" onClick={handleShare} disabled={loading}>
+                  {loading ? '...' : 'Share'}
+                </button>
+              </div>
+
+              {shares.length > 0 && (
+                <div>
+                  <h4 style={{ fontSize: '14px', fontWeight: 600, marginBottom: '12px' }}>Shared with</h4>
+                  <div style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
+                    {shares.map(share => (
+                      <div key={share.id} style={{ 
+                        display: 'flex', 
+                        alignItems: 'center', 
+                        justifyContent: 'space-between',
+                        padding: '12px',
+                        background: '#F9F9F9',
+                        borderRadius: '8px'
+                      }}>
+                        <div>
+                          <div style={{ fontSize: '14px', fontWeight: 500 }}>
+                            {share.profiles?.display_name || share.profiles?.email}
+                          </div>
+                          <div className="text-muted text-small">{share.profiles?.email}</div>
+                        </div>
+                        <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+                          <select
+                            className="input"
+                            value={share.permission}
+                            onChange={(e) => handleUpdatePermission(share.id, e.target.value)}
+                            style={{ width: '110px', padding: '8px' }}
+                          >
+                            <option value="view">Can View</option>
+                            <option value="edit">Can Edit</option>
+                          </select>
+                          <button 
+                            className="btn btn-ghost" 
+                            style={{ color: '#DC2626', padding: '8px' }}
+                            onClick={() => handleRemoveShare(share.id)}
+                          >
+                            ✕
+                          </button>
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+                </div>
+              )}
+            </div>
+
+            <div className="modal-footer">
+              <button className="btn btn-secondary" onClick={onClose}>Done</button>
+            </div>
+          </div>
+        </div>
+      );
+    }
+
+    // ============================================
+    // ADMIN PANEL
+    // ============================================
+    function AdminPanel() {
+      const [users, setUsers] = useState([]);
+      const [allMaps, setAllMaps] = useState([]);
+      const [loading, setLoading] = useState(true);
+      const [activeSection, setActiveSection] = useState('users');
+
+      useEffect(() => {
+        fetchAdminData();
+      }, []);
+
+      const fetchAdminData = async () => {
+        setLoading(true);
+
+        // Fetch all users
+        const { data: usersData } = await supabase
+          .from('profiles')
+          .select('*')
+          .order('created_at', { ascending: false });
+
+        if (usersData) setUsers(usersData);
+
+        // Fetch all maps
+        const { data: mapsData } = await supabase
+          .from('journey_maps')
+          .select('*, profiles!owner_id(email, display_name)')
+          .order('updated_at', { ascending: false });
+
+        if (mapsData) setAllMaps(mapsData);
+
+        setLoading(false);
+      };
+
+      const updateUserRole = async (userId, newRole) => {
+        await supabase
+          .from('profiles')
+          .update({ role: newRole })
+          .eq('id', userId);
+        fetchAdminData();
+      };
+
+      const formatDate = (dateStr) => {
+        return new Date(dateStr).toLocaleDateString('en-GB', {
+          day: 'numeric',
+          month: 'short',
+          year: 'numeric'
+        });
+      };
+
+      if (loading) {
+        return (
+          <div style={{ display: 'flex', justifyContent: 'center', padding: '60px' }}>
+            <div className="spinner"></div>
+          </div>
+        );
+      }
+
+      return (
+        <div>
+          <div style={{ display: 'flex', gap: '8px', marginBottom: '24px' }}>
+            <button 
+              className={`btn ${activeSection === 'users' ? 'btn-primary' : 'btn-secondary'}`}
+              onClick={() => setActiveSection('users')}
+            >
+              👥 Users ({users.length})
+            </button>
+            <button 
+              className={`btn ${activeSection === 'maps' ? 'btn-primary' : 'btn-secondary'}`}
+              onClick={() => setActiveSection('maps')}
+            >
+              🗺️ All Maps ({allMaps.length})
+            </button>
+          </div>
+
+          {activeSection === 'users' && (
+            <div className="card" style={{ overflow: 'hidden' }}>
+              <table style={{ width: '100%', borderCollapse: 'collapse' }}>
+                <thead>
+                  <tr style={{ background: '#F9F9F9' }}>
+                    <th style={{ padding: '12px 16px', textAlign: 'left', fontSize: '13px', fontWeight: 600 }}>User</th>
+                    <th style={{ padding: '12px 16px', textAlign: 'left', fontSize: '13px', fontWeight: 600 }}>Email</th>
+                    <th style={{ padding: '12px 16px', textAlign: 'left', fontSize: '13px', fontWeight: 600 }}>Role</th>
+                    <th style={{ padding: '12px 16px', textAlign: 'left', fontSize: '13px', fontWeight: 600 }}>Joined</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {users.map(user => (
+                    <tr key={user.id} style={{ borderTop: '1px solid #EEE' }}>
+                      <td style={{ padding: '12px 16px', fontSize: '14px' }}>{user.display_name || '—'}</td>
+                      <td style={{ padding: '12px 16px', fontSize: '14px' }}>{user.email}</td>
+                      <td style={{ padding: '12px 16px' }}>
+                        <select
+                          className="input"
+                          value={user.role}
+                          onChange={(e) => updateUserRole(user.id, e.target.value)}
+                          style={{ width: '100px', padding: '6px 10px', fontSize: '13px' }}
+                        >
+                          <option value="user">User</option>
+                          <option value="admin">Admin</option>
+                        </select>
+                      </td>
+                      <td style={{ padding: '12px 16px', fontSize: '14px', color: '#666' }}>{formatDate(user.created_at)}</td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            </div>
+          )}
+
+          {activeSection === 'maps' && (
+            <div className="card" style={{ overflow: 'hidden' }}>
+              <table style={{ width: '100%', borderCollapse: 'collapse' }}>
+                <thead>
+                  <tr style={{ background: '#F9F9F9' }}>
+                    <th style={{ padding: '12px 16px', textAlign: 'left', fontSize: '13px', fontWeight: 600 }}>Title</th>
+                    <th style={{ padding: '12px 16px', textAlign: 'left', fontSize: '13px', fontWeight: 600 }}>Owner</th>
+                    <th style={{ padding: '12px 16px', textAlign: 'left', fontSize: '13px', fontWeight: 600 }}>Stages</th>
+                    <th style={{ padding: '12px 16px', textAlign: 'left', fontSize: '13px', fontWeight: 600 }}>Updated</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {allMaps.map(map => (
+                    <tr key={map.id} style={{ borderTop: '1px solid #EEE' }}>
+                      <td style={{ padding: '12px 16px', fontSize: '14px', fontWeight: 500 }}>{map.title}</td>
+                      <td style={{ padding: '12px 16px', fontSize: '14px' }}>{map.profiles?.display_name || map.profiles?.email}</td>
+                      <td style={{ padding: '12px 16px', fontSize: '14px', color: '#666' }}>{map.config?.stages?.length || 0}</td>
+                      <td style={{ padding: '12px 16px', fontSize: '14px', color: '#666' }}>{formatDate(map.updated_at)}</td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            </div>
+          )}
+        </div>
+      );
+    }
+
+    // ============================================
+    // JOURNEY MAP EDITOR (Placeholder - will integrate existing editor)
+    // ============================================
+    function JourneyMapEditor({ map, onBack, onSave }) {
+      const { profile } = useAuth();
+      const [config, setConfig] = useState(map.config || {});
+      const [saving, setSaving] = useState(false);
+      const [lastSaved, setLastSaved] = useState(null);
+
+      const handleSave = async () => {
+        setSaving(true);
+        const { error } = await supabase
+          .from('journey_maps')
+          .update({ 
+            config,
+            title: config.meta?.title || map.title,
+            updated_at: new Date().toISOString()
+          })
+          .eq('id', map.id);
+
+        if (!error) {
+          setLastSaved(new Date());
+          if (onSave) onSave({ ...map, config });
+        }
+        setSaving(false);
+      };
+
+      return (
+        <div style={{ minHeight: '100vh', background: '#F5F5F5' }}>
+          {/* Editor Header */}
+          <header style={{ 
+            background: '#1A1A1A', 
+            color: '#FFF', 
+            padding: '12px 24px',
+            display: 'flex',
+            justifyContent: 'space-between',
+            alignItems: 'center',
+            position: 'sticky',
+            top: 0,
+            zIndex: 100
+          }}>
+            <div style={{ display: 'flex', alignItems: 'center', gap: '16px' }}>
+              <button className="btn btn-ghost" onClick={onBack} style={{ color: '#FFF', padding: '8px' }}>
+                ← Back
+              </button>
+              <div>
+                <h1 style={{ fontSize: '16px', fontWeight: 600 }}>{map.title}</h1>
+                <span style={{ fontSize: '12px', color: '#999' }}>
+                  {lastSaved ? `Last saved ${lastSaved.toLocaleTimeString()}` : 'Not saved yet'}
+                </span>
+              </div>
+            </div>
+            <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
+              <button className="btn btn-primary" onClick={handleSave} disabled={saving}>
+                {saving ? 'Saving...' : '💾 Save'}
+              </button>
+            </div>
+          </header>
+
+          {/* Editor Content - Placeholder */}
+          <main style={{ padding: '40px', maxWidth: '1200px', margin: '0 auto' }}>
+            <div className="card" style={{ padding: '60px', textAlign: 'center' }}>
+              <div style={{ fontSize: '48px', marginBottom: '16px' }}>🚧</div>
+              <h2 style={{ fontSize: '24px', fontWeight: 600, marginBottom: '8px' }}>Editor Coming Soon</h2>
+              <p className="text-muted" style={{ marginBottom: '24px' }}>
+                The full journey map editor will be integrated here.<br/>
+                For now, here's the raw config data:
+              </p>
+              
+              <textarea
+                value={JSON.stringify(config, null, 2)}
+                onChange={(e) => {
+                  try {
+                    setConfig(JSON.parse(e.target.value));
+                  } catch (err) {
+                    // Invalid JSON, ignore
+                  }
+                }}
+                style={{
+                  width: '100%',
+                  height: '400px',
+                  padding: '16px',
+                  fontFamily: 'monospace',
+                  fontSize: '12px',
+                  border: '1px solid #DDD',
+                  borderRadius: '8px',
+                  textAlign: 'left'
+                }}
+              />
+            </div>
+          </main>
+        </div>
+      );
+    }
+
+    // ============================================
+    // MAIN APP
+    // ============================================
+    function App() {
+      const { user, loading } = useAuth();
+      const [currentView, setCurrentView] = useState('dashboard');
+      const [selectedMap, setSelectedMap] = useState(null);
+
+      if (loading) {
+        return (
+          <div style={{
+            minHeight: '100vh',
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'center',
+            background: 'linear-gradient(135deg, #1A1A1A 0%, #2D3748 100%)'
+          }}>
+            <div style={{ textAlign: 'center', color: '#FFF' }}>
+              <div className="spinner" style={{ margin: '0 auto 16px', width: '32px', height: '32px' }}></div>
+              <p>Loading...</p>
+            </div>
+          </div>
+        );
+      }
+
+      if (!user) {
+        return <AuthScreen />;
+      }
+
+      if (currentView === 'editor' && selectedMap) {
+        return (
+          <JourneyMapEditor 
+            map={selectedMap}
+            onBack={() => {
+              setCurrentView('dashboard');
+              setSelectedMap(null);
+            }}
+            onSave={(updatedMap) => setSelectedMap(updatedMap)}
+          />
+        );
+      }
+
+      return (
+        <Dashboard 
+          onOpenMap={(map) => {
+            setSelectedMap(map);
+            setCurrentView('editor');
+          }}
+          onCreateMap={(map) => {
+            setSelectedMap(map);
+            setCurrentView('editor');
+          }}
+        />
+      );
+    }
+
+    // ============================================
+    // RENDER
+    // ============================================
+    ReactDOM.createRoot(document.getElementById('root')).render(
+      <AuthProvider>
+        <App />
+      </AuthProvider>
+    );
+  </script>
+</body>
+</html>
