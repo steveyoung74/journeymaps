@@ -283,7 +283,7 @@
     const { useState, useCallback, useMemo, useEffect, useRef } = React;
     
     // Current app version - always displayed in footer
-    const APP_VERSION = "7.7.6";
+    const APP_VERSION = "7.8.7";
 
     const generateId = () => Math.random().toString(36).substr(2, 9);
 
@@ -3906,7 +3906,7 @@
                   <div className="no-print" style={{ display: 'flex', gap: '6px', alignItems: 'center', flexShrink: 0 }}>
                     {/* Stages/Steps Toggle */}
                     <div style={{ display: 'flex', borderRadius: '5px', overflow: 'hidden', border: '1px solid rgba(255,255,255,0.35)' }}>
-                      <button onClick={() => { setViewMode('stages'); setHighlightOpportunities(false); }} style={{ padding: '7px 12px', background: viewMode === 'stages' ? '#4A5568' : 'transparent', color: '#FAFAFA', border: 'none', cursor: 'pointer', fontFamily: "'Helvetica Neue', Arial, sans-serif", fontSize: '11px', display: 'flex', alignItems: 'center', gap: '5px' }}>
+                      <button onClick={() => { setViewMode('stages'); }} style={{ padding: '7px 12px', background: viewMode === 'stages' ? '#4A5568' : 'transparent', color: '#FAFAFA', border: 'none', cursor: 'pointer', fontFamily: "'Helvetica Neue', Arial, sans-serif", fontSize: '11px', display: 'flex', alignItems: 'center', gap: '5px' }}>
                         📁 Stages
                       </button>
                       <button onClick={() => setViewMode('steps')} style={{ padding: '7px 12px', background: viewMode === 'steps' ? '#4A5568' : 'transparent', color: '#FAFAFA', border: 'none', borderLeft: '1px solid rgba(255,255,255,0.25)', cursor: 'pointer', fontFamily: "'Helvetica Neue', Arial, sans-serif", fontSize: '11px', display: 'flex', alignItems: 'center', gap: '5px' }}>
@@ -3925,23 +3925,20 @@
                         </button>
                         
                         <button 
-                          onClick={() => viewMode === 'steps' && setHighlightOpportunities(!highlightOpportunities)} 
-                          disabled={viewMode === 'stages'}
+                          onClick={() => setHighlightOpportunities(!highlightOpportunities)} 
                           style={{ 
                             padding: '7px 12px', 
-                            background: highlightOpportunities && viewMode === 'steps' ? '#4A5568' : 'transparent', 
-                            color: viewMode === 'stages' ? 'rgba(250,250,250,0.4)' : '#FAFAFA', 
-                            border: viewMode === 'stages' ? '1px solid rgba(250,250,250,0.15)' : '1px solid rgba(255,255,255,0.35)', 
+                            background: highlightOpportunities ? '#4A5568' : 'transparent', 
+                            color: '#FAFAFA', 
+                            border: '1px solid rgba(255,255,255,0.35)', 
                             borderRadius: '5px', 
-                            cursor: viewMode === 'stages' ? 'not-allowed' : 'pointer', 
+                            cursor: 'pointer', 
                             fontFamily: "'Helvetica Neue', Arial, sans-serif", 
                             fontSize: '11px',
                             display: 'flex',
                             alignItems: 'center',
-                            gap: '5px',
-                            opacity: viewMode === 'stages' ? 0.5 : 1
+                            gap: '5px'
                           }}
-                          title={viewMode === 'stages' ? 'Switch to Steps view to use this feature' : ''}
                         >
                           🎯 Opportunities
                         </button>
@@ -4089,7 +4086,7 @@
               <div className="no-print header-buttons" style={{ display: 'flex', gap: '6px', alignItems: 'center', flexWrap: 'wrap' }}>
                 {/* Stages/Steps Toggle */}
                 <div style={{ display: 'flex', borderRadius: '5px', overflow: 'hidden', border: '1px solid rgba(255,255,255,0.35)' }}>
-                  <button onClick={() => { setViewMode('stages'); setHighlightOpportunities(false); }} style={{ padding: '7px 12px', background: viewMode === 'stages' ? '#4A5568' : 'transparent', color: '#FAFAFA', border: 'none', cursor: 'pointer', fontFamily: "'Helvetica Neue', Arial, sans-serif", fontSize: '11px', display: 'flex', alignItems: 'center', gap: '5px' }}>
+                  <button onClick={() => { setViewMode('stages'); }} style={{ padding: '7px 12px', background: viewMode === 'stages' ? '#4A5568' : 'transparent', color: '#FAFAFA', border: 'none', cursor: 'pointer', fontFamily: "'Helvetica Neue', Arial, sans-serif", fontSize: '11px', display: 'flex', alignItems: 'center', gap: '5px' }}>
                     📁 Stages
                   </button>
                   <button onClick={() => setViewMode('steps')} style={{ padding: '7px 12px', background: viewMode === 'steps' ? '#4A5568' : 'transparent', color: '#FAFAFA', border: 'none', borderLeft: '1px solid rgba(255,255,255,0.25)', cursor: 'pointer', fontFamily: "'Helvetica Neue', Arial, sans-serif", fontSize: '11px', display: 'flex', alignItems: 'center', gap: '5px' }}>
@@ -4108,23 +4105,20 @@
                     </button>
                     
                     <button 
-                      onClick={() => viewMode === 'steps' && setHighlightOpportunities(!highlightOpportunities)} 
-                      disabled={viewMode === 'stages'}
+                      onClick={() => setHighlightOpportunities(!highlightOpportunities)} 
                       style={{ 
                         padding: '7px 12px', 
-                        background: highlightOpportunities && viewMode === 'steps' ? '#4A5568' : 'transparent', 
-                        color: viewMode === 'stages' ? 'rgba(250,250,250,0.4)' : '#FAFAFA', 
-                        border: viewMode === 'stages' ? '1px solid rgba(250,250,250,0.15)' : '1px solid rgba(255,255,255,0.35)', 
+                        background: highlightOpportunities ? '#4A5568' : 'transparent', 
+                        color: '#FAFAFA', 
+                        border: '1px solid rgba(255,255,255,0.35)', 
                         borderRadius: '5px', 
-                        cursor: viewMode === 'stages' ? 'not-allowed' : 'pointer', 
+                        cursor: 'pointer', 
                         fontFamily: "'Helvetica Neue', Arial, sans-serif", 
                         fontSize: '11px',
                         display: 'flex',
                         alignItems: 'center',
-                        gap: '5px',
-                        opacity: viewMode === 'stages' ? 0.5 : 1
+                        gap: '5px'
                       }}
-                      title={viewMode === 'stages' ? 'Switch to Steps view to use this feature' : ''}
                     >
                       🎯 Opportunities
                     </button>
@@ -4195,13 +4189,44 @@
               </div>
             </div>
             {showCosts && (
-              <div style={{ display: 'flex', alignItems: 'center', gap: '8px', marginLeft: 'auto', padding: '8px 16px', background: '#FEF3C7', borderRadius: '8px' }}>
-                <span style={{ fontSize: '20px' }}>💰</span>
-                <div>
-                  <div style={{ fontFamily: "'Helvetica Neue', Arial, sans-serif", fontSize: '11px', color: '#92400E', textTransform: 'uppercase' }}>Total Cost</div>
-                  <div style={{ fontWeight: 600, color: '#92400E', fontSize: '18px' }}>{formatCurrency(stats.totalCost)}</div>
+              <>
+                <div style={{ display: 'flex', alignItems: 'center', gap: '8px', marginLeft: 'auto', padding: '8px 16px', background: '#FEF3C7', borderRadius: '8px' }}>
+                  <span style={{ fontSize: '20px' }}>💰</span>
+                  <div>
+                    <div style={{ fontFamily: "'Helvetica Neue', Arial, sans-serif", fontSize: '11px', color: '#92400E', textTransform: 'uppercase' }}>Total Cost</div>
+                    <div style={{ fontWeight: 600, color: '#92400E', fontSize: '18px' }}>{formatCurrency(stats.totalCost)}</div>
+                  </div>
                 </div>
-              </div>
+                {highlightOpportunities && (
+                  <div style={{ display: 'flex', alignItems: 'center', gap: '8px', padding: '8px 16px', background: 'linear-gradient(135deg, #059669 0%, #047857 100%)', borderRadius: '8px' }}>
+                    <span style={{ fontSize: '20px' }}>🎯</span>
+                    <div>
+                      <div style={{ fontFamily: "'Helvetica Neue', Arial, sans-serif", fontSize: '11px', color: 'rgba(255,255,255,0.9)', textTransform: 'uppercase' }}>Potential Savings</div>
+                      <div style={{ fontWeight: 600, color: '#FFF', fontSize: '18px' }}>
+                        {(() => {
+                          const totalSavings = config.stages.reduce((acc, stage) => 
+                            acc + stage.steps.reduce((stepAcc, step) => {
+                              const stepCost = calculateStepCost(step, config.personas);
+                              const savings = step.automationOpportunity === 'high' ? stepCost * 0.7 
+                                : step.automationOpportunity === 'medium' ? stepCost * 0.4 
+                                : step.automationOpportunity === 'low' ? stepCost * 0.1 : 0;
+                              return stepAcc + savings;
+                            }, 0), 0);
+                          const totalTimeSavings = config.stages.reduce((acc, stage) => 
+                            acc + stage.steps.reduce((stepAcc, step) => {
+                              const savings = step.automationOpportunity === 'high' ? step.timeMinutes * 0.7 
+                                : step.automationOpportunity === 'medium' ? step.timeMinutes * 0.4 
+                                : step.automationOpportunity === 'low' ? step.timeMinutes * 0.1 : 0;
+                              return stepAcc + savings;
+                            }, 0), 0);
+                          const percentage = stats.totalCost > 0 ? Math.round((totalSavings / stats.totalCost) * 100) : 0;
+                          return `${formatTime(Math.round(totalTimeSavings))} · ${formatCurrency(totalSavings)} (${percentage}%)`;
+                        })()}
+                      </div>
+                    </div>
+                  </div>
+                )}
+              </>
             )}
           </div>
 
@@ -4286,7 +4311,26 @@
             }}>
               {viewMode === 'stages' ? (
                 /* Stages Summary View */
-                config.stages.map((stage, stageIndex) => {
+                <>
+                  {(() => {
+                    // Calculate global ranking of all opportunities
+                    const allOpportunitySteps = config.stages.flatMap((stage, stageIdx) => 
+                      stage.steps.map(step => {
+                        const stepCost = calculateStepCost(step, config.personas);
+                        const savings = step.automationOpportunity === 'high' ? stepCost * 0.7 
+                          : step.automationOpportunity === 'medium' ? stepCost * 0.4 
+                          : step.automationOpportunity === 'low' ? stepCost * 0.1 : 0;
+                        return { id: step.id, savings, hasOpportunity: step.automationOpportunity === 'high' || step.automationOpportunity === 'medium' };
+                      })
+                    ).filter(s => s.hasOpportunity).sort((a, b) => b.savings - a.savings);
+                    
+                    // Create a map of step id to rank (1-5 for top 5)
+                    const opportunityRanks = {};
+                    allOpportunitySteps.slice(0, 5).forEach((step, idx) => {
+                      opportunityRanks[step.id] = idx + 1;
+                    });
+                    
+                    return config.stages.map((stage, stageIndex) => {
                   const stageTime = stage.steps.reduce((acc, step) => acc + step.timeMinutes, 0);
                   const stageCost = stage.steps.reduce((acc, step) => acc + calculateStepCost(step, config.personas), 0);
                   const totalPainPoints = stage.steps.reduce((acc, step) => acc + (step.painPoints?.length || 0), 0);
@@ -4297,6 +4341,22 @@
                   const maxStepTime = Math.max(...stage.steps.map(s => s.timeMinutes), 1);
                   const stageColor = `hsl(${stageIndex * 45 + 180}, 35%, 45%)`;
                   const stageColorLight = `hsl(${stageIndex * 45 + 180}, 35%, 85%)`;
+                  
+                  // Calculate stage-level savings
+                  const stageSavings = stage.steps.reduce((acc, step) => {
+                    const stepCost = calculateStepCost(step, config.personas);
+                    const savings = step.automationOpportunity === 'high' ? stepCost * 0.7 
+                      : step.automationOpportunity === 'medium' ? stepCost * 0.4 
+                      : step.automationOpportunity === 'low' ? stepCost * 0.1 : 0;
+                    return acc + savings;
+                  }, 0);
+                  const stageTimeSavings = stage.steps.reduce((acc, step) => {
+                    const savings = step.automationOpportunity === 'high' ? step.timeMinutes * 0.7 
+                      : step.automationOpportunity === 'medium' ? step.timeMinutes * 0.4 
+                      : step.automationOpportunity === 'low' ? step.timeMinutes * 0.1 : 0;
+                    return acc + savings;
+                  }, 0);
+                  const hasOpportunities = highAutoOps > 0 || medAutoOps > 0;
                   
                   return (
                     <div key={stage.id} className="stage-card" style={{ 
@@ -4340,39 +4400,98 @@
                           <div style={{ display: 'flex', flexDirection: 'column', gap: '6px' }}>
                             {stage.steps.map((step, idx) => {
                               const timeBarWidth = maxStepTime > 0 ? (step.timeMinutes / maxStepTime) * 100 : 0;
+                              const isHighOpp = step.automationOpportunity === 'high';
+                              const isMedOpp = step.automationOpportunity === 'medium';
+                              const stepCost = calculateStepCost(step, config.personas);
+                              const stepSavings = isHighOpp ? stepCost * 0.7 : isMedOpp ? stepCost * 0.4 : 0;
+                              const stepTimeSavings = isHighOpp ? step.timeMinutes * 0.7 : isMedOpp ? step.timeMinutes * 0.4 : 0;
+                              const showOppHighlight = highlightOpportunities && (isHighOpp || isMedOpp);
                               return (
                               <div key={step.id} style={{ 
                                 display: 'flex', 
                                 alignItems: 'center', 
                                 gap: '8px',
                                 padding: '8px 12px',
-                                background: step.isHardCheckpoint ? '#FDF2F8' : '#F8F8F8',
+                                background: showOppHighlight 
+                                  ? (isHighOpp ? 'linear-gradient(90deg, #D1FAE5 0%, #A7F3D0 100%)' : 'linear-gradient(90deg, #FEF3C7 0%, #FDE68A 100%)')
+                                  : step.isHardCheckpoint ? '#FDF2F8' : '#F8F8F8',
                                 borderRadius: '6px',
                                 fontSize: '13px',
-                                border: step.isHardCheckpoint ? '1px solid #FBCFE8' : 'none',
+                                border: showOppHighlight 
+                                  ? (isHighOpp ? '1px solid #6EE7B7' : '1px solid #FCD34D')
+                                  : step.isHardCheckpoint ? '1px solid #FBCFE8' : 'none',
                                 position: 'relative',
                                 overflow: 'hidden'
                               }}>
-                                {/* Time Bar Background */}
-                                <div style={{
-                                  position: 'absolute',
-                                  top: 0,
-                                  left: 0,
-                                  width: `${timeBarWidth}%`,
-                                  height: '100%',
-                                  background: stageColorLight,
-                                  opacity: 0.5,
-                                  transition: 'width 0.3s ease',
-                                  zIndex: 0
-                                }} />
+                                {/* Time Bar Background - only show when not highlighting opportunities */}
+                                {!showOppHighlight && (
+                                  <div style={{
+                                    position: 'absolute',
+                                    top: 0,
+                                    left: 0,
+                                    width: `${timeBarWidth}%`,
+                                    height: '100%',
+                                    background: stageColorLight,
+                                    opacity: 0.5,
+                                    transition: 'width 0.3s ease',
+                                    zIndex: 0
+                                  }} />
+                                )}
                                 <span style={{ color: '#999', fontWeight: 500, minWidth: '24px', position: 'relative', zIndex: 1 }}>{stageIndex + 1}.{idx + 1}</span>
                                 {step.isHardCheckpoint && <span style={{ fontSize: '12px', position: 'relative', zIndex: 1 }}>🚧</span>}
-                                <span style={{ flex: 1, color: step.isHardCheckpoint ? '#BE185D' : '#333', position: 'relative', zIndex: 1 }}>{step.name}</span>
-                                <span style={{ color: '#666', fontSize: '12px', position: 'relative', zIndex: 1 }}>{formatTime(step.timeMinutes)}</span>
+                                {showOppHighlight && opportunityRanks[step.id] && (
+                                  <span style={{ 
+                                    position: 'relative', 
+                                    zIndex: 1,
+                                    display: 'inline-flex',
+                                    alignItems: 'center',
+                                    justifyContent: 'center',
+                                    width: '20px',
+                                    height: '20px',
+                                    borderRadius: '50%',
+                                    background: isHighOpp ? '#059669' : '#D97706',
+                                    color: '#FFF',
+                                    fontSize: '11px',
+                                    fontWeight: 700
+                                  }}>
+                                    {opportunityRanks[step.id]}
+                                  </span>
+                                )}
+                                <span style={{ flex: 1, color: showOppHighlight ? (isHighOpp ? '#065F46' : '#92400E') : step.isHardCheckpoint ? '#BE185D' : '#333', position: 'relative', zIndex: 1, fontWeight: showOppHighlight ? 500 : 400 }}>{step.name}</span>
+                                {showOppHighlight ? (
+                                  <span style={{ color: isHighOpp ? '#065F46' : '#92400E', fontSize: '11px', position: 'relative', zIndex: 1, fontWeight: 600 }}>
+                                    {formatTime(Math.round(stepTimeSavings))} · {formatCurrency(stepSavings)} ({isHighOpp ? '70' : '40'}%)
+                                  </span>
+                                ) : (
+                                  <span style={{ color: '#666', fontSize: '12px', position: 'relative', zIndex: 1 }}>{formatTime(step.timeMinutes)}</span>
+                                )}
                               </div>
                             );})}
                           </div>
                         </div>
+                        
+                        {/* Savings Summary - show when highlighting opportunities */}
+                        {highlightOpportunities && hasOpportunities && (
+                          <div style={{ 
+                            padding: '12px 16px', 
+                            background: 'linear-gradient(135deg, #059669 0%, #047857 100%)', 
+                            borderRadius: '8px',
+                            marginBottom: '16px',
+                            color: '#FFF'
+                          }}>
+                            <div style={{ fontSize: '11px', opacity: 0.9, textTransform: 'uppercase', letterSpacing: '0.5px', marginBottom: '4px' }}>
+                              Potential Savings
+                            </div>
+                            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                              <div style={{ fontSize: '18px', fontWeight: 700 }}>
+                                {formatTime(Math.round(stageTimeSavings))}
+                              </div>
+                              <div style={{ fontSize: '18px', fontWeight: 700 }}>
+                                {formatCurrency(stageSavings)} ({stageCost > 0 ? Math.round((stageSavings / stageCost) * 100) : 0}%)
+                              </div>
+                            </div>
+                          </div>
+                        )}
                         
                         {/* Badges Row */}
                         <div style={{ display: 'flex', gap: '8px', flexWrap: 'wrap', paddingTop: '16px', borderTop: '1px solid #EEE' }}>
@@ -4457,6 +4576,8 @@
                     </div>
                   );
                 })
+                  })()}
+                </>
               ) : (
                 /* Steps Detail View (existing) */
                 config.stages.map((stage, stageIndex) => {
