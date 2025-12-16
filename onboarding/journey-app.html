@@ -480,33 +480,36 @@
 
       const fetchMaps = async () => {
         setLoading(true);
+        console.log('Fetching maps for user:', user.id);
         
-        // Fetch user's own maps
-        const { data: ownMaps, error: ownError } = await supabase
-          .from('journey_maps')
-          .select('*, profiles!owner_id(email, display_name)')
-          .eq('owner_id', user.id)
-          .order('updated_at', { ascending: false });
+        try {
+          // Fetch user's own maps
+          const { data: ownMaps, error: ownError } = await supabase
+            .from('journey_maps')
+            .select('*')
+            .eq('owner_id', user.id)
+            .order('updated_at', { ascending: false });
 
-        if (ownMaps) setMaps(ownMaps);
+          console.log('Own maps result:', { ownMaps, ownError });
+          if (ownMaps) setMaps(ownMaps);
+          if (ownError) console.error('Own maps error:', ownError);
 
-        // Fetch maps shared with user
-        const { data: shared, error: sharedError } = await supabase
-          .from('shares')
-          .select(`
-            permission,
-            journey_maps (
-              *,
-              profiles!owner_id(email, display_name)
-            )
-          `)
-          .eq('shared_with_id', user.id);
+          // Fetch maps shared with user
+          const { data: shared, error: sharedError } = await supabase
+            .from('shares')
+            .select('*, journey_maps(*)')
+            .eq('shared_with_id', user.id);
 
-        if (shared) {
-          setSharedMaps(shared.map(s => ({ ...s.journey_maps, permission: s.permission })));
+          console.log('Shared maps result:', { shared, sharedError });
+          if (shared) {
+            setSharedMaps(shared.map(s => ({ ...s.journey_maps, permission: s.permission })));
+          }
+          if (sharedError) console.error('Shared maps error:', sharedError);
+        } catch (err) {
+          console.error('fetchMaps error:', err);
+        } finally {
+          setLoading(false);
         }
-
-        setLoading(false);
       };
 
       const handleDelete = async (map) => {
