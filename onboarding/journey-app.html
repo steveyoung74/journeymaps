@@ -146,11 +146,17 @@
     // CONFIGURATION
     // ============================================
     const SUPABASE_URL = 'https://sweekrbmfdpnemiykjct.supabase.co';
-    const SUPABASE_ANON_KEY = 'sb_publishable_SaU135xIfCtl7l2h03Jpmw_3IgECJpB';
-    const APP_VERSION = '1.0.0';
+    const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InN3ZWVrcmJtZmRwbmVtaXlramN0Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NjU5MDM5MzgsImV4cCI6MjA4MTQ3OTkzOH0.kdnk7U98RdPmcxOTD67DowJzzOBKG5g6L5HbHtlbbsU';
+    const APP_VERSION = '1.0.1';
     
     // Initialize Supabase client
-    const supabase = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+    let supabase;
+    try {
+      supabase = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+      console.log('Supabase client initialized');
+    } catch (err) {
+      console.error('Failed to initialize Supabase:', err);
+    }
 
     // ============================================
     // AUTH CONTEXT
@@ -162,19 +168,35 @@
       const [profile, setProfile] = useState(null);
       const [loading, setLoading] = useState(true);
 
+      // Failsafe timeout - if loading takes more than 10 seconds, show login
+      useEffect(() => {
+        const timeout = setTimeout(() => {
+          if (loading) {
+            console.warn('Loading timeout - forcing login screen');
+            setLoading(false);
+          }
+        }, 10000);
+        return () => clearTimeout(timeout);
+      }, [loading]);
+
       useEffect(() => {
         // Check active session
         supabase.auth.getSession().then(({ data: { session } }) => {
+          console.log('Session:', session);
           setUser(session?.user ?? null);
           if (session?.user) {
             fetchProfile(session.user.id);
           } else {
             setLoading(false);
           }
+        }).catch(err => {
+          console.error('Session error:', err);
+          setLoading(false);
         });
 
         // Listen for auth changes
         const { data: { subscription } } = supabase.auth.onAuthStateChange(async (event, session) => {
+          console.log('Auth state change:', event, session?.user?.email);
           setUser(session?.user ?? null);
           if (session?.user) {
             await fetchProfile(session.user.id);
@@ -188,39 +210,50 @@
       }, []);
 
       const fetchProfile = async (userId) => {
-        let { data, error } = await supabase
-          .from('profiles')
-          .select('*')
-          .eq('id', userId)
-          .single();
-        
-        // If no profile exists, create one (for OAuth users where trigger didn't fire)
-        if (error && error.code === 'PGRST116') {
-          const { data: userData } = await supabase.auth.getUser();
-          const email = userData?.user?.email || '';
-          
-          const { data: newProfile, error: insertError } = await supabase
+        console.log('Fetching profile for:', userId);
+        try {
+          let { data, error } = await supabase
             .from('profiles')
-            .insert({
-              id: userId,
-              email: email,
-              display_name: email.split('@')[0],
-              role: email === 'steveyoung74@gmail.com' ? 'admin' : 'user'
-            })
-            .select()
+            .select('*')
+            .eq('id', userId)
             .single();
           
-          if (newProfile) {
-            data = newProfile;
-          } else {
-            console.error('Failed to create profile:', insertError);
+          console.log('Profile fetch result:', { data, error });
+          
+          // If no profile exists, create one (for OAuth users where trigger didn't fire)
+          if (error && error.code === 'PGRST116') {
+            console.log('No profile found, creating one...');
+            const { data: userData } = await supabase.auth.getUser();
+            const email = userData?.user?.email || '';
+            
+            const { data: newProfile, error: insertError } = await supabase
+              .from('profiles')
+              .insert({
+                id: userId,
+                email: email,
+                display_name: email.split('@')[0],
+                role: email === 'steveyoung74@gmail.com' ? 'admin' : 'user'
+              })
+              .select()
+              .single();
+            
+            console.log('Profile create result:', { newProfile, insertError });
+            
+            if (newProfile) {
+              data = newProfile;
+            } else {
+              console.error('Failed to create profile:', insertError);
+            }
           }
+          
+          if (data) {
+            setProfile(data);
+          }
+        } catch (err) {
+          console.error('Profile fetch error:', err);
+        } finally {
+          setLoading(false);
         }
-        
-        if (data) {
-          setProfile(data);
-        }
-        setLoading(false);
       };
 
       const signUp = async (email, password, displayName) => {
