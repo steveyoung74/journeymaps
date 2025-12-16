@@ -188,11 +188,34 @@
       }, []);
 
       const fetchProfile = async (userId) => {
-        const { data, error } = await supabase
+        let { data, error } = await supabase
           .from('profiles')
           .select('*')
           .eq('id', userId)
           .single();
+        
+        // If no profile exists, create one (for OAuth users where trigger didn't fire)
+        if (error && error.code === 'PGRST116') {
+          const { data: userData } = await supabase.auth.getUser();
+          const email = userData?.user?.email || '';
+          
+          const { data: newProfile, error: insertError } = await supabase
+            .from('profiles')
+            .insert({
+              id: userId,
+              email: email,
+              display_name: email.split('@')[0],
+              role: email === 'steveyoung74@gmail.com' ? 'admin' : 'user'
+            })
+            .select()
+            .single();
+          
+          if (newProfile) {
+            data = newProfile;
+          } else {
+            console.error('Failed to create profile:', insertError);
+          }
+        }
         
         if (data) {
           setProfile(data);
@@ -829,8 +852,11 @@
           .select()
           .single();
 
+        console.log('Create result:', { data, createError, userId: user.id });
+
         if (createError) {
-          setError(createError.message);
+          console.error('Create error:', createError);
+          setError(createError.message || 'Failed to create map. Check console for details.');
           setLoading(false);
         } else {
           onCreate(data);
