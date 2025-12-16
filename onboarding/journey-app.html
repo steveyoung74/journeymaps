@@ -147,7 +147,7 @@
     // ============================================
     const SUPABASE_URL = 'https://sweekrbmfdpnemiykjct.supabase.co';
     const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InN3ZWVrcmJtZmRwbmVtaXlramN0Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NjU5MDM5MzgsImV4cCI6MjA4MTQ3OTkzOH0.kdnk7U98RdPmcxOTD67DowJzzOBKG5g6L5HbHtlbbsU';
-    const APP_VERSION = '1.0.1';
+    const APP_VERSION = '1.0.2';
     
     // Initialize Supabase client
     let supabase;
@@ -476,6 +476,14 @@
 
       useEffect(() => {
         fetchMaps();
+        // Timeout failsafe for dashboard loading
+        const timeout = setTimeout(() => {
+          if (loading) {
+            console.warn('Dashboard loading timeout');
+            setLoading(false);
+          }
+        }, 8000);
+        return () => clearTimeout(timeout);
       }, []);
 
       const fetchMaps = async () => {
@@ -548,7 +556,7 @@
           }}>
             <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
               <span style={{ fontSize: '24px' }}>🗺️</span>
-              <h1 style={{ fontSize: '18px', fontWeight: 600 }}>Journey Maps</h1>
+              <h1 style={{ fontSize: '18px', fontWeight: 600 }}>Journey Maps <span style={{ fontSize: '12px', opacity: 0.6 }}>v{APP_VERSION}</span></h1>
             </div>
             <div style={{ display: 'flex', alignItems: 'center', gap: '16px' }}>
               <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
