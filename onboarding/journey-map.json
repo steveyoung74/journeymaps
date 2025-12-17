@@ -158,7 +158,8 @@
             "new-business-exec": "Assesses client information quality, checks FP availability, routes accordingly"
           }
         }
-      ]
+      ],
+      "dropOffCount": 0
     },
     {
       "id": "opportunity-qualification",
@@ -354,7 +355,8 @@
             "im": "Adds investment-related notes"
           }
         }
-      ]
+      ],
+      "dropOffCount": 290
     },
     {
       "id": "fact-find-collateral",
@@ -713,7 +715,8 @@
           "checkpointType": "vetting",
           "checkpointDetails": "FFB needs to be in place before Stage 4 can commence"
         }
-      ]
+      ],
+      "dropOffCount": 833
     },
     {
       "id": "advice",
@@ -1014,7 +1017,8 @@
             "ops": "Key data from xplan to Avaloq or SEI to open the accounts"
           }
         }
-      ]
+      ],
+      "dropOffCount": 508
     },
     {
       "id": "transfers-in",
@@ -1314,7 +1318,13 @@
             "ops": "Closes transfer case, updates records"
           }
         }
-      ]
+      ],
+      "dropOffCount": 23
     }
-  ]
+  ],
+  "funnel": {
+    "enabled": true,
+    "initialVolume": 1680,
+    "periodLabel": "Apr – Sep 5 Months Snapshot"
+  }
 }
