@@ -283,7 +283,7 @@
     const { useState, useCallback, useMemo, useEffect, useRef } = React;
     
     // Current app version - always displayed in footer
-    const APP_VERSION = "7.8.7";
+    const APP_VERSION = "7.9.0";
 
     const generateId = () => Math.random().toString(36).substr(2, 9);
 
@@ -2803,6 +2803,9 @@
     }
 
     function JourneyMap() {
+      // Public GitHub raw URL for read-only config loading (no token needed)
+      const PUBLIC_CONFIG_URL = 'https://raw.githubusercontent.com/steveyoung74/journeymaps/main/onboarding/journey-map.json';
+      
       const [config, setConfig] = useState(() => {
         const saved = localStorage.getItem('journeymap-config');
         if (saved) {
@@ -2814,9 +2817,45 @@
             console.warn('Failed to parse saved config, using default');
           }
         }
-        console.log('📄 Using default config (no localStorage data found)');
+        // Return default for now - will try GitHub in useEffect
+        console.log('📄 No localStorage data, will try GitHub...');
         return defaultConfig;
       });
+      
+      const [configLoading, setConfigLoading] = useState(() => {
+        // Only show loading if no localStorage data
+        return !localStorage.getItem('journeymap-config');
+      });
+      
+      // Try to load config from public GitHub if no localStorage data
+      React.useEffect(() => {
+        const loadFromGitHub = async () => {
+          // Skip if we already have localStorage data
+          if (localStorage.getItem('journeymap-config')) {
+            setConfigLoading(false);
+            return;
+          }
+          
+          console.log('🌐 Fetching latest config from GitHub...');
+          try {
+            const response = await fetch(PUBLIC_CONFIG_URL + '?t=' + Date.now()); // Cache bust
+            if (response.ok) {
+              const data = await response.json();
+              console.log('✅ Loaded config from GitHub');
+              setConfig(data);
+              localStorage.setItem('journeymap-config', JSON.stringify(data));
+            } else {
+              console.warn('⚠️ Could not load from GitHub, using default config');
+            }
+          } catch (err) {
+            console.warn('⚠️ GitHub fetch failed:', err.message);
+          }
+          setConfigLoading(false);
+        };
+        
+        loadFromGitHub();
+      }, []);
+      
       const [selectedStep, setSelectedStep] = useState(null);
       const [activePerspective, setActivePerspective] = useState('all');
       const [showJson, setShowJson] = useState(false);
@@ -3659,8 +3698,8 @@
         }
       };
 
-      // Loading screen while fetching passwords
-      if (passwordsLoading) {
+      // Loading screen while fetching passwords or config
+      if (passwordsLoading || configLoading) {
         return (
           <div style={{
             minHeight: '100vh',
@@ -3673,7 +3712,7 @@
             <div style={{ textAlign: 'center', color: '#FFF' }}>
               <div style={{ fontSize: '24px', marginBottom: '16px' }}>Loading...</div>
               <div style={{ fontSize: '14px', opacity: 0.7, fontFamily: "'Helvetica Neue', Arial, sans-serif" }}>
-                Initializing Steve's Journey Map
+                {configLoading ? 'Loading latest journey map...' : 'Initializing...'}
               </div>
             </div>
           </div>
