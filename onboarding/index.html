@@ -283,7 +283,7 @@
     const { useState, useCallback, useMemo, useEffect, useRef } = React;
     
     // Current app version - always displayed in footer
-    const APP_VERSION = "7.9.0";
+    const APP_VERSION = "8.2.0";
 
     const generateId = () => Math.random().toString(36).substr(2, 9);
 
@@ -298,6 +298,11 @@
         audience: "Internal Operations",
         perspective: "client"
       },
+      funnel: {
+        enabled: true,
+        initialVolume: 1000,
+        periodLabel: "per quarter"
+      },
       personas: [
         { id: "client", label: "Client", color: "#2D5A4B", annualSalary: 0, isExternal: true },
         { id: "fp", label: "Financial Planner", color: "#8B4513", annualSalary: 85000, isExternal: false },
@@ -310,6 +315,7 @@
         {
           id: "lead-receipt",
           name: "Lead Receipt",
+          dropOffCount: 150,
           steps: [
             {
               id: "triage",
@@ -360,6 +366,7 @@
         {
           id: "opportunity-qualification",
           name: "Opportunity Qualification",
+          dropOffCount: 200,
           steps: [
             {
               id: "initial-call",
@@ -481,6 +488,7 @@
         {
           id: "fact-find-collateral",
           name: "Fact Find & Collateral Gathering",
+          dropOffCount: 80,
           steps: [
             {
               id: "client-portal-enrolment",
@@ -684,6 +692,7 @@
         {
           id: "advice",
           name: "Advice / Contract",
+          dropOffCount: 50,
           steps: [
             {
               id: "pricing-propositions",
@@ -829,6 +838,7 @@
         {
           id: "transfers-in",
           name: "Transfers In",
+          dropOffCount: 20,
           steps: [
             {
               id: "initiation",
@@ -1090,6 +1100,322 @@
       }).format(amount);
     };
 
+    // Funnel calculation helpers
+    const calculateFunnelMetrics = (config) => {
+      const { funnel, stages, personas } = config;
+      if (!funnel?.enabled || !funnel?.initialVolume) {
+        return null;
+      }
+
+      let currentVolume = funnel.initialVolume;
+      let totalStageInvestment = 0;
+      let totalWastedCost = 0;
+      let totalCostPerClient = 0;
+      
+      const stageMetrics = stages.map((stage, index) => {
+        const entryVolume = currentVolume;
+        
+        // Cost per client for THIS stage only
+        const stageCostPerClient = stage.steps.reduce((acc, step) => acc + calculateStepCost(step, personas), 0);
+        totalCostPerClient += stageCostPerClient;
+        
+        const dropOff = stage.dropOffCount || 0;
+        const exitVolume = Math.max(0, entryVolume - dropOff);
+        const completionRate = entryVolume > 0 ? (exitVolume / entryVolume) * 100 : 0;
+        
+        // Stage Investment = clients who PASSED × cost (productive spend)
+        const stageInvestment = exitVolume * stageCostPerClient;
+        totalStageInvestment += stageInvestment;
+        
+        // Wasted = drop-offs × cost for THIS stage (unproductive spend)
+        const wastedCost = dropOff * stageCostPerClient;
+        totalWastedCost += wastedCost;
+        
+        currentVolume = exitVolume;
+        
+        return {
+          stageId: stage.id,
+          stageName: stage.name,
+          entryVolume,
+          exitVolume,
+          dropOff,
+          completionRate,
+          stageCostPerClient,
+          stageInvestment,
+          wastedCost
+        };
+      });
+
+      const finalVolume = currentVolume;
+      const overallConversionRate = funnel.initialVolume > 0 
+        ? (finalVolume / funnel.initialVolume) * 100 
+        : 0;
+      
+      const totalDropOff = funnel.initialVolume - finalVolume;
+
+      return {
+        initialVolume: funnel.initialVolume,
+        finalVolume,
+        totalDropOff,
+        overallConversionRate,
+        totalCostPerClient,
+        totalStageInvestment,
+        totalWastedCost,
+        periodLabel: funnel.periodLabel || 'per period',
+        stageMetrics
+      };
+    };
+
+    // Funnel Dashboard Component
+    function FunnelDashboard({ config, formatTime, onClose }) {
+      const funnelMetrics = calculateFunnelMetrics(config);
+      
+      if (!funnelMetrics) {
+        return (
+          <div style={{ padding: '24px 32px' }}>
+            <p>Funnel tracking is not enabled. Enable it in settings to see volume and cost analysis.</p>
+          </div>
+        );
+      }
+
+      const { stageMetrics, initialVolume, finalVolume, totalDropOff, overallConversionRate, totalCostPerClient, totalStageInvestment, totalWastedCost, periodLabel } = funnelMetrics;
+      
+      const worstStage = [...stageMetrics].sort((a, b) => a.completionRate - b.completionRate)[0];
+      const mostWasteful = [...stageMetrics].sort((a, b) => b.wastedCost - a.wastedCost)[0];
+
+      return (
+        <div style={{ padding: '24px 32px' }}>
+          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '20px' }}>
+            <h3 style={{ margin: 0, fontSize: '18px', fontWeight: 600, display: 'flex', alignItems: 'center', gap: '8px' }}>
+              <span>🔻</span> Funnel Analysis Dashboard
+            </h3>
+            <div style={{ display: 'flex', gap: '24px', alignItems: 'center' }}>
+              <span style={{ fontFamily: "'Helvetica Neue', Arial, sans-serif", fontSize: '12px', color: '#666' }}>{periodLabel}</span>
+              {onClose && <button onClick={onClose} style={{ background: 'none', border: 'none', fontSize: '20px', cursor: 'pointer', color: '#999', padding: '0 4px' }}>×</button>}
+            </div>
+          </div>
+          
+          {/* Summary Cards */}
+          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(130px, 1fr))', gap: '12px', marginBottom: '24px' }}>
+            <div style={{ background: '#DBEAFE', padding: '14px', borderRadius: '12px', textAlign: 'center' }}>
+              <div style={{ fontSize: '20px', fontWeight: 700, color: '#1E40AF' }}>{initialVolume.toLocaleString()}</div>
+              <div style={{ fontSize: '10px', color: '#1E40AF', fontFamily: "'Helvetica Neue', Arial, sans-serif", marginTop: '4px' }}>Initial Volume</div>
+            </div>
+            <div style={{ background: '#DCFCE7', padding: '14px', borderRadius: '12px', textAlign: 'center' }}>
+              <div style={{ fontSize: '20px', fontWeight: 700, color: '#166534' }}>{finalVolume.toLocaleString()}</div>
+              <div style={{ fontSize: '10px', color: '#166534', fontFamily: "'Helvetica Neue', Arial, sans-serif", marginTop: '4px' }}>Completed</div>
+            </div>
+            <div style={{ background: '#FEE2E2', padding: '14px', borderRadius: '12px', textAlign: 'center' }}>
+              <div style={{ fontSize: '20px', fontWeight: 700, color: '#DC2626' }}>{totalDropOff.toLocaleString()}</div>
+              <div style={{ fontSize: '10px', color: '#DC2626', fontFamily: "'Helvetica Neue', Arial, sans-serif", marginTop: '4px' }}>Total Drop-off</div>
+            </div>
+            <div style={{ background: '#F3E8FF', padding: '14px', borderRadius: '12px', textAlign: 'center' }}>
+              <div style={{ fontSize: '20px', fontWeight: 700, color: '#7C3AED' }}>{overallConversionRate.toFixed(1)}%</div>
+              <div style={{ fontSize: '10px', color: '#7C3AED', fontFamily: "'Helvetica Neue', Arial, sans-serif", marginTop: '4px' }}>Conversion Rate</div>
+            </div>
+            <div style={{ background: '#DCFCE7', padding: '14px', borderRadius: '12px', textAlign: 'center' }}>
+              <div style={{ fontSize: '20px', fontWeight: 700, color: '#166534' }}>{formatCurrency(totalStageInvestment)}</div>
+              <div style={{ fontSize: '10px', color: '#166534', fontFamily: "'Helvetica Neue', Arial, sans-serif", marginTop: '4px' }}>Productive Spend</div>
+            </div>
+            <div style={{ background: '#FEE2E2', padding: '14px', borderRadius: '12px', textAlign: 'center' }}>
+              <div style={{ fontSize: '20px', fontWeight: 700, color: '#DC2626' }}>{formatCurrency(totalWastedCost)}</div>
+              <div style={{ fontSize: '10px', color: '#DC2626', fontFamily: "'Helvetica Neue', Arial, sans-serif", marginTop: '4px' }}>Wasted Spend</div>
+            </div>
+            <div style={{ background: '#FEF3C7', padding: '14px', borderRadius: '12px', textAlign: 'center' }}>
+              <div style={{ fontSize: '20px', fontWeight: 700, color: '#92400E' }}>{formatCurrency(totalStageInvestment + totalWastedCost)}</div>
+              <div style={{ fontSize: '10px', color: '#92400E', fontFamily: "'Helvetica Neue', Arial, sans-serif", marginTop: '4px' }}>Total Spend</div>
+            </div>
+          </div>
+
+          {/* Funnel Visualization */}
+          <div style={{ marginBottom: '24px' }}>
+            <div style={{ fontSize: '11px', fontFamily: "'Helvetica Neue', Arial, sans-serif", color: '#666', marginBottom: '8px', textTransform: 'uppercase', letterSpacing: '0.5px' }}>
+              Volume Flow by Stage
+            </div>
+            <div style={{ display: 'flex', flexDirection: 'column', gap: '4px' }}>
+              {stageMetrics.map((stage, i) => {
+                const widthPercent = initialVolume > 0 ? (stage.entryVolume / initialVolume) * 100 : 0;
+                const exitWidthPercent = initialVolume > 0 ? (stage.exitVolume / initialVolume) * 100 : 0;
+                return (
+                  <div key={stage.stageId} style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
+                    <div style={{ width: '140px', fontSize: '12px', fontFamily: "'Helvetica Neue', Arial, sans-serif", color: '#333', textAlign: 'right' }}>{stage.stageName}</div>
+                    <div style={{ flex: 1, position: 'relative', height: '32px', background: '#F5F5F5', borderRadius: '4px' }}>
+                      <div style={{ position: 'absolute', left: 0, top: 0, height: '100%', width: `${widthPercent}%`, background: `hsl(${i * 45 + 180}, 35%, 75%)`, borderRadius: '4px', transition: 'width 0.3s' }} />
+                      <div style={{ position: 'absolute', left: 0, top: 0, height: '100%', width: `${exitWidthPercent}%`, background: `hsl(${i * 45 + 180}, 35%, 55%)`, borderRadius: '4px', transition: 'width 0.3s' }} />
+                      {stage.dropOff > 0 && (
+                        <div style={{ position: 'absolute', left: `${exitWidthPercent}%`, top: '50%', transform: 'translateY(-50%)', background: '#EF4444', color: '#FFF', padding: '2px 6px', borderRadius: '4px', fontSize: '10px', fontFamily: "'Helvetica Neue', Arial, sans-serif", fontWeight: 600, marginLeft: '4px' }}>-{stage.dropOff}</div>
+                      )}
+                    </div>
+                    <div style={{ width: '80px', fontSize: '12px', fontFamily: "'Helvetica Neue', Arial, sans-serif", color: '#666' }}>{stage.exitVolume.toLocaleString()} ({stage.completionRate.toFixed(0)}%)</div>
+                  </div>
+                );
+              })}
+            </div>
+          </div>
+
+          {/* Stage Breakdown Table */}
+          <div style={{ marginTop: '24px' }}>
+            <div style={{ fontSize: '11px', fontFamily: "'Helvetica Neue', Arial, sans-serif", color: '#666', marginBottom: '8px', textTransform: 'uppercase', letterSpacing: '0.5px' }}>Stage-by-Stage Breakdown</div>
+            <div style={{ overflowX: 'auto' }}>
+              <table style={{ width: '100%', borderCollapse: 'collapse', fontFamily: "'Helvetica Neue', Arial, sans-serif", fontSize: '12px' }}>
+                <thead>
+                  <tr style={{ borderBottom: '2px solid #E5E5E5' }}>
+                    <th style={{ textAlign: 'left', padding: '10px 8px', color: '#666', fontWeight: 600 }}>Stage</th>
+                    <th style={{ textAlign: 'right', padding: '10px 8px', color: '#666', fontWeight: 600 }}>Entry</th>
+                    <th style={{ textAlign: 'right', padding: '10px 8px', color: '#666', fontWeight: 600 }}>Drop-off</th>
+                    <th style={{ textAlign: 'right', padding: '10px 8px', color: '#666', fontWeight: 600 }}>Exit</th>
+                    <th style={{ textAlign: 'right', padding: '10px 8px', color: '#666', fontWeight: 600 }}>Rate</th>
+                    <th style={{ textAlign: 'right', padding: '10px 8px', color: '#666', fontWeight: 600 }}>Cost/Client</th>
+                    <th style={{ textAlign: 'right', padding: '10px 8px', color: '#166534', fontWeight: 600 }}>Investment</th>
+                    <th style={{ textAlign: 'right', padding: '10px 8px', color: '#DC2626', fontWeight: 600 }}>Wasted</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {stageMetrics.map((stage, i) => (
+                    <tr key={stage.stageId} style={{ borderBottom: '1px solid #F0F0F0' }}>
+                      <td style={{ padding: '10px 8px', fontWeight: 500 }}><span style={{ display: 'inline-block', width: '8px', height: '8px', borderRadius: '2px', background: `hsl(${i * 45 + 180}, 35%, 55%)`, marginRight: '8px' }} />{stage.stageName}</td>
+                      <td style={{ textAlign: 'right', padding: '10px 8px', color: '#1E40AF' }}>{stage.entryVolume.toLocaleString()}</td>
+                      <td style={{ textAlign: 'right', padding: '10px 8px', color: stage.dropOff > 0 ? '#DC2626' : '#999' }}>{stage.dropOff > 0 ? `-${stage.dropOff.toLocaleString()}` : '—'}</td>
+                      <td style={{ textAlign: 'right', padding: '10px 8px', color: '#166534' }}>{stage.exitVolume.toLocaleString()}</td>
+                      <td style={{ textAlign: 'right', padding: '10px 8px' }}><span style={{ padding: '2px 8px', borderRadius: '10px', background: stage.completionRate >= 90 ? '#DCFCE7' : stage.completionRate >= 70 ? '#FEF9C3' : '#FEE2E2', color: stage.completionRate >= 90 ? '#166534' : stage.completionRate >= 70 ? '#854D0E' : '#DC2626', fontWeight: 500 }}>{stage.completionRate.toFixed(0)}%</span></td>
+                      <td style={{ textAlign: 'right', padding: '10px 8px', color: '#666' }}>{formatCurrency(stage.stageCostPerClient)}</td>
+                      <td style={{ textAlign: 'right', padding: '10px 8px', fontWeight: 500, color: '#166534' }}>{formatCurrency(stage.stageInvestment)}</td>
+                      <td style={{ textAlign: 'right', padding: '10px 8px', color: '#DC2626', fontWeight: stage.wastedCost > 0 ? 600 : 400 }}>{stage.wastedCost > 0 ? formatCurrency(stage.wastedCost) : '—'}</td>
+                    </tr>
+                  ))}
+                </tbody>
+                <tfoot>
+                  <tr style={{ borderTop: '2px solid #E5E5E5', background: '#F9FAFB' }}>
+                    <td style={{ padding: '10px 8px', fontWeight: 600 }}>Total</td>
+                    <td style={{ textAlign: 'right', padding: '10px 8px', fontWeight: 600, color: '#1E40AF' }}>{initialVolume.toLocaleString()}</td>
+                    <td style={{ textAlign: 'right', padding: '10px 8px', fontWeight: 600, color: '#DC2626' }}>-{totalDropOff.toLocaleString()}</td>
+                    <td style={{ textAlign: 'right', padding: '10px 8px', fontWeight: 600, color: '#166534' }}>{finalVolume.toLocaleString()}</td>
+                    <td style={{ textAlign: 'right', padding: '10px 8px', fontWeight: 600 }}>{overallConversionRate.toFixed(1)}%</td>
+                    <td style={{ textAlign: 'right', padding: '10px 8px', fontWeight: 600, color: '#666' }}>{formatCurrency(totalCostPerClient)}</td>
+                    <td style={{ textAlign: 'right', padding: '10px 8px', fontWeight: 600, color: '#166534' }}>{formatCurrency(totalStageInvestment)}</td>
+                    <td style={{ textAlign: 'right', padding: '10px 8px', fontWeight: 600, color: '#DC2626' }}>{formatCurrency(totalWastedCost)}</td>
+                  </tr>
+                </tfoot>
+              </table>
+            </div>
+          </div>
+
+          {/* Insights */}
+          <div style={{ marginTop: '24px', display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(280px, 1fr))', gap: '16px' }}>
+            <div style={{ background: '#FEF2F2', border: '1px solid #FECACA', borderRadius: '12px', padding: '16px' }}>
+              <div style={{ fontSize: '11px', fontFamily: "'Helvetica Neue', Arial, sans-serif", color: '#DC2626', textTransform: 'uppercase', letterSpacing: '0.5px', marginBottom: '8px' }}>⚠️ Biggest Drop-off</div>
+              <div style={{ fontSize: '16px', fontWeight: 600, color: '#991B1B' }}>{worstStage.stageName}</div>
+              <div style={{ fontSize: '12px', color: '#DC2626', fontFamily: "'Helvetica Neue', Arial, sans-serif", marginTop: '4px' }}>{worstStage.dropOff.toLocaleString()} clients lost ({(100 - worstStage.completionRate).toFixed(0)}% drop-off rate)</div>
+            </div>
+            <div style={{ background: '#FEF3C7', border: '1px solid #FDE68A', borderRadius: '12px', padding: '16px' }}>
+              <div style={{ fontSize: '11px', fontFamily: "'Helvetica Neue', Arial, sans-serif", color: '#92400E', textTransform: 'uppercase', letterSpacing: '0.5px', marginBottom: '8px' }}>💸 Most Costly Drop-off</div>
+              <div style={{ fontSize: '16px', fontWeight: 600, color: '#92400E' }}>{mostWasteful.stageName}</div>
+              <div style={{ fontSize: '12px', color: '#B45309', fontFamily: "'Helvetica Neue', Arial, sans-serif", marginTop: '4px' }}>{formatCurrency(mostWasteful.wastedCost)} wasted on {mostWasteful.dropOff.toLocaleString()} lost clients</div>
+            </div>
+          </div>
+        </div>
+      );
+    }
+
+    // Funnel Settings Modal
+    function FunnelSettingsModal({ config, onUpdate, onClose }) {
+      const [localFunnel, setLocalFunnel] = useState({
+        enabled: config.funnel?.enabled ?? false,
+        initialVolume: config.funnel?.initialVolume ?? 1000,
+        periodLabel: config.funnel?.periodLabel ?? 'per quarter'
+      });
+      const [localStages, setLocalStages] = useState(
+        config.stages.map(s => ({ id: s.id, name: s.name, dropOffCount: s.dropOffCount || 0 }))
+      );
+
+      const handleSave = () => {
+        onUpdate({
+          funnel: localFunnel,
+          stages: config.stages.map(stage => {
+            const localStage = localStages.find(s => s.id === stage.id);
+            return { ...stage, dropOffCount: localStage?.dropOffCount || 0 };
+          })
+        });
+        onClose();
+      };
+
+      let runningVolume = localFunnel.initialVolume;
+      const preview = localStages.map(stage => {
+        const entry = runningVolume;
+        const exit = Math.max(0, entry - stage.dropOffCount);
+        runningVolume = exit;
+        return { ...stage, entry, exit };
+      });
+
+      return (
+        <div style={{ position: 'fixed', inset: 0, background: 'rgba(0,0,0,0.5)', display: 'flex', alignItems: 'center', justifyContent: 'center', zIndex: 1000 }} onClick={onClose}>
+          <div style={{ background: '#FFF', borderRadius: '12px', padding: '32px', width: '600px', maxWidth: '95vw', maxHeight: '90vh', overflow: 'auto', boxShadow: '0 20px 60px rgba(0,0,0,0.3)' }} onClick={e => e.stopPropagation()}>
+            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '24px' }}>
+              <h3 style={{ margin: 0, fontSize: '18px', fontWeight: 600 }}>📊 Funnel Settings</h3>
+              <button onClick={onClose} style={{ background: 'none', border: 'none', fontSize: '20px', cursor: 'pointer', color: '#999' }}>×</button>
+            </div>
+
+            <div style={{ marginBottom: '24px', padding: '16px', background: '#F9FAFB', borderRadius: '8px' }}>
+              <label style={{ display: 'flex', alignItems: 'center', gap: '12px', cursor: 'pointer' }}>
+                <input type="checkbox" checked={localFunnel.enabled} onChange={(e) => setLocalFunnel(prev => ({ ...prev, enabled: e.target.checked }))} style={{ width: '18px', height: '18px', cursor: 'pointer' }} />
+                <div>
+                  <div style={{ fontWeight: 500, fontSize: '14px' }}>Enable Funnel Tracking</div>
+                  <div style={{ fontSize: '12px', color: '#666', fontFamily: "'Helvetica Neue', Arial, sans-serif" }}>Track volume, drop-offs, and calculate wasted costs</div>
+                </div>
+              </label>
+            </div>
+
+            {localFunnel.enabled && (
+              <>
+                <div style={{ marginBottom: '24px' }}>
+                  <label style={{ display: 'block', fontSize: '12px', fontFamily: "'Helvetica Neue', Arial, sans-serif", color: '#666', marginBottom: '6px', textTransform: 'uppercase', letterSpacing: '0.5px' }}>Initial Volume (Starting Clients)</label>
+                  <div style={{ display: 'flex', gap: '12px' }}>
+                    <input type="number" value={localFunnel.initialVolume} onChange={(e) => setLocalFunnel(prev => ({ ...prev, initialVolume: parseInt(e.target.value) || 0 }))} style={{ flex: 1, padding: '10px 14px', border: '2px solid #E5E5E5', borderRadius: '8px', fontSize: '16px', fontFamily: "'Helvetica Neue', Arial, sans-serif" }} />
+                    <input type="text" value={localFunnel.periodLabel} onChange={(e) => setLocalFunnel(prev => ({ ...prev, periodLabel: e.target.value }))} placeholder="per quarter" style={{ width: '150px', padding: '10px 14px', border: '2px solid #E5E5E5', borderRadius: '8px', fontSize: '14px', fontFamily: "'Helvetica Neue', Arial, sans-serif" }} />
+                  </div>
+                </div>
+
+                <div>
+                  <label style={{ display: 'block', fontSize: '12px', fontFamily: "'Helvetica Neue', Arial, sans-serif", color: '#666', marginBottom: '12px', textTransform: 'uppercase', letterSpacing: '0.5px' }}>Drop-off per Stage</label>
+                  <div style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
+                    {localStages.map((stage, i) => {
+                      const previewData = preview[i];
+                      return (
+                        <div key={stage.id} style={{ display: 'flex', alignItems: 'center', gap: '12px', padding: '12px 16px', background: '#F9FAFB', borderRadius: '8px', borderLeft: `3px solid hsl(${i * 45 + 180}, 35%, 55%)` }}>
+                          <div style={{ flex: 1 }}>
+                            <div style={{ fontWeight: 500, fontSize: '13px' }}>{stage.name}</div>
+                            <div style={{ fontSize: '11px', color: '#666', fontFamily: "'Helvetica Neue', Arial, sans-serif", marginTop: '2px' }}>{previewData.entry.toLocaleString()} → {previewData.exit.toLocaleString()}</div>
+                          </div>
+                          <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+                            <span style={{ fontSize: '12px', color: '#666', fontFamily: "'Helvetica Neue', Arial, sans-serif" }}>Drop:</span>
+                            <input type="number" value={stage.dropOffCount} onChange={(e) => { const value = parseInt(e.target.value) || 0; setLocalStages(prev => prev.map(s => s.id === stage.id ? { ...s, dropOffCount: value } : s)); }} style={{ width: '80px', padding: '6px 10px', border: '2px solid #E5E5E5', borderRadius: '6px', fontSize: '14px', fontFamily: "'Helvetica Neue', Arial, sans-serif", textAlign: 'right' }} />
+                          </div>
+                        </div>
+                      );
+                    })}
+                  </div>
+                </div>
+
+                <div style={{ marginTop: '24px', padding: '16px', background: '#EFF6FF', borderRadius: '8px', border: '1px solid #BFDBFE' }}>
+                  <div style={{ fontSize: '12px', fontFamily: "'Helvetica Neue', Arial, sans-serif", color: '#1E40AF', fontWeight: 600, marginBottom: '8px' }}>Preview</div>
+                  <div style={{ display: 'flex', gap: '24px', fontSize: '13px', fontFamily: "'Helvetica Neue', Arial, sans-serif" }}>
+                    <div><span style={{ color: '#666' }}>Start: </span><span style={{ fontWeight: 600 }}>{localFunnel.initialVolume.toLocaleString()}</span></div>
+                    <div><span style={{ color: '#666' }}>Complete: </span><span style={{ fontWeight: 600, color: '#166534' }}>{runningVolume.toLocaleString()}</span></div>
+                    <div><span style={{ color: '#666' }}>Conversion: </span><span style={{ fontWeight: 600, color: '#7C3AED' }}>{localFunnel.initialVolume > 0 ? ((runningVolume / localFunnel.initialVolume) * 100).toFixed(1) : 0}%</span></div>
+                  </div>
+                </div>
+              </>
+            )}
+
+            <div style={{ marginTop: '24px', display: 'flex', gap: '12px', justifyContent: 'flex-end' }}>
+              <button onClick={onClose} style={{ padding: '10px 20px', background: '#F3F4F6', border: 'none', borderRadius: '8px', cursor: 'pointer', fontFamily: "'Helvetica Neue', Arial, sans-serif", fontSize: '14px', fontWeight: 500 }}>Cancel</button>
+              <button onClick={handleSave} style={{ padding: '10px 20px', background: '#1A1A1A', color: '#FFF', border: 'none', borderRadius: '8px', cursor: 'pointer', fontFamily: "'Helvetica Neue', Arial, sans-serif", fontSize: '14px', fontWeight: 500 }}>Save Changes</button>
+            </div>
+          </div>
+        </div>
+      );
+    }
+
     // Timeline Component
     function Timeline({ stages, totalTime, formatTime, personas, onClose, showCosts = true }) {
       let accumulated = 0;
@@ -1162,7 +1488,7 @@
               alignItems: 'center',
               gap: '8px'
             }}>
-              <span>⏱️</span> Time Analysis Dashboard
+              <span>📅</span> Timeline Dashboard
             </h3>
             <div style={{ display: 'flex', gap: '24px', alignItems: 'center' }}>
               {showCosts && (
@@ -1759,7 +2085,7 @@
               alignItems: 'center',
               gap: '8px'
             }}>
-              <span>📊</span> Cost Analysis Dashboard
+              <span>💰</span> Cost Analysis Dashboard
             </h3>
             <button onClick={onClose} style={{ background: 'none', border: 'none', fontSize: '20px', cursor: 'pointer', color: '#999' }}>×</button>
           </div>
@@ -2866,6 +3192,9 @@
       const [showTimeline, setShowTimeline] = useState(false);
       const [showSalarySettings, setShowSalarySettings] = useState(false);
       const [showCostAnalysis, setShowCostAnalysis] = useState(false);
+      const [showFunnel, setShowFunnel] = useState(false);
+      const [showFunnelDashboard, setShowFunnelDashboard] = useState(false);
+      const [showFunnelSettings, setShowFunnelSettings] = useState(false);
       const [highlightOpportunities, setHighlightOpportunities] = useState(false);
       const [viewMode, setViewMode] = useState('stages'); // 'steps' or 'stages';
       const [showExportMenu, setShowExportMenu] = useState(false);
@@ -3469,6 +3798,15 @@
           reader.onload = (e) => {
             try {
               const imported = JSON.parse(e.target.result);
+              // Ensure funnel object exists for backward compatibility
+              if (!imported.funnel) {
+                imported.funnel = { enabled: false, initialVolume: 1000, periodLabel: 'per quarter' };
+              }
+              // Ensure stages have dropOffCount for backward compatibility
+              imported.stages = imported.stages.map(stage => ({
+                ...stage,
+                dropOffCount: stage.dropOffCount || 0
+              }));
               setConfig(imported);
               setSelectedStep(null);
             } catch (err) {
@@ -3685,6 +4023,18 @@
         const totalCost = allSteps.reduce((acc, s) => acc + calculateStepCost(s, config.personas), 0);
         return { totalPainPoints, avgFriction, highAutomation, totalRegReqs, totalSteps: allSteps.length, totalCost };
       }, [config.stages, config.personas]);
+
+      // Funnel metrics calculation
+      const funnelMetrics = useMemo(() => calculateFunnelMetrics(config), [config]);
+
+      // Update funnel settings handler
+      const updateFunnelSettings = useCallback((updates) => {
+        setConfig(prev => ({
+          ...prev,
+          funnel: updates.funnel,
+          stages: updates.stages
+        }));
+      }, []);
 
       // App unlock handler
       const handleAppUnlock = (e) => {
@@ -3943,7 +4293,8 @@
                 <>
                   <div className="header-divider" style={{ width: '1px', height: '40px', background: 'rgba(255,255,255,0.3)', flexShrink: 0 }} />
                   <div className="no-print" style={{ display: 'flex', gap: '6px', alignItems: 'center', flexShrink: 0 }}>
-                    {/* Stages/Steps Toggle */}
+                    
+                    {/* GROUP 1: View Mode */}
                     <div style={{ display: 'flex', borderRadius: '5px', overflow: 'hidden', border: '1px solid rgba(255,255,255,0.35)' }}>
                       <button onClick={() => { setViewMode('stages'); }} style={{ padding: '7px 12px', background: viewMode === 'stages' ? '#4A5568' : 'transparent', color: '#FAFAFA', border: 'none', cursor: 'pointer', fontFamily: "'Helvetica Neue', Arial, sans-serif", fontSize: '11px', display: 'flex', alignItems: 'center', gap: '5px' }}>
                         📁 Stages
@@ -3953,24 +4304,89 @@
                       </button>
                     </div>
                     
-                    <button onClick={() => setShowTimeline(!showTimeline)} style={{ padding: '7px 12px', background: showTimeline ? '#4A5568' : 'transparent', color: '#FAFAFA', border: '1px solid rgba(255,255,255,0.35)', borderRadius: '5px', cursor: 'pointer', fontFamily: "'Helvetica Neue', Arial, sans-serif", fontSize: '11px', display: 'flex', alignItems: 'center', gap: '5px' }}>
-                      📅 Timeline
-                    </button>
-                    
-                    {showCosts && (
+                    {/* GROUP 2: View Layers (what info shows on cards) */}
+                    {(showCosts || config.funnel?.enabled) && (
                       <>
-                        <button onClick={() => setShowCostAnalysis(!showCostAnalysis)} style={{ padding: '7px 12px', background: showCostAnalysis ? '#4A5568' : 'transparent', color: '#FAFAFA', border: '1px solid rgba(255,255,255,0.35)', borderRadius: '5px', cursor: 'pointer', fontFamily: "'Helvetica Neue', Arial, sans-serif", fontSize: '11px', display: 'flex', alignItems: 'center', gap: '5px' }}>
-                          📊 Analysis
+                        <div style={{ width: '1px', height: '24px', background: 'rgba(255,255,255,0.2)', margin: '0 4px' }} />
+                        <span style={{ fontSize: '10px', color: 'rgba(255,255,255,0.5)', fontFamily: "'Helvetica Neue', Arial, sans-serif", textTransform: 'uppercase', letterSpacing: '0.5px' }}>Show</span>
+                        <div style={{ display: 'flex', borderRadius: '5px', overflow: 'hidden', border: '1px solid rgba(255,255,255,0.35)' }}>
+                          {showCosts && (
+                            <button 
+                              onClick={() => { 
+                                if (highlightOpportunities) {
+                                  setHighlightOpportunities(false);
+                                } else {
+                                  setHighlightOpportunities(true);
+                                  setShowFunnel(false);
+                                }
+                              }} 
+                              style={{ 
+                                padding: '7px 12px', 
+                                background: highlightOpportunities ? '#059669' : 'transparent', 
+                                color: '#FAFAFA', 
+                                border: 'none', 
+                                cursor: 'pointer', 
+                                fontFamily: "'Helvetica Neue', Arial, sans-serif", 
+                                fontSize: '11px',
+                                display: 'flex',
+                                alignItems: 'center',
+                                gap: '5px',
+                                borderRight: config.funnel?.enabled ? '1px solid rgba(255,255,255,0.25)' : 'none'
+                              }}
+                            >
+                              🎯 Opportunities
+                            </button>
+                          )}
+                          {config.funnel?.enabled && (
+                            <button 
+                              onClick={() => { 
+                                if (showFunnel) {
+                                  setShowFunnel(false);
+                                } else {
+                                  setShowFunnel(true);
+                                  setHighlightOpportunities(false);
+                                }
+                              }} 
+                              style={{ 
+                                padding: '7px 12px', 
+                                background: showFunnel ? '#6366F1' : 'transparent', 
+                                color: '#FAFAFA', 
+                                border: 'none', 
+                                cursor: 'pointer', 
+                                fontFamily: "'Helvetica Neue', Arial, sans-serif", 
+                                fontSize: '11px',
+                                display: 'flex',
+                                alignItems: 'center',
+                                gap: '5px'
+                              }}
+                            >
+                              🔻 Funnel
+                            </button>
+                          )}
+                        </div>
+                      </>
+                    )}
+                    
+                    {/* GROUP 3: Dashboards (open modal overlays) */}
+                    <div style={{ width: '1px', height: '24px', background: 'rgba(255,255,255,0.2)', margin: '0 4px' }} />
+                    <span style={{ fontSize: '10px', color: 'rgba(255,255,255,0.5)', fontFamily: "'Helvetica Neue', Arial, sans-serif", textTransform: 'uppercase', letterSpacing: '0.5px' }}>Analyse</span>
+                    <div style={{ display: 'flex', borderRadius: '5px', overflow: 'hidden', border: '1px solid rgba(255,255,255,0.35)' }}>
+                      <button onClick={() => setShowTimeline(!showTimeline)} style={{ padding: '7px 12px', background: showTimeline ? '#4A5568' : 'transparent', color: '#FAFAFA', border: 'none', cursor: 'pointer', fontFamily: "'Helvetica Neue', Arial, sans-serif", fontSize: '11px', display: 'flex', alignItems: 'center', gap: '5px', borderRight: '1px solid rgba(255,255,255,0.25)' }}>
+                        📅 Timeline
+                      </button>
+                      {showCosts && (
+                        <button onClick={() => setShowCostAnalysis(!showCostAnalysis)} style={{ padding: '7px 12px', background: showCostAnalysis ? '#4A5568' : 'transparent', color: '#FAFAFA', border: 'none', cursor: 'pointer', fontFamily: "'Helvetica Neue', Arial, sans-serif", fontSize: '11px', display: 'flex', alignItems: 'center', gap: '5px', borderRight: config.funnel?.enabled ? '1px solid rgba(255,255,255,0.25)' : 'none' }}>
+                          💰 Costs
                         </button>
-                        
+                      )}
+                      {config.funnel?.enabled && (
                         <button 
-                          onClick={() => setHighlightOpportunities(!highlightOpportunities)} 
+                          onClick={() => setShowFunnelDashboard(true)} 
                           style={{ 
                             padding: '7px 12px', 
-                            background: highlightOpportunities ? '#4A5568' : 'transparent', 
+                            background: 'transparent', 
                             color: '#FAFAFA', 
-                            border: '1px solid rgba(255,255,255,0.35)', 
-                            borderRadius: '5px', 
+                            border: 'none', 
                             cursor: 'pointer', 
                             fontFamily: "'Helvetica Neue', Arial, sans-serif", 
                             fontSize: '11px',
@@ -3979,10 +4395,11 @@
                             gap: '5px'
                           }}
                         >
-                          🎯 Opportunities
+                          🔻 Funnel
                         </button>
-                      </>
-                    )}
+                      )}
+                    </div>
+                    
                   </div>
                 </>
               )}
@@ -4046,6 +4463,9 @@
                           </button>
                           <button onClick={() => { setShowStructurePanel(true); setShowSettingsMenu(false); }} style={{ display: 'flex', alignItems: 'center', gap: '10px', width: '100%', padding: '10px 14px', border: 'none', background: '#FFF', cursor: 'pointer', textAlign: 'left', fontFamily: "'Helvetica Neue', Arial, sans-serif", fontSize: '13px', color: '#333', borderBottom: '1px solid #EEE' }} onMouseOver={(e) => e.currentTarget.style.background = '#F5F5F5'} onMouseOut={(e) => e.currentTarget.style.background = '#FFF'}>
                             <span>🏗️</span> Configure Structure
+                          </button>
+                          <button onClick={() => { setShowFunnelSettings(true); setShowSettingsMenu(false); }} style={{ display: 'flex', alignItems: 'center', gap: '10px', width: '100%', padding: '10px 14px', border: 'none', background: '#FFF', cursor: 'pointer', textAlign: 'left', fontFamily: "'Helvetica Neue', Arial, sans-serif", fontSize: '13px', color: '#333', borderBottom: '1px solid #EEE' }} onMouseOver={(e) => e.currentTarget.style.background = '#F5F5F5'} onMouseOut={(e) => e.currentTarget.style.background = '#FFF'}>
+                            <span>🔻</span> Funnel Settings
                           </button>
                           <div style={{ height: '1px', background: '#EEE', margin: '4px 0' }}></div>
                           <button onClick={() => { setShowGitHubSettings(true); setShowSettingsMenu(false); }} style={{ display: 'flex', alignItems: 'center', gap: '10px', width: '100%', padding: '10px 14px', border: 'none', background: '#FFF', cursor: 'pointer', textAlign: 'left', fontFamily: "'Helvetica Neue', Arial, sans-serif", fontSize: '13px', color: '#333', borderBottom: '1px solid #EEE' }} onMouseOver={(e) => e.currentTarget.style.background = '#F5F5F5'} onMouseOut={(e) => e.currentTarget.style.background = '#FFF'}>
@@ -4123,7 +4543,7 @@
             {/* Row 2: View Toggles - Mobile only */}
             {isMobile && !editMode && (
               <div className="no-print header-buttons" style={{ display: 'flex', gap: '6px', alignItems: 'center', flexWrap: 'wrap' }}>
-                {/* Stages/Steps Toggle */}
+                {/* GROUP 1: View Mode */}
                 <div style={{ display: 'flex', borderRadius: '5px', overflow: 'hidden', border: '1px solid rgba(255,255,255,0.35)' }}>
                   <button onClick={() => { setViewMode('stages'); }} style={{ padding: '7px 12px', background: viewMode === 'stages' ? '#4A5568' : 'transparent', color: '#FAFAFA', border: 'none', cursor: 'pointer', fontFamily: "'Helvetica Neue', Arial, sans-serif", fontSize: '11px', display: 'flex', alignItems: 'center', gap: '5px' }}>
                     📁 Stages
@@ -4133,24 +4553,83 @@
                   </button>
                 </div>
                 
-                <button onClick={() => setShowTimeline(!showTimeline)} style={{ padding: '7px 12px', background: showTimeline ? '#4A5568' : 'transparent', color: '#FAFAFA', border: '1px solid rgba(255,255,255,0.35)', borderRadius: '5px', cursor: 'pointer', fontFamily: "'Helvetica Neue', Arial, sans-serif", fontSize: '11px', display: 'flex', alignItems: 'center', gap: '5px' }}>
-                  📅 Timeline
-                </button>
+                {/* GROUP 2: View Layers */}
+                {(showCosts || config.funnel?.enabled) && (
+                  <div style={{ display: 'flex', borderRadius: '5px', overflow: 'hidden', border: '1px solid rgba(255,255,255,0.35)' }}>
+                    {showCosts && (
+                      <button 
+                        onClick={() => { 
+                          if (highlightOpportunities) {
+                            setHighlightOpportunities(false);
+                          } else {
+                            setHighlightOpportunities(true);
+                            setShowFunnel(false);
+                          }
+                        }} 
+                        style={{ 
+                          padding: '7px 12px', 
+                          background: highlightOpportunities ? '#059669' : 'transparent', 
+                          color: '#FAFAFA', 
+                          border: 'none', 
+                          cursor: 'pointer', 
+                          fontFamily: "'Helvetica Neue', Arial, sans-serif", 
+                          fontSize: '11px',
+                          display: 'flex',
+                          alignItems: 'center',
+                          gap: '5px',
+                          borderRight: config.funnel?.enabled ? '1px solid rgba(255,255,255,0.25)' : 'none'
+                        }}
+                      >
+                        🎯
+                      </button>
+                    )}
+                    {config.funnel?.enabled && (
+                      <button 
+                        onClick={() => { 
+                          if (showFunnel) {
+                            setShowFunnel(false);
+                          } else {
+                            setShowFunnel(true);
+                            setHighlightOpportunities(false);
+                          }
+                        }} 
+                        style={{ 
+                          padding: '7px 12px', 
+                          background: showFunnel ? '#6366F1' : 'transparent', 
+                          color: '#FAFAFA', 
+                          border: 'none', 
+                          cursor: 'pointer', 
+                          fontFamily: "'Helvetica Neue', Arial, sans-serif", 
+                          fontSize: '11px',
+                          display: 'flex',
+                          alignItems: 'center',
+                          gap: '5px'
+                        }}
+                      >
+                        🔻
+                      </button>
+                    )}
+                  </div>
+                )}
                 
-                {showCosts && (
-                  <>
-                    <button onClick={() => setShowCostAnalysis(!showCostAnalysis)} style={{ padding: '7px 12px', background: showCostAnalysis ? '#4A5568' : 'transparent', color: '#FAFAFA', border: '1px solid rgba(255,255,255,0.35)', borderRadius: '5px', cursor: 'pointer', fontFamily: "'Helvetica Neue', Arial, sans-serif", fontSize: '11px', display: 'flex', alignItems: 'center', gap: '5px' }}>
-                      📊 Analysis
+                {/* GROUP 3: Dashboards */}
+                <div style={{ display: 'flex', borderRadius: '5px', overflow: 'hidden', border: '1px solid rgba(255,255,255,0.35)' }}>
+                  <button onClick={() => setShowTimeline(!showTimeline)} style={{ padding: '7px 12px', background: showTimeline ? '#4A5568' : 'transparent', color: '#FAFAFA', border: 'none', cursor: 'pointer', fontFamily: "'Helvetica Neue', Arial, sans-serif", fontSize: '11px', display: 'flex', alignItems: 'center', gap: '5px', borderRight: '1px solid rgba(255,255,255,0.25)' }}>
+                    📅
+                  </button>
+                  {showCosts && (
+                    <button onClick={() => setShowCostAnalysis(!showCostAnalysis)} style={{ padding: '7px 12px', background: showCostAnalysis ? '#4A5568' : 'transparent', color: '#FAFAFA', border: 'none', cursor: 'pointer', fontFamily: "'Helvetica Neue', Arial, sans-serif", fontSize: '11px', display: 'flex', alignItems: 'center', gap: '5px', borderRight: config.funnel?.enabled ? '1px solid rgba(255,255,255,0.25)' : 'none' }}>
+                      💰
                     </button>
-                    
+                  )}
+                  {config.funnel?.enabled && (
                     <button 
-                      onClick={() => setHighlightOpportunities(!highlightOpportunities)} 
+                      onClick={() => setShowFunnelDashboard(true)} 
                       style={{ 
                         padding: '7px 12px', 
-                        background: highlightOpportunities ? '#4A5568' : 'transparent', 
+                        background: 'transparent', 
                         color: '#FAFAFA', 
-                        border: '1px solid rgba(255,255,255,0.35)', 
-                        borderRadius: '5px', 
+                        border: 'none', 
                         cursor: 'pointer', 
                         fontFamily: "'Helvetica Neue', Arial, sans-serif", 
                         fontSize: '11px',
@@ -4159,10 +4638,10 @@
                         gap: '5px'
                       }}
                     >
-                      🎯 Opportunities
+                      📊
                     </button>
-                  </>
-                )}
+                  )}
+                </div>
               </div>
             )}
           </header>
@@ -4266,6 +4745,39 @@
                   </div>
                 )}
               </>
+            )}
+            {showFunnel && funnelMetrics && (
+              <div style={{ display: 'flex', alignItems: 'center', gap: '8px', padding: '8px 16px', background: 'linear-gradient(135deg, #EEF2FF 0%, #E0E7FF 100%)', borderRadius: '8px', border: '1px solid #C7D2FE' }}>
+                <span style={{ fontSize: '20px' }}>🔻</span>
+                <div>
+                  <div style={{ fontFamily: "'Helvetica Neue', Arial, sans-serif", fontSize: '11px', color: '#6366F1', textTransform: 'uppercase' }}>Funnel</div>
+                  <div style={{ fontWeight: 600, color: '#3730A3', fontSize: '18px', display: 'flex', alignItems: 'center', gap: '6px' }}>
+                    <span>{funnelMetrics.initialVolume.toLocaleString()}</span>
+                    <span style={{ fontSize: '12px', opacity: 0.6 }}>→</span>
+                    <span style={{ color: '#166534' }}>{funnelMetrics.finalVolume.toLocaleString()}</span>
+                    <span style={{ 
+                      marginLeft: '4px',
+                      padding: '2px 8px', 
+                      borderRadius: '10px', 
+                      fontSize: '12px',
+                      fontWeight: 600,
+                      background: funnelMetrics.overallConversionRate >= 50 ? '#DCFCE7' : funnelMetrics.overallConversionRate >= 20 ? '#FEF9C3' : '#FEE2E2',
+                      color: funnelMetrics.overallConversionRate >= 50 ? '#166534' : funnelMetrics.overallConversionRate >= 20 ? '#854D0E' : '#DC2626'
+                    }}>
+                      {funnelMetrics.overallConversionRate.toFixed(1)}%
+                    </span>
+                  </div>
+                </div>
+                {showCosts && (
+                  <div style={{ marginLeft: '8px', paddingLeft: '12px', borderLeft: '1px solid #C7D2FE' }}>
+                    <div style={{ fontFamily: "'Helvetica Neue', Arial, sans-serif", fontSize: '11px', color: '#6366F1', textTransform: 'uppercase' }}>Spend</div>
+                    <div style={{ fontWeight: 600, fontSize: '14px', display: 'flex', alignItems: 'center', gap: '8px' }}>
+                      <span style={{ color: '#166534' }}>✓ {formatCurrency(funnelMetrics.totalStageInvestment)}</span>
+                      <span style={{ background: '#FEE2E2', color: '#DC2626', padding: '2px 8px', borderRadius: '4px' }}>💸 {formatCurrency(funnelMetrics.totalWastedCost)}</span>
+                    </div>
+                  </div>
+                )}
+              </div>
             )}
           </div>
 
@@ -4381,6 +4893,9 @@
                   const stageColor = `hsl(${stageIndex * 45 + 180}, 35%, 45%)`;
                   const stageColorLight = `hsl(${stageIndex * 45 + 180}, 35%, 85%)`;
                   
+                  // Get funnel metrics for this stage
+                  const stageFunnelData = funnelMetrics?.stageMetrics?.[stageIndex];
+                  
                   // Calculate stage-level savings
                   const stageSavings = stage.steps.reduce((acc, step) => {
                     const stepCost = calculateStepCost(step, config.personas);
@@ -4413,24 +4928,72 @@
                       {/* Stage Header */}
                       <div style={{ 
                         background: `hsl(${stageIndex * 45 + 180}, 35%, 45%)`, 
-                        padding: '20px 24px',
+                        padding: '16px 20px',
                         color: '#FFF',
                         flexShrink: 0
                       }}>
+                        {/* Top row: Stage title and time/cost */}
                         <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start' }}>
                           <div>
-                            <div style={{ fontSize: '11px', opacity: 0.8, textTransform: 'uppercase', letterSpacing: '0.5px', marginBottom: '4px' }}>Stage {stageIndex + 1}</div>
-                            <h2 style={{ margin: 0, fontSize: '20px', fontWeight: 600 }}>{stage.name}</h2>
+                            <div style={{ fontSize: '10px', opacity: 0.7, textTransform: 'uppercase', letterSpacing: '0.5px', marginBottom: '2px' }}>Stage {stageIndex + 1}</div>
+                            <h2 style={{ margin: 0, fontSize: '18px', fontWeight: 600, lineHeight: 1.2 }}>{stage.name}</h2>
                           </div>
                           <div style={{ textAlign: 'right' }}>
-                            <div style={{ fontSize: '18px', fontWeight: 600 }}>{formatTime(stageTime)}</div>
-                            {showCosts && <div style={{ fontSize: '14px', opacity: 0.9 }}>{formatCurrency(stageCost)}</div>}
+                            <div style={{ fontSize: '16px', fontWeight: 600 }}>{formatTime(stageTime)}</div>
+                            {showCosts && <div style={{ fontSize: '12px', opacity: 0.8 }}>{formatCurrency(stageCost)}</div>}
                           </div>
                         </div>
+                        
+                        {/* Funnel row (when enabled) */}
+                        {showFunnel && stageFunnelData && (
+                          <div style={{ 
+                            marginTop: '12px', 
+                            paddingTop: '12px', 
+                            borderTop: '1px solid rgba(255,255,255,0.2)',
+                            display: 'flex',
+                            alignItems: 'center',
+                            gap: '12px',
+                            flexWrap: 'wrap'
+                          }}>
+                            <div style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
+                              <span style={{ fontSize: '14px', fontWeight: 600 }}>{stageFunnelData.entryVolume.toLocaleString()}</span>
+                              <span style={{ fontSize: '11px', opacity: 0.7 }}>→</span>
+                              {stageFunnelData.dropOff > 0 && (
+                                <span style={{ fontSize: '11px', background: 'rgba(239,68,68,0.9)', padding: '2px 6px', borderRadius: '4px', fontWeight: 600 }}>-{stageFunnelData.dropOff.toLocaleString()}</span>
+                              )}
+                              <span style={{ fontSize: '11px', opacity: 0.7 }}>→</span>
+                              <span style={{ fontSize: '14px', fontWeight: 600, color: '#86EFAC' }}>{stageFunnelData.exitVolume.toLocaleString()}</span>
+                            </div>
+                            <span style={{ 
+                              padding: '2px 8px', 
+                              borderRadius: '10px', 
+                              fontSize: '11px',
+                              background: stageFunnelData.completionRate >= 90 ? 'rgba(134,239,172,0.3)' : stageFunnelData.completionRate >= 70 ? 'rgba(253,224,71,0.3)' : 'rgba(252,165,165,0.3)',
+                              fontWeight: 600
+                            }}>
+                              {stageFunnelData.completionRate.toFixed(0)}% pass
+                            </span>
+                            {showCosts && (
+                              <div style={{ display: 'flex', alignItems: 'center', gap: '6px', fontSize: '11px' }}>
+                                <span style={{ opacity: 0.85 }}>✓ {formatCurrency(stageFunnelData.stageInvestment)}</span>
+                                {stageFunnelData.wastedCost > 0 && (
+                                  <span style={{ 
+                                    background: 'rgba(239,68,68,0.9)', 
+                                    padding: '2px 8px', 
+                                    borderRadius: '4px', 
+                                    fontWeight: 600 
+                                  }}>
+                                    💸 {formatCurrency(stageFunnelData.wastedCost)}
+                                  </span>
+                                )}
+                              </div>
+                            )}
+                          </div>
+                        )}
                       </div>
                       
                       {/* Stage Body */}
-                      <div style={{ padding: '20px 24px', flex: isMobile ? 'none' : 1, overflowY: isMobile ? 'visible' : 'auto' }}>
+                      <div style={{ padding: '16px 20px', flex: isMobile ? 'none' : 1, overflowY: isMobile ? 'visible' : 'auto' }}>
                         {/* Steps List */}
                         <div style={{ marginBottom: '16px' }}>
                           <div style={{ fontSize: '11px', color: '#999', textTransform: 'uppercase', letterSpacing: '0.5px', marginBottom: '8px' }}>
@@ -4622,13 +5185,14 @@
                 config.stages.map((stage, stageIndex) => {
                 const stageTime = stage.steps.reduce((acc, step) => acc + step.timeMinutes, 0);
                 const stageCost = stage.steps.reduce((acc, step) => acc + calculateStepCost(step, config.personas), 0);
+                const stageFunnelData = funnelMetrics?.stageMetrics?.[stageIndex];
                 return (
                   <div key={stage.id} style={{ flex: stage.steps.length > 0 ? `${stage.steps.length} 0 ${stage.steps.length * 220}px` : '0 0 220px', minWidth: stage.steps.length > 0 ? stage.steps.length * 220 + 'px' : '220px' }}>
                     {/* Stage Header */}
-                    <div style={{ background: `hsl(${stageIndex * 45 + 180}, 35%, 45%)`, padding: '20px 24px', borderRadius: '8px 8px 0 0', color: '#FFF' }}>
+                    <div style={{ background: `hsl(${stageIndex * 45 + 180}, 35%, 45%)`, padding: '16px 20px', borderRadius: '8px 8px 0 0', color: '#FFF' }}>
                       <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start' }}>
                         <div>
-                          <div style={{ fontSize: '11px', opacity: 0.8, textTransform: 'uppercase', letterSpacing: '0.5px', marginBottom: '4px', fontFamily: "'Helvetica Neue', Arial, sans-serif" }}>Stage {stageIndex + 1}</div>
+                          <div style={{ fontSize: '10px', opacity: 0.7, textTransform: 'uppercase', letterSpacing: '0.5px', marginBottom: '2px', fontFamily: "'Helvetica Neue', Arial, sans-serif" }}>Stage {stageIndex + 1}</div>
                           {editMode ? (
                             <input 
                               type="text" 
@@ -4648,14 +5212,61 @@
                               }}
                             />
                           ) : (
-                            <h2 style={{ margin: 0, fontSize: '18px', fontWeight: 600 }}>{stage.name}</h2>
+                            <h2 style={{ margin: 0, fontSize: '18px', fontWeight: 600, lineHeight: 1.2 }}>{stage.name}</h2>
                           )}
                         </div>
-                        <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
-                          <span style={{ fontFamily: "'Helvetica Neue', Arial, sans-serif", fontSize: '13px', color: '#FFF', background: 'rgba(255,255,255,0.2)', padding: '4px 10px', borderRadius: '12px' }}>{formatTime(stageTime)}</span>
-                          {showCosts && <span style={{ fontFamily: "'Helvetica Neue', Arial, sans-serif", fontSize: '12px', color: '#FFF', background: 'rgba(255,255,255,0.2)', padding: '4px 10px', borderRadius: '12px', fontWeight: 500 }}>{formatCurrency(stageCost)}</span>}
+                        <div style={{ textAlign: 'right' }}>
+                          <div style={{ fontSize: '16px', fontWeight: 600 }}>{formatTime(stageTime)}</div>
+                          {showCosts && <div style={{ fontSize: '12px', opacity: 0.8 }}>{formatCurrency(stageCost)}</div>}
                         </div>
                       </div>
+                      
+                      {/* Funnel row (when enabled) */}
+                      {showFunnel && stageFunnelData && (
+                        <div style={{ 
+                          marginTop: '12px', 
+                          paddingTop: '12px', 
+                          borderTop: '1px solid rgba(255,255,255,0.2)',
+                          display: 'flex',
+                          alignItems: 'center',
+                          gap: '12px',
+                          flexWrap: 'wrap'
+                        }}>
+                          <div style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
+                            <span style={{ fontSize: '14px', fontWeight: 600 }}>{stageFunnelData.entryVolume.toLocaleString()}</span>
+                            <span style={{ fontSize: '11px', opacity: 0.7 }}>→</span>
+                            {stageFunnelData.dropOff > 0 && (
+                              <span style={{ fontSize: '11px', background: 'rgba(239,68,68,0.9)', padding: '2px 6px', borderRadius: '4px', fontWeight: 600 }}>-{stageFunnelData.dropOff.toLocaleString()}</span>
+                            )}
+                            <span style={{ fontSize: '11px', opacity: 0.7 }}>→</span>
+                            <span style={{ fontSize: '14px', fontWeight: 600, color: '#86EFAC' }}>{stageFunnelData.exitVolume.toLocaleString()}</span>
+                          </div>
+                          <span style={{ 
+                            padding: '2px 8px', 
+                            borderRadius: '10px', 
+                            fontSize: '11px',
+                            background: stageFunnelData.completionRate >= 90 ? 'rgba(134,239,172,0.3)' : stageFunnelData.completionRate >= 70 ? 'rgba(253,224,71,0.3)' : 'rgba(252,165,165,0.3)',
+                            fontWeight: 600
+                          }}>
+                            {stageFunnelData.completionRate.toFixed(0)}% pass
+                          </span>
+                          {showCosts && (
+                            <div style={{ display: 'flex', alignItems: 'center', gap: '6px', fontSize: '11px' }}>
+                              <span style={{ opacity: 0.85 }}>✓ {formatCurrency(stageFunnelData.stageInvestment)}</span>
+                              {stageFunnelData.wastedCost > 0 && (
+                                <span style={{ 
+                                  background: 'rgba(239,68,68,0.9)', 
+                                  padding: '2px 8px', 
+                                  borderRadius: '4px', 
+                                  fontWeight: 600 
+                                }}>
+                                  💸 {formatCurrency(stageFunnelData.wastedCost)}
+                                </span>
+                              )}
+                            </div>
+                          )}
+                        </div>
+                      )}
                     </div>
 
                     {/* Steps Row */}
@@ -5514,6 +6125,18 @@
             status={gitHubStatus}
             onClose={() => setShowGitHubSettings(false)} 
           />}
+          
+          {/* Funnel Dashboard Modal */}
+          {showFunnelDashboard && (
+            <div style={{ position: 'fixed', top: 0, left: 0, right: 0, bottom: 0, background: 'rgba(0,0,0,0.5)', display: 'flex', alignItems: 'center', justifyContent: 'center', zIndex: 1000 }} onClick={() => setShowFunnelDashboard(false)}>
+              <div onClick={(e) => e.stopPropagation()} style={{ background: '#FFF', borderRadius: '12px', maxWidth: '1200px', width: '100%', maxHeight: '90vh', overflow: 'auto', boxShadow: '0 20px 60px rgba(0,0,0,0.3)' }}>
+                <FunnelDashboard config={config} formatTime={formatTime} onClose={() => setShowFunnelDashboard(false)} />
+              </div>
+            </div>
+          )}
+          
+          {/* Funnel Settings Modal */}
+          {showFunnelSettings && <FunnelSettingsModal config={config} onUpdate={updateFunnelSettings} onClose={() => setShowFunnelSettings(false)} />}
           
           {/* Password Prompt Modal */}
           {showPasswordPrompt && (
