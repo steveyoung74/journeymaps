@@ -283,7 +283,7 @@
     const { useState, useCallback, useMemo, useEffect, useRef } = React;
     
     // Current app version - always displayed in footer
-    const APP_VERSION = "8.3.1";
+    const APP_VERSION = "8.3.2";
 
     const generateId = () => Math.random().toString(36).substr(2, 9);
 
@@ -3257,6 +3257,27 @@
           try {
             const parsed = JSON.parse(saved);
             console.log('📂 Loaded config from localStorage');
+            
+            // Ensure funnel object exists for backward compatibility
+            if (!parsed.funnel) {
+              parsed.funnel = { enabled: true, initialVolume: 1000, periodLabel: 'per quarter' };
+            }
+            // Ensure stages have dropOffCount for backward compatibility
+            if (parsed.stages) {
+              parsed.stages = parsed.stages.map(stage => ({
+                ...stage,
+                dropOffCount: stage.dropOffCount || 0
+              }));
+            }
+            // Ensure personas have cost fields for backward compatibility
+            if (parsed.personas) {
+              parsed.personas = parsed.personas.map(persona => ({
+                ...persona,
+                burdenMultiplier: persona.burdenMultiplier || (persona.isExternal ? undefined : 1.35),
+                workspaceHourlyCost: persona.workspaceHourlyCost || (persona.isExternal ? undefined : 6.00)
+              }));
+            }
+            
             return parsed;
           } catch (e) {
             console.warn('Failed to parse saved config, using default');
@@ -3287,6 +3308,27 @@
             if (response.ok) {
               const data = await response.json();
               console.log('✅ Loaded config from GitHub');
+              
+              // Ensure funnel object exists for backward compatibility
+              if (!data.funnel) {
+                data.funnel = { enabled: true, initialVolume: 1000, periodLabel: 'per quarter' };
+              }
+              // Ensure stages have dropOffCount for backward compatibility
+              if (data.stages) {
+                data.stages = data.stages.map(stage => ({
+                  ...stage,
+                  dropOffCount: stage.dropOffCount || 0
+                }));
+              }
+              // Ensure personas have cost fields for backward compatibility
+              if (data.personas) {
+                data.personas = data.personas.map(persona => ({
+                  ...persona,
+                  burdenMultiplier: persona.burdenMultiplier || (persona.isExternal ? undefined : 1.35),
+                  workspaceHourlyCost: persona.workspaceHourlyCost || (persona.isExternal ? undefined : 6.00)
+                }));
+              }
+              
               setConfig(data);
               localStorage.setItem('journeymap-config', JSON.stringify(data));
             } else {
@@ -3521,7 +3563,7 @@
           
           // Ensure funnel object exists for backward compatibility
           if (!loadedConfig.funnel) {
-            loadedConfig.funnel = { enabled: false, initialVolume: 1000, periodLabel: 'per quarter' };
+            loadedConfig.funnel = { enabled: true, initialVolume: 1000, periodLabel: 'per quarter' };
           }
           // Ensure stages have dropOffCount for backward compatibility
           if (loadedConfig.stages) {
@@ -3940,7 +3982,7 @@
               const imported = JSON.parse(e.target.result);
               // Ensure funnel object exists for backward compatibility
               if (!imported.funnel) {
-                imported.funnel = { enabled: false, initialVolume: 1000, periodLabel: 'per quarter' };
+                imported.funnel = { enabled: true, initialVolume: 1000, periodLabel: 'per quarter' };
               }
               // Ensure stages have dropOffCount for backward compatibility
               imported.stages = imported.stages.map(stage => ({
