@@ -283,7 +283,7 @@
     const { useState, useCallback, useMemo, useEffect, useRef } = React;
     
     // Current app version - always displayed in footer
-    const APP_VERSION = "8.3.0";
+    const APP_VERSION = "8.3.1";
 
     const generateId = () => Math.random().toString(36).substr(2, 9);
 
@@ -3518,6 +3518,27 @@
           
           // Parse JSON config
           const loadedConfig = JSON.parse(content);
+          
+          // Ensure funnel object exists for backward compatibility
+          if (!loadedConfig.funnel) {
+            loadedConfig.funnel = { enabled: false, initialVolume: 1000, periodLabel: 'per quarter' };
+          }
+          // Ensure stages have dropOffCount for backward compatibility
+          if (loadedConfig.stages) {
+            loadedConfig.stages = loadedConfig.stages.map(stage => ({
+              ...stage,
+              dropOffCount: stage.dropOffCount || 0
+            }));
+          }
+          // Ensure personas have cost fields for backward compatibility
+          if (loadedConfig.personas) {
+            loadedConfig.personas = loadedConfig.personas.map(persona => ({
+              ...persona,
+              burdenMultiplier: persona.burdenMultiplier || (persona.isExternal ? undefined : 1.35),
+              workspaceHourlyCost: persona.workspaceHourlyCost || (persona.isExternal ? undefined : 6.00)
+            }));
+          }
+          
           setConfig(loadedConfig);
           
           setGitHubStatus({ loading: false, message: '✓ Loaded from GitHub!', error: false });
@@ -3926,6 +3947,14 @@
                 ...stage,
                 dropOffCount: stage.dropOffCount || 0
               }));
+              // Ensure personas have cost fields for backward compatibility
+              if (imported.personas) {
+                imported.personas = imported.personas.map(persona => ({
+                  ...persona,
+                  burdenMultiplier: persona.burdenMultiplier || (persona.isExternal ? undefined : 1.35),
+                  workspaceHourlyCost: persona.workspaceHourlyCost || (persona.isExternal ? undefined : 6.00)
+                }));
+              }
               setConfig(imported);
               setSelectedStep(null);
             } catch (err) {
