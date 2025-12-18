@@ -20,56 +20,72 @@
       "label": "Financial Planner",
       "color": "#8B4513",
       "annualSalary": 75000,
-      "isExternal": false
+      "isExternal": false,
+      "burdenMultiplier": 1.3,
+      "workspaceHourlyCost": 6.5
     },
     {
       "id": "im",
       "label": "Investment Manager",
       "color": "#1E40AF",
       "annualSalary": 80000,
-      "isExternal": false
+      "isExternal": false,
+      "burdenMultiplier": 1.3,
+      "workspaceHourlyCost": 6
     },
     {
       "id": "ops",
       "label": "Operations",
       "color": "#6B46C1",
       "annualSalary": 25000,
-      "isExternal": false
+      "isExternal": false,
+      "burdenMultiplier": 1.3,
+      "workspaceHourlyCost": 6.5
     },
     {
       "id": "administrator",
       "label": "FP Administrator",
       "color": "#8B4513",
       "annualSalary": 35000,
-      "isExternal": false
+      "isExternal": false,
+      "burdenMultiplier": 1.3,
+      "workspaceHourlyCost": 7
     },
     {
       "id": "compliance",
       "label": "Compliance",
       "color": "#C53030",
       "annualSalary": 55000,
-      "isExternal": false
+      "isExternal": false,
+      "burdenMultiplier": 1.3,
+      "workspaceHourlyCost": 6
     },
     {
       "label": "Paraplanner",
       "color": "#B45309",
       "annualSalary": 45000,
       "isExternal": false,
-      "id": "paraplanner"
+      "id": "paraplanner",
+      "burdenMultiplier": 1.3,
+      "workspaceHourlyCost": 6
     },
     {
       "label": "New Business Exec",
       "color": "#7C3AED",
       "annualSalary": 25000,
       "isExternal": false,
-      "id": "new-business-exec"
+      "id": "new-business-exec",
+      "burdenMultiplier": 1.3,
+      "workspaceHourlyCost": 6
     },
     {
       "label": "IM Adminitrator",
       "color": "#1E40AF",
       "annualSalary": 35000,
       "isExternal": false,
-      "id": "im-adminitrator"
+      "id": "im-adminitrator",
+      "burdenMultiplier": 1.3,
+      "workspaceHourlyCost": 6
     }
   ],
   "stages": [
@@ -460,7 +476,15 @@
             "client": "Provides initial 5 bits of info\nProvides further documented ID or proof if required",
             "administrator": "Initiates ID verification request\nCo-ordinates with client for further documentation"
           },
-          "clientTouchpoint": true
+          "clientTouchpoint": true,
+          "additionalCosts": [
+            {
+              "id": "7nplk13i2",
+              "description": "ID & V",
+              "amount": 50,
+              "category": "third-party"
+            }
+          ]
         },
         {
           "id": "screening",
@@ -507,7 +531,15 @@
             "fp": "Reviews screening results",
             "im": "Assesses investment risk implications",
             "ops": "Runs screening checks and documents results"
-          }
+          },
+          "additionalCosts": [
+            {
+              "id": "lidhspxb0",
+              "description": "Screening",
+              "amount": 50,
+              "category": "third-party"
+            }
+          ]
         },
         {
           "id": "loas",
