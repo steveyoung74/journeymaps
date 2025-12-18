@@ -283,7 +283,7 @@
     const { useState, useCallback, useMemo, useEffect, useRef } = React;
     
     // Current app version - always displayed in footer
-    const APP_VERSION = "8.2.0";
+    const APP_VERSION = "8.3.0";
 
     const generateId = () => Math.random().toString(36).substr(2, 9);
 
@@ -305,11 +305,11 @@
       },
       personas: [
         { id: "client", label: "Client", color: "#2D5A4B", annualSalary: 0, isExternal: true },
-        { id: "fp", label: "Financial Planner", color: "#8B4513", annualSalary: 85000, isExternal: false },
-        { id: "im", label: "Investment Manager", color: "#1E40AF", annualSalary: 95000, isExternal: false },
-        { id: "ops", label: "Operations", color: "#6B46C1", annualSalary: 35000, isExternal: false },
-        { id: "administrator", label: "Administrator", color: "#4A5568", annualSalary: 32000, isExternal: false },
-        { id: "compliance", label: "Compliance", color: "#C53030", annualSalary: 55000, isExternal: false }
+        { id: "fp", label: "Financial Planner", color: "#8B4513", annualSalary: 85000, burdenMultiplier: 1.35, workspaceHourlyCost: 8.50, isExternal: false },
+        { id: "im", label: "Investment Manager", color: "#1E40AF", annualSalary: 95000, burdenMultiplier: 1.35, workspaceHourlyCost: 8.50, isExternal: false },
+        { id: "ops", label: "Operations", color: "#6B46C1", annualSalary: 35000, burdenMultiplier: 1.30, workspaceHourlyCost: 6.00, isExternal: false },
+        { id: "administrator", label: "Administrator", color: "#4A5568", annualSalary: 32000, burdenMultiplier: 1.30, workspaceHourlyCost: 6.00, isExternal: false },
+        { id: "compliance", label: "Compliance", color: "#C53030", annualSalary: 55000, burdenMultiplier: 1.35, workspaceHourlyCost: 8.50, isExternal: false }
       ],
       stages: [
         {
@@ -1061,25 +1061,68 @@
     // Cost calculation helpers
     const WORKING_HOURS_PER_YEAR = 1820; // 52 weeks * 35 hours (UK standard)
     
+    // Calculate base hourly rate from annual salary (for display purposes)
     const calculateHourlyRate = (annualSalary) => {
       if (!annualSalary || annualSalary === 0) return 0;
       return annualSalary / WORKING_HOURS_PER_YEAR;
     };
+    
+    // Calculate fully-loaded hourly rate including burden and workspace
+    const calculateFullyLoadedRate = (persona) => {
+      if (!persona || persona.isExternal || !persona.annualSalary) return 0;
+      const baseHourly = persona.annualSalary / WORKING_HOURS_PER_YEAR;
+      const burdenMultiplier = persona.burdenMultiplier || 1.0;
+      const workspaceHourly = persona.workspaceHourlyCost || 0;
+      return (baseHourly * burdenMultiplier) + workspaceHourly;
+    };
 
     const calculateStepCost = (step, personas) => {
+      let totalCost = 0;
+      
+      // Labour costs (with burden and workspace)
+      if (step.roleInvolvement) {
+        Object.entries(step.roleInvolvement).forEach(([roleId, involvement]) => {
+          const persona = personas.find(p => p.id === roleId);
+          if (persona && !persona.isExternal && persona.annualSalary > 0) {
+            const fullyLoadedRate = calculateFullyLoadedRate(persona);
+            const hours = (involvement.timeMinutes || 0) / 60;
+            const headcount = involvement.headcount || 1;
+            totalCost += fullyLoadedRate * hours * headcount;
+          }
+        });
+      }
+      
+      // Additional costs (third-party services, materials, etc.)
+      if (step.additionalCosts && Array.isArray(step.additionalCosts)) {
+        step.additionalCosts.forEach(cost => {
+          totalCost += cost.amount || 0;
+        });
+      }
+      
+      return totalCost;
+    };
+    
+    // Calculate labour cost only (excluding additional costs)
+    const calculateStepLabourCost = (step, personas) => {
       if (!step.roleInvolvement) return 0;
       
       let totalCost = 0;
       Object.entries(step.roleInvolvement).forEach(([roleId, involvement]) => {
         const persona = personas.find(p => p.id === roleId);
         if (persona && !persona.isExternal && persona.annualSalary > 0) {
-          const hourlyRate = calculateHourlyRate(persona.annualSalary);
+          const fullyLoadedRate = calculateFullyLoadedRate(persona);
           const hours = (involvement.timeMinutes || 0) / 60;
           const headcount = involvement.headcount || 1;
-          totalCost += hourlyRate * hours * headcount;
+          totalCost += fullyLoadedRate * hours * headcount;
         }
       });
       return totalCost;
+    };
+    
+    // Calculate additional costs only
+    const calculateStepAdditionalCosts = (step) => {
+      if (!step.additionalCosts || !Array.isArray(step.additionalCosts)) return 0;
+      return step.additionalCosts.reduce((acc, cost) => acc + (cost.amount || 0), 0);
     };
 
     const formatCurrency = (amount) => {
@@ -1787,7 +1830,7 @@
       const [localPersonas, setLocalPersonas] = useState(JSON.parse(JSON.stringify(personas)));
       const [editingId, setEditingId] = useState(null);
       const [showAddForm, setShowAddForm] = useState(false);
-      const [newRole, setNewRole] = useState({ label: '', color: '#666666', annualSalary: 0, isExternal: false });
+      const [newRole, setNewRole] = useState({ label: '', color: '#666666', annualSalary: 0, burdenMultiplier: 1.35, workspaceHourlyCost: 6.00, isExternal: false });
       
       const colorOptions = ['#2D5A4B', '#8B4513', '#1E40AF', '#6B46C1', '#C53030', '#047857', '#B45309', '#4A5568', '#7C3AED', '#0369A1'];
 
@@ -1803,7 +1846,7 @@
         if (!newRole.label.trim()) return;
         const id = newRole.label.toLowerCase().replace(/\s+/g, '-').replace(/[^a-z0-9-]/g, '');
         setLocalPersonas(prev => [...prev, { ...newRole, id, label: newRole.label.trim() }]);
-        setNewRole({ label: '', color: '#666666', annualSalary: 0, isExternal: false });
+        setNewRole({ label: '', color: '#666666', annualSalary: 0, burdenMultiplier: 1.35, workspaceHourlyCost: 6.00, isExternal: false });
         setShowAddForm(false);
       };
 
@@ -1821,7 +1864,7 @@
             background: '#FFF',
             borderRadius: '12px',
             padding: '32px',
-            width: '650px',
+            width: '800px',
             maxWidth: '95vw',
             maxHeight: '90vh',
             overflow: 'auto'
@@ -1833,7 +1876,7 @@
               </button>
             </div>
             <p style={{ margin: '0 0 24px', color: '#666', fontFamily: "'Helvetica Neue', Arial, sans-serif", fontSize: '14px' }}>
-              Manage roles, salaries and hourly rates. Based on {WORKING_HOURS_PER_YEAR} working hours/year.
+              Manage roles and fully-loaded costs. Based on {WORKING_HOURS_PER_YEAR} working hours/year.
             </p>
 
             {/* Add New Role Form */}
@@ -1862,6 +1905,30 @@
                     />
                   </div>
                   <div>
+                    <label style={{ display: 'block', fontFamily: "'Helvetica Neue', Arial, sans-serif", fontSize: '11px', color: '#666', marginBottom: '6px' }}>Burden Multiplier</label>
+                    <input
+                      type="number"
+                      step="0.01"
+                      value={newRole.burdenMultiplier || ''}
+                      onChange={(e) => setNewRole(prev => ({ ...prev, burdenMultiplier: parseFloat(e.target.value) || 1.0 }))}
+                      placeholder="1.35"
+                      style={{ width: '100%', padding: '10px 12px', border: '2px solid #E5E5E5', borderRadius: '6px', fontSize: '14px', boxSizing: 'border-box' }}
+                    />
+                    <div style={{ fontFamily: "'Helvetica Neue', Arial, sans-serif", fontSize: '10px', color: '#999', marginTop: '4px' }}>NI, pension, benefits (typ. 1.3-1.5)</div>
+                  </div>
+                  <div>
+                    <label style={{ display: 'block', fontFamily: "'Helvetica Neue', Arial, sans-serif", fontSize: '11px', color: '#666', marginBottom: '6px' }}>Workspace Cost (£/hr)</label>
+                    <input
+                      type="number"
+                      step="0.50"
+                      value={newRole.workspaceHourlyCost || ''}
+                      onChange={(e) => setNewRole(prev => ({ ...prev, workspaceHourlyCost: parseFloat(e.target.value) || 0 }))}
+                      placeholder="6.00"
+                      style={{ width: '100%', padding: '10px 12px', border: '2px solid #E5E5E5', borderRadius: '6px', fontSize: '14px', boxSizing: 'border-box' }}
+                    />
+                    <div style={{ fontFamily: "'Helvetica Neue', Arial, sans-serif", fontSize: '10px', color: '#999', marginTop: '4px' }}>Desk, equipment, facilities</div>
+                  </div>
+                  <div>
                     <label style={{ display: 'block', fontFamily: "'Helvetica Neue', Arial, sans-serif", fontSize: '11px', color: '#666', marginBottom: '6px' }}>Colour</label>
                     <div style={{ display: 'flex', gap: '6px', flexWrap: 'wrap' }}>
                       {colorOptions.map(color => (
@@ -1883,6 +1950,15 @@
                     </button>
                   </div>
                 </div>
+                {/* Show fully-loaded rate preview */}
+                {!newRole.isExternal && newRole.annualSalary > 0 && (
+                  <div style={{ marginTop: '16px', padding: '12px', background: '#FEF3C7', borderRadius: '6px', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                    <span style={{ fontFamily: "'Helvetica Neue', Arial, sans-serif", fontSize: '12px', color: '#92400E' }}>Fully-loaded hourly rate:</span>
+                    <span style={{ fontFamily: "'Helvetica Neue', Arial, sans-serif", fontSize: '16px', fontWeight: 700, color: '#92400E' }}>
+                      {formatCurrencyDetailed(((newRole.annualSalary / WORKING_HOURS_PER_YEAR) * (newRole.burdenMultiplier || 1)) + (newRole.workspaceHourlyCost || 0))}/hr
+                    </span>
+                  </div>
+                )}
                 <div style={{ marginTop: '16px', display: 'flex', justifyContent: 'flex-end' }}>
                   <button
                     onClick={handleAddRole}
@@ -1899,91 +1975,134 @@
             <div style={{ display: 'flex', flexDirection: 'column', gap: '12px' }}>
               {localPersonas.map(persona => (
                 <div key={persona.id} style={{
-                  display: 'flex',
-                  alignItems: 'center',
-                  gap: '12px',
                   padding: '16px',
                   background: persona.isExternal ? '#F9FAFB' : '#FFF',
                   borderRadius: '8px',
                   borderLeft: `4px solid ${persona.color}`,
-                  border: editingId === persona.id ? '2px solid #2D5A4B' : '1px solid #E5E5E5'
+                  border: '1px solid #E5E5E5'
                 }}>
-                  {/* Color Picker */}
-                  <div style={{ position: 'relative' }}>
-                    <div 
-                      style={{ width: '32px', height: '32px', borderRadius: '50%', background: persona.color, cursor: 'pointer', border: '2px solid #FFF', boxShadow: '0 1px 3px rgba(0,0,0,0.2)' }}
-                      onClick={() => setEditingId(editingId === persona.id ? null : persona.id)}
-                    />
-                    {editingId === persona.id && (
-                      <div style={{ position: 'absolute', top: '40px', left: 0, background: '#FFF', padding: '8px', borderRadius: '8px', boxShadow: '0 4px 12px rgba(0,0,0,0.15)', display: 'flex', gap: '4px', flexWrap: 'wrap', width: '140px', zIndex: 10 }}>
-                        {colorOptions.map(color => (
-                          <button
-                            key={color}
-                            onClick={() => { handleUpdatePersona(persona.id, 'color', color); setEditingId(null); }}
-                            style={{ width: '24px', height: '24px', borderRadius: '50%', background: color, border: persona.color === color ? '2px solid #000' : 'none', cursor: 'pointer' }}
-                          />
-                        ))}
-                      </div>
-                    )}
-                  </div>
-
-                  {/* Name */}
-                  <div style={{ flex: 1, minWidth: '120px' }}>
-                    <input
-                      type="text"
-                      value={persona.label}
-                      onChange={(e) => handleUpdatePersona(persona.id, 'label', e.target.value)}
-                      style={{
-                        fontFamily: "'Helvetica Neue', Arial, sans-serif",
-                        fontSize: '14px',
-                        fontWeight: 600,
-                        color: persona.color,
-                        border: 'none',
-                        background: 'transparent',
-                        width: '100%',
-                        padding: '4px 0'
-                      }}
-                    />
-                    {persona.isExternal && (
-                      <div style={{ fontFamily: "'Helvetica Neue', Arial, sans-serif", fontSize: '11px', color: '#999' }}>External (no cost)</div>
-                    )}
-                    {!persona.isExternal && (
-                      <div style={{ fontFamily: "'Helvetica Neue', Arial, sans-serif", fontSize: '11px', color: '#999' }}>
-                        {formatCurrencyDetailed(calculateHourlyRate(persona.annualSalary || 0))}/hr
-                      </div>
-                    )}
-                  </div>
-
-                  {/* Salary */}
-                  {!persona.isExternal && (
-                    <div style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
-                      <span style={{ fontFamily: "'Helvetica Neue', Arial, sans-serif", fontSize: '14px', color: '#666' }}>£</span>
-                      <input
-                        type="number"
-                        value={persona.annualSalary || ''}
-                        onChange={(e) => handleUpdatePersona(persona.id, 'annualSalary', parseInt(e.target.value) || 0)}
-                        placeholder="0"
-                        style={{ width: '100px', padding: '8px 10px', border: '1px solid #E5E5E5', borderRadius: '6px', fontSize: '14px', textAlign: 'right' }}
+                  {/* Top row: Color, Name, External toggle, Delete */}
+                  <div style={{ display: 'flex', alignItems: 'center', gap: '12px', marginBottom: persona.isExternal ? 0 : '12px' }}>
+                    {/* Color Picker */}
+                    <div style={{ position: 'relative' }}>
+                      <div 
+                        style={{ width: '32px', height: '32px', borderRadius: '50%', background: persona.color, cursor: 'pointer', border: '2px solid #FFF', boxShadow: '0 1px 3px rgba(0,0,0,0.2)' }}
+                        onClick={() => setEditingId(editingId === persona.id ? null : persona.id)}
                       />
-                      <span style={{ fontFamily: "'Helvetica Neue', Arial, sans-serif", fontSize: '11px', color: '#999' }}>/yr</span>
+                      {editingId === persona.id && (
+                        <div style={{ position: 'absolute', top: '40px', left: 0, background: '#FFF', padding: '8px', borderRadius: '8px', boxShadow: '0 4px 12px rgba(0,0,0,0.15)', display: 'flex', gap: '4px', flexWrap: 'wrap', width: '140px', zIndex: 10 }}>
+                          {colorOptions.map(color => (
+                            <button
+                              key={color}
+                              onClick={() => { handleUpdatePersona(persona.id, 'color', color); setEditingId(null); }}
+                              style={{ width: '24px', height: '24px', borderRadius: '50%', background: color, border: persona.color === color ? '2px solid #000' : 'none', cursor: 'pointer' }}
+                            />
+                          ))}
+                        </div>
+                      )}
+                    </div>
+
+                    {/* Name */}
+                    <div style={{ flex: 1, minWidth: '120px' }}>
+                      <input
+                        type="text"
+                        value={persona.label}
+                        onChange={(e) => handleUpdatePersona(persona.id, 'label', e.target.value)}
+                        style={{
+                          fontFamily: "'Helvetica Neue', Arial, sans-serif",
+                          fontSize: '14px',
+                          fontWeight: 600,
+                          color: persona.color,
+                          border: 'none',
+                          background: 'transparent',
+                          width: '100%',
+                          padding: '4px 0'
+                        }}
+                      />
+                      {persona.isExternal && (
+                        <div style={{ fontFamily: "'Helvetica Neue', Arial, sans-serif", fontSize: '11px', color: '#999' }}>External (no cost)</div>
+                      )}
+                    </div>
+
+                    {/* External Toggle */}
+                    <button
+                      onClick={() => handleUpdatePersona(persona.id, 'isExternal', !persona.isExternal)}
+                      style={{ padding: '6px 12px', background: persona.isExternal ? '#E5E5E5' : '#FFF', border: '1px solid #DDD', borderRadius: '4px', cursor: 'pointer', fontFamily: "'Helvetica Neue', Arial, sans-serif", fontSize: '11px', color: '#666' }}
+                      title={persona.isExternal ? 'Mark as internal' : 'Mark as external (no cost)'}
+                    >
+                      {persona.isExternal ? 'External' : 'Internal'}
+                    </button>
+
+                    {/* Delete */}
+                    <button
+                      onClick={(e) => { e.stopPropagation(); handleDeletePersona(persona.id); }}
+                      style={{ width: '32px', height: '32px', borderRadius: '50%', border: 'none', background: '#FEE2E2', color: '#B42318', cursor: 'pointer', fontSize: '16px', display: 'flex', alignItems: 'center', justifyContent: 'center' }}
+                      title="Delete role"
+                    >×</button>
+                  </div>
+
+                  {/* Cost fields - only for internal roles */}
+                  {!persona.isExternal && (
+                    <div style={{ display: 'grid', gridTemplateColumns: 'repeat(4, 1fr)', gap: '12px', paddingTop: '12px', borderTop: '1px solid #F0F0F0' }}>
+                      {/* Annual Salary */}
+                      <div>
+                        <label style={{ display: 'block', fontFamily: "'Helvetica Neue', Arial, sans-serif", fontSize: '10px', color: '#999', marginBottom: '4px' }}>Annual Salary</label>
+                        <div style={{ display: 'flex', alignItems: 'center', gap: '4px' }}>
+                          <span style={{ fontFamily: "'Helvetica Neue', Arial, sans-serif", fontSize: '12px', color: '#666' }}>£</span>
+                          <input
+                            type="number"
+                            value={persona.annualSalary || ''}
+                            onChange={(e) => handleUpdatePersona(persona.id, 'annualSalary', parseInt(e.target.value) || 0)}
+                            placeholder="0"
+                            style={{ width: '100%', padding: '6px 8px', border: '1px solid #E5E5E5', borderRadius: '4px', fontSize: '13px', textAlign: 'right' }}
+                          />
+                        </div>
+                        <div style={{ fontFamily: "'Helvetica Neue', Arial, sans-serif", fontSize: '10px', color: '#999', marginTop: '2px' }}>
+                          Base: {formatCurrencyDetailed(calculateHourlyRate(persona.annualSalary || 0))}/hr
+                        </div>
+                      </div>
+
+                      {/* Burden Multiplier */}
+                      <div>
+                        <label style={{ display: 'block', fontFamily: "'Helvetica Neue', Arial, sans-serif", fontSize: '10px', color: '#999', marginBottom: '4px' }}>Burden ×</label>
+                        <input
+                          type="number"
+                          step="0.01"
+                          value={persona.burdenMultiplier || ''}
+                          onChange={(e) => handleUpdatePersona(persona.id, 'burdenMultiplier', parseFloat(e.target.value) || 1.0)}
+                          placeholder="1.35"
+                          style={{ width: '100%', padding: '6px 8px', border: '1px solid #E5E5E5', borderRadius: '4px', fontSize: '13px', textAlign: 'right' }}
+                        />
+                        <div style={{ fontFamily: "'Helvetica Neue', Arial, sans-serif", fontSize: '10px', color: '#999', marginTop: '2px' }}>
+                          NI, pension, benefits
+                        </div>
+                      </div>
+
+                      {/* Workspace Cost */}
+                      <div>
+                        <label style={{ display: 'block', fontFamily: "'Helvetica Neue', Arial, sans-serif", fontSize: '10px', color: '#999', marginBottom: '4px' }}>Workspace £/hr</label>
+                        <input
+                          type="number"
+                          step="0.50"
+                          value={persona.workspaceHourlyCost || ''}
+                          onChange={(e) => handleUpdatePersona(persona.id, 'workspaceHourlyCost', parseFloat(e.target.value) || 0)}
+                          placeholder="6.00"
+                          style={{ width: '100%', padding: '6px 8px', border: '1px solid #E5E5E5', borderRadius: '4px', fontSize: '13px', textAlign: 'right' }}
+                        />
+                        <div style={{ fontFamily: "'Helvetica Neue', Arial, sans-serif", fontSize: '10px', color: '#999', marginTop: '2px' }}>
+                          Desk, equipment
+                        </div>
+                      </div>
+
+                      {/* Fully Loaded Rate */}
+                      <div style={{ background: '#FEF3C7', borderRadius: '6px', padding: '8px', display: 'flex', flexDirection: 'column', justifyContent: 'center' }}>
+                        <div style={{ fontFamily: "'Helvetica Neue', Arial, sans-serif", fontSize: '10px', color: '#92400E', marginBottom: '2px' }}>Fully Loaded</div>
+                        <div style={{ fontFamily: "'Helvetica Neue', Arial, sans-serif", fontSize: '16px', fontWeight: 700, color: '#92400E' }}>
+                          {formatCurrencyDetailed(calculateFullyLoadedRate(persona))}/hr
+                        </div>
+                      </div>
                     </div>
                   )}
-
-                  {/* External Toggle */}
-                  <button
-                    onClick={() => handleUpdatePersona(persona.id, 'isExternal', !persona.isExternal)}
-                    style={{ padding: '6px 12px', background: persona.isExternal ? '#E5E5E5' : '#FFF', border: '1px solid #DDD', borderRadius: '4px', cursor: 'pointer', fontFamily: "'Helvetica Neue', Arial, sans-serif", fontSize: '11px', color: '#666' }}
-                    title={persona.isExternal ? 'Mark as internal' : 'Mark as external (no cost)'}
-                  >
-                    {persona.isExternal ? 'External' : 'Internal'}
-                  </button>
-
-                  {/* Delete */}
-                  <button
-                    onClick={(e) => { e.stopPropagation(); handleDeletePersona(persona.id); }}
-                    style={{ width: '32px', height: '32px', borderRadius: '50%', border: 'none', background: '#FEE2E2', color: '#B42318', cursor: 'pointer', fontSize: '16px', display: 'flex', alignItems: 'center', justifyContent: 'center' }}
-                    title="Delete role"
-                  >×</button>
                 </div>
               ))}
             </div>
@@ -5716,126 +5835,240 @@
                         </div>
                       )}
                       
-                      <div style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
-                        {config.personas.filter(p => !p.isExternal).map(persona => {
-                          const involvement = selectedStep.roleInvolvement?.[persona.id] || { timeMinutes: 0, headcount: 1 };
-                          const hourlyRate = calculateHourlyRate(persona.annualSalary || 0);
-                          const roleCost = (involvement.timeMinutes / 60) * hourlyRate * (involvement.headcount || 1);
-                          
-                          if (!editMode && involvement.timeMinutes === 0) return null;
-                          
-                          return (
-                            <div key={persona.id} style={{
-                              display: 'flex',
-                              alignItems: 'center',
-                              gap: '12px',
-                              padding: '12px',
-                              background: '#FFF',
-                              borderRadius: '6px',
-                              borderLeft: `3px solid ${persona.color}`
-                            }}>
-                              <div style={{ flex: 1, minWidth: '100px' }}>
-                                <div style={{
-                                  fontFamily: "'Helvetica Neue', Arial, sans-serif",
-                                  fontSize: '12px',
-                                  fontWeight: 600,
-                                  color: persona.color
-                                }}>
-                                  {persona.label}
-                                </div>
-                                <div style={{
-                                  fontFamily: "'Helvetica Neue', Arial, sans-serif",
-                                  fontSize: '10px',
-                                  color: '#999'
-                                }}>
-                                  {formatCurrencyDetailed(hourlyRate)}/hr
-                                </div>
-                              </div>
-                              
-                              {editMode ? (
-                                <>
-                                  <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '2px' }}>
-                                    <span style={{ fontFamily: "'Helvetica Neue', Arial, sans-serif", fontSize: '9px', color: '#999', textTransform: 'uppercase' }}>Mins</span>
-                                    <input
-                                      type="number"
-                                      value={involvement.timeMinutes || 0}
-                                      onChange={(e) => {
-                                        const newVal = parseInt(e.target.value) || 0;
-                                        updateRoleInvolvement(selectedStep.stageId, selectedStep.id, persona.id, 'timeMinutes', newVal);
-                                        setSelectedStep(prev => {
-                                          const newRoleInvolvement = {
-                                            ...(prev.roleInvolvement || {}),
-                                            [persona.id]: { ...involvement, timeMinutes: newVal }
-                                          };
-                                          const totalTime = Object.values(newRoleInvolvement).reduce(
-                                            (sum, inv) => sum + (inv.timeMinutes || 0), 0
-                                          );
-                                          return {
-                                            ...prev,
-                                            roleInvolvement: newRoleInvolvement,
-                                            timeMinutes: totalTime
-                                          };
-                                        });
-                                      }}
-                                      style={{
-                                        width: '60px',
-                                        padding: '6px',
-                                        border: '1px solid #DDD',
-                                        borderRadius: '4px',
-                                        fontSize: '12px',
-                                        textAlign: 'center'
-                                      }}
-                                    />
-                                  </div>
-                                  <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '2px' }}>
-                                    <span style={{ fontFamily: "'Helvetica Neue', Arial, sans-serif", fontSize: '9px', color: '#999', textTransform: 'uppercase' }}>People</span>
-                                    <input
-                                      type="number"
-                                      min="1"
-                                      value={involvement.headcount || 1}
-                                      onChange={(e) => {
-                                        const newVal = parseInt(e.target.value) || 1;
-                                        updateRoleInvolvement(selectedStep.stageId, selectedStep.id, persona.id, 'headcount', newVal);
-                                        setSelectedStep(prev => ({
-                                          ...prev,
-                                          roleInvolvement: {
-                                            ...(prev.roleInvolvement || {}),
-                                            [persona.id]: { ...involvement, headcount: newVal }
-                                          }
-                                        }));
-                                      }}
-                                      style={{
-                                        width: '50px',
-                                        padding: '6px',
-                                        border: '1px solid #DDD',
-                                        borderRadius: '4px',
-                                        fontSize: '12px',
-                                        textAlign: 'center'
-                                      }}
-                                    />
-                                  </div>
-                                </>
-                              ) : (
-                                <>
-                                  <div style={{ fontFamily: "'Helvetica Neue', Arial, sans-serif", fontSize: '12px', color: '#666' }}>
-                                    {involvement.timeMinutes}m × {involvement.headcount || 1} {(involvement.headcount || 1) > 1 ? 'people' : 'person'}
-                                  </div>
-                                </>
-                              )}
-                              
-                              <div style={{
-                                fontFamily: "'Helvetica Neue', Arial, sans-serif",
-                                fontSize: '14px',
-                                fontWeight: 600,
-                                color: '#92400E',
-                                minWidth: '60px',
-                                textAlign: 'right'
+                      {/* Labour Costs Section */}
+                      <div style={{ marginBottom: '16px' }}>
+                        <div style={{ fontFamily: "'Helvetica Neue', Arial, sans-serif", fontSize: '10px', color: '#92400E', textTransform: 'uppercase', letterSpacing: '0.5px', marginBottom: '8px', fontWeight: 600 }}>
+                          👤 Labour Costs ({formatCurrency(calculateStepLabourCost(selectedStep, config.personas))})
+                        </div>
+                        <div style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
+                          {config.personas.filter(p => !p.isExternal).map(persona => {
+                            const involvement = selectedStep.roleInvolvement?.[persona.id] || { timeMinutes: 0, headcount: 1 };
+                            const fullyLoadedRate = calculateFullyLoadedRate(persona);
+                            const roleCost = (involvement.timeMinutes / 60) * fullyLoadedRate * (involvement.headcount || 1);
+                            
+                            if (!editMode && involvement.timeMinutes === 0) return null;
+                            
+                            return (
+                              <div key={persona.id} style={{
+                                display: 'flex',
+                                alignItems: 'center',
+                                gap: '12px',
+                                padding: '12px',
+                                background: '#FFF',
+                                borderRadius: '6px',
+                                borderLeft: `3px solid ${persona.color}`
                               }}>
-                                {formatCurrency(roleCost)}
+                                <div style={{ flex: 1, minWidth: '100px' }}>
+                                  <div style={{
+                                    fontFamily: "'Helvetica Neue', Arial, sans-serif",
+                                    fontSize: '12px',
+                                    fontWeight: 600,
+                                    color: persona.color
+                                  }}>
+                                    {persona.label}
+                                  </div>
+                                  <div style={{
+                                    fontFamily: "'Helvetica Neue', Arial, sans-serif",
+                                    fontSize: '10px',
+                                    color: '#999'
+                                  }}>
+                                    {formatCurrencyDetailed(fullyLoadedRate)}/hr (loaded)
+                                  </div>
+                                </div>
+                                
+                                {editMode ? (
+                                  <>
+                                    <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '2px' }}>
+                                      <span style={{ fontFamily: "'Helvetica Neue', Arial, sans-serif", fontSize: '9px', color: '#999', textTransform: 'uppercase' }}>Mins</span>
+                                      <input
+                                        type="number"
+                                        value={involvement.timeMinutes || 0}
+                                        onChange={(e) => {
+                                          const newVal = parseInt(e.target.value) || 0;
+                                          updateRoleInvolvement(selectedStep.stageId, selectedStep.id, persona.id, 'timeMinutes', newVal);
+                                          setSelectedStep(prev => {
+                                            const newRoleInvolvement = {
+                                              ...(prev.roleInvolvement || {}),
+                                              [persona.id]: { ...involvement, timeMinutes: newVal }
+                                            };
+                                            const totalTime = Object.values(newRoleInvolvement).reduce(
+                                              (sum, inv) => sum + (inv.timeMinutes || 0), 0
+                                            );
+                                            return {
+                                              ...prev,
+                                              roleInvolvement: newRoleInvolvement,
+                                              timeMinutes: totalTime
+                                            };
+                                          });
+                                        }}
+                                        style={{
+                                          width: '60px',
+                                          padding: '6px',
+                                          border: '1px solid #DDD',
+                                          borderRadius: '4px',
+                                          fontSize: '12px',
+                                          textAlign: 'center'
+                                        }}
+                                      />
+                                    </div>
+                                    <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '2px' }}>
+                                      <span style={{ fontFamily: "'Helvetica Neue', Arial, sans-serif", fontSize: '9px', color: '#999', textTransform: 'uppercase' }}>People</span>
+                                      <input
+                                        type="number"
+                                        min="1"
+                                        value={involvement.headcount || 1}
+                                        onChange={(e) => {
+                                          const newVal = parseInt(e.target.value) || 1;
+                                          updateRoleInvolvement(selectedStep.stageId, selectedStep.id, persona.id, 'headcount', newVal);
+                                          setSelectedStep(prev => ({
+                                            ...prev,
+                                            roleInvolvement: {
+                                              ...(prev.roleInvolvement || {}),
+                                              [persona.id]: { ...involvement, headcount: newVal }
+                                            }
+                                          }));
+                                        }}
+                                        style={{
+                                          width: '50px',
+                                          padding: '6px',
+                                          border: '1px solid #DDD',
+                                          borderRadius: '4px',
+                                          fontSize: '12px',
+                                          textAlign: 'center'
+                                        }}
+                                      />
+                                    </div>
+                                  </>
+                                ) : (
+                                  <>
+                                    <div style={{ fontFamily: "'Helvetica Neue', Arial, sans-serif", fontSize: '12px', color: '#666' }}>
+                                      {involvement.timeMinutes}m × {involvement.headcount || 1} {(involvement.headcount || 1) > 1 ? 'people' : 'person'}
+                                    </div>
+                                  </>
+                                )}
+                                
+                                <div style={{
+                                  fontFamily: "'Helvetica Neue', Arial, sans-serif",
+                                  fontSize: '14px',
+                                  fontWeight: 600,
+                                  color: '#92400E',
+                                  minWidth: '60px',
+                                  textAlign: 'right'
+                                }}>
+                                  {formatCurrency(roleCost)}
+                                </div>
                               </div>
-                            </div>
-                          );
-                        })}
+                            );
+                          })}
+                        </div>
+                      </div>
+                      
+                      {/* Additional Costs Section (Third-party, Materials) */}
+                      <div>
+                        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '8px' }}>
+                          <div style={{ fontFamily: "'Helvetica Neue', Arial, sans-serif", fontSize: '10px', color: '#92400E', textTransform: 'uppercase', letterSpacing: '0.5px', fontWeight: 600 }}>
+                            📦 Additional Costs ({formatCurrency(calculateStepAdditionalCosts(selectedStep))})
+                          </div>
+                          {editMode && (
+                            <button
+                              onClick={() => {
+                                const newCost = { id: generateId(), description: 'New cost', amount: 0, category: 'third-party' };
+                                const newCosts = [...(selectedStep.additionalCosts || []), newCost];
+                                updateStep(selectedStep.stageId, selectedStep.id, { additionalCosts: newCosts });
+                                setSelectedStep(prev => ({ ...prev, additionalCosts: newCosts }));
+                              }}
+                              style={{ padding: '4px 10px', background: '#92400E', color: '#FFF', border: 'none', borderRadius: '4px', cursor: 'pointer', fontFamily: "'Helvetica Neue', Arial, sans-serif", fontSize: '11px' }}
+                            >
+                              + Add Cost
+                            </button>
+                          )}
+                        </div>
+                        
+                        {(!selectedStep.additionalCosts || selectedStep.additionalCosts.length === 0) && !editMode ? (
+                          <div style={{ padding: '12px', background: '#FFF', borderRadius: '6px', fontFamily: "'Helvetica Neue', Arial, sans-serif", fontSize: '12px', color: '#999', fontStyle: 'italic' }}>
+                            No additional costs
+                          </div>
+                        ) : (
+                          <div style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
+                            {(selectedStep.additionalCosts || []).map((cost, index) => (
+                              <div key={cost.id || index} style={{
+                                display: 'flex',
+                                alignItems: 'center',
+                                gap: '12px',
+                                padding: '12px',
+                                background: '#FFF',
+                                borderRadius: '6px',
+                                borderLeft: '3px solid #6B7280'
+                              }}>
+                                {editMode ? (
+                                  <>
+                                    <select
+                                      value={cost.category || 'third-party'}
+                                      onChange={(e) => {
+                                        const newCosts = [...(selectedStep.additionalCosts || [])];
+                                        newCosts[index] = { ...cost, category: e.target.value };
+                                        updateStep(selectedStep.stageId, selectedStep.id, { additionalCosts: newCosts });
+                                        setSelectedStep(prev => ({ ...prev, additionalCosts: newCosts }));
+                                      }}
+                                      style={{ padding: '6px', border: '1px solid #DDD', borderRadius: '4px', fontSize: '11px', fontFamily: "'Helvetica Neue', Arial, sans-serif" }}
+                                    >
+                                      <option value="third-party">🔌 Third-party</option>
+                                      <option value="materials">📄 Materials</option>
+                                      <option value="other">📎 Other</option>
+                                    </select>
+                                    <input
+                                      type="text"
+                                      value={cost.description}
+                                      onChange={(e) => {
+                                        const newCosts = [...(selectedStep.additionalCosts || [])];
+                                        newCosts[index] = { ...cost, description: e.target.value };
+                                        updateStep(selectedStep.stageId, selectedStep.id, { additionalCosts: newCosts });
+                                        setSelectedStep(prev => ({ ...prev, additionalCosts: newCosts }));
+                                      }}
+                                      placeholder="Description"
+                                      style={{ flex: 1, padding: '6px', border: '1px solid #DDD', borderRadius: '4px', fontSize: '12px', fontFamily: "'Helvetica Neue', Arial, sans-serif" }}
+                                    />
+                                    <div style={{ display: 'flex', alignItems: 'center', gap: '4px' }}>
+                                      <span style={{ fontFamily: "'Helvetica Neue', Arial, sans-serif", fontSize: '12px', color: '#666' }}>£</span>
+                                      <input
+                                        type="number"
+                                        step="0.01"
+                                        value={cost.amount || ''}
+                                        onChange={(e) => {
+                                          const newCosts = [...(selectedStep.additionalCosts || [])];
+                                          newCosts[index] = { ...cost, amount: parseFloat(e.target.value) || 0 };
+                                          updateStep(selectedStep.stageId, selectedStep.id, { additionalCosts: newCosts });
+                                          setSelectedStep(prev => ({ ...prev, additionalCosts: newCosts }));
+                                        }}
+                                        style={{ width: '70px', padding: '6px', border: '1px solid #DDD', borderRadius: '4px', fontSize: '12px', textAlign: 'right' }}
+                                      />
+                                    </div>
+                                    <button
+                                      onClick={() => {
+                                        const newCosts = (selectedStep.additionalCosts || []).filter((_, i) => i !== index);
+                                        updateStep(selectedStep.stageId, selectedStep.id, { additionalCosts: newCosts });
+                                        setSelectedStep(prev => ({ ...prev, additionalCosts: newCosts }));
+                                      }}
+                                      style={{ width: '24px', height: '24px', borderRadius: '50%', border: 'none', background: '#FEE2E2', color: '#B42318', cursor: 'pointer', fontSize: '14px', display: 'flex', alignItems: 'center', justifyContent: 'center' }}
+                                    >×</button>
+                                  </>
+                                ) : (
+                                  <>
+                                    <span style={{ fontSize: '14px' }}>
+                                      {cost.category === 'materials' ? '📄' : cost.category === 'other' ? '📎' : '🔌'}
+                                    </span>
+                                    <div style={{ flex: 1, fontFamily: "'Helvetica Neue', Arial, sans-serif", fontSize: '12px', color: '#374151' }}>
+                                      {cost.description}
+                                    </div>
+                                    <div style={{ fontFamily: "'Helvetica Neue', Arial, sans-serif", fontSize: '14px', fontWeight: 600, color: '#92400E' }}>
+                                      {formatCurrency(cost.amount)}
+                                    </div>
+                                  </>
+                                )}
+                              </div>
+                            ))}
+                          </div>
+                        )}
                       </div>
                     </div>
                     )}
