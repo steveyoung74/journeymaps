@@ -283,7 +283,7 @@
     const { useState, useCallback, useMemo, useEffect, useRef } = React;
     
     // Current app version - always displayed in footer
-    const APP_VERSION = "8.3.3";
+    const APP_VERSION = "8.3.4";
 
     const generateId = () => Math.random().toString(36).substr(2, 9);
 
@@ -5189,7 +5189,7 @@
                           <div style={{ fontSize: '11px', color: '#999', textTransform: 'uppercase', letterSpacing: '0.5px', marginBottom: '8px' }}>
                             {stage.steps.length} Steps
                           </div>
-                          <div style={{ display: 'flex', flexDirection: 'column', gap: '6px' }}>
+                          <div style={{ display: 'flex', flexDirection: 'column', gap: highlightOpportunities ? '8px' : '6px', paddingTop: highlightOpportunities ? '8px' : 0, paddingLeft: highlightOpportunities ? '8px' : 0 }}>
                             {stage.steps.map((step, idx) => {
                               const timeBarWidth = maxStepTime > 0 ? (step.timeMinutes / maxStepTime) * 100 : 0;
                               const isHighOpp = step.automationOpportunity === 'high';
@@ -5218,8 +5218,32 @@
                                     : (isHighOpp ? '1px solid #BBF7D0' : '1px solid #FEF08A'))
                                   : step.isHardCheckpoint ? '1px solid #FBCFE8' : 'none',
                                 position: 'relative',
-                                overflow: 'hidden'
+                                overflow: 'visible',
+                                marginTop: showOppHighlight && isTopFive ? '6px' : 0,
+                                marginLeft: showOppHighlight && isTopFive ? '6px' : 0
                               }}>
+                                {/* Top 5 Ranking Badge - overlaid in top-left corner */}
+                                {showOppHighlight && isTopFive && (
+                                  <span style={{ 
+                                    position: 'absolute',
+                                    top: '-10px',
+                                    left: '-10px',
+                                    zIndex: 2,
+                                    display: 'inline-flex',
+                                    alignItems: 'center',
+                                    justifyContent: 'center',
+                                    width: '26px',
+                                    height: '26px',
+                                    borderRadius: '50%',
+                                    background: isHighOpp ? '#059669' : '#D97706',
+                                    color: '#FFF',
+                                    fontSize: '14px',
+                                    fontWeight: 700,
+                                    boxShadow: '0 2px 6px rgba(0,0,0,0.25)'
+                                  }}>
+                                    {opportunityRanks[step.id]}
+                                  </span>
+                                )}
                                 {/* Time Bar Background - only show when not highlighting opportunities */}
                                 {!showOppHighlight && (
                                   <div style={{
@@ -5236,25 +5260,6 @@
                                 )}
                                 <span style={{ color: '#999', fontWeight: 500, minWidth: '24px', position: 'relative', zIndex: 1 }}>{stageIndex + 1}.{idx + 1}</span>
                                 {step.isHardCheckpoint && <span style={{ fontSize: '12px', position: 'relative', zIndex: 1 }}>🚧</span>}
-                                {showOppHighlight && opportunityRanks[step.id] && (
-                                  <span style={{ 
-                                    position: 'relative', 
-                                    zIndex: 1,
-                                    display: 'inline-flex',
-                                    alignItems: 'center',
-                                    justifyContent: 'center',
-                                    width: '24px',
-                                    height: '24px',
-                                    borderRadius: '50%',
-                                    background: isHighOpp ? '#059669' : '#D97706',
-                                    color: '#FFF',
-                                    fontSize: '13px',
-                                    fontWeight: 700,
-                                    boxShadow: '0 2px 4px rgba(0,0,0,0.2)'
-                                  }}>
-                                    {opportunityRanks[step.id]}
-                                  </span>
-                                )}
                                 <span style={{ flex: 1, color: showOppHighlight ? (isHighOpp ? '#065F46' : '#92400E') : step.isHardCheckpoint ? '#BE185D' : '#333', position: 'relative', zIndex: 1, fontWeight: showOppHighlight && isTopFive ? 600 : showOppHighlight ? 500 : 400, opacity: showOppHighlight && !isTopFive ? 0.8 : 1 }}>{step.name}</span>
                                 {showOppHighlight ? (
                                   <span style={{ color: isHighOpp ? '#065F46' : '#92400E', fontSize: '11px', position: 'relative', zIndex: 1, fontWeight: isTopFive ? 700 : 500, opacity: isTopFive ? 1 : 0.7 }}>
