@@ -283,7 +283,7 @@
     const { useState, useCallback, useMemo, useEffect, useRef } = React;
     
     // Current app version - always displayed in footer
-    const APP_VERSION = "8.3.7";
+    const APP_VERSION = "8.3.8";
 
     const generateId = () => Math.random().toString(36).substr(2, 9);
 
@@ -3411,8 +3411,7 @@
       const [showPasswordPrompt, setShowPasswordPrompt] = useState(false);
       const [isMobile, setIsMobile] = useState(() => window.innerWidth < 768);
       const [showCosts, setShowCosts] = useState(() => {
-        const stored = localStorage.getItem('journeymap-show-costs');
-        return stored === null ? true : stored === 'true';
+        return localStorage.getItem('journeymap-show-costs') !== 'false';
       });
       const [isAppUnlocked, setIsAppUnlocked] = useState(() => {
         return sessionStorage.getItem('journeymap-app-unlocked') === 'true';
