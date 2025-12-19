@@ -1,0 +1,1362 @@
+{
+  "meta": {
+    "title": "Client Onboarding Journey Digital Twin",
+    "version": "2.0",
+    "product": "Steve's Journey Map v6.1",
+    "lastUpdated": "2025-12-19T21:22:26.296Z",
+    "audience": "Internal Operations",
+    "perspective": "client"
+  },
+  "personas": [
+    {
+      "id": "client",
+      "label": "Client",
+      "color": "#2D5A4B",
+      "annualSalary": 0,
+      "isExternal": true
+    },
+    {
+      "id": "fp",
+      "label": "Financial Planner",
+      "color": "#8B4513",
+      "annualSalary": 75000,
+      "isExternal": false,
+      "burdenMultiplier": 1.3,
+      "workspaceHourlyCost": 6.5
+    },
+    {
+      "id": "im",
+      "label": "Investment Manager",
+      "color": "#1E40AF",
+      "annualSalary": 80000,
+      "isExternal": false,
+      "burdenMultiplier": 1.3,
+      "workspaceHourlyCost": 6
+    },
+    {
+      "id": "ops",
+      "label": "Operations",
+      "color": "#6B46C1",
+      "annualSalary": 25000,
+      "isExternal": false,
+      "burdenMultiplier": 1.3,
+      "workspaceHourlyCost": 6.5
+    },
+    {
+      "id": "administrator",
+      "label": "FP Administrator",
+      "color": "#8B4513",
+      "annualSalary": 35000,
+      "isExternal": false,
+      "burdenMultiplier": 1.3,
+      "workspaceHourlyCost": 7
+    },
+    {
+      "id": "compliance",
+      "label": "Compliance",
+      "color": "#C53030",
+      "annualSalary": 55000,
+      "isExternal": false,
+      "burdenMultiplier": 1.3,
+      "workspaceHourlyCost": 6
+    },
+    {
+      "label": "Paraplanner",
+      "color": "#B45309",
+      "annualSalary": 45000,
+      "isExternal": false,
+      "id": "paraplanner",
+      "burdenMultiplier": 1.3,
+      "workspaceHourlyCost": 6
+    },
+    {
+      "label": "New Business Exec",
+      "color": "#7C3AED",
+      "annualSalary": 25000,
+      "isExternal": false,
+      "id": "new-business-exec",
+      "burdenMultiplier": 1.3,
+      "workspaceHourlyCost": 6
+    },
+    {
+      "label": "IM Adminitrator",
+      "color": "#1E40AF",
+      "annualSalary": 35000,
+      "isExternal": false,
+      "id": "im-adminitrator",
+      "burdenMultiplier": 1.3,
+      "workspaceHourlyCost": 6
+    }
+  ],
+  "stages": [
+    {
+      "id": "lead-receipt",
+      "name": "Lead Receipt",
+      "steps": [
+        {
+          "id": "triage",
+          "name": "Triage",
+          "description": "Initial assessment of incoming prospect enquiries",
+          "timeMinutes": 5,
+          "owner": "new-business-exec",
+          "touchpoints": [
+            "CRM",
+            "Email"
+          ],
+          "painPoints": [],
+          "emotions": "neutral",
+          "frictionScore": 1,
+          "automationOpportunity": "high",
+          "automationNotes": "Could be automated with AI triage system",
+          "regulatoryRequirements": [],
+          "roleInvolvement": {
+            "fp": {
+              "timeMinutes": 0,
+              "headcount": 1
+            },
+            "im": {
+              "timeMinutes": 0,
+              "headcount": 1
+            },
+            "ops": {
+              "timeMinutes": 0,
+              "headcount": 1
+            },
+            "new-business-exec": {
+              "timeMinutes": 10,
+              "headcount": 1
+            }
+          },
+          "actions": {
+            "ops": "",
+            "new-business-exec": "Reviews and categorises incoming enquiries",
+            "client": "Inputs information into our contact form"
+          },
+          "clientTouchpoint": true
+        },
+        {
+          "id": "fast-track",
+          "name": "Fast Track",
+          "description": "Determine if client has provided enough information to directly contact FP to check availability for immediate call",
+          "timeMinutes": 10,
+          "owner": "new-business-exec",
+          "touchpoints": [
+            "CRM",
+            "Phone",
+            "Email"
+          ],
+          "painPoints": [],
+          "emotions": "hopeful",
+          "frictionScore": 2,
+          "automationOpportunity": "high",
+          "automationNotes": "AI could assess client information completeness and check FP calendar availability automatically",
+          "regulatoryRequirements": [],
+          "roleInvolvement": {
+            "fp": {
+              "timeMinutes": 0,
+              "headcount": 1
+            },
+            "im": {
+              "timeMinutes": 0,
+              "headcount": 1
+            },
+            "ops": {
+              "timeMinutes": 0,
+              "headcount": 1
+            },
+            "new-business-exec": {
+              "timeMinutes": 10,
+              "headcount": 1
+            }
+          },
+          "actions": {
+            "ops": "",
+            "new-business-exec": "Assesses client information quality, checks FP availability, routes accordingly"
+          }
+        }
+      ],
+      "dropOffCount": 0
+    },
+    {
+      "id": "opportunity-qualification",
+      "name": "Opportunity Qualification",
+      "steps": [
+        {
+          "id": "initial-call",
+          "name": "Initial Call",
+          "description": "First contact call with prospect",
+          "timeMinutes": 20,
+          "owner": "new-business-exec",
+          "touchpoints": [
+            "Phone"
+          ],
+          "painPoints": [],
+          "emotions": "curious",
+          "frictionScore": 2,
+          "automationOpportunity": "low",
+          "automationNotes": "Human interaction important for first contact",
+          "regulatoryRequirements": [],
+          "clientTouchpoint": true,
+          "roleInvolvement": {
+            "fp": {
+              "timeMinutes": 0,
+              "headcount": 1
+            },
+            "im": {
+              "timeMinutes": 0,
+              "headcount": 1
+            },
+            "ops": {
+              "timeMinutes": 0,
+              "headcount": 1
+            },
+            "new-business-exec": {
+              "timeMinutes": 15,
+              "headcount": 1
+            }
+          },
+          "actions": {
+            "ops": "",
+            "new-business-exec": "Conducts initial call, gathers basic information, listens to client carefully",
+            "client": "Answers questions and describes the outcome they want"
+          }
+        },
+        {
+          "id": "update-systems",
+          "name": "Update Excel, Xplan etc",
+          "description": "Update CRM and planning systems with prospect details",
+          "timeMinutes": 12,
+          "owner": "new-business-exec",
+          "touchpoints": [
+            "Xplan",
+            "Excel",
+            "CRM"
+          ],
+          "painPoints": [
+            "Manual data entry across multiple systems"
+          ],
+          "emotions": "neutral",
+          "frictionScore": 2,
+          "automationOpportunity": "high",
+          "automationNotes": "System integration could eliminate duplicate entry, looking to implement Evaluagent to transcribe the call information into Xplan",
+          "regulatoryRequirements": [],
+          "roleInvolvement": {
+            "fp": {
+              "timeMinutes": 0,
+              "headcount": 1
+            },
+            "im": {
+              "timeMinutes": 0,
+              "headcount": 1
+            },
+            "ops": {
+              "timeMinutes": 0,
+              "headcount": 1
+            },
+            "new-business-exec": {
+              "timeMinutes": 12,
+              "headcount": 1
+            }
+          },
+          "actions": {
+            "ops": "",
+            "new-business-exec": "Updates all relevant systems with prospect information"
+          }
+        },
+        {
+          "id": "review-prospect-email",
+          "name": "Review Prospect Email",
+          "description": "FP and IM review prospect communications",
+          "timeMinutes": 20,
+          "owner": "fp",
+          "touchpoints": [
+            "Email"
+          ],
+          "painPoints": [],
+          "emotions": "curious",
+          "frictionScore": 2,
+          "automationOpportunity": "medium",
+          "automationNotes": "AI could summarise and flag key points",
+          "regulatoryRequirements": [],
+          "roleInvolvement": {
+            "fp": {
+              "timeMinutes": 10,
+              "headcount": 1
+            },
+            "im": {
+              "timeMinutes": 10,
+              "headcount": 1
+            },
+            "ops": {
+              "timeMinutes": 0,
+              "headcount": 1
+            }
+          },
+          "actions": {
+            "fp": "Reviews prospect email and requirements",
+            "im": "Reviews prospect email for investment needs"
+          }
+        },
+        {
+          "id": "prospect-call",
+          "name": "Prospect Call",
+          "description": "Detailed discovery call with prospect",
+          "timeMinutes": 90,
+          "owner": "fp",
+          "touchpoints": [
+            "Phone",
+            "Teams"
+          ],
+          "painPoints": [
+            "Scheduling can be difficult"
+          ],
+          "emotions": "engaged",
+          "frictionScore": 3,
+          "automationOpportunity": "low",
+          "automationNotes": "Human interaction essential",
+          "regulatoryRequirements": [
+            "Record keeping"
+          ],
+          "clientTouchpoint": true,
+          "roleInvolvement": {
+            "fp": {
+              "timeMinutes": 45,
+              "headcount": 1
+            },
+            "im": {
+              "timeMinutes": 45,
+              "headcount": 1
+            },
+            "ops": {
+              "timeMinutes": 0,
+              "headcount": 1
+            }
+          },
+          "actions": {
+            "fp": "Conducts discovery call, understands financial goals",
+            "im": "Discusses investment approach and philosophy"
+          }
+        },
+        {
+          "id": "update-xplan-triage",
+          "name": "Update Xplan Task (Triage)",
+          "description": "Update Xplan with triage outcome and next steps",
+          "timeMinutes": 20,
+          "owner": "fp",
+          "touchpoints": [
+            "Xplan"
+          ],
+          "painPoints": [],
+          "emotions": "neutral",
+          "frictionScore": 2,
+          "automationOpportunity": "high",
+          "automationNotes": "Could auto-populate from call notes",
+          "regulatoryRequirements": [],
+          "roleInvolvement": {
+            "fp": {
+              "timeMinutes": 10,
+              "headcount": 1
+            },
+            "im": {
+              "timeMinutes": 10,
+              "headcount": 1
+            },
+            "ops": {
+              "timeMinutes": 0,
+              "headcount": 1
+            }
+          },
+          "actions": {
+            "fp": "Updates Xplan with triage notes",
+            "im": "Adds investment-related notes"
+          }
+        }
+      ],
+      "dropOffCount": 290
+    },
+    {
+      "id": "fact-find-collateral",
+      "name": "Fact Find & Collateral Gathering",
+      "steps": [
+        {
+          "id": "tax-residency",
+          "name": "Tax Residency Self Cert & GDPR",
+          "description": "Complete tax residency self-certification and GDPR ",
+          "timeMinutes": 15,
+          "owner": "fp",
+          "touchpoints": [
+            "Forms"
+          ],
+          "painPoints": [
+            "Clients confused by tax questions",
+            "No clear details of downstream impact on other processes"
+          ],
+          "emotions": "uncertain",
+          "frictionScore": 2,
+          "automationOpportunity": "high",
+          "automationNotes": "Digital forms with guidance, validation and automated triggers for downstream processes",
+          "regulatoryRequirements": [
+            "CRS/FATCA requirements"
+          ],
+          "roleInvolvement": {
+            "fp": {
+              "timeMinutes": 0,
+              "headcount": 1
+            },
+            "im": {
+              "timeMinutes": 0,
+              "headcount": 1
+            },
+            "ops": {
+              "timeMinutes": 0,
+              "headcount": 1
+            },
+            "administrator": {
+              "timeMinutes": 15,
+              "headcount": 1
+            }
+          },
+          "actions": {
+            "fp": "",
+            "im": "",
+            "client": "Completes or provides the information required by this form",
+            "administrator": "1, Sends the form to the client via adobe sign to complete and sign.\n2, Once completed, saves form to the clients GNL."
+          },
+          "clientTouchpoint": true,
+          "isHardCheckpoint": true,
+          "checkpointType": "compliance",
+          "checkpointDetails": "Clients must have access to our Privacy Policy before we do ID&V / Screening\n"
+        },
+        {
+          "id": "idv",
+          "name": "ID&V",
+          "description": "Identity and verification checks",
+          "timeMinutes": 37,
+          "owner": "ops",
+          "touchpoints": [
+            "Refinitiv Platform"
+          ],
+          "painPoints": [
+            "Manual process to trigger ID&V",
+            "Manual Process to copy across from xplan to Refinitiv"
+          ],
+          "emotions": "neutral",
+          "frictionScore": 3,
+          "automationOpportunity": "high",
+          "automationNotes": "Straight through processing for the majority of cases,",
+          "regulatoryRequirements": [
+            "AML/KYC",
+            "MLR 2017"
+          ],
+          "isHardCheckpoint": true,
+          "checkpointType": "compliance",
+          "checkpointDetails": "Client identity must be verified to AML/KYC standards before any financial advice can be provided. Requires valid government ID and proof of address dated within 3 months.",
+          "roleInvolvement": {
+            "fp": {
+              "timeMinutes": 0,
+              "headcount": 1
+            },
+            "im": {
+              "timeMinutes": 0,
+              "headcount": 1
+            },
+            "ops": {
+              "timeMinutes": 29,
+              "headcount": 1
+            },
+            "administrator": {
+              "timeMinutes": 8,
+              "headcount": 1
+            }
+          },
+          "actions": {
+            "fp": "",
+            "im": "",
+            "ops": "Manage the ID&V case via the Refinitiv portal and feed back to front office",
+            "client": "Provides initial 5 bits of info\nProvides further documented ID or proof if required",
+            "administrator": "Initiates ID verification request\nCo-ordinates with client for further documentation"
+          },
+          "clientTouchpoint": true,
+          "additionalCosts": [
+            {
+              "id": "7nplk13i2",
+              "description": "ID & V",
+              "amount": 50,
+              "category": "third-party"
+            }
+          ]
+        },
+        {
+          "id": "screening",
+          "name": "Screening",
+          "description": "Screen for Politically Exposed Persons and sanctions",
+          "timeMinutes": 37,
+          "owner": "ops",
+          "touchpoints": [
+            "Screening Platform"
+          ],
+          "painPoints": [
+            "False positives require manual review"
+          ],
+          "emotions": "neutral",
+          "frictionScore": 3,
+          "automationOpportunity": "high",
+          "automationNotes": "Straight through processing for the majority of cases,",
+          "regulatoryRequirements": [
+            "AML regulations",
+            "Sanctions compliance"
+          ],
+          "isHardCheckpoint": true,
+          "checkpointType": "regulatory",
+          "checkpointDetails": "PEP and sanctions screening must be completed and cleared before proceeding. Any matches require escalation to Compliance for review and sign-off.",
+          "roleInvolvement": {
+            "fp": {
+              "timeMinutes": 0,
+              "headcount": 1
+            },
+            "im": {
+              "timeMinutes": 0,
+              "headcount": 1
+            },
+            "ops": {
+              "timeMinutes": 29,
+              "headcount": 1
+            },
+            "administrator": {
+              "timeMinutes": 8,
+              "headcount": 1
+            }
+          },
+          "actions": {
+            "fp": "Reviews screening results",
+            "im": "Assesses investment risk implications",
+            "ops": "Runs screening checks and documents results"
+          },
+          "additionalCosts": [
+            {
+              "id": "lidhspxb0",
+              "description": "Screening",
+              "amount": 50,
+              "category": "third-party"
+            }
+          ]
+        },
+        {
+          "id": "loas",
+          "name": "LOAs",
+          "description": "Letters of Authority.  Client must provide their authorisation for us to gather information from other suppliers.",
+          "timeMinutes": 488,
+          "owner": "ops",
+          "touchpoints": [
+            "Provider Portals",
+            "Post",
+            "Email",
+            "secure messaging"
+          ],
+          "painPoints": [
+            "Provider delays",
+            "Chasing responses",
+            "Different provider processes",
+            "3rd parties require wet signatures",
+            "Manual internal processes"
+          ],
+          "emotions": "waiting",
+          "frictionScore": 5,
+          "automationOpportunity": "medium",
+          "automationNotes": "Opportunity to digitise internal Evelyn manual processes.  However a lot of the delays come from 3rd parties which is not within our control to fix.",
+          "regulatoryRequirements": [
+            "Client consent",
+            "Data protection"
+          ],
+          "roleInvolvement": {
+            "fp": {
+              "timeMinutes": 0,
+              "headcount": 1
+            },
+            "im": {
+              "timeMinutes": 0,
+              "headcount": 1
+            },
+            "ops": {
+              "timeMinutes": 365,
+              "headcount": 1
+            },
+            "administrator": {
+              "timeMinutes": 88,
+              "headcount": 1
+            }
+          },
+          "actions": {
+            "fp": "",
+            "im": "Reviews existing investment information",
+            "ops": "1, Script team will follow up  to check that the 3rd party received the LOA and find out timescales for info return3, Once the info is returned by the provider, script team then create a \"script\" filling in the info provided and then they will contact the 3rd party to get any information that is missing.\n3, Once complete, the script team then re-key the information back into xplan",
+            "client": "Client will receive a LOA to physically sign that covers each provider that they have current holdings with.  They will need to print out the letter, sign it, scan it and then send it back to us.",
+            "administrator": "1. Prepares LOA letter to send to clients.  \n2. Once retuned, send LOA along with a covering letter to each provider to request asset info\n3, Create a task for the script team* to chase providers and create script for more info if required "
+          },
+          "isHardCheckpoint": true,
+          "clientTouchpoint": true,
+          "checkpointType": "regulatory"
+        },
+        {
+          "id": "fact-find-a",
+          "name": "Fact Find A",
+          "description": "Comprehensive fact find - Part A",
+          "timeMinutes": 390,
+          "owner": "fp",
+          "touchpoints": [
+            "In-person",
+            "Teams",
+            "Xplan"
+          ],
+          "painPoints": [
+            "Time intensive",
+            "Client preparation varies",
+            "Large volumes of data to collect",
+            "Manual rekeyng into xplan",
+            "Asking for information already gathered elsewhere"
+          ],
+          "emotions": [
+            "engaged",
+            "overwhelmed"
+          ],
+          "frictionScore": 5,
+          "automationOpportunity": "medium",
+          "automationNotes": "Digital fact find with pre-population.  Improved Source of Wealth questions.",
+          "regulatoryRequirements": [
+            "COBS suitability",
+            "Know Your Client"
+          ],
+          "clientTouchpoint": true,
+          "roleInvolvement": {
+            "fp": {
+              "timeMinutes": 330,
+              "headcount": 1
+            },
+            "im": {
+              "timeMinutes": 0,
+              "headcount": 1
+            },
+            "ops": {
+              "timeMinutes": 0,
+              "headcount": 1
+            },
+            "administrator": {
+              "timeMinutes": 60,
+              "headcount": 1
+            }
+          },
+          "actions": {
+            "fp": "Conducts comprehensive fact find meeting(s), takes notes or updates forms",
+            "im": "",
+            "client": "Provides information required",
+            "administrator": "Updates the Fact Find A form information into Xplan"
+          },
+          "isHardCheckpoint": true,
+          "checkpointType": "vetting",
+          "checkpointDetails": "FFA exists in the DNL and information provided reviewed"
+        },
+        {
+          "id": "craf",
+          "name": "CRAF",
+          "description": "Client Risk Assessment Form",
+          "timeMinutes": 103.5,
+          "owner": "fp",
+          "touchpoints": [
+            "xplan"
+          ],
+          "painPoints": [
+            "Complex risk scoring",
+            "Poor explanation of clients Source of Wealth",
+            "Highest cause of vetting failures",
+            "Large amounts of back and forth with the client",
+            "Large gap in time between gathering SOW and vetting CRAF"
+          ],
+          "emotions": [
+            "frustrated"
+          ],
+          "frictionScore": 4,
+          "automationOpportunity": "high",
+          "automationNotes": "Potential to remove the CRAF form completely, automate the risk calculation from Source of wealth on FFA and introduce a new CRA approval process",
+          "regulatoryRequirements": [
+            "FCA ATR requirements",
+            "Capacity for loss"
+          ],
+          "roleInvolvement": {
+            "fp": {
+              "timeMinutes": 90,
+              "headcount": 1
+            },
+            "im": {
+              "timeMinutes": 0,
+              "headcount": 1
+            },
+            "ops": {
+              "timeMinutes": 13.5,
+              "headcount": 1
+            }
+          },
+          "actions": {
+            "fp": "1. Completes the CRAF based on the information provided by the client.\n2. Uses Financial Crime guidance document to calculate the risk level\n3, Liaises with client to provide any additional info\n4. Approves final risk level",
+            "im": "",
+            "ops": "1. Vetting- reviews the CRAF to ensure that it meets the Financial Crime Guidance and cross checks the info provided with LOAs and My Wealth.  \n2. Works with Front office to get more information from the client when required."
+          },
+          "isHardCheckpoint": true,
+          "checkpointType": "regulatory",
+          "checkpointDetails": "Client Risk Assessment needs to be completed (including any enhanced due diligence and approvals) and signed off by Front Office prior to completing Fact Find B."
+        },
+        {
+          "id": "fact-find-b",
+          "name": "Fact Find B",
+          "description": "Comprehensive fact find - Part B (follow-up)",
+          "timeMinutes": 60,
+          "owner": "fp",
+          "touchpoints": [
+            "xplan"
+          ],
+          "painPoints": [],
+          "emotions": [
+            "neutral"
+          ],
+          "frictionScore": 3,
+          "automationOpportunity": "low",
+          "automationNotes": "Some digitisation potential.  Further discovery required.",
+          "regulatoryRequirements": [
+            "COBS suitability"
+          ],
+          "clientTouchpoint": false,
+          "roleInvolvement": {
+            "fp": {
+              "timeMinutes": 60,
+              "headcount": 1
+            },
+            "im": {
+              "timeMinutes": 0,
+              "headcount": 1
+            },
+            "ops": {
+              "timeMinutes": 0,
+              "headcount": 1
+            }
+          },
+          "actions": {
+            "fp": "Completes the Fact Find B on xplan.  This is essentially and review and overview of the information collected during Fact Find A including Oxford Risk, Client Vulnerabilities Objectives, Investment knowledge etc, ",
+            "im": "",
+            "paraplanner": "Uses Fact Find B as the summary that to feeds into Advice research and analysis"
+          },
+          "isHardCheckpoint": true,
+          "checkpointType": "vetting",
+          "checkpointDetails": "FFB needs to be in place before Stage 4 can commence"
+        }
+      ],
+      "dropOffCount": 833
+    },
+    {
+      "id": "advice",
+      "name": "Advice / Contract",
+      "steps": [
+        {
+          "id": "pricing-propositions",
+          "name": "Pricing & Propositions",
+          "description": "Research and analysis for pricing and investment propositions",
+          "timeMinutes": 894,
+          "owner": "paraplanner",
+          "touchpoints": [
+            "Research Tools",
+            "Planning Software"
+          ],
+          "painPoints": [
+            "Time intensive research",
+            "Complex analysis",
+            "Paraplanners often have to request updated valuations from 3rd parties due to time lapsed since LOA",
+            "Long wait times for clients due to Paraplanner backlogs"
+          ],
+          "emotions": "waiting",
+          "frictionScore": 5,
+          "automationOpportunity": "medium",
+          "automationNotes": "AI-assisted research and analysis tools",
+          "regulatoryRequirements": [
+            "Best execution",
+            "Suitability"
+          ],
+          "roleInvolvement": {
+            "fp": {
+              "timeMinutes": 30,
+              "headcount": 1
+            },
+            "im": {
+              "timeMinutes": 0,
+              "headcount": 1
+            },
+            "ops": {
+              "timeMinutes": 0,
+              "headcount": 1
+            },
+            "paraplanner": {
+              "timeMinutes": 864,
+              "headcount": 1
+            }
+          },
+          "actions": {
+            "fp": "Submits request to Paraplanner",
+            "im": "",
+            "paraplanner": "1, Checks that all correct information has been collected by FP\n2, Conducts research and develops propositions"
+          }
+        },
+        {
+          "id": "fee-illustration",
+          "name": "Fee Illustration",
+          "description": "Prepare fee illustrations and cost disclosures",
+          "timeMinutes": 84,
+          "owner": "paraplanner",
+          "touchpoints": [
+            "Illustration Software"
+          ],
+          "painPoints": [
+            "complex process"
+          ],
+          "emotions": [
+            "waiting"
+          ],
+          "frictionScore": 2,
+          "automationOpportunity": "high",
+          "automationNotes": "Template-based generation",
+          "regulatoryRequirements": [
+            "MiFID II cost disclosure",
+            "Consumer Duty"
+          ],
+          "roleInvolvement": {
+            "fp": {
+              "timeMinutes": 0,
+              "headcount": 1
+            },
+            "im": {
+              "timeMinutes": 0,
+              "headcount": 1
+            },
+            "ops": {
+              "timeMinutes": 0,
+              "headcount": 1
+            },
+            "paraplanner": {
+              "timeMinutes": 84,
+              "headcount": 1
+            }
+          },
+          "actions": {
+            "fp": "",
+            "im": "",
+            "paraplanner": "Prepares fee illustrations"
+          }
+        },
+        {
+          "id": "advice-report",
+          "name": "Advice Report",
+          "description": "Comprehensive suitability and advice report",
+          "timeMinutes": 750,
+          "owner": "paraplanner",
+          "touchpoints": [
+            "Report Software",
+            "Siesmic"
+          ],
+          "painPoints": [
+            "Report writing time intensive",
+            "Compliance review delays",
+            "Rekeying info"
+          ],
+          "emotions": "waiting",
+          "frictionScore": 5,
+          "automationOpportunity": "high",
+          "automationNotes": "AI-assisted report generation",
+          "regulatoryRequirements": [
+            "COBS 9.4 suitability reports",
+            "Clear, fair, not misleading"
+          ],
+          "roleInvolvement": {
+            "fp": {
+              "timeMinutes": 30,
+              "headcount": 1
+            },
+            "im": {
+              "timeMinutes": 0,
+              "headcount": 1
+            },
+            "ops": {
+              "timeMinutes": 0,
+              "headcount": 1
+            },
+            "paraplanner": {
+              "timeMinutes": 720,
+              "headcount": 1
+            }
+          },
+          "actions": {
+            "fp": "Reviews and sends report to Client",
+            "im": "Contributes investment rationale section",
+            "paraplanner": "Writes comprehensive suitability and advice report",
+            "client": "Reviews report"
+          }
+        },
+        {
+          "id": "account-opening-forms",
+          "name": "Application Forms",
+          "description": "Complete account opening applications",
+          "timeMinutes": 142,
+          "owner": "administrator",
+          "touchpoints": [
+            "AdobeSign",
+            "xplan",
+            "Form finder"
+          ],
+          "painPoints": [
+            "Adobesign only allows 1 single person to manage that document",
+            "Multiple versions of each form depending on service, account type and entity",
+            "Form finder can be complex to find the correct form",
+            "Manual rekeying from xplan into adobe sign to prepopulate for client",
+            "Duplication of information that already exists"
+          ],
+          "emotions": [
+            "neutral"
+          ],
+          "frictionScore": 5,
+          "automationOpportunity": "high",
+          "automationNotes": "Digital Dynamic Forms prepopulate all Application forms with API integration for straight-through processing to and from xplan",
+          "regulatoryRequirements": [
+            "Client consent",
+            "Accurate data"
+          ],
+          "roleInvolvement": {
+            "fp": {
+              "timeMinutes": 0,
+              "headcount": 1
+            },
+            "im": {
+              "timeMinutes": 0,
+              "headcount": 1
+            },
+            "ops": {
+              "timeMinutes": 102,
+              "headcount": 1
+            },
+            "administrator": {
+              "timeMinutes": 40,
+              "headcount": 1
+            }
+          },
+          "actions": {
+            "fp": "",
+            "im": "",
+            "ops": "TBC",
+            "administrator": "Manages completion of the forms with the client",
+            "client": "Receives Application Forms to review/complete and sign"
+          },
+          "clientTouchpoint": true,
+          "isHardCheckpoint": true,
+          "checkpointType": "vetting",
+          "checkpointDetails": "Cannot open the accounts if the Account opening form has not been completed or signed"
+        },
+        {
+          "id": "vetting",
+          "name": "Vetting",
+          "description": "Internal vetting and compliance review",
+          "timeMinutes": 139,
+          "owner": "fp",
+          "touchpoints": [
+            "xplan",
+            "Case Manager",
+            "Excel"
+          ],
+          "painPoints": [
+            "Manual vetting checks using excel",
+            "Each account to be opened has it's own set of checks",
+            "Checking Front Office work",
+            "vetting done at the very end of the process rather than inline",
+            "High failure rates (60%)"
+          ],
+          "emotions": "waiting",
+          "frictionScore": 5,
+          "automationOpportunity": "high",
+          "automationNotes": "Automated asynchronous vetting checks done digitally throughout the process rather than at the end,  ",
+          "regulatoryRequirements": [
+            "Internal compliance",
+            "Sign-off requirements"
+          ],
+          "roleInvolvement": {
+            "fp": {
+              "timeMinutes": 20,
+              "headcount": 1
+            },
+            "im": {
+              "timeMinutes": 0,
+              "headcount": 1
+            },
+            "ops": {
+              "timeMinutes": 40,
+              "headcount": 1
+            },
+            "administrator": {
+              "timeMinutes": 79,
+              "headcount": 1
+            }
+          },
+          "actions": {
+            "fp": "Liaise with Administrator and client when needed",
+            "im": "",
+            "ops": "Undertakes vetting checks",
+            "administrator": "Raise Account Opening Request\nLiaise with client and Vetting team to resolve issues, gather more info"
+          },
+          "isHardCheckpoint": true,
+          "checkpointType": "vetting",
+          "checkpointDetails": "Cannot commence account opening until the case has passed vetting"
+        },
+        {
+          "id": "account-opening",
+          "name": "Account Opening",
+          "description": "Finalise account opening with providers",
+          "timeMinutes": 115,
+          "owner": "ops",
+          "touchpoints": [
+            "xplan",
+            "SEI",
+            "Avaloq"
+          ],
+          "painPoints": [
+            "Manual rekeying of data from xplan into Avaloq or SEI to open accounts"
+          ],
+          "emotions": [
+            "neutral"
+          ],
+          "frictionScore": 2,
+          "automationOpportunity": "medium",
+          "automationNotes": "API submission to appropriate systems",
+          "regulatoryRequirements": [
+            "Provider requirements"
+          ],
+          "roleInvolvement": {
+            "fp": {
+              "timeMinutes": 0,
+              "headcount": 1
+            },
+            "im": {
+              "timeMinutes": 0,
+              "headcount": 1
+            },
+            "ops": {
+              "timeMinutes": 115.2,
+              "headcount": 1
+            }
+          },
+          "actions": {
+            "ops": "Key data from xplan to Avaloq or SEI to open the accounts"
+          }
+        }
+      ],
+      "dropOffCount": 508
+    },
+    {
+      "id": "transfers-in",
+      "name": "Transfers In",
+      "steps": [
+        {
+          "id": "initiation",
+          "name": "Initiation",
+          "description": "Initiate transfer requests",
+          "timeMinutes": 49,
+          "owner": "ops",
+          "touchpoints": [
+            "Provider Portals",
+            "Origo"
+          ],
+          "painPoints": [],
+          "emotions": "hopeful",
+          "frictionScore": 2,
+          "automationOpportunity": "high",
+          "automationNotes": "Origo/PPEX automation",
+          "regulatoryRequirements": [
+            "Transfer procedures"
+          ],
+          "roleInvolvement": {
+            "fp": {
+              "timeMinutes": 8.7,
+              "headcount": 1
+            },
+            "im": {
+              "timeMinutes": 8.7,
+              "headcount": 1
+            },
+            "ops": {
+              "timeMinutes": 40,
+              "headcount": 1
+            }
+          },
+          "actions": {
+            "fp": "Approves transfer initiation",
+            "im": "Confirms transfer requirements",
+            "ops": "Submits transfer requests"
+          }
+        },
+        {
+          "id": "new-transfer-validation",
+          "name": "New Transfer / Validation",
+          "description": "Validate incoming transfer details",
+          "timeMinutes": 25,
+          "owner": "ops",
+          "touchpoints": [
+            "Back Office Systems"
+          ],
+          "painPoints": [
+            "Data validation issues"
+          ],
+          "emotions": "neutral",
+          "frictionScore": 2,
+          "automationOpportunity": "high",
+          "automationNotes": "Automated validation rules",
+          "regulatoryRequirements": [],
+          "roleInvolvement": {
+            "fp": {
+              "timeMinutes": 0,
+              "headcount": 1
+            },
+            "im": {
+              "timeMinutes": 0,
+              "headcount": 1
+            },
+            "ops": {
+              "timeMinutes": 25,
+              "headcount": 1
+            }
+          },
+          "actions": {
+            "ops": "Validates transfer data and documentation"
+          }
+        },
+        {
+          "id": "chase-counterparty",
+          "name": "Chase Counterparty",
+          "description": "Follow up with ceding providers",
+          "timeMinutes": 66,
+          "owner": "ops",
+          "touchpoints": [
+            "Phone",
+            "Email",
+            "Provider Portals"
+          ],
+          "painPoints": [
+            "Provider delays",
+            "Difficult to reach providers"
+          ],
+          "emotions": "frustrated",
+          "frictionScore": 3,
+          "automationOpportunity": "medium",
+          "automationNotes": "Automated chase sequences",
+          "regulatoryRequirements": [],
+          "roleInvolvement": {
+            "fp": {
+              "timeMinutes": 0,
+              "headcount": 1
+            },
+            "im": {
+              "timeMinutes": 0,
+              "headcount": 1
+            },
+            "ops": {
+              "timeMinutes": 66,
+              "headcount": 1
+            }
+          },
+          "actions": {
+            "ops": "Chases ceding providers for transfer progress"
+          }
+        },
+        {
+          "id": "check-valuation",
+          "name": "Check Valuation",
+          "description": "Verify transfer valuations",
+          "timeMinutes": 74,
+          "owner": "ops",
+          "touchpoints": [
+            "Provider Portals",
+            "Back Office"
+          ],
+          "painPoints": [
+            "Valuation discrepancies"
+          ],
+          "emotions": "neutral",
+          "frictionScore": 2,
+          "automationOpportunity": "medium",
+          "automationNotes": "Automated valuation comparison",
+          "regulatoryRequirements": [
+            "Accurate record keeping"
+          ],
+          "roleInvolvement": {
+            "fp": {
+              "timeMinutes": 30,
+              "headcount": 1
+            },
+            "im": {
+              "timeMinutes": 30,
+              "headcount": 1
+            },
+            "ops": {
+              "timeMinutes": 44,
+              "headcount": 1
+            }
+          },
+          "actions": {
+            "fp": "Reviews valuation accuracy",
+            "im": "Confirms investment valuations",
+            "ops": "Checks and reconciles valuations"
+          }
+        },
+        {
+          "id": "trades-acceptance",
+          "name": "Trades / Acceptance",
+          "description": "Accept transfers and execute trades",
+          "timeMinutes": 125,
+          "owner": "ops",
+          "touchpoints": [
+            "Trading Platform",
+            "Back Office"
+          ],
+          "painPoints": [
+            "Market timing considerations"
+          ],
+          "emotions": "neutral",
+          "frictionScore": 3,
+          "automationOpportunity": "medium",
+          "automationNotes": "Automated trade execution rules",
+          "regulatoryRequirements": [
+            "Best execution",
+            "Trade reporting"
+          ],
+          "roleInvolvement": {
+            "fp": {
+              "timeMinutes": 5,
+              "headcount": 1
+            },
+            "im": {
+              "timeMinutes": 5,
+              "headcount": 1
+            },
+            "ops": {
+              "timeMinutes": 120,
+              "headcount": 1
+            }
+          },
+          "actions": {
+            "fp": "Approves trade execution",
+            "im": "Confirms investment allocation",
+            "ops": "Executes trades and processes transfers"
+          }
+        },
+        {
+          "id": "update-portfolio",
+          "name": "Update Portfolio",
+          "description": "Update portfolio systems with transferred assets",
+          "timeMinutes": 15,
+          "owner": "ops",
+          "touchpoints": [
+            "Portfolio Management System"
+          ],
+          "painPoints": [],
+          "emotions": "neutral",
+          "frictionScore": 1,
+          "automationOpportunity": "high",
+          "automationNotes": "Automated portfolio updates",
+          "regulatoryRequirements": [],
+          "roleInvolvement": {
+            "fp": {
+              "timeMinutes": 0,
+              "headcount": 1
+            },
+            "im": {
+              "timeMinutes": 0,
+              "headcount": 1
+            },
+            "ops": {
+              "timeMinutes": 15,
+              "headcount": 1
+            }
+          },
+          "actions": {
+            "ops": "Updates portfolio records"
+          }
+        },
+        {
+          "id": "check-transfer-status",
+          "name": "Check Transfer Status",
+          "description": "Monitor and verify transfer completion",
+          "timeMinutes": 5,
+          "owner": "ops",
+          "touchpoints": [
+            "Provider Portals"
+          ],
+          "painPoints": [],
+          "emotions": "neutral",
+          "frictionScore": 1,
+          "automationOpportunity": "high",
+          "automationNotes": "Automated status tracking",
+          "regulatoryRequirements": [],
+          "roleInvolvement": {
+            "fp": {
+              "timeMinutes": 0,
+              "headcount": 1
+            },
+            "im": {
+              "timeMinutes": 0,
+              "headcount": 1
+            },
+            "ops": {
+              "timeMinutes": 5,
+              "headcount": 1
+            }
+          },
+          "actions": {
+            "ops": "Monitors transfer status"
+          }
+        },
+        {
+          "id": "closure",
+          "name": "Closure",
+          "description": "Complete transfer and close out process",
+          "timeMinutes": 44,
+          "owner": "ops",
+          "touchpoints": [
+            "Back Office",
+            "CRM"
+          ],
+          "painPoints": [],
+          "emotions": "satisfied",
+          "frictionScore": 2,
+          "automationOpportunity": "medium",
+          "automationNotes": "Automated completion workflow",
+          "regulatoryRequirements": [
+            "Record keeping"
+          ],
+          "roleInvolvement": {
+            "fp": {
+              "timeMinutes": 0,
+              "headcount": 1
+            },
+            "im": {
+              "timeMinutes": 0,
+              "headcount": 1
+            },
+            "ops": {
+              "timeMinutes": 44,
+              "headcount": 1
+            }
+          },
+          "actions": {
+            "ops": "Closes transfer case, updates records"
+          }
+        }
+      ],
+      "dropOffCount": 23
+    }
+  ],
+  "funnel": {
+    "enabled": true,
+    "initialVolume": 1680,
+    "periodLabel": "Apr – Sep 5 Months Snapshot"
+  }
+}
