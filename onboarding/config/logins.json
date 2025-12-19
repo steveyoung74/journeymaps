@@ -1,0 +1,8 @@
+{
+  "settings": "5t3v3",
+  "users": [
+    { "username": "stevey", "password": "mypass1", "name": "Steve Young", "role": "admin" },
+    { "username": "stevep", "password": "stevepass", "name": "Steve Petrie", "role": "viewer" },
+    { "username": "kitty", "password": "kittypass", "name": "Kitty Alderton", "role": "viewer" }
+  ]
+}
