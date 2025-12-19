@@ -3,7 +3,86 @@
     "title": "steve test",
     "description": "testing"
   },
-  "stages": [],
+  "stages": [
+    {
+      "id": "a2fe1fd78",
+      "name": "stage 1",
+      "steps": [
+        {
+          "id": "1r0k9fvl8",
+          "name": "step 1",
+          "description": "",
+          "timeMinutes": 30,
+          "owner": "ops",
+          "touchpoints": [],
+          "painPoints": [],
+          "emotions": [],
+          "frictionScore": 3,
+          "automationOpportunity": "medium",
+          "automationNotes": "",
+          "regulatoryRequirements": [],
+          "actions": {}
+        },
+        {
+          "id": "ib0jgvzbr",
+          "name": "step 2",
+          "description": "",
+          "timeMinutes": 30,
+          "owner": "ops",
+          "touchpoints": [],
+          "painPoints": [],
+          "emotions": [],
+          "frictionScore": 3,
+          "automationOpportunity": "medium",
+          "automationNotes": "",
+          "regulatoryRequirements": [],
+          "actions": {}
+        }
+      ]
+    },
+    {
+      "id": "l1t7r8rpc",
+      "name": "stage 2",
+      "steps": [
+        {
+          "id": "l8z5lvk3q",
+          "name": "step 1",
+          "description": "",
+          "timeMinutes": 30,
+          "owner": "ops",
+          "touchpoints": [],
+          "painPoints": [],
+          "emotions": [],
+          "frictionScore": 3,
+          "automationOpportunity": "medium",
+          "automationNotes": "",
+          "regulatoryRequirements": [],
+          "actions": {}
+        }
+      ]
+    },
+    {
+      "id": "ckjzf67ax",
+      "name": "stage 3",
+      "steps": [
+        {
+          "id": "pgen9gwy8",
+          "name": "step 1",
+          "description": "",
+          "timeMinutes": 30,
+          "owner": "ops",
+          "touchpoints": [],
+          "painPoints": [],
+          "emotions": [],
+          "frictionScore": 3,
+          "automationOpportunity": "medium",
+          "automationNotes": "",
+          "regulatoryRequirements": [],
+          "actions": {}
+        }
+      ]
+    }
+  ],
   "personas": [
     {
       "id": "client",
@@ -15,13 +94,22 @@
       "id": "advisor",
       "label": "Advisor",
       "color": "#1E40AF",
-      "annualSalary": 60000
+      "annualSalary": 60000,
+      "burdenMultiplier": 1.35,
+      "workspaceHourlyCost": 6
     },
     {
       "id": "ops",
       "label": "Operations",
       "color": "#8B4513",
-      "annualSalary": 35000
+      "annualSalary": 35000,
+      "burdenMultiplier": 1.35,
+      "workspaceHourlyCost": 6
     }
-  ]
+  ],
+  "funnel": {
+    "enabled": true,
+    "initialVolume": 1000,
+    "periodLabel": "per quarter"
+  }
 }
