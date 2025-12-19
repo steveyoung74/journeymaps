@@ -1,3 +1,79 @@
 {
-  "maps": []
+  "maps": [
+    {
+      "id": "steve-test-1766177243004",
+      "title": "Steve test",
+      "description": "testing",
+      "owner": "steveyoung74@gmail.com",
+      "ownerName": "Steve Young",
+      "created": "2025-12-19T20:47:23.004Z",
+      "updated": "2025-12-19T20:47:23.004Z",
+      "sharedWith": [],
+      "config": {
+        "meta": {
+          "title": "Steve test",
+          "description": "testing"
+        },
+        "stages": [
+          {
+            "id": "lead",
+            "name": "Lead Receipt",
+            "steps": []
+          },
+          {
+            "id": "qualify",
+            "name": "Qualification",
+            "steps": []
+          },
+          {
+            "id": "factfind",
+            "name": "Fact Find",
+            "steps": []
+          },
+          {
+            "id": "advice",
+            "name": "Advice & Contract",
+            "steps": []
+          },
+          {
+            "id": "implement",
+            "name": "Implementation",
+            "steps": []
+          }
+        ],
+        "personas": [
+          {
+            "id": "client",
+            "label": "Client",
+            "color": "#2D5A4B",
+            "isExternal": true
+          },
+          {
+            "id": "planner",
+            "label": "Financial Planner",
+            "color": "#1E40AF",
+            "annualSalary": 65000
+          },
+          {
+            "id": "para",
+            "label": "Paraplanner",
+            "color": "#6B46C1",
+            "annualSalary": 45000
+          },
+          {
+            "id": "ops",
+            "label": "Operations",
+            "color": "#8B4513",
+            "annualSalary": 35000
+          },
+          {
+            "id": "admin",
+            "label": "Administrator",
+            "color": "#047857",
+            "annualSalary": 28000
+          }
+        ]
+      }
+    }
+  ]
 }
