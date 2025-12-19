@@ -1,0 +1,1220 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Journey Maps</title>
+  <script src="https://unpkg.com/react@18/umd/react.production.min.js"></script>
+  <script src="https://unpkg.com/react-dom@18/umd/react-dom.production.min.js"></script>
+  <script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+  <style>
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    body { font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif; background: #F5F5F5; }
+    input:focus, button:focus, textarea:focus { outline: none; }
+    .btn { 
+      padding: 10px 20px; 
+      border-radius: 8px; 
+      font-size: 14px; 
+      font-weight: 500; 
+      cursor: pointer; 
+      transition: all 0.15s;
+      border: none;
+    }
+    .btn:disabled { opacity: 0.5; cursor: not-allowed; }
+    .btn-primary { background: #2D5A4B; color: #FFF; }
+    .btn-primary:hover:not(:disabled) { background: #234839; }
+    .btn-secondary { background: #FFF; color: #333; border: 1px solid #DDD; }
+    .btn-secondary:hover:not(:disabled) { background: #F5F5F5; }
+    .btn-danger { background: #DC2626; color: #FFF; }
+    .btn-danger:hover:not(:disabled) { background: #B91C1C; }
+    .btn-ghost { background: transparent; color: #666; }
+    .btn-ghost:hover:not(:disabled) { background: #F0F0F0; }
+    .card {
+      background: #FFF;
+      border-radius: 12px;
+      box-shadow: 0 2px 8px rgba(0,0,0,0.06);
+      transition: all 0.2s;
+    }
+    .card:hover { box-shadow: 0 4px 16px rgba(0,0,0,0.1); }
+    .input {
+      width: 100%;
+      padding: 12px 16px;
+      border: 1px solid #DDD;
+      border-radius: 8px;
+      font-size: 14px;
+      font-family: inherit;
+      transition: border-color 0.15s;
+    }
+    .input:focus { border-color: #2D5A4B; }
+    .input-error { border-color: #DC2626; }
+    .label {
+      display: block;
+      font-size: 13px;
+      font-weight: 500;
+      color: #333;
+      margin-bottom: 6px;
+    }
+    .text-error { color: #DC2626; font-size: 13px; }
+    .text-muted { color: #666; }
+    .text-small { font-size: 13px; }
+    .badge {
+      display: inline-flex;
+      align-items: center;
+      padding: 4px 10px;
+      border-radius: 20px;
+      font-size: 12px;
+      font-weight: 500;
+    }
+    .badge-owner { background: #DBEAFE; color: #1E40AF; }
+    .badge-edit { background: #D1FAE5; color: #065F46; }
+    .badge-view { background: #F3F4F6; color: #4B5563; }
+    .badge-setup { background: #FEF3C7; color: #92400E; }
+    
+    .modal-overlay {
+      position: fixed;
+      inset: 0;
+      background: rgba(0,0,0,0.5);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      z-index: 1000;
+      padding: 20px;
+    }
+    .modal {
+      background: #FFF;
+      border-radius: 16px;
+      max-width: 480px;
+      width: 100%;
+      max-height: 90vh;
+      overflow: auto;
+    }
+    .modal-header { padding: 24px 24px 0; }
+    .modal-body { padding: 24px; }
+    .modal-footer {
+      padding: 0 24px 24px;
+      display: flex;
+      gap: 12px;
+      justify-content: flex-end;
+    }
+
+    @keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
+    @keyframes slideUp { from { opacity: 0; transform: translateY(20px); } to { opacity: 1; transform: translateY(0); } }
+    .animate-fade { animation: fadeIn 0.2s ease-out; }
+    .animate-slide { animation: slideUp 0.3s ease-out; }
+
+    .spinner {
+      width: 24px;
+      height: 24px;
+      border: 3px solid #E5E5E5;
+      border-top-color: #2D5A4B;
+      border-radius: 50%;
+      animation: spin 0.8s linear infinite;
+    }
+    @keyframes spin { to { transform: rotate(360deg); } }
+  </style>
+</head>
+<body>
+  <div id="root"></div>
+  <script type="text/babel">
+    const { useState, useEffect, useCallback } = React;
+    
+    // ============================================
+    // CONFIGURATION
+    // ============================================
+    const APP_VERSION = '1.1.0';
+    const GITHUB_CONFIG = {
+      owner: 'steveyoung74',
+      repo: 'journeymaps',
+      branch: 'main',
+      mapsPath: 'maps',
+      indexFile: 'maps/index.json'
+    };
+    
+    // Helper to get raw GitHub URL
+    const getRawUrl = (path) => 
+      `https://raw.githubusercontent.com/${GITHUB_CONFIG.owner}/${GITHUB_CONFIG.repo}/${GITHUB_CONFIG.branch}/${path}`;
+    
+    // Helper to get API URL
+    const getApiUrl = (path) => 
+      `https://api.github.com/repos/${GITHUB_CONFIG.owner}/${GITHUB_CONFIG.repo}/contents/${path}`;
+
+    // ============================================
+    // GITHUB API HELPERS
+    // ============================================
+    async function fetchFromGitHub(path) {
+      const url = getRawUrl(path) + '?t=' + Date.now(); // Cache bust
+      const response = await fetch(url);
+      if (!response.ok) {
+        if (response.status === 404) return null;
+        throw new Error(`GitHub fetch failed: ${response.status}`);
+      }
+      return response.json();
+    }
+    
+    async function saveToGitHub(path, content, token, message = 'Update from Journey Maps') {
+      // First get the current file SHA (if it exists)
+      const apiUrl = getApiUrl(path);
+      let sha = null;
+      
+      try {
+        const existingResponse = await fetch(apiUrl, {
+          headers: { 'Authorization': `token ${token}` }
+        });
+        if (existingResponse.ok) {
+          const existing = await existingResponse.json();
+          sha = existing.sha;
+        }
+      } catch (e) {
+        // File doesn't exist yet, that's ok
+      }
+      
+      // Save the file
+      const body = {
+        message,
+        content: btoa(unescape(encodeURIComponent(JSON.stringify(content, null, 2)))),
+        branch: GITHUB_CONFIG.branch
+      };
+      if (sha) body.sha = sha;
+      
+      const response = await fetch(apiUrl, {
+        method: 'PUT',
+        headers: {
+          'Authorization': `token ${token}`,
+          'Content-Type': 'application/json'
+        },
+        body: JSON.stringify(body)
+      });
+      
+      if (!response.ok) {
+        const error = await response.json();
+        throw new Error(error.message || 'Failed to save to GitHub');
+      }
+      
+      return response.json();
+    }
+    
+    async function deleteFromGitHub(path, token, message = 'Delete from Journey Maps') {
+      const apiUrl = getApiUrl(path);
+      
+      // Get the file SHA
+      const existingResponse = await fetch(apiUrl, {
+        headers: { 'Authorization': `token ${token}` }
+      });
+      if (!existingResponse.ok) throw new Error('File not found');
+      const existing = await existingResponse.json();
+      
+      const response = await fetch(apiUrl, {
+        method: 'DELETE',
+        headers: {
+          'Authorization': `token ${token}`,
+          'Content-Type': 'application/json'
+        },
+        body: JSON.stringify({
+          message,
+          sha: existing.sha,
+          branch: GITHUB_CONFIG.branch
+        })
+      });
+      
+      if (!response.ok) {
+        const error = await response.json();
+        throw new Error(error.message || 'Failed to delete from GitHub');
+      }
+      
+      return true;
+    }
+
+    // ============================================
+    // USER CONTEXT (Simple localStorage-based)
+    // ============================================
+    function useUser() {
+      const [user, setUser] = useState(() => {
+        const saved = localStorage.getItem('journeymap-user');
+        return saved ? JSON.parse(saved) : null;
+      });
+      
+      const [token, setToken] = useState(() => {
+        return localStorage.getItem('journeymap-github-token') || '';
+      });
+      
+      const saveUser = (userData) => {
+        setUser(userData);
+        localStorage.setItem('journeymap-user', JSON.stringify(userData));
+      };
+      
+      const saveToken = (newToken) => {
+        setToken(newToken);
+        localStorage.setItem('journeymap-github-token', newToken);
+      };
+      
+      const logout = () => {
+        setUser(null);
+        setToken('');
+        localStorage.removeItem('journeymap-user');
+        localStorage.removeItem('journeymap-github-token');
+      };
+      
+      return { user, token, saveUser, saveToken, logout, hasToken: !!token };
+    }
+
+    // ============================================
+    // SETUP SCREEN
+    // ============================================
+    function SetupScreen({ onComplete }) {
+      const [name, setName] = useState('');
+      const [email, setEmail] = useState('');
+      const [token, setToken] = useState('');
+      const [error, setError] = useState('');
+
+      const handleSubmit = (e) => {
+        e.preventDefault();
+        if (!name.trim() || !email.trim()) {
+          setError('Please enter your name and email');
+          return;
+        }
+        if (!email.includes('@')) {
+          setError('Please enter a valid email');
+          return;
+        }
+        onComplete({ name: name.trim(), email: email.trim().toLowerCase() }, token.trim());
+      };
+
+      return (
+        <div style={{
+          minHeight: '100vh',
+          display: 'flex',
+          alignItems: 'center',
+          justifyContent: 'center',
+          background: 'linear-gradient(135deg, #1A1A1A 0%, #2D3748 100%)',
+          padding: '20px'
+        }}>
+          <div className="card animate-slide" style={{ maxWidth: '480px', width: '100%', padding: '40px' }}>
+            <div style={{ textAlign: 'center', marginBottom: '32px' }}>
+              <div style={{ fontSize: '32px', marginBottom: '8px' }}>🗺️</div>
+              <h1 style={{ fontSize: '24px', fontWeight: 600, color: '#1A1A1A', marginBottom: '4px' }}>
+                Journey Maps
+              </h1>
+              <p className="text-muted text-small">Enter your details to get started</p>
+            </div>
+
+            {error && (
+              <div style={{ padding: '12px', background: '#FEE2E2', borderRadius: '8px', marginBottom: '20px', color: '#DC2626', fontSize: '13px' }}>
+                {error}
+              </div>
+            )}
+
+            <form onSubmit={handleSubmit}>
+              <div style={{ marginBottom: '16px' }}>
+                <label className="label">Your Name *</label>
+                <input
+                  type="text"
+                  className="input"
+                  value={name}
+                  onChange={(e) => setName(e.target.value)}
+                  placeholder="Steve Young"
+                  autoFocus
+                />
+              </div>
+
+              <div style={{ marginBottom: '16px' }}>
+                <label className="label">Email *</label>
+                <input
+                  type="email"
+                  className="input"
+                  value={email}
+                  onChange={(e) => setEmail(e.target.value)}
+                  placeholder="steve@company.com"
+                />
+                <p className="text-muted text-small" style={{ marginTop: '4px' }}>
+                  Used to identify your maps and sharing permissions
+                </p>
+              </div>
+
+              <div style={{ marginBottom: '24px' }}>
+                <label className="label">GitHub Token (optional)</label>
+                <input
+                  type="password"
+                  className="input"
+                  value={token}
+                  onChange={(e) => setToken(e.target.value)}
+                  placeholder="ghp_xxxxxxxxxxxx"
+                />
+                <p className="text-muted text-small" style={{ marginTop: '4px' }}>
+                  Required to create/edit maps. Without it, you can only view.
+                </p>
+              </div>
+
+              <button type="submit" className="btn btn-primary" style={{ width: '100%', padding: '12px' }}>
+                Get Started
+              </button>
+            </form>
+          </div>
+        </div>
+      );
+    }
+
+    // ============================================
+    // DASHBOARD
+    // ============================================
+    function Dashboard({ user, token, onOpenMap, onLogout, onUpdateToken }) {
+      const [maps, setMaps] = useState([]);
+      const [loading, setLoading] = useState(true);
+      const [error, setError] = useState('');
+      const [showCreateModal, setShowCreateModal] = useState(false);
+      const [showDeleteModal, setShowDeleteModal] = useState(null);
+      const [showShareModal, setShowShareModal] = useState(null);
+      const [showTokenModal, setShowTokenModal] = useState(false);
+      const [activeTab, setActiveTab] = useState('my-maps');
+
+      useEffect(() => {
+        fetchMaps();
+      }, []);
+
+      const fetchMaps = async () => {
+        setLoading(true);
+        setError('');
+        try {
+          const index = await fetchFromGitHub(GITHUB_CONFIG.indexFile);
+          if (index && index.maps) {
+            setMaps(index.maps);
+          } else {
+            setMaps([]);
+          }
+        } catch (err) {
+          console.error('Failed to fetch maps:', err);
+          setError('Failed to load maps. Please refresh.');
+        }
+        setLoading(false);
+      };
+
+      const myMaps = maps.filter(m => m.owner === user.email);
+      const sharedMaps = maps.filter(m => 
+        m.owner !== user.email && 
+        m.sharedWith?.some(s => s.email === user.email)
+      );
+
+      const handleCreate = async (newMap) => {
+        // Add to index
+        const updatedMaps = [...maps, newMap];
+        try {
+          await saveToGitHub(
+            GITHUB_CONFIG.indexFile,
+            { maps: updatedMaps },
+            token,
+            `Add map: ${newMap.title}`
+          );
+          
+          // Create the map file
+          await saveToGitHub(
+            `${GITHUB_CONFIG.mapsPath}/${newMap.id}.json`,
+            newMap.config,
+            token,
+            `Create map: ${newMap.title}`
+          );
+          
+          setMaps(updatedMaps);
+          setShowCreateModal(false);
+          onOpenMap(newMap);
+        } catch (err) {
+          throw err;
+        }
+      };
+
+      const handleDelete = async (map) => {
+        try {
+          // Remove from index
+          const updatedMaps = maps.filter(m => m.id !== map.id);
+          await saveToGitHub(
+            GITHUB_CONFIG.indexFile,
+            { maps: updatedMaps },
+            token,
+            `Remove map: ${map.title}`
+          );
+          
+          // Delete the map file
+          await deleteFromGitHub(
+            `${GITHUB_CONFIG.mapsPath}/${map.id}.json`,
+            token,
+            `Delete map: ${map.title}`
+          );
+          
+          setMaps(updatedMaps);
+          setShowDeleteModal(null);
+        } catch (err) {
+          console.error('Delete failed:', err);
+          alert('Failed to delete: ' + err.message);
+        }
+      };
+
+      const handleUpdateShare = async (map, sharedWith) => {
+        const updatedMaps = maps.map(m => 
+          m.id === map.id ? { ...m, sharedWith, updated: new Date().toISOString() } : m
+        );
+        
+        try {
+          await saveToGitHub(
+            GITHUB_CONFIG.indexFile,
+            { maps: updatedMaps },
+            token,
+            `Update sharing for: ${map.title}`
+          );
+          setMaps(updatedMaps);
+        } catch (err) {
+          throw err;
+        }
+      };
+
+      const formatDate = (dateStr) => {
+        if (!dateStr) return 'Unknown';
+        const date = new Date(dateStr);
+        const now = new Date();
+        const diffMs = now - date;
+        const diffMins = Math.floor(diffMs / 60000);
+        const diffHours = Math.floor(diffMs / 3600000);
+        const diffDays = Math.floor(diffMs / 86400000);
+
+        if (diffMins < 1) return 'Just now';
+        if (diffMins < 60) return `${diffMins}m ago`;
+        if (diffHours < 24) return `${diffHours}h ago`;
+        if (diffDays < 7) return `${diffDays}d ago`;
+        return date.toLocaleDateString('en-GB', { day: 'numeric', month: 'short' });
+      };
+
+      return (
+        <div style={{ minHeight: '100vh', background: '#F5F5F5' }}>
+          {/* Header */}
+          <header style={{ 
+            background: '#1A1A1A', 
+            color: '#FFF', 
+            padding: '16px 40px',
+            display: 'flex',
+            justifyContent: 'space-between',
+            alignItems: 'center'
+          }}>
+            <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
+              <span style={{ fontSize: '24px' }}>🗺️</span>
+              <h1 style={{ fontSize: '18px', fontWeight: 600 }}>
+                Journey Maps <span style={{ fontSize: '12px', opacity: 0.6 }}>v{APP_VERSION}</span>
+              </h1>
+            </div>
+            <div style={{ display: 'flex', alignItems: 'center', gap: '16px' }}>
+              <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+                <div style={{ 
+                  width: '32px', 
+                  height: '32px', 
+                  borderRadius: '50%', 
+                  background: '#2D5A4B',
+                  display: 'flex',
+                  alignItems: 'center',
+                  justifyContent: 'center',
+                  fontSize: '14px',
+                  fontWeight: 600
+                }}>
+                  {user.name?.[0]?.toUpperCase() || 'U'}
+                </div>
+                <div>
+                  <div style={{ fontSize: '14px', fontWeight: 500 }}>{user.name}</div>
+                  {!token && <span className="badge badge-setup" style={{ fontSize: '10px', padding: '2px 6px' }}>View Only</span>}
+                </div>
+              </div>
+              <button onClick={() => setShowTokenModal(true)} className="btn btn-ghost" style={{ color: '#999', padding: '8px' }}>
+                ⚙️
+              </button>
+              <button onClick={onLogout} className="btn btn-ghost" style={{ color: '#999' }}>
+                Sign Out
+              </button>
+            </div>
+          </header>
+
+          {/* Main Content */}
+          <main style={{ maxWidth: '1200px', margin: '0 auto', padding: '40px' }}>
+            {/* Actions Bar */}
+            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '32px' }}>
+              <div style={{ display: 'flex', gap: '8px' }}>
+                <button 
+                  className={`btn ${activeTab === 'my-maps' ? 'btn-primary' : 'btn-secondary'}`}
+                  onClick={() => setActiveTab('my-maps')}
+                >
+                  My Maps ({myMaps.length})
+                </button>
+                <button 
+                  className={`btn ${activeTab === 'shared' ? 'btn-primary' : 'btn-secondary'}`}
+                  onClick={() => setActiveTab('shared')}
+                >
+                  Shared with Me ({sharedMaps.length})
+                </button>
+              </div>
+              <button 
+                className="btn btn-primary" 
+                onClick={() => token ? setShowCreateModal(true) : setShowTokenModal(true)}
+              >
+                + New Journey Map
+              </button>
+            </div>
+
+            {/* Error State */}
+            {error && (
+              <div style={{ padding: '16px', background: '#FEE2E2', borderRadius: '8px', marginBottom: '24px', color: '#DC2626' }}>
+                {error}
+              </div>
+            )}
+
+            {/* Loading State */}
+            {loading ? (
+              <div style={{ display: 'flex', justifyContent: 'center', padding: '60px' }}>
+                <div className="spinner"></div>
+              </div>
+            ) : (
+              <>
+                {/* My Maps Tab */}
+                {activeTab === 'my-maps' && (
+                  <div>
+                    {myMaps.length === 0 ? (
+                      <div className="card" style={{ padding: '60px', textAlign: 'center' }}>
+                        <div style={{ fontSize: '48px', marginBottom: '16px' }}>🗺️</div>
+                        <h3 style={{ fontSize: '18px', fontWeight: 600, marginBottom: '8px' }}>No journey maps yet</h3>
+                        <p className="text-muted" style={{ marginBottom: '24px' }}>
+                          {token ? 'Create your first journey map to get started' : 'Add a GitHub token to create maps'}
+                        </p>
+                        <button 
+                          className="btn btn-primary" 
+                          onClick={() => token ? setShowCreateModal(true) : setShowTokenModal(true)}
+                        >
+                          {token ? '+ Create Journey Map' : '⚙️ Add GitHub Token'}
+                        </button>
+                      </div>
+                    ) : (
+                      <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(320px, 1fr))', gap: '20px' }}>
+                        {myMaps.map(map => (
+                          <MapCard 
+                            key={map.id} 
+                            map={map} 
+                            isOwner={true}
+                            canEdit={!!token}
+                            formatDate={formatDate}
+                            onOpen={() => onOpenMap(map)}
+                            onShare={() => token ? setShowShareModal(map) : setShowTokenModal(true)}
+                            onDelete={() => token ? setShowDeleteModal(map) : setShowTokenModal(true)}
+                          />
+                        ))}
+                      </div>
+                    )}
+                  </div>
+                )}
+
+                {/* Shared with Me Tab */}
+                {activeTab === 'shared' && (
+                  <div>
+                    {sharedMaps.length === 0 ? (
+                      <div className="card" style={{ padding: '60px', textAlign: 'center' }}>
+                        <div style={{ fontSize: '48px', marginBottom: '16px' }}>📬</div>
+                        <h3 style={{ fontSize: '18px', fontWeight: 600, marginBottom: '8px' }}>No shared maps</h3>
+                        <p className="text-muted">Maps that others share with you will appear here</p>
+                      </div>
+                    ) : (
+                      <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(320px, 1fr))', gap: '20px' }}>
+                        {sharedMaps.map(map => {
+                          const share = map.sharedWith?.find(s => s.email === user.email);
+                          return (
+                            <MapCard 
+                              key={map.id} 
+                              map={map} 
+                              isOwner={false}
+                              canEdit={share?.permission === 'edit' && !!token}
+                              permission={share?.permission}
+                              formatDate={formatDate}
+                              onOpen={() => onOpenMap(map)}
+                            />
+                          );
+                        })}
+                      </div>
+                    )}
+                  </div>
+                )}
+              </>
+            )}
+          </main>
+
+          {/* Modals */}
+          {showCreateModal && (
+            <CreateMapModal 
+              user={user}
+              onClose={() => setShowCreateModal(false)}
+              onCreate={handleCreate}
+            />
+          )}
+
+          {showDeleteModal && (
+            <DeleteMapModal 
+              map={showDeleteModal}
+              onClose={() => setShowDeleteModal(null)}
+              onDelete={() => handleDelete(showDeleteModal)}
+            />
+          )}
+
+          {showShareModal && (
+            <ShareMapModal 
+              map={showShareModal}
+              onClose={() => setShowShareModal(null)}
+              onUpdate={(sharedWith) => handleUpdateShare(showShareModal, sharedWith)}
+            />
+          )}
+
+          {showTokenModal && (
+            <TokenModal 
+              currentToken={token}
+              onClose={() => setShowTokenModal(false)}
+              onSave={(newToken) => {
+                onUpdateToken(newToken);
+                setShowTokenModal(false);
+              }}
+            />
+          )}
+        </div>
+      );
+    }
+
+    // ============================================
+    // MAP CARD
+    // ============================================
+    function MapCard({ map, isOwner, canEdit, permission, formatDate, onOpen, onShare, onDelete }) {
+      const stageCount = map.config?.stages?.length || 0;
+      
+      return (
+        <div className="card" style={{ overflow: 'hidden' }}>
+          <div style={{ 
+            height: '8px', 
+            background: `linear-gradient(90deg, hsl(180, 35%, 45%), hsl(${45 * stageCount + 180}, 35%, 45%))`
+          }} />
+          
+          <div style={{ padding: '20px' }}>
+            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: '12px' }}>
+              <h3 style={{ fontSize: '16px', fontWeight: 600, color: '#1A1A1A', flex: 1 }}>
+                {map.title || 'Untitled'}
+              </h3>
+              {isOwner ? (
+                <span className="badge badge-owner">Owner</span>
+              ) : (
+                <span className={`badge ${permission === 'edit' ? 'badge-edit' : 'badge-view'}`}>
+                  {permission === 'edit' ? 'Can Edit' : 'View Only'}
+                </span>
+              )}
+            </div>
+
+            {map.description && (
+              <p className="text-muted text-small" style={{ marginBottom: '12px', lineHeight: 1.5 }}>
+                {map.description}
+              </p>
+            )}
+
+            <div style={{ display: 'flex', gap: '16px', marginBottom: '16px' }}>
+              <span className="text-muted text-small">📊 {stageCount} stages</span>
+            </div>
+
+            {!isOwner && map.ownerName && (
+              <div className="text-muted text-small" style={{ marginBottom: '16px' }}>
+                Shared by {map.ownerName}
+              </div>
+            )}
+
+            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', paddingTop: '16px', borderTop: '1px solid #EEE' }}>
+              <span className="text-muted text-small">Updated {formatDate(map.updated)}</span>
+              <div style={{ display: 'flex', gap: '8px' }}>
+                {isOwner && onShare && (
+                  <button className="btn btn-ghost" style={{ padding: '6px 12px', fontSize: '13px' }} onClick={onShare}>
+                    Share
+                  </button>
+                )}
+                {isOwner && onDelete && (
+                  <button className="btn btn-ghost" style={{ padding: '6px 12px', fontSize: '13px', color: '#DC2626' }} onClick={onDelete}>
+                    Delete
+                  </button>
+                )}
+                <button className="btn btn-primary" style={{ padding: '6px 16px', fontSize: '13px' }} onClick={onOpen}>
+                  Open
+                </button>
+              </div>
+            </div>
+          </div>
+        </div>
+      );
+    }
+
+    // ============================================
+    // CREATE MAP MODAL
+    // ============================================
+    function CreateMapModal({ user, onClose, onCreate }) {
+      const [title, setTitle] = useState('');
+      const [description, setDescription] = useState('');
+      const [template, setTemplate] = useState('blank');
+      const [loading, setLoading] = useState(false);
+      const [error, setError] = useState('');
+
+      const templates = {
+        blank: { 
+          name: 'Blank', 
+          icon: '📄',
+          config: {
+            meta: { title: '', description: '' },
+            stages: [],
+            personas: [
+              { id: 'client', label: 'Client', color: '#2D5A4B', isExternal: true },
+              { id: 'advisor', label: 'Advisor', color: '#1E40AF', annualSalary: 60000 },
+              { id: 'ops', label: 'Operations', color: '#8B4513', annualSalary: 35000 }
+            ]
+          }
+        },
+        onboarding: { 
+          name: 'Client Onboarding', 
+          icon: '🤝',
+          config: {
+            meta: { title: 'Client Onboarding Journey', description: 'Standard client onboarding process' },
+            stages: [
+              { id: 'lead', name: 'Lead Receipt', steps: [] },
+              { id: 'qualify', name: 'Qualification', steps: [] },
+              { id: 'factfind', name: 'Fact Find', steps: [] },
+              { id: 'advice', name: 'Advice & Contract', steps: [] },
+              { id: 'implement', name: 'Implementation', steps: [] }
+            ],
+            personas: [
+              { id: 'client', label: 'Client', color: '#2D5A4B', isExternal: true },
+              { id: 'planner', label: 'Financial Planner', color: '#1E40AF', annualSalary: 65000 },
+              { id: 'para', label: 'Paraplanner', color: '#6B46C1', annualSalary: 45000 },
+              { id: 'ops', label: 'Operations', color: '#8B4513', annualSalary: 35000 },
+              { id: 'admin', label: 'Administrator', color: '#047857', annualSalary: 28000 }
+            ]
+          }
+        },
+        service: { 
+          name: 'Service Delivery', 
+          icon: '⚙️',
+          config: {
+            meta: { title: 'Service Delivery Journey', description: 'End-to-end service delivery process' },
+            stages: [
+              { id: 'request', name: 'Request', steps: [] },
+              { id: 'assess', name: 'Assessment', steps: [] },
+              { id: 'deliver', name: 'Delivery', steps: [] },
+              { id: 'review', name: 'Review', steps: [] }
+            ],
+            personas: [
+              { id: 'customer', label: 'Customer', color: '#2D5A4B', isExternal: true },
+              { id: 'manager', label: 'Manager', color: '#1E40AF', annualSalary: 55000 },
+              { id: 'team', label: 'Team Member', color: '#8B4513', annualSalary: 35000 }
+            ]
+          }
+        }
+      };
+
+      const handleCreate = async () => {
+        if (!title.trim()) {
+          setError('Please enter a title');
+          return;
+        }
+
+        setLoading(true);
+        setError('');
+
+        const templateConfig = templates[template].config;
+        const id = title.trim().toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/-+/g, '-').replace(/^-|-$/g, '') + '-' + Date.now();
+        
+        const newMap = {
+          id,
+          title: title.trim(),
+          description: description.trim(),
+          owner: user.email,
+          ownerName: user.name,
+          created: new Date().toISOString(),
+          updated: new Date().toISOString(),
+          sharedWith: [],
+          config: {
+            ...templateConfig,
+            meta: {
+              ...templateConfig.meta,
+              title: title.trim(),
+              description: description.trim()
+            }
+          }
+        };
+
+        try {
+          await onCreate(newMap);
+        } catch (err) {
+          setError(err.message || 'Failed to create map');
+          setLoading(false);
+        }
+      };
+
+      return (
+        <div className="modal-overlay animate-fade" onClick={onClose}>
+          <div className="modal animate-slide" onClick={e => e.stopPropagation()}>
+            <div className="modal-header">
+              <h2 style={{ fontSize: '20px', fontWeight: 600 }}>Create New Journey Map</h2>
+            </div>
+            
+            <div className="modal-body">
+              {error && (
+                <div style={{ padding: '12px', background: '#FEE2E2', borderRadius: '8px', marginBottom: '20px', color: '#DC2626', fontSize: '13px' }}>
+                  {error}
+                </div>
+              )}
+
+              <div style={{ marginBottom: '20px' }}>
+                <label className="label">Title *</label>
+                <input
+                  type="text"
+                  className="input"
+                  value={title}
+                  onChange={(e) => setTitle(e.target.value)}
+                  placeholder="e.g., Client Onboarding Journey"
+                  autoFocus
+                />
+              </div>
+
+              <div style={{ marginBottom: '20px' }}>
+                <label className="label">Description</label>
+                <textarea
+                  className="input"
+                  value={description}
+                  onChange={(e) => setDescription(e.target.value)}
+                  placeholder="Brief description..."
+                  rows={3}
+                  style={{ resize: 'vertical' }}
+                />
+              </div>
+
+              <div>
+                <label className="label">Start from template</label>
+                <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: '12px' }}>
+                  {Object.entries(templates).map(([key, tmpl]) => (
+                    <button
+                      key={key}
+                      onClick={() => setTemplate(key)}
+                      style={{
+                        padding: '16px',
+                        border: template === key ? '2px solid #2D5A4B' : '1px solid #DDD',
+                        borderRadius: '8px',
+                        background: template === key ? '#F0FDF4' : '#FFF',
+                        cursor: 'pointer',
+                        textAlign: 'center'
+                      }}
+                    >
+                      <div style={{ fontSize: '24px', marginBottom: '8px' }}>{tmpl.icon}</div>
+                      <div style={{ fontSize: '13px', fontWeight: 500 }}>{tmpl.name}</div>
+                    </button>
+                  ))}
+                </div>
+              </div>
+            </div>
+
+            <div className="modal-footer">
+              <button className="btn btn-secondary" onClick={onClose}>Cancel</button>
+              <button className="btn btn-primary" onClick={handleCreate} disabled={loading}>
+                {loading ? 'Creating...' : 'Create Map'}
+              </button>
+            </div>
+          </div>
+        </div>
+      );
+    }
+
+    // ============================================
+    // DELETE MAP MODAL
+    // ============================================
+    function DeleteMapModal({ map, onClose, onDelete }) {
+      const [confirmText, setConfirmText] = useState('');
+      const [loading, setLoading] = useState(false);
+      const expectedText = map.title || 'Untitled';
+
+      const handleDelete = async () => {
+        if (confirmText !== expectedText) return;
+        setLoading(true);
+        await onDelete();
+        setLoading(false);
+      };
+
+      return (
+        <div className="modal-overlay animate-fade" onClick={onClose}>
+          <div className="modal animate-slide" onClick={e => e.stopPropagation()}>
+            <div className="modal-header">
+              <h2 style={{ fontSize: '20px', fontWeight: 600, color: '#DC2626' }}>🗑️ Delete Journey Map</h2>
+            </div>
+            
+            <div className="modal-body">
+              <p style={{ marginBottom: '16px' }}>
+                This action <strong>cannot be undone</strong>. This will permanently delete 
+                <strong> "{map.title}"</strong>.
+              </p>
+
+              <p style={{ marginBottom: '16px', color: '#666' }}>
+                Type <strong>{expectedText}</strong> to confirm:
+              </p>
+
+              <input
+                type="text"
+                className={`input ${confirmText && confirmText !== expectedText ? 'input-error' : ''}`}
+                value={confirmText}
+                onChange={(e) => setConfirmText(e.target.value)}
+                placeholder={expectedText}
+              />
+            </div>
+
+            <div className="modal-footer">
+              <button className="btn btn-secondary" onClick={onClose}>Cancel</button>
+              <button 
+                className="btn btn-danger" 
+                onClick={handleDelete} 
+                disabled={confirmText !== expectedText || loading}
+              >
+                {loading ? 'Deleting...' : 'Delete Forever'}
+              </button>
+            </div>
+          </div>
+        </div>
+      );
+    }
+
+    // ============================================
+    // SHARE MAP MODAL
+    // ============================================
+    function ShareMapModal({ map, onClose, onUpdate }) {
+      const [email, setEmail] = useState('');
+      const [permission, setPermission] = useState('view');
+      const [shares, setShares] = useState(map.sharedWith || []);
+      const [loading, setLoading] = useState(false);
+      const [error, setError] = useState('');
+      const [success, setSuccess] = useState('');
+
+      const handleAddShare = async () => {
+        if (!email.trim() || !email.includes('@')) {
+          setError('Please enter a valid email');
+          return;
+        }
+
+        if (shares.some(s => s.email === email.trim().toLowerCase())) {
+          setError('Already shared with this person');
+          return;
+        }
+
+        setLoading(true);
+        setError('');
+
+        const newShares = [...shares, { email: email.trim().toLowerCase(), permission }];
+        
+        try {
+          await onUpdate(newShares);
+          setShares(newShares);
+          setEmail('');
+          setSuccess('Shared successfully!');
+          setTimeout(() => setSuccess(''), 2000);
+        } catch (err) {
+          setError(err.message || 'Failed to share');
+        }
+        setLoading(false);
+      };
+
+      const handleRemoveShare = async (emailToRemove) => {
+        setLoading(true);
+        const newShares = shares.filter(s => s.email !== emailToRemove);
+        try {
+          await onUpdate(newShares);
+          setShares(newShares);
+        } catch (err) {
+          setError(err.message || 'Failed to update');
+        }
+        setLoading(false);
+      };
+
+      const handleUpdatePermission = async (emailToUpdate, newPermission) => {
+        setLoading(true);
+        const newShares = shares.map(s => 
+          s.email === emailToUpdate ? { ...s, permission: newPermission } : s
+        );
+        try {
+          await onUpdate(newShares);
+          setShares(newShares);
+        } catch (err) {
+          setError(err.message || 'Failed to update');
+        }
+        setLoading(false);
+      };
+
+      return (
+        <div className="modal-overlay animate-fade" onClick={onClose}>
+          <div className="modal animate-slide" onClick={e => e.stopPropagation()} style={{ maxWidth: '520px' }}>
+            <div className="modal-header">
+              <h2 style={{ fontSize: '20px', fontWeight: 600 }}>Share "{map.title}"</h2>
+            </div>
+            
+            <div className="modal-body">
+              {error && (
+                <div style={{ padding: '12px', background: '#FEE2E2', borderRadius: '8px', marginBottom: '16px', color: '#DC2626', fontSize: '13px' }}>
+                  {error}
+                </div>
+              )}
+              {success && (
+                <div style={{ padding: '12px', background: '#D1FAE5', borderRadius: '8px', marginBottom: '16px', color: '#065F46', fontSize: '13px' }}>
+                  {success}
+                </div>
+              )}
+
+              <div style={{ display: 'flex', gap: '12px', marginBottom: '24px' }}>
+                <input
+                  type="email"
+                  className="input"
+                  value={email}
+                  onChange={(e) => setEmail(e.target.value)}
+                  placeholder="Enter email address"
+                  style={{ flex: 1 }}
+                />
+                <select
+                  className="input"
+                  value={permission}
+                  onChange={(e) => setPermission(e.target.value)}
+                  style={{ width: '120px' }}
+                >
+                  <option value="view">Can View</option>
+                  <option value="edit">Can Edit</option>
+                </select>
+                <button className="btn btn-primary" onClick={handleAddShare} disabled={loading}>
+                  {loading ? '...' : 'Share'}
+                </button>
+              </div>
+
+              {shares.length > 0 && (
+                <div>
+                  <h4 style={{ fontSize: '14px', fontWeight: 600, marginBottom: '12px' }}>Shared with</h4>
+                  <div style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
+                    {shares.map(share => (
+                      <div key={share.email} style={{ 
+                        display: 'flex', 
+                        alignItems: 'center', 
+                        justifyContent: 'space-between',
+                        padding: '12px',
+                        background: '#F9F9F9',
+                        borderRadius: '8px'
+                      }}>
+                        <div style={{ fontSize: '14px' }}>{share.email}</div>
+                        <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+                          <select
+                            className="input"
+                            value={share.permission}
+                            onChange={(e) => handleUpdatePermission(share.email, e.target.value)}
+                            style={{ width: '110px', padding: '8px' }}
+                            disabled={loading}
+                          >
+                            <option value="view">Can View</option>
+                            <option value="edit">Can Edit</option>
+                          </select>
+                          <button 
+                            className="btn btn-ghost" 
+                            style={{ color: '#DC2626', padding: '8px' }}
+                            onClick={() => handleRemoveShare(share.email)}
+                            disabled={loading}
+                          >
+                            ✕
+                          </button>
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+                </div>
+              )}
+            </div>
+
+            <div className="modal-footer">
+              <button className="btn btn-secondary" onClick={onClose}>Done</button>
+            </div>
+          </div>
+        </div>
+      );
+    }
+
+    // ============================================
+    // TOKEN MODAL
+    // ============================================
+    function TokenModal({ currentToken, onClose, onSave }) {
+      const [token, setToken] = useState(currentToken);
+
+      return (
+        <div className="modal-overlay animate-fade" onClick={onClose}>
+          <div className="modal animate-slide" onClick={e => e.stopPropagation()}>
+            <div className="modal-header">
+              <h2 style={{ fontSize: '20px', fontWeight: 600 }}>⚙️ GitHub Token</h2>
+            </div>
+            
+            <div className="modal-body">
+              <p className="text-muted" style={{ marginBottom: '16px' }}>
+                A GitHub Personal Access Token is required to create, edit, and delete maps.
+              </p>
+
+              <div style={{ marginBottom: '20px' }}>
+                <label className="label">Personal Access Token</label>
+                <input
+                  type="password"
+                  className="input"
+                  value={token}
+                  onChange={(e) => setToken(e.target.value)}
+                  placeholder="ghp_xxxxxxxxxxxx"
+                />
+              </div>
+
+              <div style={{ padding: '12px', background: '#F0F9FF', borderRadius: '8px', fontSize: '13px', color: '#0369A1' }}>
+                <strong>How to create a token:</strong><br/>
+                1. Go to GitHub → Settings → Developer Settings<br/>
+                2. Personal Access Tokens → Tokens (classic)<br/>
+                3. Generate new token with <code>repo</code> scope
+              </div>
+            </div>
+
+            <div className="modal-footer">
+              <button className="btn btn-secondary" onClick={onClose}>Cancel</button>
+              <button className="btn btn-primary" onClick={() => onSave(token)}>
+                Save Token
+              </button>
+            </div>
+          </div>
+        </div>
+      );
+    }
+
+    // ============================================
+    // MAIN APP
+    // ============================================
+    function App() {
+      const { user, token, saveUser, saveToken, logout } = useUser();
+
+      if (!user) {
+        return (
+          <SetupScreen 
+            onComplete={(userData, userToken) => {
+              saveUser(userData);
+              if (userToken) saveToken(userToken);
+            }}
+          />
+        );
+      }
+
+      return (
+        <Dashboard 
+          user={user}
+          token={token}
+          onOpenMap={(map) => {
+            // Navigate to editor with map ID in URL
+            const editorUrl = `editor.html?map=${encodeURIComponent(map.id)}&title=${encodeURIComponent(map.title)}`;
+            window.location.href = editorUrl;
+          }}
+          onLogout={logout}
+          onUpdateToken={saveToken}
+        />
+      );
+    }
+
+    // ============================================
+    // RENDER
+    // ============================================
+    ReactDOM.createRoot(document.getElementById('root')).render(<App />);
+  </script>
+</body>
+</html>
