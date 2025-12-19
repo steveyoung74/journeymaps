@@ -123,7 +123,7 @@
     // ============================================
     // CONFIGURATION
     // ============================================
-    const APP_VERSION = '1.0.0';
+    const APP_VERSION = '1.1.0';
     const GITHUB_CONFIG = {
       owner: 'steveyoung74',
       repo: 'journeymaps',
@@ -1180,134 +1180,10 @@
     }
 
     // ============================================
-    // JOURNEY MAP EDITOR (Placeholder)
-    // ============================================
-    function JourneyMapEditor({ map, user, token, onBack, onSave }) {
-      const [config, setConfig] = useState(map.config || {});
-      const [loading, setLoading] = useState(true);
-      const [saving, setSaving] = useState(false);
-      const [lastSaved, setLastSaved] = useState(null);
-      
-      const canEdit = map.owner === user.email || 
-        map.sharedWith?.some(s => s.email === user.email && s.permission === 'edit');
-
-      useEffect(() => {
-        loadConfig();
-      }, []);
-
-      const loadConfig = async () => {
-        try {
-          const data = await fetchFromGitHub(`${GITHUB_CONFIG.mapsPath}/${map.id}.json`);
-          if (data) {
-            setConfig(data);
-          }
-        } catch (err) {
-          console.error('Failed to load map:', err);
-        }
-        setLoading(false);
-      };
-
-      const handleSave = async () => {
-        if (!token || !canEdit) return;
-        
-        setSaving(true);
-        try {
-          await saveToGitHub(
-            `${GITHUB_CONFIG.mapsPath}/${map.id}.json`,
-            config,
-            token,
-            `Update map: ${map.title}`
-          );
-          setLastSaved(new Date());
-          if (onSave) onSave({ ...map, config });
-        } catch (err) {
-          alert('Failed to save: ' + err.message);
-        }
-        setSaving(false);
-      };
-
-      if (loading) {
-        return (
-          <div style={{ minHeight: '100vh', display: 'flex', alignItems: 'center', justifyContent: 'center', background: '#F5F5F5' }}>
-            <div className="spinner"></div>
-          </div>
-        );
-      }
-
-      return (
-        <div style={{ minHeight: '100vh', background: '#F5F5F5' }}>
-          <header style={{ 
-            background: '#1A1A1A', 
-            color: '#FFF', 
-            padding: '12px 24px',
-            display: 'flex',
-            justifyContent: 'space-between',
-            alignItems: 'center',
-            position: 'sticky',
-            top: 0,
-            zIndex: 100
-          }}>
-            <div style={{ display: 'flex', alignItems: 'center', gap: '16px' }}>
-              <button className="btn btn-ghost" onClick={onBack} style={{ color: '#FFF', padding: '8px' }}>
-                ← Back
-              </button>
-              <div>
-                <h1 style={{ fontSize: '16px', fontWeight: 600 }}>{map.title}</h1>
-                <span style={{ fontSize: '12px', color: '#999' }}>
-                  {!canEdit ? 'View only' : lastSaved ? `Saved ${lastSaved.toLocaleTimeString()}` : 'Not saved yet'}
-                </span>
-              </div>
-            </div>
-            {canEdit && token && (
-              <button className="btn btn-primary" onClick={handleSave} disabled={saving}>
-                {saving ? 'Saving...' : '💾 Save'}
-              </button>
-            )}
-          </header>
-
-          <main style={{ padding: '40px', maxWidth: '1200px', margin: '0 auto' }}>
-            <div className="card" style={{ padding: '60px', textAlign: 'center' }}>
-              <div style={{ fontSize: '48px', marginBottom: '16px' }}>🚧</div>
-              <h2 style={{ fontSize: '24px', fontWeight: 600, marginBottom: '8px' }}>Editor Integration Coming</h2>
-              <p className="text-muted" style={{ marginBottom: '24px' }}>
-                The full journey map editor will be integrated here.<br/>
-                For now, here's the raw config data:
-              </p>
-              
-              <textarea
-                value={JSON.stringify(config, null, 2)}
-                onChange={(e) => {
-                  if (!canEdit) return;
-                  try {
-                    setConfig(JSON.parse(e.target.value));
-                  } catch (err) {}
-                }}
-                readOnly={!canEdit}
-                style={{
-                  width: '100%',
-                  height: '400px',
-                  padding: '16px',
-                  fontFamily: 'monospace',
-                  fontSize: '12px',
-                  border: '1px solid #DDD',
-                  borderRadius: '8px',
-                  textAlign: 'left',
-                  background: canEdit ? '#FFF' : '#F5F5F5'
-                }}
-              />
-            </div>
-          </main>
-        </div>
-      );
-    }
-
-    // ============================================
     // MAIN APP
     // ============================================
     function App() {
-      const { user, token, saveUser, saveToken, logout, hasToken } = useUser();
-      const [currentView, setCurrentView] = useState('dashboard');
-      const [selectedMap, setSelectedMap] = useState(null);
+      const { user, token, saveUser, saveToken, logout } = useUser();
 
       if (!user) {
         return (
@@ -1320,28 +1196,14 @@
         );
       }
 
-      if (currentView === 'editor' && selectedMap) {
-        return (
-          <JourneyMapEditor 
-            map={selectedMap}
-            user={user}
-            token={token}
-            onBack={() => {
-              setCurrentView('dashboard');
-              setSelectedMap(null);
-            }}
-            onSave={(updatedMap) => setSelectedMap(updatedMap)}
-          />
-        );
-      }
-
       return (
         <Dashboard 
           user={user}
           token={token}
           onOpenMap={(map) => {
-            setSelectedMap(map);
-            setCurrentView('editor');
+            // Navigate to editor with map ID in URL
+            const editorUrl = `editor.html?map=${encodeURIComponent(map.id)}&title=${encodeURIComponent(map.title)}`;
+            window.location.href = editorUrl;
           }}
           onLogout={logout}
           onUpdateToken={saveToken}
