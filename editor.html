@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Fathom - Journey Intelligence</title>
+  <title>FATHOM - Journey Intelligence</title>
   <script src="https://cdnjs.cloudflare.com/ajax/libs/react/18.2.0/umd/react.production.min.js"></script>
   <script src="https://cdnjs.cloudflare.com/ajax/libs/react-dom/18.2.0/umd/react-dom.production.min.js"></script>
   <script src="https://cdnjs.cloudflare.com/ajax/libs/babel-standalone/7.23.5/babel.min.js"></script>
@@ -346,12 +346,10 @@
     // Current app version - always displayed in footer
     const APP_VERSION = "8.6.0";
     
-    // Fathom rotating taglines
+    // Fathom official taglines (per Brand Lock v1.0)
     const FATHOM_TAGLINES = [
       "See what your journeys really cost",
-      "The depth of your operations, revealed",
-      "Understand deeply. Improve decisively.",
-      "Journey intelligence for modern operations"
+      "Understand deeply. Improve decisively."
     ];
 
     const generateId = () => Math.random().toString(36).substr(2, 9);
@@ -368,7 +366,7 @@
             setIndex(i => (i + 1) % FATHOM_TAGLINES.length);
             setFade(true);
           }, 300);
-        }, 4000);
+        }, 6000); // 6 seconds between taglines
         return () => clearInterval(interval);
       }, []);
       
@@ -378,7 +376,7 @@
           color: 'rgba(255,255,255,0.5)', 
           fontFamily: "'Helvetica Neue', Arial, sans-serif",
           fontStyle: 'italic',
-          marginTop: '2px',
+          marginTop: '4px',
           transition: 'opacity 0.3s ease',
           opacity: fade ? 1 : 0
         }}>
@@ -393,7 +391,7 @@
       meta: {
         title: "Client Onboarding Journey Digital Twin",
         version: "2.0",
-        product: "Fathom v8.6.0",
+        product: "FATHOM v8.6.0",
         lastUpdated: new Date().toISOString(),
         audience: "Internal Operations",
         perspective: "client"
@@ -3506,7 +3504,7 @@
       // Update document title in multi-user mode
       React.useEffect(() => {
         if (isMultiUserMode) {
-          document.title = `${mapTitle} - Fathom`;
+          document.title = `${mapTitle} - FATHOM`;
         }
       }, [isMultiUserMode, mapTitle]);
       
@@ -4553,10 +4551,12 @@
               <h1 style={{ 
                 margin: '0 0 8px', 
                 fontSize: '24px', 
-                fontWeight: 400,
-                color: '#1A1A1A'
+                fontWeight: 500,
+                letterSpacing: '1px',
+                color: '#1A1A1A',
+                fontFamily: "'Helvetica Neue', Arial, sans-serif"
               }}>
-                Fathom
+                FATHOM
               </h1>
               <p style={{ 
                 margin: '0 0 32px', 
@@ -4670,11 +4670,26 @@
                   </button>
                 )}
                 
-                {/* Fathom Logo */}
+                {/* Fathom Logo Lockup: Icon + Wordmark (per Brand Lock v1.0) */}
                 <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'flex-start', flexShrink: 0 }}>
-                  <svg className="header-logo" width="120" height="32" viewBox="0 0 120 32" fill="none" xmlns="http://www.w3.org/2000/svg" style={{ flexShrink: 0 }}>
-                    <text x="0" y="24" fill="#FFFFFF" style={{ fontSize: '28px', fontFamily: 'Georgia, serif', fontWeight: '400', letterSpacing: '-1px' }}>Fathom</text>
-                  </svg>
+                  <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
+                    {/* Fathom Icon - Contour Strata */}
+                    <svg width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg" style={{ flexShrink: 0 }}>
+                      <path d="M2 5C2 5 6 4 12 6C18 8 22 5 22 5" stroke="#5B8A9A" strokeWidth="2" strokeLinecap="round"/>
+                      <path d="M2 9C2 9 5 10 10 9C15 8 18 10 22 9" stroke="#FFFFFF" strokeWidth="2" strokeLinecap="round" strokeOpacity="0.7"/>
+                      <path d="M2 13C2 13 7 14 12 12C17 10 22 13 22 13" stroke="#FFFFFF" strokeWidth="2" strokeLinecap="round" strokeOpacity="0.5"/>
+                      <path d="M2 17C2 17 5 16 11 17C17 18 22 17 22 17" stroke="#FFFFFF" strokeWidth="2" strokeLinecap="round" strokeOpacity="0.35"/>
+                      <path d="M2 21C2 21 8 20 12 21C16 22 22 21 22 21" stroke="#FFFFFF" strokeWidth="2" strokeLinecap="round" strokeOpacity="0.2"/>
+                    </svg>
+                    {/* FATHOM Wordmark - uppercase, condensed, tight tracking */}
+                    <span style={{ 
+                      fontSize: '22px', 
+                      fontWeight: 500, 
+                      letterSpacing: '1px', 
+                      color: '#FFFFFF',
+                      fontFamily: "'Helvetica Neue', Arial, sans-serif"
+                    }}>FATHOM</span>
+                  </div>
                   <FathomTagline />
                 </div>
                 
@@ -6652,7 +6667,7 @@
 
           {/* Footer */}
           <footer style={{ background: '#1A1A1A', color: '#999', padding: '20px 40px', fontFamily: "'Helvetica Neue', Arial, sans-serif", fontSize: '12px', display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexShrink: 0 }}>
-            <span>{isMultiUserMode ? `${mapTitle} · ` : "Fathom "}v{APP_VERSION}</span>
+            <span>{isMultiUserMode ? `${mapTitle} · ` : "FATHOM "}v{APP_VERSION}</span>
             <div style={{ display: 'flex', alignItems: 'center', gap: '16px' }}>
               <button 
                 onClick={refreshFromPublicGitHub}
