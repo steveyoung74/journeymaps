@@ -1,0 +1,27 @@
+{
+  "meta": {
+    "title": "steve test",
+    "description": "testing"
+  },
+  "stages": [],
+  "personas": [
+    {
+      "id": "client",
+      "label": "Client",
+      "color": "#2D5A4B",
+      "isExternal": true
+    },
+    {
+      "id": "advisor",
+      "label": "Advisor",
+      "color": "#1E40AF",
+      "annualSalary": 60000
+    },
+    {
+      "id": "ops",
+      "label": "Operations",
+      "color": "#8B4513",
+      "annualSalary": 35000
+    }
+  ]
+}
