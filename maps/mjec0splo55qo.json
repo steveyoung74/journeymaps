@@ -1,0 +1,271 @@
+{
+  "meta": {
+    "title": "Recruitment Journey",
+    "version": "1.0",
+    "product": "FATHOM v1.3.0",
+    "lastUpdated": "2025-12-20T13:26:33.561Z",
+    "template": "recruitment_hiring"
+  },
+  "funnel": {
+    "enabled": true,
+    "initialVolume": 150,
+    "periodLabel": "per month"
+  },
+  "personas": [
+    {
+      "id": "candidate",
+      "label": "Candidate",
+      "salary": 0,
+      "isExternal": true,
+      "color": "#2D8A6E"
+    },
+    {
+      "id": "hiring-manager",
+      "label": "Hiring Manager",
+      "salary": 65000,
+      "isExternal": false,
+      "color": "#5B8A9A"
+    },
+    {
+      "id": "recruiter",
+      "label": "Recruiter",
+      "salary": 38000,
+      "isExternal": false,
+      "color": "#5B8A9A"
+    },
+    {
+      "id": "interviewer",
+      "label": "Interview Panel",
+      "salary": 55000,
+      "isExternal": false,
+      "color": "#5B8A9A"
+    },
+    {
+      "id": "finance",
+      "label": "Finance Approver",
+      "salary": 60000,
+      "isExternal": false,
+      "color": "#5B8A9A"
+    }
+  ],
+  "stages": [
+    {
+      "id": "stage-requisition",
+      "name": "Requisition & Planning",
+      "dropOffCount": 0,
+      "steps": [
+        {
+          "id": "step-1-1",
+          "name": "Hiring Need Identified",
+          "persona": "hiring-manager",
+          "duration": 30,
+          "friction": "none",
+          "notes": ""
+        },
+        {
+          "id": "step-1-2",
+          "name": "Complete Job Requisition",
+          "persona": "hiring-manager",
+          "duration": 45,
+          "friction": "low",
+          "notes": ""
+        },
+        {
+          "id": "step-1-3",
+          "name": "Budget Approval",
+          "persona": "finance",
+          "duration": 30,
+          "friction": "medium",
+          "notes": ""
+        },
+        {
+          "id": "step-1-4",
+          "name": "Draft Job Description",
+          "persona": "recruiter",
+          "duration": 60,
+          "friction": "low",
+          "notes": ""
+        }
+      ]
+    },
+    {
+      "id": "stage-sourcing",
+      "name": "Sourcing & Advertising",
+      "dropOffCount": 0,
+      "steps": [
+        {
+          "id": "step-2-1",
+          "name": "Post to Job Boards",
+          "persona": "recruiter",
+          "duration": 30,
+          "friction": "none",
+          "notes": ""
+        },
+        {
+          "id": "step-2-2",
+          "name": "Direct Sourcing",
+          "persona": "recruiter",
+          "duration": 180,
+          "friction": "medium",
+          "notes": ""
+        },
+        {
+          "id": "step-2-3",
+          "name": "Referral Outreach",
+          "persona": "recruiter",
+          "duration": 30,
+          "friction": "none",
+          "notes": ""
+        }
+      ]
+    },
+    {
+      "id": "stage-screening",
+      "name": "Screening",
+      "dropOffCount": 120,
+      "steps": [
+        {
+          "id": "step-3-1",
+          "name": "CV Review",
+          "persona": "recruiter",
+          "duration": 120,
+          "friction": "medium",
+          "notes": ""
+        },
+        {
+          "id": "step-3-2",
+          "name": "Phone Screens",
+          "persona": "recruiter",
+          "duration": 180,
+          "friction": "low",
+          "notes": ""
+        },
+        {
+          "id": "step-3-3",
+          "name": "Shortlist Review",
+          "persona": "hiring-manager",
+          "duration": 30,
+          "friction": "low",
+          "notes": ""
+        },
+        {
+          "id": "step-3-4",
+          "name": "Schedule Interviews",
+          "persona": "recruiter",
+          "duration": 45,
+          "friction": "medium",
+          "notes": ""
+        }
+      ]
+    },
+    {
+      "id": "stage-interview",
+      "name": "Interviews",
+      "dropOffCount": 20,
+      "steps": [
+        {
+          "id": "step-4-1",
+          "name": "First Round Interview",
+          "persona": "hiring-manager",
+          "duration": 60,
+          "friction": "low",
+          "notes": ""
+        },
+        {
+          "id": "step-4-2",
+          "name": "Technical Interview",
+          "persona": "interviewer",
+          "duration": 90,
+          "friction": "low",
+          "notes": ""
+        },
+        {
+          "id": "step-4-3",
+          "name": "Final Round",
+          "persona": "hiring-manager",
+          "duration": 90,
+          "friction": "low",
+          "notes": ""
+        },
+        {
+          "id": "step-4-4",
+          "name": "Interview Debrief",
+          "persona": "hiring-manager",
+          "duration": 30,
+          "friction": "none",
+          "notes": ""
+        }
+      ]
+    },
+    {
+      "id": "stage-offer",
+      "name": "Offer & Negotiation",
+      "dropOffCount": 5,
+      "steps": [
+        {
+          "id": "step-5-1",
+          "name": "Reference Checks",
+          "persona": "recruiter",
+          "duration": 60,
+          "friction": "medium",
+          "notes": ""
+        },
+        {
+          "id": "step-5-2",
+          "name": "Prepare Offer",
+          "persona": "recruiter",
+          "duration": 45,
+          "friction": "low",
+          "notes": ""
+        },
+        {
+          "id": "step-5-3",
+          "name": "Verbal Offer",
+          "persona": "hiring-manager",
+          "duration": 30,
+          "friction": "low",
+          "notes": ""
+        },
+        {
+          "id": "step-5-4",
+          "name": "Negotiation",
+          "persona": "recruiter",
+          "duration": 45,
+          "friction": "medium",
+          "notes": ""
+        }
+      ]
+    },
+    {
+      "id": "stage-close",
+      "name": "Close & Handover",
+      "dropOffCount": 2,
+      "steps": [
+        {
+          "id": "step-6-1",
+          "name": "Receive Signed Offer",
+          "persona": "candidate",
+          "duration": 15,
+          "friction": "low",
+          "notes": ""
+        },
+        {
+          "id": "step-6-2",
+          "name": "Reject Other Candidates",
+          "persona": "recruiter",
+          "duration": 45,
+          "friction": "low",
+          "notes": ""
+        },
+        {
+          "id": "step-6-3",
+          "name": "Handover to Onboarding",
+          "persona": "recruiter",
+          "duration": 20,
+          "friction": "none",
+          "notes": ""
+        }
+      ]
+    }
+  ]
+}
