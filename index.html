@@ -454,8 +454,16 @@
       `https://api.github.com/repos/${GITHUB_CONFIG.owner}/${GITHUB_CONFIG.repo}/contents/${path}`;
     
     async function fetchFromGitHub(path) {
-      const url = getRawUrl(path) + '?t=' + Date.now();
-      const response = await fetch(url);
+      // Use double cache-bust to avoid CDN caching issues
+      const cacheBust = `${Date.now()}-${Math.random().toString(36).substr(2, 9)}`;
+      const url = getRawUrl(path) + '?t=' + cacheBust;
+      console.log('Fetching:', url);
+      const response = await fetch(url, {
+        cache: 'no-store',
+        headers: {
+          'Cache-Control': 'no-cache'
+        }
+      });
       if (!response.ok) {
         if (response.status === 404) return null;
         throw new Error(`GitHub fetch failed: ${response.status}`);
@@ -1036,25 +1044,34 @@
       const handleCreate = async (newMap) => {
         const updatedMaps = [...maps, newMap];
         try {
-          await saveToGitHub(
+          console.log('Creating map:', newMap.title);
+          
+          // Save to index first
+          const indexResult = await saveToGitHub(
             GITHUB_CONFIG.indexFile,
             { maps: updatedMaps },
             token,
             `Add map: ${newMap.title}`
           );
+          console.log('Index updated:', indexResult);
           
-          await saveToGitHub(
+          // Then create the map file
+          const mapResult = await saveToGitHub(
             `${GITHUB_CONFIG.mapsPath}/${newMap.id}.json`,
             newMap.config,
             token,
             `Create map: ${newMap.title}`
           );
+          console.log('Map created:', mapResult);
           
           setMaps(updatedMaps);
           setShowCreateModal(false);
+          
+          // Show success message
+          alert(`Map "${newMap.title}" created successfully!`);
         } catch (err) {
           console.error('Failed to create map:', err);
-          alert('Failed to create map. Check your GitHub token.');
+          alert(`Failed to create map: ${err.message}\n\nCheck your GitHub token has write permissions.`);
         }
       };
 
