@@ -341,7 +341,7 @@
       border-radius: 16px;
       transition: all 0.25s;
       color: #FFF;
-      background: linear-gradient(145deg, var(--navy-600) 0%, var(--navy-800) 100%);
+      background: linear-gradient(145deg, var(--steel-500) 0%, var(--steel-700) 100%);
       position: relative;
       overflow: hidden;
     }
@@ -711,34 +711,36 @@
                     borderRadius: '20px',
                     padding: '32px',
                     border: '1px solid #fecaca',
-                    minHeight: '320px'
+                    height: '100%',
+                    minHeight: '380px',
+                    display: 'flex',
+                    flexDirection: 'column'
                   }}>
                     <div style={{ display: 'flex', alignItems: 'center', gap: '8px', marginBottom: '24px' }}>
                       <span style={{ fontSize: '20px' }}>😵</span>
                       <span style={{ fontSize: '14px', fontWeight: 600, color: '#dc2626', textTransform: 'uppercase', letterSpacing: '1px' }}>Before Fathom</span>
                     </div>
                     
-                    {/* Chaotic visual */}
-                    <div style={{ position: 'relative', height: '200px', marginBottom: '20px' }}>
-                      {/* Scattered elements */}
-                      <div style={{ position: 'absolute', top: '10px', left: '5%', background: '#FFF', padding: '8px 12px', borderRadius: '6px', fontSize: '12px', color: '#991b1b', border: '1px solid #fca5a5', transform: 'rotate(-3deg)', boxShadow: '0 2px 8px rgba(220,38,38,0.15)' }}>
+                    {/* Chaotic visual - stacked with slight offsets */}
+                    <div style={{ flex: 1, display: 'flex', flexDirection: 'column', gap: '12px', paddingBottom: '16px' }}>
+                      <div style={{ background: '#FFF', padding: '10px 14px', borderRadius: '8px', fontSize: '13px', color: '#991b1b', border: '1px solid #fca5a5', transform: 'rotate(-1deg)', boxShadow: '0 2px 8px rgba(220,38,38,0.1)', marginLeft: '0px' }}>
                         📊 spreadsheet_v4_FINAL.xlsx
                       </div>
-                      <div style={{ position: 'absolute', top: '50px', right: '10%', background: '#FFF', padding: '8px 12px', borderRadius: '6px', fontSize: '12px', color: '#991b1b', border: '1px solid #fca5a5', transform: 'rotate(2deg)', boxShadow: '0 2px 8px rgba(220,38,38,0.15)' }}>
+                      <div style={{ background: '#FFF', padding: '10px 14px', borderRadius: '8px', fontSize: '13px', color: '#991b1b', border: '1px solid #fca5a5', transform: 'rotate(1.5deg)', boxShadow: '0 2px 8px rgba(220,38,38,0.1)', marginLeft: '40px' }}>
                         ❓ "How long does this take?"
                       </div>
-                      <div style={{ position: 'absolute', top: '95px', left: '15%', background: '#FFF', padding: '8px 12px', borderRadius: '6px', fontSize: '12px', color: '#991b1b', border: '1px solid #fca5a5', transform: 'rotate(-1deg)', boxShadow: '0 2px 8px rgba(220,38,38,0.15)' }}>
+                      <div style={{ background: '#FFF', padding: '10px 14px', borderRadius: '8px', fontSize: '13px', color: '#991b1b', border: '1px solid #fca5a5', transform: 'rotate(-0.5deg)', boxShadow: '0 2px 8px rgba(220,38,38,0.1)', marginLeft: '10px' }}>
                         💸 "It's about £500... maybe?"
                       </div>
-                      <div style={{ position: 'absolute', top: '140px', right: '5%', background: '#FFF', padding: '8px 12px', borderRadius: '6px', fontSize: '12px', color: '#991b1b', border: '1px solid #fca5a5', transform: 'rotate(4deg)', boxShadow: '0 2px 8px rgba(220,38,38,0.15)' }}>
+                      <div style={{ background: '#FFF', padding: '10px 14px', borderRadius: '8px', fontSize: '13px', color: '#991b1b', border: '1px solid #fca5a5', transform: 'rotate(2deg)', boxShadow: '0 2px 8px rgba(220,38,38,0.1)', marginLeft: '50px' }}>
                         🤷 "Ask Sarah, she knows"
                       </div>
-                      <div style={{ position: 'absolute', bottom: '10px', left: '25%', background: '#FFF', padding: '8px 12px', borderRadius: '6px', fontSize: '12px', color: '#991b1b', border: '1px solid #fca5a5', transform: 'rotate(-2deg)', boxShadow: '0 2px 8px rgba(220,38,38,0.15)' }}>
+                      <div style={{ background: '#FFF', padding: '10px 14px', borderRadius: '8px', fontSize: '13px', color: '#991b1b', border: '1px solid #fca5a5', transform: 'rotate(-1.5deg)', boxShadow: '0 2px 8px rgba(220,38,38,0.1)', marginLeft: '20px' }}>
                         📧 Meeting to discuss the process
                       </div>
                     </div>
                     
-                    <div style={{ fontSize: '14px', color: '#7f1d1d', fontStyle: 'italic', textAlign: 'center' }}>
+                    <div style={{ fontSize: '14px', color: '#7f1d1d', fontStyle: 'italic', textAlign: 'center', marginTop: 'auto' }}>
                       Guesswork, tribal knowledge, and endless meetings
                     </div>
                   </div>
@@ -751,7 +753,10 @@
                     borderRadius: '20px',
                     padding: '32px',
                     border: '1px solid #bbf7d0',
-                    minHeight: '320px'
+                    height: '100%',
+                    minHeight: '380px',
+                    display: 'flex',
+                    flexDirection: 'column'
                   }}>
                     <div style={{ display: 'flex', alignItems: 'center', gap: '8px', marginBottom: '24px' }}>
                       <span style={{ fontSize: '20px' }}>✨</span>
@@ -759,7 +764,7 @@
                     </div>
                     
                     {/* Organized visual */}
-                    <div style={{ display: 'flex', flexDirection: 'column', gap: '12px', marginBottom: '20px' }}>
+                    <div style={{ flex: 1, display: 'flex', flexDirection: 'column', gap: '12px' }}>
                       <div style={{ background: '#FFF', padding: '14px 16px', borderRadius: '10px', display: 'flex', justifyContent: 'space-between', alignItems: 'center', border: '1px solid #86efac' }}>
                         <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
                           <div style={{ width: '8px', height: '8px', borderRadius: '50%', background: '#22c55e' }}></div>
@@ -781,13 +786,13 @@
                         </div>
                         <span style={{ fontSize: '12px', color: '#15803d', fontWeight: 600 }}>2h 45m · £156</span>
                       </div>
-                      <div style={{ background: 'linear-gradient(90deg, var(--navy-700) 0%, var(--navy-600) 100%)', padding: '14px 16px', borderRadius: '10px', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                      <div style={{ background: 'linear-gradient(90deg, var(--navy-700) 0%, var(--navy-600) 100%)', padding: '14px 16px', borderRadius: '10px', display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginTop: 'auto' }}>
                         <span style={{ fontSize: '13px', color: '#FFF', fontWeight: 600 }}>Total Journey Cost</span>
                         <span style={{ fontSize: '14px', color: '#FFF', fontWeight: 700 }}>£2,847</span>
                       </div>
                     </div>
                     
-                    <div style={{ fontSize: '14px', color: '#166534', fontStyle: 'italic', textAlign: 'center' }}>
+                    <div style={{ fontSize: '14px', color: '#166534', fontStyle: 'italic', textAlign: 'center', marginTop: '16px' }}>
                       Every step measured, every cost visible
                     </div>
                   </div>
