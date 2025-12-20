@@ -188,7 +188,7 @@
     .text-small { font-size: 13px; }
     .text-error { color: var(--error); font-size: 13px; }
     
-    /* Hero gradient background */
+    /* Hero gradient background with topographic pattern */
     .hero-bg {
       background: linear-gradient(135deg, var(--navy-700) 0%, var(--navy-950) 100%);
       position: relative;
@@ -197,11 +197,19 @@
     .hero-bg::before {
       content: '';
       position: absolute;
+      inset: 0;
+      background: url('topography-dark.svg') center/600px 600px repeat;
+      opacity: 1;
+      pointer-events: none;
+    }
+    .hero-bg::after {
+      content: '';
+      position: absolute;
       top: -50%;
       right: -20%;
       width: 80%;
       height: 200%;
-      background: radial-gradient(ellipse at center, rgba(91, 138, 154, 0.12) 0%, transparent 60%);
+      background: radial-gradient(ellipse at center, rgba(91, 138, 154, 0.1) 0%, transparent 60%);
       pointer-events: none;
     }
     
