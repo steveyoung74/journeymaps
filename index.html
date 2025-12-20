@@ -1226,17 +1226,27 @@
         
         const allSteps = config.stages.flatMap(s => s.steps || []);
         
-        // Handle both timeMinutes and duration field names
-        const totalTime = allSteps.reduce((acc, s) => acc + (s.timeMinutes || s.duration || 0), 0);
+        // Handle time field names: timeMinutes, duration, or time
+        const totalTime = allSteps.reduce((acc, s) => acc + (s.timeMinutes || s.duration || s.time || 0), 0);
         const totalSteps = allSteps.length;
         const totalPainPoints = allSteps.reduce((acc, s) => acc + (s.painPoints?.length || 0), 0);
         const highImprovements = allSteps.filter(s => s.automationOpportunity === 'high').length;
         const totalRegReqs = allSteps.reduce((acc, s) => acc + (s.regulatoryRequirements?.length || 0), 0);
         
-        // Calculate average friction - handle both frictionScore and friction field names
-        const stepsWithFriction = allSteps.filter(s => s.frictionScore || s.friction);
-        const avgFriction = stepsWithFriction.length > 0 
-          ? (stepsWithFriction.reduce((acc, s) => acc + (s.frictionScore || s.friction || 0), 0) / stepsWithFriction.length).toFixed(1)
+        // Map string friction to numbers
+        const frictionMap = { none: 1, low: 2, medium: 3, high: 4, extreme: 5 };
+        
+        // Calculate average friction - handle numeric (frictionScore) or string (friction) formats
+        const getFrictionValue = (step) => {
+          if (typeof step.frictionScore === 'number') return step.frictionScore;
+          if (typeof step.friction === 'number') return step.friction;
+          if (typeof step.friction === 'string') return frictionMap[step.friction] || null;
+          return null;
+        };
+        
+        const frictionValues = allSteps.map(getFrictionValue).filter(v => v !== null);
+        const avgFriction = frictionValues.length > 0 
+          ? (frictionValues.reduce((acc, v) => acc + v, 0) / frictionValues.length).toFixed(1)
           : null;
         
         // Calculate total cost if personas exist with salaries
@@ -1244,11 +1254,13 @@
         let hasCostData = false;
         if (config.personas && config.personas.length > 0) {
           allSteps.forEach(step => {
-            const persona = config.personas.find(p => p.id === step.owner);
+            // Handle both owner and personaId field names
+            const personaId = step.owner || step.personaId;
+            const persona = config.personas.find(p => p.id === personaId);
             if (persona && persona.salary > 0) {
               hasCostData = true;
               const hourlyRate = (persona.salary * (persona.burdenMultiplier || 1.4)) / (52 * (persona.hoursPerWeek || 37.5));
-              const stepTime = step.timeMinutes || step.duration || 0;
+              const stepTime = step.timeMinutes || step.duration || step.time || 0;
               const stepCost = (stepTime / 60) * hourlyRate + (step.additionalCosts || 0);
               totalCost += stepCost;
             }
