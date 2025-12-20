@@ -652,19 +652,27 @@
                 </div>
               </div>
               
-              {/* Stats Bar */}
-              <div className="stats-bar" style={{ borderTop: '1px solid rgba(255,255,255,0.1)', marginTop: '40px' }}>
-                <div className="stat-item">
-                  <div className="stat-value">23</div>
-                  <div className="stat-label">Ready-made templates</div>
+              {/* Benefits Bar */}
+              <div style={{ 
+                display: 'flex', 
+                justifyContent: 'center', 
+                gap: '40px', 
+                flexWrap: 'wrap',
+                borderTop: '1px solid rgba(255,255,255,0.1)', 
+                marginTop: '40px',
+                paddingTop: '32px'
+              }}>
+                <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
+                  <span style={{ color: 'var(--steel-400)', fontSize: '18px' }}>✓</span>
+                  <span style={{ color: 'var(--steel-300)', fontSize: '15px' }}>Map any journey in minutes</span>
                 </div>
-                <div className="stat-item">
-                  <div className="stat-value">True Cost</div>
-                  <div className="stat-label">Not just salaries — everything</div>
+                <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
+                  <span style={{ color: 'var(--steel-400)', fontSize: '18px' }}>✓</span>
+                  <span style={{ color: 'var(--steel-300)', fontSize: '15px' }}>See true costs, not estimates</span>
                 </div>
-                <div className="stat-item">
-                  <div className="stat-value">Minutes</div>
-                  <div className="stat-label">From blank canvas to insight</div>
+                <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
+                  <span style={{ color: 'var(--steel-400)', fontSize: '18px' }}>✓</span>
+                  <span style={{ color: 'var(--steel-300)', fontSize: '15px' }}>Find waste before you fix it</span>
                 </div>
               </div>
             </div>
