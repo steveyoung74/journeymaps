@@ -337,26 +337,49 @@
     }
     .feature-card {
       padding: 32px;
-      background: #FFF;
       border-radius: 16px;
-      border: 1px solid var(--slate-100);
       transition: all 0.25s;
+      color: #FFF;
     }
     .feature-card:hover {
-      border-color: var(--steel-300);
-      box-shadow: 0 12px 40px rgba(25, 43, 69, 0.1);
       transform: translateY(-4px);
+      box-shadow: 0 20px 40px rgba(25, 43, 69, 0.25);
+    }
+    .feature-card.card-navy {
+      background: linear-gradient(135deg, var(--navy-600) 0%, var(--navy-800) 100%);
+    }
+    .feature-card.card-steel {
+      background: linear-gradient(135deg, var(--steel-500) 0%, var(--steel-700) 100%);
+    }
+    .feature-card.card-amber {
+      background: linear-gradient(135deg, var(--amber-500) 0%, var(--amber-700) 100%);
+    }
+    .feature-card.card-teal {
+      background: linear-gradient(135deg, #0d9488 0%, #0f766e 100%);
+    }
+    .feature-card.card-indigo {
+      background: linear-gradient(135deg, #6366f1 0%, #4338ca 100%);
+    }
+    .feature-card.card-rose {
+      background: linear-gradient(135deg, #e11d48 0%, #be123c 100%);
+    }
+    .feature-card.card-emerald {
+      background: linear-gradient(135deg, #10b981 0%, #059669 100%);
+    }
+    .feature-card.card-purple {
+      background: linear-gradient(135deg, #8b5cf6 0%, #7c3aed 100%);
     }
     .feature-icon {
       width: 56px;
       height: 56px;
-      background: linear-gradient(135deg, var(--navy-50) 0%, var(--steel-100) 100%);
+      background: rgba(255,255,255,0.15);
       border-radius: 14px;
       display: flex;
       align-items: center;
       justify-content: center;
       margin-bottom: 20px;
       font-size: 26px;
+      backdrop-filter: blur(4px);
     }
     
     /* Steps */
@@ -703,82 +726,82 @@
               </div>
               
               <div className="feature-grid">
-                <div className="feature-card">
+                <div className="feature-card card-navy">
                   <div className="feature-icon">⏱️</div>
-                  <h3 style={{ fontSize: '20px', fontWeight: 600, marginBottom: '12px', color: 'var(--navy-700)' }}>
+                  <h3 style={{ fontSize: '20px', fontWeight: 600, marginBottom: '12px', color: '#FFF' }}>
                     Time Tracking
                   </h3>
-                  <p style={{ color: 'var(--slate-600)', fontSize: '15px', lineHeight: 1.7 }}>
+                  <p style={{ color: 'rgba(255,255,255,0.8)', fontSize: '15px', lineHeight: 1.7 }}>
                     Capture time at every step, broken down by role. See where hours accumulate and where bottlenecks form across your entire journey.
                   </p>
                 </div>
                 
-                <div className="feature-card">
+                <div className="feature-card card-amber">
                   <div className="feature-icon">💷</div>
-                  <h3 style={{ fontSize: '20px', fontWeight: 600, marginBottom: '12px', color: 'var(--navy-700)' }}>
+                  <h3 style={{ fontSize: '20px', fontWeight: 600, marginBottom: '12px', color: '#FFF' }}>
                     True Cost Analysis
                   </h3>
-                  <p style={{ color: 'var(--slate-600)', fontSize: '15px', lineHeight: 1.7 }}>
+                  <p style={{ color: 'rgba(255,255,255,0.85)', fontSize: '15px', lineHeight: 1.7 }}>
                     Fully-burdened costs including salary, employer NI, pension, workspace, and third-party services. See the real numbers, not estimates.
                   </p>
                 </div>
                 
-                <div className="feature-card">
+                <div className="feature-card card-rose">
                   <div className="feature-icon">📉</div>
-                  <h3 style={{ fontSize: '20px', fontWeight: 600, marginBottom: '12px', color: 'var(--navy-700)' }}>
+                  <h3 style={{ fontSize: '20px', fontWeight: 600, marginBottom: '12px', color: '#FFF' }}>
                     Funnel Analysis
                   </h3>
-                  <p style={{ color: 'var(--slate-600)', fontSize: '15px', lineHeight: 1.7 }}>
+                  <p style={{ color: 'rgba(255,255,255,0.8)', fontSize: '15px', lineHeight: 1.7 }}>
                     Track client volumes through each stage. See drop-offs, calculate wasted investment, and identify your leakiest stages instantly.
                   </p>
                 </div>
                 
-                <div className="feature-card">
+                <div className="feature-card card-steel">
                   <div className="feature-icon">👥</div>
-                  <h3 style={{ fontSize: '20px', fontWeight: 600, marginBottom: '12px', color: 'var(--navy-700)' }}>
+                  <h3 style={{ fontSize: '20px', fontWeight: 600, marginBottom: '12px', color: '#FFF' }}>
                     Multi-Perspective Views
                   </h3>
-                  <p style={{ color: 'var(--slate-600)', fontSize: '15px', lineHeight: 1.7 }}>
+                  <p style={{ color: 'rgba(255,255,255,0.8)', fontSize: '15px', lineHeight: 1.7 }}>
                     See the journey from any role's perspective — client, advisor, operations, compliance. Different views reveal different truths.
                   </p>
                 </div>
                 
-                <div className="feature-card">
+                <div className="feature-card card-purple">
                   <div className="feature-icon">😤</div>
-                  <h3 style={{ fontSize: '20px', fontWeight: 600, marginBottom: '12px', color: 'var(--navy-700)' }}>
+                  <h3 style={{ fontSize: '20px', fontWeight: 600, marginBottom: '12px', color: '#FFF' }}>
                     Friction Mapping
                   </h3>
-                  <p style={{ color: 'var(--slate-600)', fontSize: '15px', lineHeight: 1.7 }}>
+                  <p style={{ color: 'rgba(255,255,255,0.8)', fontSize: '15px', lineHeight: 1.7 }}>
                     Identify pain points, emotional states, and cognitive load. Not all work is equal — some steps drain more than they should.
                   </p>
                 </div>
                 
-                <div className="feature-card">
+                <div className="feature-card card-emerald">
                   <div className="feature-icon">🎯</div>
-                  <h3 style={{ fontSize: '20px', fontWeight: 600, marginBottom: '12px', color: 'var(--navy-700)' }}>
+                  <h3 style={{ fontSize: '20px', fontWeight: 600, marginBottom: '12px', color: '#FFF' }}>
                     Opportunity Scoring
                   </h3>
-                  <p style={{ color: 'var(--slate-600)', fontSize: '15px', lineHeight: 1.7 }}>
+                  <p style={{ color: 'rgba(255,255,255,0.8)', fontSize: '15px', lineHeight: 1.7 }}>
                     Automatically flag automation opportunities. See potential savings before you start the transformation project.
                   </p>
                 </div>
                 
-                <div className="feature-card">
+                <div className="feature-card card-indigo">
                   <div className="feature-icon">📋</div>
-                  <h3 style={{ fontSize: '20px', fontWeight: 600, marginBottom: '12px', color: 'var(--navy-700)' }}>
+                  <h3 style={{ fontSize: '20px', fontWeight: 600, marginBottom: '12px', color: '#FFF' }}>
                     Employee Surveys
                   </h3>
-                  <p style={{ color: 'var(--slate-600)', fontSize: '15px', lineHeight: 1.7 }}>
+                  <p style={{ color: 'rgba(255,255,255,0.8)', fontSize: '15px', lineHeight: 1.7 }}>
                     Collect ground-truth data from the people who do the work. Role-specific questionnaires capture time, friction, and improvement ideas.
                   </p>
                 </div>
                 
-                <div className="feature-card">
+                <div className="feature-card card-teal">
                   <div className="feature-icon">📊</div>
-                  <h3 style={{ fontSize: '20px', fontWeight: 600, marginBottom: '12px', color: 'var(--navy-700)' }}>
+                  <h3 style={{ fontSize: '20px', fontWeight: 600, marginBottom: '12px', color: '#FFF' }}>
                     Executive Reports
                   </h3>
-                  <p style={{ color: 'var(--slate-600)', fontSize: '15px', lineHeight: 1.7 }}>
+                  <p style={{ color: 'rgba(255,255,255,0.8)', fontSize: '15px', lineHeight: 1.7 }}>
                     One-click PDF exports with cost summaries, opportunity rankings, and funnel analysis. Board-ready insight without the busywork.
                   </p>
                 </div>
