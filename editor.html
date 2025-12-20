@@ -244,14 +244,17 @@
       opacity: 1;
     }
     
+    /* Dashboard Modal - hide title text on tight screens */
+    @media (max-width: 480px) {
+      .dashboard-title-text {
+        display: none !important;
+      }
+    }
+    
     /* Cost Analysis Dashboard Mobile Responsive */
     @media (max-width: 768px) {
       .cost-analysis-panel {
         padding: 16px !important;
-        margin: 0 -16px 24px -16px !important;
-        border-radius: 0 !important;
-        border-left: none !important;
-        border-right: none !important;
       }
       .cost-analysis-grid {
         display: flex !important;
@@ -1575,16 +1578,18 @@
       const mostWasteful = [...stageMetrics].sort((a, b) => b.wastedCost - a.wastedCost)[0];
 
       return (
-        <div style={{ padding: '24px 32px' }}>
-          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '20px' }}>
-            <h3 style={{ margin: 0, fontSize: '18px', fontWeight: 600, display: 'flex', alignItems: 'center', gap: '8px' }}>
-              <span>🔻</span> Funnel Analysis Dashboard
-            </h3>
-            <div style={{ display: 'flex', gap: '24px', alignItems: 'center' }}>
-              <span style={{ fontFamily: "'Interstate', sans-serif", fontSize: '12px', color: '#556275' }}>{periodLabel}</span>
-              {onClose && <button onClick={onClose} style={{ background: 'none', border: 'none', fontSize: '20px', cursor: 'pointer', color: '#8A95A5', padding: '0 4px' }}>×</button>}
+        <div style={{ padding: '20px 24px' }}>
+          {onClose && (
+            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '20px' }}>
+              <h3 style={{ margin: 0, fontSize: '18px', fontWeight: 600, display: 'flex', alignItems: 'center', gap: '8px' }}>
+                <span>🔻</span> Funnel Analysis Dashboard
+              </h3>
+              <div style={{ display: 'flex', gap: '24px', alignItems: 'center' }}>
+                <span style={{ fontFamily: "'Interstate', sans-serif", fontSize: '12px', color: '#556275' }}>{periodLabel}</span>
+                <button onClick={onClose} style={{ background: 'none', border: 'none', fontSize: '20px', cursor: 'pointer', color: '#8A95A5', padding: '0 4px' }}>×</button>
+              </div>
             </div>
-          </div>
+          )}
           
           {/* Summary Cards */}
           <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(130px, 1fr))', gap: '12px', marginBottom: '24px' }}>
@@ -1863,40 +1868,40 @@
       
       return (
         <div style={{
-          padding: '24px 32px'
+          padding: '20px 24px'
         }}>
-          <div style={{ 
-            display: 'flex', 
-            justifyContent: 'space-between', 
-            alignItems: 'center',
-            marginBottom: '20px'
-          }}>
-            <h3 style={{ 
-              margin: 0, 
-              fontSize: '18px', 
-              fontWeight: 600,
-              display: 'flex',
+          {onClose && (
+            <div style={{ 
+              display: 'flex', 
+              justifyContent: 'space-between', 
               alignItems: 'center',
-              gap: '8px'
+              marginBottom: '20px'
             }}>
-              <span>📅</span> Timeline Dashboard
-            </h3>
-            <div style={{ display: 'flex', gap: '24px', alignItems: 'center' }}>
-              {showCosts && (
-                <span style={{
-                  fontFamily: "'Interstate', sans-serif",
-                  fontSize: '13px',
-                  color: '#8B6914',
-                  fontWeight: 600
-                }}>
-                  💰 {formatCurrency(totalCost)}
-                </span>
-              )}
-              {onClose && (
+              <h3 style={{ 
+                margin: 0, 
+                fontSize: '18px', 
+                fontWeight: 600,
+                display: 'flex',
+                alignItems: 'center',
+                gap: '8px'
+              }}>
+                <span>📅</span> Timeline Dashboard
+              </h3>
+              <div style={{ display: 'flex', gap: '24px', alignItems: 'center' }}>
+                {showCosts && (
+                  <span style={{
+                    fontFamily: "'Interstate', sans-serif",
+                    fontSize: '13px',
+                    color: '#8B6914',
+                    fontWeight: 600
+                  }}>
+                    💰 {formatCurrency(totalCost)}
+                  </span>
+                )}
                 <button onClick={onClose} style={{ background: 'none', border: 'none', fontSize: '20px', cursor: 'pointer', color: '#8A95A5', padding: '0 4px' }}>×</button>
-              )}
+              </div>
             </div>
-          </div>
+          )}
           
           {/* Summary Cards */}
           <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(150px, 1fr))', gap: '16px', marginBottom: '24px' }}>
@@ -2537,25 +2542,27 @@
           return acc + (involvement?.timeMinutes || 0) * (involvement?.headcount || 1);
         }, 0);
         return { ...persona, totalCost: totalRoleCost, totalMinutes: totalRoleMinutes };
-      }).sort((a, b) => b.totalCost - a.totalCost);
+      }).filter(role => role.totalMinutes > 0).sort((a, b) => b.totalCost - a.totalCost);
 
       return (
         <div className="cost-analysis-panel" style={{
-          padding: '24px 32px'
+          padding: '20px 24px'
         }}>
-          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '24px' }}>
-            <h3 style={{ 
-              margin: 0, 
-              fontSize: '18px', 
-              fontWeight: 600,
-              display: 'flex',
-              alignItems: 'center',
-              gap: '8px'
-            }}>
-              <span>💰</span> Cost Analysis Dashboard
-            </h3>
-            <button onClick={onClose} style={{ background: 'none', border: 'none', fontSize: '20px', cursor: 'pointer', color: '#8A95A5' }}>×</button>
-          </div>
+          {onClose && (
+            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '24px' }}>
+              <h3 style={{ 
+                margin: 0, 
+                fontSize: '18px', 
+                fontWeight: 600,
+                display: 'flex',
+                alignItems: 'center',
+                gap: '8px'
+              }}>
+                <span>💰</span> Cost Analysis Dashboard
+              </h3>
+              <button onClick={onClose} style={{ background: 'none', border: 'none', fontSize: '20px', cursor: 'pointer', color: '#8A95A5' }}>×</button>
+            </div>
+          )}
           
           {/* Summary Cards */}
           <div className="cost-summary-cards" style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(180px, 1fr))', gap: '16px', marginBottom: '32px' }}>
@@ -2764,9 +2771,9 @@
                     alignItems: 'center',
                     gap: '10px',
                     padding: '12px',
-                    background: 'linear-gradient(135deg, #D4EDE5 0%, #96BCC7 100%)',
+                    background: '#FFF',
                     borderRadius: '8px',
-                    border: '1px solid #96BCC7',
+                    border: '2px solid #D4EDE5',
                     minWidth: 0
                   }}>
                     <div style={{
@@ -2784,8 +2791,8 @@
                       🎯
                     </div>
                     <div style={{ flex: 1, minWidth: 0, overflow: 'hidden' }}>
-                      <div style={{ fontWeight: 600, fontSize: '13px', color: '#2D8A6E', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>{step.name}</div>
-                      <div style={{ fontSize: '10px', color: '#2D8A6E', fontFamily: "'Interstate', sans-serif", whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>
+                      <div style={{ fontWeight: 600, fontSize: '13px', color: '#1A2332', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>{step.name}</div>
+                      <div style={{ fontSize: '10px', color: '#556275', fontFamily: "'Interstate', sans-serif", whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>
                         {step.stageName} · {step.automationOpportunity}
                       </div>
                     </div>
@@ -2793,7 +2800,7 @@
                       <div style={{ fontWeight: 700, fontSize: '14px', color: '#2D8A6E' }}>
                         {formatCurrency(step.automationSavings)} <span style={{ fontSize: '11px', opacity: 0.8 }}>({step.automationOpportunity === 'high' ? '70' : step.automationOpportunity === 'medium' ? '40' : '10'}%)</span>
                       </div>
-                      <div style={{ fontSize: '9px', color: '#2D8A6E', fontFamily: "'Interstate', sans-serif" }}>
+                      <div style={{ fontSize: '9px', color: '#556275', fontFamily: "'Interstate', sans-serif" }}>
                         potential savings
                       </div>
                     </div>
@@ -3772,6 +3779,8 @@
       const [showFunnel, setShowFunnel] = useState(false);
       const [showFunnelDashboard, setShowFunnelDashboard] = useState(false);
       const [showFunnelSettings, setShowFunnelSettings] = useState(false);
+      const [showDashboard, setShowDashboard] = useState(false);
+      const [dashboardTab, setDashboardTab] = useState('time'); // 'time', 'costs', 'funnel'
       const [highlightOpportunities, setHighlightOpportunities] = useState(false);
       const [viewMode, setViewMode] = useState('stages'); // 'steps' or 'stages';
       const [showExportMenu, setShowExportMenu] = useState(false);
@@ -3780,7 +3789,7 @@
       const [showGitHubSettings, setShowGitHubSettings] = useState(false);
       const [showPasswordPrompt, setShowPasswordPrompt] = useState(false);
       const [isMobile, setIsMobile] = useState(() => window.innerWidth < 768);
-      const [isCompact, setIsCompact] = useState(() => window.innerWidth < 1280 && window.innerWidth >= 768);
+      const [isCompact, setIsCompact] = useState(() => window.innerWidth < 1024 && window.innerWidth >= 768);
       const [showCosts, setShowCosts] = useState(true);
       const [isAppUnlocked, setIsAppUnlocked] = useState(() => {
         return sessionStorage.getItem('journeymap-app-unlocked') === 'true';
@@ -3822,7 +3831,7 @@
         const handleResize = () => {
           const width = window.innerWidth;
           setIsMobile(width < 768);
-          setIsCompact(width < 1280 && width >= 768);
+          setIsCompact(width < 1024 && width >= 768);
         };
         window.addEventListener('resize', handleResize);
         return () => window.removeEventListener('resize', handleResize);
@@ -4979,38 +4988,26 @@
                       </>
                     )}
                     
-                    {/* GROUP 3: Dashboards (open modal overlays) */}
+                    {/* GROUP 3: Dashboard */}
                     <div style={{ width: '1px', height: '20px', background: 'rgba(255,255,255,0.15)', margin: '0 2px' }} />
-                    {!isCompact && <span style={{ fontSize: '9px', color: 'rgba(255,255,255,0.4)', fontFamily: "'Interstate', sans-serif", textTransform: 'uppercase', letterSpacing: '0.5px' }}>Analyse</span>}
-                    <div style={{ display: 'flex', borderRadius: '4px', overflow: 'hidden', border: '1px solid rgba(255,255,255,0.3)' }}>
-                      <button onClick={() => setShowTimeline(!showTimeline)} style={{ padding: '6px 10px', background: showTimeline ? '#556275' : 'transparent', color: '#F4F5F7', border: 'none', cursor: 'pointer', fontFamily: "'Interstate', sans-serif", fontSize: '11px', display: 'flex', alignItems: 'center', gap: '4px', borderRight: '1px solid rgba(255,255,255,0.2)' }}>
-                        📅{!isCompact && ' Time'}
-                      </button>
-                      {showCosts && (
-                        <button onClick={() => setShowCostAnalysis(!showCostAnalysis)} style={{ padding: '6px 10px', background: showCostAnalysis ? '#556275' : 'transparent', color: '#F4F5F7', border: 'none', cursor: 'pointer', fontFamily: "'Interstate', sans-serif", fontSize: '11px', display: 'flex', alignItems: 'center', gap: '4px', borderRight: config.funnel?.enabled ? '1px solid rgba(255,255,255,0.2)' : 'none' }}>
-                          💰{!isCompact && ' Costs'}
-                        </button>
-                      )}
-                      {config.funnel?.enabled && (
-                        <button 
-                          onClick={() => setShowFunnelDashboard(true)} 
-                          style={{ 
-                            padding: '6px 10px', 
-                            background: 'transparent', 
-                            color: '#F4F5F7', 
-                            border: 'none', 
-                            cursor: 'pointer', 
-                            fontFamily: "'Interstate', sans-serif", 
-                            fontSize: '11px',
-                            display: 'flex',
-                            alignItems: 'center',
-                            gap: '4px'
-                          }}
-                        >
-                          🔻{!isCompact && ' Funnel'}
-                        </button>
-                      )}
-                    </div>
+                    <button 
+                      onClick={() => setShowDashboard(true)} 
+                      style={{ 
+                        padding: '6px 10px', 
+                        background: 'transparent', 
+                        color: '#F4F5F7', 
+                        border: '1px solid rgba(255,255,255,0.3)', 
+                        borderRadius: '4px',
+                        cursor: 'pointer', 
+                        fontFamily: "'Interstate', sans-serif", 
+                        fontSize: '11px',
+                        display: 'flex',
+                        alignItems: 'center',
+                        gap: '4px'
+                      }}
+                    >
+                      📊{!isCompact && ' Dashboard'}
+                    </button>
                     
                   </div>
                 </>
@@ -5226,36 +5223,25 @@
                   </div>
                 )}
                 
-                {/* GROUP 3: Dashboards */}
-                <div style={{ display: 'flex', borderRadius: '5px', overflow: 'hidden', border: '1px solid rgba(255,255,255,0.35)' }}>
-                  <button onClick={() => setShowTimeline(!showTimeline)} style={{ padding: '7px 12px', background: showTimeline ? '#556275' : 'transparent', color: '#F4F5F7', border: 'none', cursor: 'pointer', fontFamily: "'Interstate', sans-serif", fontSize: '11px', display: 'flex', alignItems: 'center', gap: '5px', borderRight: '1px solid rgba(255,255,255,0.25)' }}>
-                    📅
-                  </button>
-                  {showCosts && (
-                    <button onClick={() => setShowCostAnalysis(!showCostAnalysis)} style={{ padding: '7px 12px', background: showCostAnalysis ? '#556275' : 'transparent', color: '#F4F5F7', border: 'none', cursor: 'pointer', fontFamily: "'Interstate', sans-serif", fontSize: '11px', display: 'flex', alignItems: 'center', gap: '5px', borderRight: config.funnel?.enabled ? '1px solid rgba(255,255,255,0.25)' : 'none' }}>
-                      💰
-                    </button>
-                  )}
-                  {config.funnel?.enabled && (
-                    <button 
-                      onClick={() => setShowFunnelDashboard(true)} 
-                      style={{ 
-                        padding: '7px 12px', 
-                        background: 'transparent', 
-                        color: '#F4F5F7', 
-                        border: 'none', 
-                        cursor: 'pointer', 
-                        fontFamily: "'Interstate', sans-serif", 
-                        fontSize: '11px',
-                        display: 'flex',
-                        alignItems: 'center',
-                        gap: '5px'
-                      }}
-                    >
-                      📊
-                    </button>
-                  )}
-                </div>
+                {/* GROUP 3: Dashboard */}
+                <button 
+                  onClick={() => setShowDashboard(true)} 
+                  style={{ 
+                    padding: '7px 12px', 
+                    background: 'transparent', 
+                    color: '#F4F5F7', 
+                    border: '1px solid rgba(255,255,255,0.35)', 
+                    borderRadius: '5px',
+                    cursor: 'pointer', 
+                    fontFamily: "'Interstate', sans-serif", 
+                    fontSize: '11px',
+                    display: 'flex',
+                    alignItems: 'center',
+                    gap: '5px'
+                  }}
+                >
+                  📊
+                </button>
                 
                 {/* Export & Settings - pushed to right */}
                 <div style={{ display: 'flex', gap: '6px', alignItems: 'center', marginLeft: 'auto' }}>
@@ -5515,19 +5501,6 @@
             display: 'flex', 
             flexDirection: 'column' 
           }}>
-            {/* Timeline - inline on mobile with card styling */}
-            {isMobile && showTimeline && (
-              <div style={{ background: '#FFF', borderRadius: '12px', marginBottom: '24px', boxShadow: '0 2px 8px rgba(0,0,0,0.04)' }}>
-                <Timeline stages={config.stages} totalTime={totalTime} formatTime={formatTime} personas={config.personas} onClose={() => setShowTimeline(false)} showCosts={showCosts} />
-              </div>
-            )}
-            
-            {/* Cost Analysis - inline on mobile with card styling */}
-            {isMobile && showCostAnalysis && (
-              <div style={{ background: '#FFF', borderRadius: '12px', marginBottom: '24px', boxShadow: '0 4px 24px rgba(0,0,0,0.08)', border: '2px solid #F0DDA8' }}>
-                <CostAnalysisPanel stages={config.stages} personas={config.personas} formatTime={formatTime} onClose={() => setShowCostAnalysis(false)} />
-              </div>
-            )}
             <div className="stages-container" style={{ 
               display: 'flex', 
               flexWrap: 'nowrap',
@@ -6925,20 +6898,117 @@
           </footer>
 
           {/* Modals */}
-          {/* Timeline Modal - desktop only */}
-          {!isMobile && showTimeline && (
-            <div style={{ position: 'fixed', top: 0, left: 0, right: 0, bottom: 0, background: 'rgba(0,0,0,0.5)', display: 'flex', alignItems: 'center', justifyContent: 'center', zIndex: 3000, padding: '40px' }} onClick={() => setShowTimeline(false)}>
-              <div onClick={(e) => e.stopPropagation()} style={{ background: '#FFF', borderRadius: '12px', maxWidth: '1400px', width: '100%', maxHeight: '90vh', overflow: 'auto', boxShadow: '0 20px 60px rgba(0,0,0,0.3)' }}>
-                <Timeline stages={config.stages} totalTime={totalTime} formatTime={formatTime} personas={config.personas} onClose={() => setShowTimeline(false)} showCosts={showCosts} />
-              </div>
-            </div>
-          )}
-          
-          {/* Cost Analysis Modal - desktop only */}
-          {!isMobile && showCostAnalysis && (
-            <div style={{ position: 'fixed', top: 0, left: 0, right: 0, bottom: 0, background: 'rgba(0,0,0,0.5)', display: 'flex', alignItems: 'center', justifyContent: 'center', zIndex: 3000, padding: '40px' }} onClick={() => setShowCostAnalysis(false)}>
-              <div onClick={(e) => e.stopPropagation()} style={{ background: '#FFF', borderRadius: '12px', maxWidth: '1400px', width: '100%', maxHeight: '90vh', overflow: 'auto', boxShadow: '0 20px 60px rgba(0,0,0,0.3)' }}>
-                <CostAnalysisPanel stages={config.stages} personas={config.personas} formatTime={formatTime} onClose={() => setShowCostAnalysis(false)} />
+          {/* Unified Dashboard Modal */}
+          {showDashboard && (
+            <div style={{ position: 'fixed', top: 0, left: 0, right: 0, bottom: 0, background: 'rgba(0,0,0,0.5)', display: 'flex', alignItems: 'center', justifyContent: 'center', zIndex: 3000, padding: '12px' }} onClick={() => setShowDashboard(false)}>
+              <div onClick={(e) => e.stopPropagation()} style={{ background: '#FFF', borderRadius: '12px', maxWidth: '1400px', width: '100%', maxHeight: '90vh', display: 'flex', flexDirection: 'column', overflow: 'hidden', boxShadow: '0 20px 60px rgba(0,0,0,0.3)' }}>
+                {/* Dashboard Header with Tabs */}
+                <div style={{ background: '#192B45', padding: '12px 16px', display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: '12px', flexShrink: 0 }}>
+                  {/* Left: Icon + Title (title hidden on mobile) */}
+                  <div style={{ display: 'flex', alignItems: 'center', gap: '8px', flexShrink: 0 }}>
+                    <span style={{ fontSize: '18px' }}>📊</span>
+                    <h2 className="dashboard-title-text" style={{ margin: 0, color: '#FFF', fontSize: '16px', fontWeight: 500, fontFamily: "'Interstate', sans-serif" }}>Dashboard</h2>
+                  </div>
+                  {/* Center: Tabs */}
+                  <div style={{ display: 'flex', gap: '4px', background: 'rgba(255,255,255,0.1)', borderRadius: '8px', padding: '4px' }}>
+                    <button 
+                      onClick={() => setDashboardTab('time')}
+                      style={{ 
+                        padding: '8px 14px', 
+                        background: dashboardTab === 'time' ? '#FFF' : 'transparent',
+                        color: dashboardTab === 'time' ? '#192B45' : 'rgba(255,255,255,0.7)',
+                        border: 'none',
+                        borderRadius: '6px',
+                        cursor: 'pointer',
+                        fontFamily: "'Interstate', sans-serif",
+                        fontSize: '12px',
+                        fontWeight: 500,
+                        display: 'flex',
+                        alignItems: 'center',
+                        gap: '5px',
+                        transition: 'all 0.15s'
+                      }}
+                    >
+                      📅 Time
+                    </button>
+                    {showCosts && (
+                      <button 
+                        onClick={() => setDashboardTab('costs')}
+                        style={{ 
+                          padding: '8px 14px', 
+                          background: dashboardTab === 'costs' ? '#FFF' : 'transparent',
+                          color: dashboardTab === 'costs' ? '#192B45' : 'rgba(255,255,255,0.7)',
+                          border: 'none',
+                          borderRadius: '6px',
+                          cursor: 'pointer',
+                          fontFamily: "'Interstate', sans-serif",
+                          fontSize: '12px',
+                          fontWeight: 500,
+                          display: 'flex',
+                          alignItems: 'center',
+                          gap: '5px',
+                          transition: 'all 0.15s'
+                        }}
+                      >
+                        💰 Costs
+                      </button>
+                    )}
+                    {config.funnel?.enabled && (
+                      <button 
+                        onClick={() => setDashboardTab('funnel')}
+                        style={{ 
+                          padding: '8px 14px', 
+                          background: dashboardTab === 'funnel' ? '#FFF' : 'transparent',
+                          color: dashboardTab === 'funnel' ? '#192B45' : 'rgba(255,255,255,0.7)',
+                          border: 'none',
+                          borderRadius: '6px',
+                          cursor: 'pointer',
+                          fontFamily: "'Interstate', sans-serif",
+                          fontSize: '12px',
+                          fontWeight: 500,
+                          display: 'flex',
+                          alignItems: 'center',
+                          gap: '5px',
+                          transition: 'all 0.15s'
+                        }}
+                      >
+                        🔻 Funnel
+                      </button>
+                    )}
+                  </div>
+                  {/* Right: Close button */}
+                  <button 
+                    onClick={() => setShowDashboard(false)}
+                    style={{ 
+                      background: 'rgba(255,255,255,0.1)', 
+                      border: 'none', 
+                      color: '#FFF', 
+                      width: '32px', 
+                      height: '32px', 
+                      borderRadius: '8px', 
+                      cursor: 'pointer',
+                      fontSize: '18px',
+                      display: 'flex',
+                      alignItems: 'center',
+                      justifyContent: 'center',
+                      flexShrink: 0
+                    }}
+                  >
+                    ×
+                  </button>
+                </div>
+                {/* Dashboard Content */}
+                <div style={{ flex: 1, overflow: 'auto' }}>
+                  {dashboardTab === 'time' && (
+                    <Timeline stages={config.stages} totalTime={totalTime} formatTime={formatTime} personas={config.personas} showCosts={showCosts} />
+                  )}
+                  {dashboardTab === 'costs' && showCosts && (
+                    <CostAnalysisPanel stages={config.stages} personas={config.personas} formatTime={formatTime} />
+                  )}
+                  {dashboardTab === 'funnel' && config.funnel?.enabled && (
+                    <FunnelDashboard config={config} formatTime={formatTime} />
+                  )}
+                </div>
               </div>
             </div>
           )}
@@ -6973,15 +7043,6 @@
             status={gitHubStatus}
             onClose={() => setShowGitHubSettings(false)} 
           />}
-          
-          {/* Funnel Dashboard Modal */}
-          {showFunnelDashboard && (
-            <div style={{ position: 'fixed', top: 0, left: 0, right: 0, bottom: 0, background: 'rgba(0,0,0,0.5)', display: 'flex', alignItems: 'center', justifyContent: 'center', zIndex: 1000 }} onClick={() => setShowFunnelDashboard(false)}>
-              <div onClick={(e) => e.stopPropagation()} style={{ background: '#FFF', borderRadius: '12px', maxWidth: '1200px', width: '100%', maxHeight: '90vh', overflow: 'auto', boxShadow: '0 20px 60px rgba(0,0,0,0.3)' }}>
-                <FunnelDashboard config={config} formatTime={formatTime} onClose={() => setShowFunnelDashboard(false)} />
-              </div>
-            </div>
-          )}
           
           {/* Funnel Settings Modal */}
           {showFunnelSettings && <FunnelSettingsModal config={config} onUpdate={updateFunnelSettings} onClose={() => setShowFunnelSettings(false)} />}
