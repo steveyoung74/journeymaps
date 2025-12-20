@@ -1225,16 +1225,18 @@
         if (!config || !config.stages) return null;
         
         const allSteps = config.stages.flatMap(s => s.steps || []);
-        const totalTime = allSteps.reduce((acc, s) => acc + (s.timeMinutes || 0), 0);
+        
+        // Handle both timeMinutes and duration field names
+        const totalTime = allSteps.reduce((acc, s) => acc + (s.timeMinutes || s.duration || 0), 0);
         const totalSteps = allSteps.length;
         const totalPainPoints = allSteps.reduce((acc, s) => acc + (s.painPoints?.length || 0), 0);
         const highImprovements = allSteps.filter(s => s.automationOpportunity === 'high').length;
         const totalRegReqs = allSteps.reduce((acc, s) => acc + (s.regulatoryRequirements?.length || 0), 0);
         
-        // Calculate average friction
-        const stepsWithFriction = allSteps.filter(s => s.frictionScore);
+        // Calculate average friction - handle both frictionScore and friction field names
+        const stepsWithFriction = allSteps.filter(s => s.frictionScore || s.friction);
         const avgFriction = stepsWithFriction.length > 0 
-          ? (stepsWithFriction.reduce((acc, s) => acc + s.frictionScore, 0) / stepsWithFriction.length).toFixed(1)
+          ? (stepsWithFriction.reduce((acc, s) => acc + (s.frictionScore || s.friction || 0), 0) / stepsWithFriction.length).toFixed(1)
           : null;
         
         // Calculate total cost if personas exist with salaries
@@ -1246,7 +1248,8 @@
             if (persona && persona.salary > 0) {
               hasCostData = true;
               const hourlyRate = (persona.salary * (persona.burdenMultiplier || 1.4)) / (52 * (persona.hoursPerWeek || 37.5));
-              const stepCost = ((step.timeMinutes || 0) / 60) * hourlyRate + (step.additionalCosts || 0);
+              const stepTime = step.timeMinutes || step.duration || 0;
+              const stepCost = (stepTime / 60) * hourlyRate + (step.additionalCosts || 0);
               totalCost += stepCost;
             }
           });
