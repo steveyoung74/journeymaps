@@ -327,15 +327,13 @@
       
       /* Stats bar */
       .stats-bar {
-        padding: 12px 16px !important;
+        padding: 8px 16px !important;
         gap: 12px !important;
         flex-wrap: wrap !important;
-        justify-content: space-between !important;
       }
       
       .stats-bar > div {
-        flex: 0 0 calc(50% - 8px) !important;
-        min-width: 100px !important;
+        min-width: auto !important;
       }
       
       /* Main content - keep horizontal scroll */
@@ -376,8 +374,7 @@
       }
       
       .stats-bar > div {
-        flex: 0 0 calc(50% - 6px) !important;
-        min-width: 90px !important;
+        min-width: auto !important;
       }
     }
     
@@ -5281,131 +5278,86 @@
           )}
 
           {/* Stats Bar */}
-          <div className="stats-bar" style={{ background: '#FFF', borderBottom: '1px solid #E0E0E0', padding: '16px 40px', display: 'flex', gap: '32px', alignItems: 'center', flexWrap: 'wrap', flexShrink: 0 }}>
-            <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
-              <span style={{ fontSize: '20px' }}>⏱️</span>
-              <div>
-                <div style={{ fontFamily: "'Interstate', sans-serif", fontSize: '11px', color: '#8A95A5', textTransform: 'uppercase' }}>Total Time</div>
-                <div style={{ fontWeight: 600 }}>{formatTime(totalTime)}</div>
-              </div>
+          <div className="stats-bar" style={{ background: '#FFF', borderBottom: '1px solid #E0E0E0', padding: '10px 24px', display: 'flex', gap: '8px', alignItems: 'center', flexWrap: 'wrap', flexShrink: 0 }}>
+            <div style={{ display: 'flex', alignItems: 'center', gap: '6px', padding: '6px 12px', background: '#F4F5F7', borderRadius: '6px' }} title="Total Time">
+              <span style={{ fontSize: '14px' }}>⏱️</span>
+              <span style={{ fontWeight: 600, fontSize: '13px', fontFamily: "'Interstate', sans-serif", color: '#3D4A5C' }}>{formatTime(totalTime)}</span>
             </div>
-            <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
-              <span style={{ fontSize: '20px' }}>{frictionConfig[Math.round(stats.avgFriction) || 3]?.emoji || '😕'}</span>
-              <div>
-                <div style={{ fontFamily: "'Interstate', sans-serif", fontSize: '11px', color: '#8A95A5', textTransform: 'uppercase' }}>Avg Friction</div>
-                <div style={{ fontWeight: 600, color: frictionConfig[Math.round(stats.avgFriction) || 3]?.color || '#556275' }}>{stats.avgFriction}/5</div>
-              </div>
+            <div style={{ display: 'flex', alignItems: 'center', gap: '6px', padding: '6px 12px', background: '#F4F5F7', borderRadius: '6px' }} title="Average Friction">
+              <span style={{ fontSize: '14px' }}>{frictionConfig[Math.round(stats.avgFriction) || 3]?.emoji || '😕'}</span>
+              <span style={{ fontWeight: 600, fontSize: '13px', fontFamily: "'Interstate', sans-serif", color: frictionConfig[Math.round(stats.avgFriction) || 3]?.color || '#556275' }}>{stats.avgFriction}/5</span>
             </div>
-            <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
-              <span style={{ fontSize: '20px' }}>⚠️</span>
-              <div>
-                <div style={{ fontFamily: "'Interstate', sans-serif", fontSize: '11px', color: '#8A95A5', textTransform: 'uppercase' }}>Pain Points</div>
-                <div style={{ fontWeight: 600 }}>{stats.totalPainPoints}</div>
-              </div>
+            <div style={{ display: 'flex', alignItems: 'center', gap: '6px', padding: '6px 12px', background: '#F4F5F7', borderRadius: '6px' }} title="Pain Points">
+              <span style={{ fontSize: '14px' }}>⚠️</span>
+              <span style={{ fontWeight: 600, fontSize: '13px', fontFamily: "'Interstate', sans-serif", color: '#3D4A5C' }}>{stats.totalPainPoints}</span>
             </div>
-            <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
-              <span style={{ fontSize: '20px' }}>🎯</span>
-              <div>
-                <div style={{ fontFamily: "'Interstate', sans-serif", fontSize: '11px', color: '#8A95A5', textTransform: 'uppercase' }}>High Improvement</div>
-                <div style={{ fontWeight: 600 }}>{stats.highAutomation} steps</div>
-              </div>
+            <div style={{ display: 'flex', alignItems: 'center', gap: '6px', padding: '6px 12px', background: '#F4F5F7', borderRadius: '6px' }} title="High Improvement Opportunities">
+              <span style={{ fontSize: '14px' }}>🎯</span>
+              <span style={{ fontWeight: 600, fontSize: '13px', fontFamily: "'Interstate', sans-serif", color: '#3D4A5C' }}>{stats.highAutomation}</span>
             </div>
-            <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
-              <span style={{ fontSize: '20px' }}>📋</span>
-              <div>
-                <div style={{ fontFamily: "'Interstate', sans-serif", fontSize: '11px', color: '#8A95A5', textTransform: 'uppercase' }}>Regulatory Reqs</div>
-                <div style={{ fontWeight: 600 }}>{stats.totalRegReqs}</div>
-              </div>
+            <div style={{ display: 'flex', alignItems: 'center', gap: '6px', padding: '6px 12px', background: '#F4F5F7', borderRadius: '6px' }} title="Regulatory Requirements">
+              <span style={{ fontSize: '14px' }}>📋</span>
+              <span style={{ fontWeight: 600, fontSize: '13px', fontFamily: "'Interstate', sans-serif", color: '#3D4A5C' }}>{stats.totalRegReqs}</span>
             </div>
             {showCosts && (
-              <div style={{ display: 'flex', alignItems: 'center', gap: '12px', marginLeft: 'auto' }}>
-                <div style={{ display: 'flex', alignItems: 'center', gap: '8px', padding: '8px 16px', background: '#FAF0D6', borderRadius: '8px' }}>
-                  <span style={{ fontSize: '20px' }}>💰</span>
-                  <div>
-                    <div style={{ fontFamily: "'Interstate', sans-serif", fontSize: '11px', color: '#8B6914', textTransform: 'uppercase' }}>Total Cost</div>
-                    <div style={{ fontWeight: 600, color: '#8B6914', fontSize: '18px' }}>{formatCurrency(stats.totalCost)}</div>
-                  </div>
+              <div style={{ display: 'flex', alignItems: 'center', gap: '8px', marginLeft: 'auto' }}>
+                <div style={{ display: 'flex', alignItems: 'center', gap: '6px', padding: '6px 12px', background: '#FAF0D6', borderRadius: '6px' }} title="Total Journey Cost">
+                  <span style={{ fontSize: '14px' }}>💰</span>
+                  <span style={{ fontWeight: 600, color: '#8B6914', fontSize: '14px', fontFamily: "'Interstate', sans-serif" }}>{formatCurrency(stats.totalCost)}</span>
                 </div>
                 <div style={{ 
                   display: 'flex', 
                   alignItems: 'center', 
-                  gap: '8px', 
-                  padding: highlightOpportunities ? '8px 16px' : '0', 
-                  background: 'linear-gradient(135deg, #2D8A6E 0%, #2D8A6E 100%)', 
-                  borderRadius: '8px',
-                  maxWidth: highlightOpportunities ? '400px' : '0',
+                  gap: '6px', 
+                  padding: highlightOpportunities ? '6px 12px' : '0', 
+                  background: '#2D8A6E', 
+                  borderRadius: '6px',
+                  maxWidth: highlightOpportunities ? '300px' : '0',
                   opacity: highlightOpportunities ? 1 : 0,
                   overflow: 'hidden',
                   transition: 'max-width 0.3s ease, opacity 0.3s ease, padding 0.3s ease',
                   whiteSpace: 'nowrap'
-                }}>
-                    <span style={{ fontSize: '20px' }}>🎯</span>
-                    <div>
-                      <div style={{ fontFamily: "'Interstate', sans-serif", fontSize: '11px', color: 'rgba(255,255,255,0.9)', textTransform: 'uppercase' }}>Potential Savings</div>
-                      <div style={{ fontWeight: 600, color: '#FFF', fontSize: '18px' }}>
-                        {(() => {
-                          const totalSavings = config.stages.reduce((acc, stage) => 
-                            acc + stage.steps.reduce((stepAcc, step) => {
-                              const stepCost = calculateStepCost(step, config.personas);
-                              const savings = step.automationOpportunity === 'high' ? stepCost * 0.7 
-                                : step.automationOpportunity === 'medium' ? stepCost * 0.4 
-                                : step.automationOpportunity === 'low' ? stepCost * 0.1 : 0;
-                              return stepAcc + savings;
-                            }, 0), 0);
-                          const totalTimeSavings = config.stages.reduce((acc, stage) => 
-                            acc + stage.steps.reduce((stepAcc, step) => {
-                              const savings = step.automationOpportunity === 'high' ? step.timeMinutes * 0.7 
-                                : step.automationOpportunity === 'medium' ? step.timeMinutes * 0.4 
-                                : step.automationOpportunity === 'low' ? step.timeMinutes * 0.1 : 0;
-                              return stepAcc + savings;
-                            }, 0), 0);
-                          const percentage = stats.totalCost > 0 ? Math.round((totalSavings / stats.totalCost) * 100) : 0;
-                          return `${formatTime(Math.round(totalTimeSavings))} · ${formatCurrency(totalSavings)} (${percentage}%)`;
-                        })()}
-                      </div>
-                    </div>
+                }} title="Potential Savings from Improvement Opportunities">
+                    <span style={{ fontSize: '14px' }}>✨</span>
+                    <span style={{ fontWeight: 600, color: '#FFF', fontSize: '13px', fontFamily: "'Interstate', sans-serif" }}>
+                      {(() => {
+                        const totalSavings = config.stages.reduce((acc, stage) => 
+                          acc + stage.steps.reduce((stepAcc, step) => {
+                            const stepCost = calculateStepCost(step, config.personas);
+                            const savings = step.automationOpportunity === 'high' ? stepCost * 0.7 
+                              : step.automationOpportunity === 'medium' ? stepCost * 0.4 
+                              : step.automationOpportunity === 'low' ? stepCost * 0.1 : 0;
+                            return stepAcc + savings;
+                          }, 0), 0);
+                        const percentage = stats.totalCost > 0 ? Math.round((totalSavings / stats.totalCost) * 100) : 0;
+                        return `Save ${formatCurrency(totalSavings)} (${percentage}%)`;
+                      })()}
+                    </span>
                 </div>
                 {funnelMetrics && (
                   <div style={{ 
                     display: 'flex', 
                     alignItems: 'center', 
                     gap: '8px', 
-                    padding: showFunnel ? '8px 16px' : '0',
-                    background: 'linear-gradient(135deg, #5A5B8A 0%, #5A5B8A 100%)', 
-                    borderRadius: '8px',
-                    maxWidth: showFunnel ? '500px' : '0',
+                    padding: showFunnel ? '6px 12px' : '0',
+                    background: '#5A5B8A', 
+                    borderRadius: '6px',
+                    maxWidth: showFunnel ? '400px' : '0',
                     opacity: showFunnel ? 1 : 0,
                     overflow: 'hidden',
                     transition: 'max-width 0.3s ease, opacity 0.3s ease, padding 0.3s ease',
                     whiteSpace: 'nowrap'
-                  }}>
-                    <span style={{ fontSize: '20px' }}>🔻</span>
-                    <div>
-                      <div style={{ fontFamily: "'Interstate', sans-serif", fontSize: '11px', color: 'rgba(255,255,255,0.9)', textTransform: 'uppercase' }}>Funnel</div>
-                      <div style={{ fontWeight: 600, color: '#FFF', fontSize: '18px', display: 'flex', alignItems: 'center', gap: '6px' }}>
-                        <span>{funnelMetrics.initialVolume.toLocaleString()}</span>
-                        <span style={{ fontSize: '12px', opacity: 0.7 }}>→</span>
-                        <span>{funnelMetrics.finalVolume.toLocaleString()}</span>
-                        <span style={{ 
-                          marginLeft: '4px',
-                          padding: '2px 8px', 
-                          borderRadius: '10px', 
-                          fontSize: '12px',
-                          fontWeight: 600,
-                          background: 'rgba(255,255,255,0.2)',
-                          color: '#FFF'
-                        }}>
-                          {funnelMetrics.overallConversionRate.toFixed(1)}%
-                        </span>
-                      </div>
-                    </div>
-                    <div style={{ marginLeft: '8px', paddingLeft: '12px', borderLeft: '1px solid rgba(255,255,255,0.3)' }}>
-                      <div style={{ fontFamily: "'Interstate', sans-serif", fontSize: '11px', color: 'rgba(255,255,255,0.9)', textTransform: 'uppercase' }}>Spend</div>
-                      <div style={{ fontWeight: 600, fontSize: '14px', display: 'flex', alignItems: 'center', gap: '8px', color: '#FFF' }}>
-                        <span>✓ {formatCurrency(funnelMetrics.totalStageInvestment)}</span>
-                        <span style={{ background: 'rgba(239,68,68,0.9)', padding: '2px 8px', borderRadius: '4px' }}>💸 {formatCurrency(funnelMetrics.totalWastedCost)}</span>
-                      </div>
-                    </div>
+                  }} title="Funnel Analysis">
+                    <span style={{ fontSize: '14px' }}>🔻</span>
+                    <span style={{ fontWeight: 600, color: '#FFF', fontSize: '13px', fontFamily: "'Interstate', sans-serif" }}>
+                      {funnelMetrics.initialVolume}→{funnelMetrics.finalVolume}
+                    </span>
+                    <span style={{ padding: '2px 6px', borderRadius: '4px', fontSize: '11px', fontWeight: 600, background: 'rgba(255,255,255,0.2)', color: '#FFF' }}>
+                      {funnelMetrics.overallConversionRate.toFixed(0)}%
+                    </span>
+                    <span style={{ color: 'rgba(255,255,255,0.6)', fontSize: '11px' }}>|</span>
+                    <span style={{ color: '#FFF', fontSize: '12px' }}>✓{formatCurrency(funnelMetrics.totalStageInvestment)}</span>
+                    <span style={{ background: 'rgba(239,68,68,0.9)', padding: '2px 6px', borderRadius: '4px', fontSize: '11px', fontWeight: 600 }}>💸{formatCurrency(funnelMetrics.totalWastedCost)}</span>
                   </div>
                 )}
               </div>
