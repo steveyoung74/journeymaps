@@ -148,7 +148,7 @@
       display: flex;
       align-items: center;
       justify-content: center;
-      z-index: 1000;
+      z-index: 9999;
       padding: 20px;
       opacity: 0;
       animation: fadeIn 0.2s ease forwards;
@@ -276,8 +276,9 @@
       background: url('topography-light.svg') center/600px 600px repeat;
       opacity: 1;
       pointer-events: none;
+      z-index: 0;
     }
-    .section-alt > * {
+    .section-alt > .container {
       position: relative;
       z-index: 1;
     }
@@ -295,8 +296,10 @@
       background: url('topography-light.svg') center/600px 600px repeat;
       opacity: 1;
       pointer-events: none;
+      z-index: 0;
     }
-    .dashboard-bg > * {
+    .dashboard-bg > header,
+    .dashboard-bg > main {
       position: relative;
       z-index: 1;
     }
@@ -426,6 +429,14 @@
     const { useState, useEffect } = React;
     
     const APP_VERSION = '1.3.0';
+    
+    // Helper to safely format dates
+    const formatDate = (dateStr) => {
+      if (!dateStr) return 'Unknown';
+      const date = new Date(dateStr);
+      if (isNaN(date.getTime())) return 'Unknown';
+      return date.toLocaleDateString();
+    };
     
     // GitHub configuration
     const GITHUB_CONFIG = {
@@ -1180,7 +1191,7 @@
                     </p>
                     <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
                       <span className="text-muted text-small">
-                        Updated {new Date(map.updatedAt).toLocaleDateString()}
+                        Updated {formatDate(map.updatedAt)}
                       </span>
                       {map.owner === user.email && (
                         <button 
