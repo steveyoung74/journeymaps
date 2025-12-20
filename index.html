@@ -899,45 +899,200 @@
           </section>
           
           {/* How It Works */}
-          <section id="how-it-works" className="section">
+          <section id="how-it-works" style={{ background: 'linear-gradient(145deg, var(--navy-700) 0%, var(--navy-900) 100%)', padding: '100px 0' }}>
             <div className="container">
-              <div style={{ textAlign: 'center', marginBottom: '64px' }}>
-                <div style={{ fontSize: '13px', color: 'var(--steel-500)', fontWeight: 600, letterSpacing: '1px', marginBottom: '12px' }}>PROCESS</div>
-                <h2 style={{ fontSize: '40px', fontWeight: 300, marginBottom: '16px', color: 'var(--navy-700)' }}>
-                  From complexity to clarity in three steps
+              <div style={{ textAlign: 'center', marginBottom: '72px' }}>
+                <div style={{ fontSize: '13px', color: 'var(--steel-400)', fontWeight: 600, letterSpacing: '1.5px', marginBottom: '16px' }}>HOW IT WORKS</div>
+                <h2 style={{ fontSize: '44px', fontWeight: 300, marginBottom: '16px', color: '#FFF', lineHeight: 1.2 }}>
+                  From <span style={{ fontWeight: 600 }}>chaos</span> to <span style={{ fontWeight: 600, color: 'var(--steel-400)' }}>clarity</span> in three steps
                 </h2>
+                <p style={{ fontSize: '18px', color: 'rgba(255,255,255,0.6)', maxWidth: '500px', margin: '0 auto' }}>
+                  No consultants. No months of workshops. Just you and your process.
+                </p>
               </div>
               
-              <div className="steps">
-                <div className="step">
-                  <div className="step-number">1</div>
-                  <h3 style={{ fontSize: '20px', fontWeight: 600, marginBottom: '12px', color: 'var(--navy-700)' }}>
-                    Map Your Journey
-                  </h3>
-                  <p style={{ color: 'var(--slate-600)', fontSize: '15px', lineHeight: 1.7 }}>
-                    Define stages and steps. Assign roles, times, and touchpoints. Capture the process as it really happens — not as it's documented.
-                  </p>
-                </div>
+              {/* Timeline */}
+              <div style={{ position: 'relative', maxWidth: '1100px', margin: '0 auto' }}>
+                {/* Connecting Line */}
+                <div style={{ 
+                  position: 'absolute', 
+                  top: '60px', 
+                  left: '15%', 
+                  right: '15%', 
+                  height: '2px', 
+                  background: 'linear-gradient(90deg, var(--steel-500) 0%, var(--amber-500) 50%, #22c55e 100%)',
+                  opacity: 0.4,
+                  display: 'none'
+                }} className="timeline-line"></div>
                 
-                <div className="step">
-                  <div className="step-number">2</div>
-                  <h3 style={{ fontSize: '20px', fontWeight: 600, marginBottom: '12px', color: 'var(--navy-700)' }}>
-                    Add the Numbers
-                  </h3>
-                  <p style={{ color: 'var(--slate-600)', fontSize: '15px', lineHeight: 1.7 }}>
-                    Input salaries, burden rates, and volumes. Fathom calculates fully-loaded costs and surfaces insights you couldn't see before.
-                  </p>
+                <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(300px, 1fr))', gap: '32px' }}>
+                  {/* Step 1 */}
+                  <div style={{ 
+                    background: 'rgba(255,255,255,0.05)', 
+                    borderRadius: '20px', 
+                    padding: '40px 32px',
+                    border: '1px solid rgba(255,255,255,0.1)',
+                    position: 'relative',
+                    overflow: 'hidden'
+                  }}>
+                    <div style={{ 
+                      position: 'absolute',
+                      top: '-20px',
+                      right: '-20px',
+                      width: '100px',
+                      height: '100px',
+                      background: 'var(--steel-500)',
+                      opacity: 0.1,
+                      borderRadius: '50%'
+                    }}></div>
+                    <div style={{ 
+                      width: '56px', 
+                      height: '56px', 
+                      background: 'linear-gradient(135deg, var(--steel-400) 0%, var(--steel-600) 100%)',
+                      borderRadius: '16px',
+                      display: 'flex',
+                      alignItems: 'center',
+                      justifyContent: 'center',
+                      marginBottom: '24px',
+                      fontSize: '24px',
+                      fontWeight: 700,
+                      color: '#FFF'
+                    }}>1</div>
+                    <h3 style={{ fontSize: '22px', fontWeight: 600, marginBottom: '12px', color: '#FFF' }}>
+                      Map Your Journey
+                    </h3>
+                    <p style={{ color: 'rgba(255,255,255,0.7)', fontSize: '15px', lineHeight: 1.7, marginBottom: '24px' }}>
+                      Define stages and steps. Assign roles, times, and touchpoints. Capture reality — not documentation fiction.
+                    </p>
+                    <div style={{ 
+                      background: 'rgba(0,0,0,0.2)', 
+                      borderRadius: '10px', 
+                      padding: '16px',
+                      display: 'flex',
+                      gap: '8px',
+                      flexWrap: 'wrap'
+                    }}>
+                      <span style={{ background: 'var(--steel-500)', color: '#FFF', padding: '4px 10px', borderRadius: '6px', fontSize: '12px', fontWeight: 500 }}>🎯 Drag & Drop</span>
+                      <span style={{ background: 'var(--steel-500)', color: '#FFF', padding: '4px 10px', borderRadius: '6px', fontSize: '12px', fontWeight: 500 }}>📋 23 Templates</span>
+                    </div>
+                  </div>
+                  
+                  {/* Step 2 */}
+                  <div style={{ 
+                    background: 'rgba(255,255,255,0.05)', 
+                    borderRadius: '20px', 
+                    padding: '40px 32px',
+                    border: '1px solid rgba(255,255,255,0.1)',
+                    position: 'relative',
+                    overflow: 'hidden'
+                  }}>
+                    <div style={{ 
+                      position: 'absolute',
+                      top: '-20px',
+                      right: '-20px',
+                      width: '100px',
+                      height: '100px',
+                      background: 'var(--amber-500)',
+                      opacity: 0.1,
+                      borderRadius: '50%'
+                    }}></div>
+                    <div style={{ 
+                      width: '56px', 
+                      height: '56px', 
+                      background: 'linear-gradient(135deg, var(--amber-400) 0%, var(--amber-600) 100%)',
+                      borderRadius: '16px',
+                      display: 'flex',
+                      alignItems: 'center',
+                      justifyContent: 'center',
+                      marginBottom: '24px',
+                      fontSize: '24px',
+                      fontWeight: 700,
+                      color: '#FFF'
+                    }}>2</div>
+                    <h3 style={{ fontSize: '22px', fontWeight: 600, marginBottom: '12px', color: '#FFF' }}>
+                      Add the Numbers
+                    </h3>
+                    <p style={{ color: 'rgba(255,255,255,0.7)', fontSize: '15px', lineHeight: 1.7, marginBottom: '24px' }}>
+                      Input salaries and volumes. Fathom calculates true costs — NI, pension, workspace, the lot.
+                    </p>
+                    <div style={{ 
+                      background: 'rgba(0,0,0,0.2)', 
+                      borderRadius: '10px', 
+                      padding: '16px',
+                      display: 'flex',
+                      gap: '8px',
+                      flexWrap: 'wrap'
+                    }}>
+                      <span style={{ background: 'var(--amber-600)', color: '#FFF', padding: '4px 10px', borderRadius: '6px', fontSize: '12px', fontWeight: 500 }}>💷 True Cost</span>
+                      <span style={{ background: 'var(--amber-600)', color: '#FFF', padding: '4px 10px', borderRadius: '6px', fontSize: '12px', fontWeight: 500 }}>📉 Drop-off Waste</span>
+                    </div>
+                  </div>
+                  
+                  {/* Step 3 */}
+                  <div style={{ 
+                    background: 'rgba(255,255,255,0.05)', 
+                    borderRadius: '20px', 
+                    padding: '40px 32px',
+                    border: '1px solid rgba(255,255,255,0.1)',
+                    position: 'relative',
+                    overflow: 'hidden'
+                  }}>
+                    <div style={{ 
+                      position: 'absolute',
+                      top: '-20px',
+                      right: '-20px',
+                      width: '100px',
+                      height: '100px',
+                      background: '#22c55e',
+                      opacity: 0.1,
+                      borderRadius: '50%'
+                    }}></div>
+                    <div style={{ 
+                      width: '56px', 
+                      height: '56px', 
+                      background: 'linear-gradient(135deg, #34d399 0%, #16a34a 100%)',
+                      borderRadius: '16px',
+                      display: 'flex',
+                      alignItems: 'center',
+                      justifyContent: 'center',
+                      marginBottom: '24px',
+                      fontSize: '24px',
+                      fontWeight: 700,
+                      color: '#FFF'
+                    }}>3</div>
+                    <h3 style={{ fontSize: '22px', fontWeight: 600, marginBottom: '12px', color: '#FFF' }}>
+                      Decide with Confidence
+                    </h3>
+                    <p style={{ color: 'rgba(255,255,255,0.7)', fontSize: '15px', lineHeight: 1.7, marginBottom: '24px' }}>
+                      Export reports, share with stakeholders, and prioritise based on real impact — not hunches.
+                    </p>
+                    <div style={{ 
+                      background: 'rgba(0,0,0,0.2)', 
+                      borderRadius: '10px', 
+                      padding: '16px',
+                      display: 'flex',
+                      gap: '8px',
+                      flexWrap: 'wrap'
+                    }}>
+                      <span style={{ background: '#16a34a', color: '#FFF', padding: '4px 10px', borderRadius: '6px', fontSize: '12px', fontWeight: 500 }}>📊 PDF Reports</span>
+                      <span style={{ background: '#16a34a', color: '#FFF', padding: '4px 10px', borderRadius: '6px', fontSize: '12px', fontWeight: 500 }}>🎯 ROI Ready</span>
+                    </div>
+                  </div>
                 </div>
-                
-                <div className="step">
-                  <div className="step-number">3</div>
-                  <h3 style={{ fontSize: '20px', fontWeight: 600, marginBottom: '12px', color: 'var(--navy-700)' }}>
-                    Decide with Confidence
-                  </h3>
-                  <p style={{ color: 'var(--slate-600)', fontSize: '15px', lineHeight: 1.7 }}>
-                    Export reports, share with stakeholders, and prioritise improvements based on real impact — not hunches or politics.
-                  </p>
-                </div>
+              </div>
+              
+              {/* CTA */}
+              <div style={{ textAlign: 'center', marginTop: '56px' }}>
+                <button onClick={onGetStarted} className="btn" style={{ 
+                  background: '#FFF', 
+                  color: 'var(--navy-700)', 
+                  padding: '18px 40px', 
+                  fontSize: '16px', 
+                  fontWeight: 600,
+                  borderRadius: '12px'
+                }}>
+                  Start Mapping Now →
+                </button>
               </div>
             </div>
           </section>
