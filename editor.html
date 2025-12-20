@@ -2754,7 +2754,7 @@
             {/* Best Improvement Opportunities */}
             <div className="cost-automation-section" style={{ gridColumn: '1 / -1' }}>
               <h4 style={{ margin: '0 0 16px', fontSize: '14px', fontFamily: "'Interstate', sans-serif", textTransform: 'uppercase', letterSpacing: '0.5px', color: '#2D8A6E' }}>
-                💡 Top Improvement Opportunities (by potential savings)
+                🎯 Top Improvement Opportunities (by potential savings)
               </h4>
               <div className="cost-automation-grid" style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(280px, 1fr))', gap: '12px' }}>
                 {byAutomationSavings.filter(s => s.automationSavings > 0).slice(0, 8).map((step, i) => (
@@ -2780,7 +2780,7 @@
                       fontSize: '16px',
                       flexShrink: 0
                     }}>
-                      💡
+                      🎯
                     </div>
                     <div style={{ flex: 1, minWidth: 0, overflow: 'hidden' }}>
                       <div style={{ fontWeight: 600, fontSize: '13px', color: '#2D8A6E', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>{step.name}</div>
@@ -4832,9 +4832,9 @@
               flexShrink: 0
             }}>
             {/* Row 1: Logo + Title/Stats (left) | Export/Settings (right) */}
-            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', gap: '20px' }}>
+            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', gap: '16px' }}>
               {/* Left side: Back Button (multi-user mode) + Logo + Divider + Title/Stats */}
-              <div className="header-logo-title" style={{ display: 'flex', alignItems: 'center', gap: '20px', flex: 1, minWidth: 0 }}>
+              <div className="header-logo-title" style={{ display: 'flex', alignItems: 'center', gap: '16px', flex: 1, minWidth: 0 }}>
                 {/* Back to Dashboard Button - only in multi-user mode */}
                 {isMultiUserMode && (
                   <button
@@ -4843,33 +4843,34 @@
                       background: 'rgba(255,255,255,0.1)',
                       border: '1px solid rgba(255,255,255,0.3)',
                       borderRadius: '6px',
-                      padding: '8px 14px',
+                      padding: '8px 12px',
                       color: '#FFF',
                       cursor: 'pointer',
                       fontFamily: "'Interstate', sans-serif",
-                      fontSize: '13px',
+                      fontSize: '12px',
                       display: 'flex',
                       alignItems: 'center',
-                      gap: '6px',
+                      gap: '4px',
                       flexShrink: 0,
                       transition: 'all 0.15s'
                     }}
                     onMouseOver={(e) => { e.currentTarget.style.background = 'rgba(255,255,255,0.2)'; }}
                     onMouseOut={(e) => { e.currentTarget.style.background = 'rgba(255,255,255,0.1)'; }}
+                    title="Back to Dashboard"
                   >
-                    ← Dashboard
+                    ←
                   </button>
                 )}
                 
                 {/* Fathom Logo - Light version for dark background */}
-                <img src="logo_light.png" alt="FATHOM" style={{ height: '32px', width: 'auto', flexShrink: 0 }} />
+                <img src="logo_light.png" alt="FATHOM" style={{ height: '28px', width: 'auto', flexShrink: 0 }} />
                 
                 {/* Vertical Divider - desktop only */}
-                <div className="header-divider" style={{ width: '1px', height: '40px', background: 'rgba(255,255,255,0.3)', flexShrink: 0 }} />
+                <div className="header-divider" style={{ width: '1px', height: '32px', background: 'rgba(255,255,255,0.2)', flexShrink: 0 }} />
                 
                 {/* Title and Stats */}
-                <div style={{ minWidth: 0 }}>
-                  <h1 style={{ margin: 0, fontSize: '20px', fontWeight: 400, letterSpacing: '-0.5px', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>
+                <div style={{ minWidth: 0, flex: 1 }}>
+                  <h1 style={{ margin: 0, fontSize: '18px', fontWeight: 500, letterSpacing: '-0.3px', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>
                     {editMode ? (
                       <input 
                         type="text" 
@@ -4880,18 +4881,18 @@
                           border: '1px solid rgba(255,255,255,0.3)', 
                           borderRadius: '4px', 
                           padding: '4px 8px', 
-                          fontSize: '20px', 
-                          fontWeight: 400, 
-                          letterSpacing: '-0.5px', 
+                          fontSize: '18px', 
+                          fontWeight: 500, 
+                          letterSpacing: '-0.3px', 
                           color: '#F4F5F7', 
                           fontFamily: "'Interstate', sans-serif", 
-                          width: `${Math.max(200, Math.min(500, config.meta.title.length * 12 + 20))}px`
+                          width: `${Math.max(200, Math.min(400, config.meta.title.length * 10 + 20))}px`
                         }}
                       />
                     ) : config.meta.title}
                   </h1>
-                  <p style={{ margin: '2px 0 0', opacity: 0.6, fontSize: '11px', fontFamily: "'Interstate', sans-serif", whiteSpace: 'nowrap' }}>
-                    {formatTime(totalTime)} · {config.stages.length} stages · {stats.totalSteps} steps · {stats.totalPainPoints} pain points
+                  <p style={{ margin: '2px 0 0', opacity: 0.5, fontSize: '11px', fontFamily: "'Interstate', sans-serif", whiteSpace: 'nowrap' }}>
+                    {formatTime(totalTime)} · {config.stages.length} stages · {stats.totalSteps} steps · {stats.totalPainPoints} pain
                   </p>
                 </div>
               </div>
@@ -4899,15 +4900,15 @@
               {/* Desktop Menu - between title and export */}
               {!isMobile && !editMode && (
                 <>
-                  <div className="header-divider" style={{ width: '1px', height: '40px', background: 'rgba(255,255,255,0.3)', flexShrink: 0 }} />
+                  <div className="header-divider" style={{ width: '1px', height: '32px', background: 'rgba(255,255,255,0.2)', flexShrink: 0 }} />
                   <div className="no-print" style={{ display: 'flex', gap: '6px', alignItems: 'center', flexShrink: 0 }}>
                     
                     {/* GROUP 1: View Mode */}
-                    <div style={{ display: 'flex', borderRadius: '5px', overflow: 'hidden', border: '1px solid rgba(255,255,255,0.35)' }}>
-                      <button onClick={() => { setViewMode('stages'); }} style={{ padding: '7px 12px', background: viewMode === 'stages' ? '#556275' : 'transparent', color: '#F4F5F7', border: 'none', cursor: 'pointer', fontFamily: "'Interstate', sans-serif", fontSize: '11px', display: 'flex', alignItems: 'center', gap: '5px' }}>
+                    <div style={{ display: 'flex', borderRadius: '4px', overflow: 'hidden', border: '1px solid rgba(255,255,255,0.3)' }}>
+                      <button onClick={() => { setViewMode('stages'); }} style={{ padding: '6px 10px', background: viewMode === 'stages' ? '#556275' : 'transparent', color: '#F4F5F7', border: 'none', cursor: 'pointer', fontFamily: "'Interstate', sans-serif", fontSize: '11px', display: 'flex', alignItems: 'center', gap: '4px' }}>
                         📁 Stages
                       </button>
-                      <button onClick={() => setViewMode('steps')} style={{ padding: '7px 12px', background: viewMode === 'steps' ? '#556275' : 'transparent', color: '#F4F5F7', border: 'none', borderLeft: '1px solid rgba(255,255,255,0.25)', cursor: 'pointer', fontFamily: "'Interstate', sans-serif", fontSize: '11px', display: 'flex', alignItems: 'center', gap: '5px' }}>
+                      <button onClick={() => setViewMode('steps')} style={{ padding: '6px 10px', background: viewMode === 'steps' ? '#556275' : 'transparent', color: '#F4F5F7', border: 'none', borderLeft: '1px solid rgba(255,255,255,0.2)', cursor: 'pointer', fontFamily: "'Interstate', sans-serif", fontSize: '11px', display: 'flex', alignItems: 'center', gap: '4px' }}>
                         📋 Steps
                       </button>
                     </div>
@@ -4915,9 +4916,9 @@
                     {/* GROUP 2: View Layers (what info shows on cards) */}
                     {(showCosts || config.funnel?.enabled) && (
                       <>
-                        <div style={{ width: '1px', height: '24px', background: 'rgba(255,255,255,0.2)', margin: '0 4px' }} />
-                        <span style={{ fontSize: '10px', color: 'rgba(255,255,255,0.5)', fontFamily: "'Interstate', sans-serif", textTransform: 'uppercase', letterSpacing: '0.5px' }}>Show</span>
-                        <div style={{ display: 'flex', borderRadius: '5px', overflow: 'hidden', border: '1px solid rgba(255,255,255,0.35)' }}>
+                        <div style={{ width: '1px', height: '20px', background: 'rgba(255,255,255,0.15)', margin: '0 2px' }} />
+                        <span style={{ fontSize: '9px', color: 'rgba(255,255,255,0.4)', fontFamily: "'Interstate', sans-serif", textTransform: 'uppercase', letterSpacing: '0.5px' }}>Show</span>
+                        <div style={{ display: 'flex', borderRadius: '4px', overflow: 'hidden', border: '1px solid rgba(255,255,255,0.3)' }}>
                           {showCosts && (
                             <button 
                               onClick={() => { 
@@ -4929,7 +4930,7 @@
                                 }
                               }} 
                               style={{ 
-                                padding: '7px 12px', 
+                                padding: '6px 10px', 
                                 background: highlightOpportunities ? '#2D8A6E' : 'transparent', 
                                 color: '#F4F5F7', 
                                 border: 'none', 
@@ -4938,11 +4939,11 @@
                                 fontSize: '11px',
                                 display: 'flex',
                                 alignItems: 'center',
-                                gap: '5px',
-                                borderRight: config.funnel?.enabled ? '1px solid rgba(255,255,255,0.25)' : 'none'
+                                gap: '4px',
+                                borderRight: config.funnel?.enabled ? '1px solid rgba(255,255,255,0.2)' : 'none'
                               }}
                             >
-                              🎯 Opportunities
+                              🎯 Opps
                             </button>
                           )}
                           {config.funnel?.enabled && (
@@ -4956,7 +4957,7 @@
                                 }
                               }} 
                               style={{ 
-                                padding: '7px 12px', 
+                                padding: '6px 10px', 
                                 background: showFunnel ? '#5A5B8A' : 'transparent', 
                                 color: '#F4F5F7', 
                                 border: 'none', 
@@ -4965,7 +4966,7 @@
                                 fontSize: '11px',
                                 display: 'flex',
                                 alignItems: 'center',
-                                gap: '5px'
+                                gap: '4px'
                               }}
                             >
                               🔻 Funnel
@@ -4976,14 +4977,14 @@
                     )}
                     
                     {/* GROUP 3: Dashboards (open modal overlays) */}
-                    <div style={{ width: '1px', height: '24px', background: 'rgba(255,255,255,0.2)', margin: '0 4px' }} />
-                    <span style={{ fontSize: '10px', color: 'rgba(255,255,255,0.5)', fontFamily: "'Interstate', sans-serif", textTransform: 'uppercase', letterSpacing: '0.5px' }}>Analyse</span>
-                    <div style={{ display: 'flex', borderRadius: '5px', overflow: 'hidden', border: '1px solid rgba(255,255,255,0.35)' }}>
-                      <button onClick={() => setShowTimeline(!showTimeline)} style={{ padding: '7px 12px', background: showTimeline ? '#556275' : 'transparent', color: '#F4F5F7', border: 'none', cursor: 'pointer', fontFamily: "'Interstate', sans-serif", fontSize: '11px', display: 'flex', alignItems: 'center', gap: '5px', borderRight: '1px solid rgba(255,255,255,0.25)' }}>
-                        📅 Timeline
+                    <div style={{ width: '1px', height: '20px', background: 'rgba(255,255,255,0.15)', margin: '0 2px' }} />
+                    <span style={{ fontSize: '9px', color: 'rgba(255,255,255,0.4)', fontFamily: "'Interstate', sans-serif", textTransform: 'uppercase', letterSpacing: '0.5px' }}>Analyse</span>
+                    <div style={{ display: 'flex', borderRadius: '4px', overflow: 'hidden', border: '1px solid rgba(255,255,255,0.3)' }}>
+                      <button onClick={() => setShowTimeline(!showTimeline)} style={{ padding: '6px 10px', background: showTimeline ? '#556275' : 'transparent', color: '#F4F5F7', border: 'none', cursor: 'pointer', fontFamily: "'Interstate', sans-serif", fontSize: '11px', display: 'flex', alignItems: 'center', gap: '4px', borderRight: '1px solid rgba(255,255,255,0.2)' }}>
+                        📅 Time
                       </button>
                       {showCosts && (
-                        <button onClick={() => setShowCostAnalysis(!showCostAnalysis)} style={{ padding: '7px 12px', background: showCostAnalysis ? '#556275' : 'transparent', color: '#F4F5F7', border: 'none', cursor: 'pointer', fontFamily: "'Interstate', sans-serif", fontSize: '11px', display: 'flex', alignItems: 'center', gap: '5px', borderRight: config.funnel?.enabled ? '1px solid rgba(255,255,255,0.25)' : 'none' }}>
+                        <button onClick={() => setShowCostAnalysis(!showCostAnalysis)} style={{ padding: '6px 10px', background: showCostAnalysis ? '#556275' : 'transparent', color: '#F4F5F7', border: 'none', cursor: 'pointer', fontFamily: "'Interstate', sans-serif", fontSize: '11px', display: 'flex', alignItems: 'center', gap: '4px', borderRight: config.funnel?.enabled ? '1px solid rgba(255,255,255,0.2)' : 'none' }}>
                           💰 Costs
                         </button>
                       )}
@@ -4991,7 +4992,7 @@
                         <button 
                           onClick={() => setShowFunnelDashboard(true)} 
                           style={{ 
-                            padding: '7px 12px', 
+                            padding: '6px 10px', 
                             background: 'transparent', 
                             color: '#F4F5F7', 
                             border: 'none', 
@@ -5000,7 +5001,7 @@
                             fontSize: '11px',
                             display: 'flex',
                             alignItems: 'center',
-                            gap: '5px'
+                            gap: '4px'
                           }}
                         >
                           🔻 Funnel
@@ -5301,7 +5302,7 @@
               </div>
             </div>
             <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
-              <span style={{ fontSize: '20px' }}>💡</span>
+              <span style={{ fontSize: '20px' }}>🎯</span>
               <div>
                 <div style={{ fontFamily: "'Interstate', sans-serif", fontSize: '11px', color: '#8A95A5', textTransform: 'uppercase' }}>High Improvement</div>
                 <div style={{ fontWeight: 600 }}>{stats.highAutomation} steps</div>
@@ -6074,7 +6075,7 @@
                                 </div>
                               </div>
                               <div style={{ display: 'flex', alignItems: 'center', gap: '4px', padding: '4px 8px', background: automationColors[step.automationOpportunity]?.bg || '#F4F5F7', borderRadius: '12px' }}>
-                                <span style={{ fontSize: '10px' }}>💡</span>
+                                <span style={{ fontSize: '10px' }}>🎯</span>
                                 <span style={{ fontFamily: "'Interstate', sans-serif", fontSize: '10px', color: automationColors[step.automationOpportunity]?.text || '#556275', fontWeight: 500 }}>{automationColors[step.automationOpportunity]?.label || 'N/A'}</span>
                               </div>
                               {step.clientTouchpoint && (
@@ -6250,7 +6251,7 @@
                       ) : (
                         <>
                           <div style={{ display: 'inline-flex', alignItems: 'center', gap: '8px', padding: '8px 16px', background: automationColors[selectedStep.automationOpportunity]?.bg, borderRadius: '20px', marginBottom: selectedStep.automationNotes ? '12px' : 0 }}>
-                            <span>💡</span>
+                            <span>🎯</span>
                             <span style={{ fontFamily: "'Interstate', sans-serif", fontSize: '14px', color: automationColors[selectedStep.automationOpportunity]?.text, fontWeight: 500, textTransform: 'capitalize' }}>{selectedStep.automationOpportunity} potential</span>
                           </div>
                           {selectedStep.automationNotes && <p style={{ margin: 0, fontSize: '13px', color: '#556275', fontFamily: "'Interstate', sans-serif", lineHeight: 1.5 }}>{selectedStep.automationNotes}</p>}
