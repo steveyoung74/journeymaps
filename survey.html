@@ -1,0 +1,1130 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Process Survey | FATHOM</title>
+  <style>
+    /* ============================================
+       FATHOM RFI SURVEY - BRAND STYLES
+       ============================================ */
+    
+    :root {
+      --navy-900: #192B45;
+      --navy-700: #2A4063;
+      --navy-500: #3D5A80;
+      --steel-500: #5B8A9A;
+      --steel-400: #7BA3B0;
+      --slate-50: #F8F9FA;
+      --slate-100: #F1F3F5;
+      --slate-200: #E9ECEF;
+      --slate-300: #DEE2E6;
+      --slate-400: #ADB5BD;
+      --slate-500: #6C757D;
+      --slate-600: #495057;
+      --slate-700: #343A40;
+      --amber-500: #C4942A;
+      --green-500: #2D8A6E;
+      --red-500: #B84A5A;
+    }
+    
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+    }
+    
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, sans-serif;
+      background: var(--slate-50);
+      color: var(--slate-700);
+      line-height: 1.6;
+      min-height: 100vh;
+    }
+    
+    /* ============================================
+       HEADER
+       ============================================ */
+    
+    .header {
+      background: var(--navy-900);
+      color: #FFF;
+      padding: 20px 24px;
+      position: sticky;
+      top: 0;
+      z-index: 100;
+    }
+    
+    .header-content {
+      max-width: 640px;
+      margin: 0 auto;
+    }
+    
+    .header-brand {
+      font-size: 12px;
+      font-weight: 600;
+      letter-spacing: 2px;
+      text-transform: uppercase;
+      opacity: 0.7;
+      margin-bottom: 4px;
+    }
+    
+    .header-title {
+      font-size: 20px;
+      font-weight: 600;
+    }
+    
+    /* ============================================
+       PROGRESS BAR
+       ============================================ */
+    
+    .progress-container {
+      background: var(--slate-200);
+      height: 4px;
+      position: sticky;
+      top: 72px;
+      z-index: 99;
+    }
+    
+    .progress-bar {
+      background: var(--steel-500);
+      height: 100%;
+      transition: width 0.3s ease;
+    }
+    
+    /* ============================================
+       MAIN CONTENT
+       ============================================ */
+    
+    .main {
+      max-width: 640px;
+      margin: 0 auto;
+      padding: 24px;
+    }
+    
+    /* ============================================
+       WELCOME SCREEN
+       ============================================ */
+    
+    .welcome {
+      background: #FFF;
+      border-radius: 16px;
+      padding: 32px 24px;
+      margin-bottom: 24px;
+      box-shadow: 0 1px 3px rgba(0,0,0,0.08);
+    }
+    
+    .welcome h1 {
+      font-size: 24px;
+      font-weight: 600;
+      color: var(--navy-700);
+      margin-bottom: 16px;
+    }
+    
+    .welcome p {
+      color: var(--slate-600);
+      margin-bottom: 16px;
+    }
+    
+    .welcome-meta {
+      background: var(--slate-50);
+      border-radius: 8px;
+      padding: 16px;
+      margin: 20px 0;
+    }
+    
+    .welcome-meta-item {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      padding: 8px 0;
+    }
+    
+    .welcome-meta-item:not(:last-child) {
+      border-bottom: 1px solid var(--slate-200);
+    }
+    
+    .welcome-meta-icon {
+      font-size: 20px;
+    }
+    
+    .welcome-meta-label {
+      font-size: 13px;
+      color: var(--slate-500);
+    }
+    
+    .welcome-meta-value {
+      font-weight: 600;
+      color: var(--navy-700);
+    }
+    
+    .btn {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      gap: 8px;
+      padding: 14px 28px;
+      border-radius: 8px;
+      font-size: 15px;
+      font-weight: 600;
+      cursor: pointer;
+      transition: all 0.15s;
+      border: none;
+      width: 100%;
+    }
+    
+    .btn-primary {
+      background: var(--navy-900);
+      color: #FFF;
+    }
+    
+    .btn-primary:hover {
+      background: var(--navy-700);
+    }
+    
+    .btn-secondary {
+      background: var(--slate-100);
+      color: var(--slate-700);
+    }
+    
+    .btn-secondary:hover {
+      background: var(--slate-200);
+    }
+    
+    /* ============================================
+       STEP CARD
+       ============================================ */
+    
+    .step-card {
+      background: #FFF;
+      border-radius: 16px;
+      padding: 24px;
+      margin-bottom: 16px;
+      box-shadow: 0 1px 3px rgba(0,0,0,0.08);
+    }
+    
+    .step-header {
+      margin-bottom: 20px;
+    }
+    
+    .step-stage {
+      font-size: 12px;
+      font-weight: 600;
+      text-transform: uppercase;
+      letter-spacing: 1px;
+      color: var(--steel-500);
+      margin-bottom: 4px;
+    }
+    
+    .step-name {
+      font-size: 18px;
+      font-weight: 600;
+      color: var(--navy-700);
+    }
+    
+    .step-existing {
+      background: var(--slate-50);
+      border-radius: 8px;
+      padding: 12px 16px;
+      margin: 16px 0;
+      font-size: 14px;
+      color: var(--slate-600);
+    }
+    
+    .step-existing-label {
+      font-size: 11px;
+      font-weight: 600;
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+      color: var(--slate-400);
+      margin-bottom: 4px;
+    }
+    
+    /* ============================================
+       FORM FIELDS
+       ============================================ */
+    
+    .field {
+      margin-bottom: 20px;
+    }
+    
+    .field-label {
+      display: block;
+      font-size: 14px;
+      font-weight: 600;
+      color: var(--slate-700);
+      margin-bottom: 8px;
+    }
+    
+    .field-hint {
+      font-size: 13px;
+      color: var(--slate-500);
+      font-weight: 400;
+      display: block;
+      margin-top: 2px;
+    }
+    
+    .field-optional {
+      font-weight: 400;
+      color: var(--slate-400);
+      font-size: 12px;
+    }
+    
+    .input, .textarea, .select {
+      width: 100%;
+      padding: 12px 14px;
+      border: 2px solid var(--slate-200);
+      border-radius: 8px;
+      font-size: 15px;
+      color: var(--slate-700);
+      background: #FFF;
+      transition: border-color 0.15s;
+    }
+    
+    .input:focus, .textarea:focus, .select:focus {
+      outline: none;
+      border-color: var(--steel-500);
+    }
+    
+    .textarea {
+      resize: vertical;
+      min-height: 100px;
+    }
+    
+    .input-with-unit {
+      display: flex;
+      align-items: stretch;
+    }
+    
+    .input-with-unit .input {
+      border-radius: 8px 0 0 8px;
+      flex: 1;
+    }
+    
+    .input-unit {
+      background: var(--slate-100);
+      border: 2px solid var(--slate-200);
+      border-left: none;
+      border-radius: 0 8px 8px 0;
+      padding: 12px 14px;
+      font-size: 14px;
+      color: var(--slate-500);
+      min-width: 80px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+    
+    /* ============================================
+       FRICTION SCALE
+       ============================================ */
+    
+    .friction-scale {
+      display: flex;
+      gap: 8px;
+    }
+    
+    .friction-option {
+      flex: 1;
+      padding: 12px 8px;
+      border: 2px solid var(--slate-200);
+      border-radius: 8px;
+      background: #FFF;
+      cursor: pointer;
+      text-align: center;
+      transition: all 0.15s;
+    }
+    
+    .friction-option:hover {
+      border-color: var(--slate-300);
+    }
+    
+    .friction-option.selected {
+      border-color: var(--steel-500);
+      background: rgba(91, 138, 154, 0.1);
+    }
+    
+    .friction-option.selected.friction-none { border-color: var(--green-500); background: rgba(45, 138, 110, 0.1); }
+    .friction-option.selected.friction-low { border-color: var(--steel-500); background: rgba(91, 138, 154, 0.1); }
+    .friction-option.selected.friction-medium { border-color: var(--amber-500); background: rgba(196, 148, 42, 0.1); }
+    .friction-option.selected.friction-high { border-color: var(--red-500); background: rgba(184, 74, 90, 0.1); }
+    
+    .friction-emoji {
+      font-size: 24px;
+      margin-bottom: 4px;
+    }
+    
+    .friction-label {
+      font-size: 12px;
+      font-weight: 600;
+      color: var(--slate-600);
+    }
+    
+    /* ============================================
+       NAVIGATION
+       ============================================ */
+    
+    .nav-buttons {
+      display: flex;
+      gap: 12px;
+      margin-top: 24px;
+    }
+    
+    .nav-buttons .btn {
+      flex: 1;
+    }
+    
+    /* ============================================
+       STEP INDICATOR
+       ============================================ */
+    
+    .step-indicator {
+      text-align: center;
+      margin-bottom: 24px;
+    }
+    
+    .step-indicator-text {
+      font-size: 13px;
+      color: var(--slate-500);
+    }
+    
+    .step-indicator-current {
+      font-weight: 600;
+      color: var(--navy-700);
+    }
+    
+    /* ============================================
+       REVIEW SCREEN
+       ============================================ */
+    
+    .review-section {
+      background: #FFF;
+      border-radius: 16px;
+      padding: 24px;
+      margin-bottom: 16px;
+      box-shadow: 0 1px 3px rgba(0,0,0,0.08);
+    }
+    
+    .review-section h2 {
+      font-size: 18px;
+      color: var(--navy-700);
+      margin-bottom: 16px;
+    }
+    
+    .review-step {
+      padding: 16px 0;
+      border-bottom: 1px solid var(--slate-200);
+    }
+    
+    .review-step:last-child {
+      border-bottom: none;
+    }
+    
+    .review-step-name {
+      font-weight: 600;
+      color: var(--navy-700);
+      margin-bottom: 8px;
+    }
+    
+    .review-field {
+      display: flex;
+      gap: 8px;
+      font-size: 14px;
+      margin-bottom: 4px;
+    }
+    
+    .review-field-label {
+      color: var(--slate-500);
+      min-width: 100px;
+    }
+    
+    .review-field-value {
+      color: var(--slate-700);
+      flex: 1;
+    }
+    
+    .review-field-value.empty {
+      color: var(--slate-400);
+      font-style: italic;
+    }
+    
+    /* ============================================
+       SUCCESS SCREEN
+       ============================================ */
+    
+    .success {
+      text-align: center;
+      padding: 48px 24px;
+    }
+    
+    .success-icon {
+      font-size: 64px;
+      margin-bottom: 24px;
+    }
+    
+    .success h1 {
+      font-size: 24px;
+      color: var(--navy-700);
+      margin-bottom: 16px;
+    }
+    
+    .success p {
+      color: var(--slate-600);
+      max-width: 400px;
+      margin: 0 auto;
+    }
+    
+    /* ============================================
+       ERROR SCREEN
+       ============================================ */
+    
+    .error-screen {
+      text-align: center;
+      padding: 48px 24px;
+    }
+    
+    .error-icon {
+      font-size: 64px;
+      margin-bottom: 24px;
+    }
+    
+    .error-screen h1 {
+      font-size: 24px;
+      color: var(--red-500);
+      margin-bottom: 16px;
+    }
+    
+    .error-screen p {
+      color: var(--slate-600);
+    }
+    
+    /* ============================================
+       LOADING
+       ============================================ */
+    
+    .loading {
+      text-align: center;
+      padding: 48px 24px;
+    }
+    
+    .loading-spinner {
+      width: 48px;
+      height: 48px;
+      border: 4px solid var(--slate-200);
+      border-top-color: var(--steel-500);
+      border-radius: 50%;
+      animation: spin 1s linear infinite;
+      margin: 0 auto 24px;
+    }
+    
+    @keyframes spin {
+      to { transform: rotate(360deg); }
+    }
+    
+    /* ============================================
+       RESPONSIVE
+       ============================================ */
+    
+    @media (max-width: 480px) {
+      .friction-scale {
+        flex-wrap: wrap;
+      }
+      
+      .friction-option {
+        flex: 1 1 45%;
+      }
+      
+      .nav-buttons {
+        flex-direction: column;
+      }
+      
+      .nav-buttons .btn-secondary {
+        order: 2;
+      }
+    }
+  </style>
+</head>
+<body>
+  <div id="root"></div>
+  
+  <script src="https://unpkg.com/react@18/umd/react.production.min.js"></script>
+  <script src="https://unpkg.com/react-dom@18/umd/react-dom.production.min.js"></script>
+  <script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
+  
+  <script type="text/babel">
+    const { useState, useEffect, useCallback } = React;
+    
+    // ============================================
+    // GITHUB CONFIG
+    // ============================================
+    const GITHUB_CONFIG = {
+      owner: 'steveyoung74',
+      repo: 'journeymaps',
+      branch: 'main',
+      mapsPath: 'maps',
+      responsesPath: 'responses'
+    };
+    
+    const getRawUrl = (path) => 
+      `https://raw.githubusercontent.com/${GITHUB_CONFIG.owner}/${GITHUB_CONFIG.repo}/${GITHUB_CONFIG.branch}/${path}`;
+    
+    const getApiUrl = (path) => 
+      `https://api.github.com/repos/${GITHUB_CONFIG.owner}/${GITHUB_CONFIG.repo}/contents/${path}`;
+    
+    // ============================================
+    // URL PARAMS
+    // ============================================
+    const urlParams = new URLSearchParams(window.location.search);
+    const mapId = urlParams.get('map');
+    const roleId = urlParams.get('role');
+    const respondentEmail = urlParams.get('email');
+    const respondentName = urlParams.get('name') || respondentEmail?.split('@')[0] || 'Respondent';
+    const token = urlParams.get('token'); // GitHub token for saving (optional, can be admin's token)
+    
+    // ============================================
+    // FRICTION OPTIONS
+    // ============================================
+    const FRICTION_OPTIONS = [
+      { id: 'none', label: 'None', emoji: '😊' },
+      { id: 'low', label: 'Low', emoji: '🙂' },
+      { id: 'medium', label: 'Medium', emoji: '😐' },
+      { id: 'high', label: 'High', emoji: '😫' }
+    ];
+    
+    // ============================================
+    // MAIN APP
+    // ============================================
+    function SurveyApp() {
+      const [loading, setLoading] = useState(true);
+      const [error, setError] = useState(null);
+      const [mapConfig, setMapConfig] = useState(null);
+      const [roleName, setRoleName] = useState('');
+      const [steps, setSteps] = useState([]);
+      const [currentStep, setCurrentStep] = useState(-1); // -1 = welcome, -2 = review, -3 = success
+      const [responses, setResponses] = useState({});
+      const [submitting, setSubmitting] = useState(false);
+      
+      // Load journey map config
+      useEffect(() => {
+        if (!mapId || !roleId) {
+          setError('Invalid survey link. Please contact the person who sent you this link.');
+          setLoading(false);
+          return;
+        }
+        
+        const loadMap = async () => {
+          try {
+            const url = getRawUrl(`${GITHUB_CONFIG.mapsPath}/${mapId}.json`) + '?t=' + Date.now();
+            const response = await fetch(url);
+            
+            if (!response.ok) {
+              throw new Error('Survey not found');
+            }
+            
+            const config = await response.json();
+            setMapConfig(config);
+            
+            // Find role/persona
+            const persona = config.personas?.find(p => p.id === roleId);
+            if (!persona) {
+              throw new Error('Role not found in this survey');
+            }
+            setRoleName(persona.label || persona.name || roleId);
+            
+            // Filter steps for this role
+            const roleSteps = [];
+            config.stages?.forEach(stage => {
+              stage.steps?.forEach(step => {
+                if (step.persona === roleId) {
+                  roleSteps.push({
+                    ...step,
+                    stageName: stage.name,
+                    stageId: stage.id
+                  });
+                }
+              });
+            });
+            
+            if (roleSteps.length === 0) {
+              throw new Error('No steps assigned to your role');
+            }
+            
+            setSteps(roleSteps);
+            
+            // Initialize responses
+            const initialResponses = {};
+            roleSteps.forEach(step => {
+              initialResponses[step.id] = {
+                description: '',
+                timeEstimate: step.timeMinutes || step.duration || '',
+                painPoints: '',
+                regulatory: '',
+                friction: step.friction || 'none',
+                thirdPartyCosts: '',
+                improvements: '',
+                additionalNotes: ''
+              };
+            });
+            setResponses(initialResponses);
+            
+            setLoading(false);
+          } catch (err) {
+            setError(err.message || 'Failed to load survey');
+            setLoading(false);
+          }
+        };
+        
+        loadMap();
+      }, []);
+      
+      // Update response for current step
+      const updateResponse = (field, value) => {
+        const stepId = steps[currentStep]?.id;
+        if (!stepId) return;
+        
+        setResponses(prev => ({
+          ...prev,
+          [stepId]: {
+            ...prev[stepId],
+            [field]: value
+          }
+        }));
+      };
+      
+      // Navigate
+      const goToStep = (index) => {
+        setCurrentStep(index);
+        window.scrollTo(0, 0);
+      };
+      
+      const goNext = () => {
+        if (currentStep < steps.length - 1) {
+          goToStep(currentStep + 1);
+        } else {
+          goToStep(-2); // Review
+        }
+      };
+      
+      const goPrev = () => {
+        if (currentStep > 0) {
+          goToStep(currentStep - 1);
+        } else if (currentStep === 0) {
+          goToStep(-1); // Welcome
+        } else if (currentStep === -2) {
+          goToStep(steps.length - 1); // Back to last step
+        }
+      };
+      
+      // Submit responses
+      const submitResponses = async () => {
+        setSubmitting(true);
+        
+        try {
+          const responseData = {
+            surveyId: `${mapId}-${roleId}-${Date.now()}`,
+            mapId,
+            roleId,
+            roleName,
+            respondent: {
+              email: respondentEmail,
+              name: respondentName
+            },
+            submittedAt: new Date().toISOString(),
+            responses: Object.entries(responses).map(([stepId, data]) => {
+              const step = steps.find(s => s.id === stepId);
+              return {
+                stepId,
+                stepName: step?.name,
+                stageName: step?.stageName,
+                ...data
+              };
+            })
+          };
+          
+          // If we have a token, save to GitHub
+          if (token) {
+            const filename = `${mapId}/${responseData.surveyId}.json`;
+            const content = btoa(unescape(encodeURIComponent(JSON.stringify(responseData, null, 2))));
+            
+            const response = await fetch(getApiUrl(`${GITHUB_CONFIG.responsesPath}/${filename}`), {
+              method: 'PUT',
+              headers: {
+                'Authorization': `token ${token}`,
+                'Content-Type': 'application/json'
+              },
+              body: JSON.stringify({
+                message: `Survey response from ${respondentName} (${roleName})`,
+                content,
+                branch: GITHUB_CONFIG.branch
+              })
+            });
+            
+            if (!response.ok) {
+              console.warn('Failed to save to GitHub, storing locally');
+              // Fallback: store in localStorage
+              const localResponses = JSON.parse(localStorage.getItem('fathom-survey-responses') || '[]');
+              localResponses.push(responseData);
+              localStorage.setItem('fathom-survey-responses', JSON.stringify(localResponses));
+            }
+          } else {
+            // No token - store locally
+            const localResponses = JSON.parse(localStorage.getItem('fathom-survey-responses') || '[]');
+            localResponses.push(responseData);
+            localStorage.setItem('fathom-survey-responses', JSON.stringify(localResponses));
+            console.log('Response saved to localStorage:', responseData);
+          }
+          
+          setCurrentStep(-3); // Success
+        } catch (err) {
+          console.error('Submit error:', err);
+          alert('Failed to submit. Your responses have been saved locally.');
+        }
+        
+        setSubmitting(false);
+      };
+      
+      // Calculate progress
+      const progress = currentStep >= 0 
+        ? ((currentStep + 1) / steps.length) * 100 
+        : currentStep === -2 ? 100 : 0;
+      
+      // ============================================
+      // RENDER
+      // ============================================
+      
+      if (loading) {
+        return (
+          <>
+            <header className="header">
+              <div className="header-content">
+                <div className="header-brand">FATHOM</div>
+                <div className="header-title">Process Survey</div>
+              </div>
+            </header>
+            <main className="main">
+              <div className="loading">
+                <div className="loading-spinner"></div>
+                <p>Loading survey...</p>
+              </div>
+            </main>
+          </>
+        );
+      }
+      
+      if (error) {
+        return (
+          <>
+            <header className="header">
+              <div className="header-content">
+                <div className="header-brand">FATHOM</div>
+                <div className="header-title">Process Survey</div>
+              </div>
+            </header>
+            <main className="main">
+              <div className="error-screen">
+                <div className="error-icon">⚠️</div>
+                <h1>Unable to Load Survey</h1>
+                <p>{error}</p>
+              </div>
+            </main>
+          </>
+        );
+      }
+      
+      // Success screen
+      if (currentStep === -3) {
+        return (
+          <>
+            <header className="header">
+              <div className="header-content">
+                <div className="header-brand">FATHOM</div>
+                <div className="header-title">{mapConfig?.meta?.title || 'Process Survey'}</div>
+              </div>
+            </header>
+            <main className="main">
+              <div className="welcome success">
+                <div className="success-icon">✅</div>
+                <h1>Thank You!</h1>
+                <p>Your responses have been submitted successfully. Your input will help us better understand and improve this process.</p>
+              </div>
+            </main>
+          </>
+        );
+      }
+      
+      return (
+        <>
+          <header className="header">
+            <div className="header-content">
+              <div className="header-brand">FATHOM</div>
+              <div className="header-title">{mapConfig?.meta?.title || 'Process Survey'}</div>
+            </div>
+          </header>
+          
+          <div className="progress-container">
+            <div className="progress-bar" style={{ width: `${progress}%` }}></div>
+          </div>
+          
+          <main className="main">
+            {/* Welcome Screen */}
+            {currentStep === -1 && (
+              <div className="welcome">
+                <h1>Hi {respondentName}! 👋</h1>
+                <p>We're mapping out the <strong>{mapConfig?.meta?.title || 'process'}</strong> to understand how it really works and identify opportunities for improvement.</p>
+                <p>You've been identified as someone involved in this process. We'd love to hear about your experience.</p>
+                
+                <div className="welcome-meta">
+                  <div className="welcome-meta-item">
+                    <span className="welcome-meta-icon">👤</span>
+                    <div>
+                      <div className="welcome-meta-label">Your Role</div>
+                      <div className="welcome-meta-value">{roleName}</div>
+                    </div>
+                  </div>
+                  <div className="welcome-meta-item">
+                    <span className="welcome-meta-icon">📋</span>
+                    <div>
+                      <div className="welcome-meta-label">Steps to Review</div>
+                      <div className="welcome-meta-value">{steps.length} step{steps.length !== 1 ? 's' : ''}</div>
+                    </div>
+                  </div>
+                  <div className="welcome-meta-item">
+                    <span className="welcome-meta-icon">⏱️</span>
+                    <div>
+                      <div className="welcome-meta-label">Estimated Time</div>
+                      <div className="welcome-meta-value">{Math.ceil(steps.length * 2)} minutes</div>
+                    </div>
+                  </div>
+                </div>
+                
+                <p style={{ fontSize: '14px', color: 'var(--slate-500)', marginBottom: '24px' }}>
+                  For each step, we'll ask you to describe what you do, how long it takes, and any pain points you experience. Your input is invaluable!
+                </p>
+                
+                <button className="btn btn-primary" onClick={() => goToStep(0)}>
+                  Let's Get Started →
+                </button>
+              </div>
+            )}
+            
+            {/* Step Form */}
+            {currentStep >= 0 && currentStep < steps.length && (
+              <>
+                <div className="step-indicator">
+                  <span className="step-indicator-text">
+                    Step <span className="step-indicator-current">{currentStep + 1}</span> of {steps.length}
+                  </span>
+                </div>
+                
+                <div className="step-card">
+                  <div className="step-header">
+                    <div className="step-stage">{steps[currentStep].stageName}</div>
+                    <div className="step-name">{steps[currentStep].name}</div>
+                  </div>
+                  
+                  {steps[currentStep].notes && (
+                    <div className="step-existing">
+                      <div className="step-existing-label">Current Description</div>
+                      {steps[currentStep].notes}
+                    </div>
+                  )}
+                  
+                  <div className="field">
+                    <label className="field-label">
+                      What do you actually do in this step?
+                      <span className="field-hint">Describe the activities in your own words</span>
+                    </label>
+                    <textarea 
+                      className="textarea"
+                      value={responses[steps[currentStep].id]?.description || ''}
+                      onChange={(e) => updateResponse('description', e.target.value)}
+                      placeholder="e.g., I review the application form, check all required fields are completed, and verify the information against our system..."
+                    />
+                  </div>
+                  
+                  <div className="field">
+                    <label className="field-label">
+                      How long does this typically take you?
+                      <span className="field-hint">Your best estimate in minutes</span>
+                    </label>
+                    <div className="input-with-unit">
+                      <input 
+                        type="number" 
+                        className="input"
+                        value={responses[steps[currentStep].id]?.timeEstimate || ''}
+                        onChange={(e) => updateResponse('timeEstimate', e.target.value)}
+                        placeholder="e.g., 15"
+                        min="0"
+                      />
+                      <span className="input-unit">minutes</span>
+                    </div>
+                  </div>
+                  
+                  <div className="field">
+                    <label className="field-label">
+                      How much friction do you experience?
+                      <span className="field-hint">Is this step easy, stressful, or frustrating?</span>
+                    </label>
+                    <div className="friction-scale">
+                      {FRICTION_OPTIONS.map(option => (
+                        <div 
+                          key={option.id}
+                          className={`friction-option friction-${option.id} ${responses[steps[currentStep].id]?.friction === option.id ? 'selected' : ''}`}
+                          onClick={() => updateResponse('friction', option.id)}
+                        >
+                          <div className="friction-emoji">{option.emoji}</div>
+                          <div className="friction-label">{option.label}</div>
+                        </div>
+                      ))}
+                    </div>
+                  </div>
+                  
+                  <div className="field">
+                    <label className="field-label">
+                      What pain points do you experience?
+                      <span className="field-hint">Systems, handoffs, waiting, rework, etc.</span>
+                    </label>
+                    <textarea 
+                      className="textarea"
+                      value={responses[steps[currentStep].id]?.painPoints || ''}
+                      onChange={(e) => updateResponse('painPoints', e.target.value)}
+                      placeholder="e.g., The system is slow, I often have to chase other teams for information, the form requires duplicate data entry..."
+                    />
+                  </div>
+                  
+                  <div className="field">
+                    <label className="field-label">
+                      Any regulatory or compliance requirements? <span className="field-optional">(Optional)</span>
+                      <span className="field-hint">Things you must do for legal/compliance reasons</span>
+                    </label>
+                    <textarea 
+                      className="textarea"
+                      value={responses[steps[currentStep].id]?.regulatory || ''}
+                      onChange={(e) => updateResponse('regulatory', e.target.value)}
+                      placeholder="e.g., Must document decision rationale, FCA requires audit trail..."
+                      style={{ minHeight: '80px' }}
+                    />
+                  </div>
+                  
+                  <div className="field">
+                    <label className="field-label">
+                      Any third-party or material costs? <span className="field-optional">(Optional)</span>
+                      <span className="field-hint">External services, postage, materials, etc.</span>
+                    </label>
+                    <div className="input-with-unit">
+                      <input 
+                        type="number" 
+                        className="input"
+                        value={responses[steps[currentStep].id]?.thirdPartyCosts || ''}
+                        onChange={(e) => updateResponse('thirdPartyCosts', e.target.value)}
+                        placeholder="e.g., 25"
+                        min="0"
+                        step="0.01"
+                      />
+                      <span className="input-unit">£ per case</span>
+                    </div>
+                  </div>
+                  
+                  <div className="field">
+                    <label className="field-label">
+                      Ideas for improvement? <span className="field-optional">(Optional)</span>
+                      <span className="field-hint">How could this step be better?</span>
+                    </label>
+                    <textarea 
+                      className="textarea"
+                      value={responses[steps[currentStep].id]?.improvements || ''}
+                      onChange={(e) => updateResponse('improvements', e.target.value)}
+                      placeholder="e.g., If we had integration with X system, this could be automated. A checklist would reduce errors..."
+                      style={{ minHeight: '80px' }}
+                    />
+                  </div>
+                  
+                  <div className="nav-buttons">
+                    <button className="btn btn-secondary" onClick={goPrev}>
+                      ← Back
+                    </button>
+                    <button className="btn btn-primary" onClick={goNext}>
+                      {currentStep < steps.length - 1 ? 'Next Step →' : 'Review Responses →'}
+                    </button>
+                  </div>
+                </div>
+              </>
+            )}
+            
+            {/* Review Screen */}
+            {currentStep === -2 && (
+              <>
+                <div className="step-indicator">
+                  <span className="step-indicator-text">
+                    <span className="step-indicator-current">Review Your Responses</span>
+                  </span>
+                </div>
+                
+                <div className="review-section">
+                  <h2>Summary</h2>
+                  {steps.map((step, index) => {
+                    const response = responses[step.id];
+                    return (
+                      <div key={step.id} className="review-step">
+                        <div className="review-step-name">{index + 1}. {step.name}</div>
+                        <div className="review-field">
+                          <span className="review-field-label">Time:</span>
+                          <span className={`review-field-value ${!response?.timeEstimate ? 'empty' : ''}`}>
+                            {response?.timeEstimate ? `${response.timeEstimate} mins` : 'Not specified'}
+                          </span>
+                        </div>
+                        <div className="review-field">
+                          <span className="review-field-label">Friction:</span>
+                          <span className="review-field-value">
+                            {FRICTION_OPTIONS.find(f => f.id === response?.friction)?.emoji} {response?.friction || 'None'}
+                          </span>
+                        </div>
+                        {response?.painPoints && (
+                          <div className="review-field">
+                            <span className="review-field-label">Pain Points:</span>
+                            <span className="review-field-value">{response.painPoints.substring(0, 100)}{response.painPoints.length > 100 ? '...' : ''}</span>
+                          </div>
+                        )}
+                        {response?.improvements && (
+                          <div className="review-field">
+                            <span className="review-field-label">Ideas:</span>
+                            <span className="review-field-value">{response.improvements.substring(0, 100)}{response.improvements.length > 100 ? '...' : ''}</span>
+                          </div>
+                        )}
+                        <button 
+                          onClick={() => goToStep(index)}
+                          style={{ marginTop: '8px', padding: '6px 12px', fontSize: '12px', background: 'var(--slate-100)', border: 'none', borderRadius: '4px', cursor: 'pointer', color: 'var(--slate-600)' }}
+                        >
+                          Edit
+                        </button>
+                      </div>
+                    );
+                  })}
+                </div>
+                
+                <div className="nav-buttons">
+                  <button className="btn btn-secondary" onClick={goPrev}>
+                    ← Back
+                  </button>
+                  <button 
+                    className="btn btn-primary" 
+                    onClick={submitResponses}
+                    disabled={submitting}
+                  >
+                    {submitting ? 'Submitting...' : 'Submit Responses ✓'}
+                  </button>
+                </div>
+              </>
+            )}
+          </main>
+        </>
+      );
+    }
+    
+    // ============================================
+    // RENDER
+    // ============================================
+    ReactDOM.createRoot(document.getElementById('root')).render(<SurveyApp />);
+  </script>
+</body>
+</html>

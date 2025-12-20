@@ -1,0 +1,598 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Survey Link Generator | FATHOM</title>
+  <style>
+    :root {
+      --navy-900: #192B45;
+      --navy-700: #2A4063;
+      --steel-500: #5B8A9A;
+      --slate-50: #F8F9FA;
+      --slate-100: #F1F3F5;
+      --slate-200: #E9ECEF;
+      --slate-400: #ADB5BD;
+      --slate-500: #6C757D;
+      --slate-600: #495057;
+      --slate-700: #343A40;
+      --green-500: #2D8A6E;
+    }
+    
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+      background: var(--slate-50);
+      color: var(--slate-700);
+      line-height: 1.6;
+      min-height: 100vh;
+    }
+    
+    .header {
+      background: var(--navy-900);
+      color: #FFF;
+      padding: 20px 24px;
+    }
+    
+    .header-content {
+      max-width: 800px;
+      margin: 0 auto;
+    }
+    
+    .header-brand {
+      font-size: 12px;
+      font-weight: 600;
+      letter-spacing: 2px;
+      text-transform: uppercase;
+      opacity: 0.7;
+      margin-bottom: 4px;
+    }
+    
+    .header-title {
+      font-size: 20px;
+      font-weight: 600;
+    }
+    
+    .main {
+      max-width: 800px;
+      margin: 0 auto;
+      padding: 24px;
+    }
+    
+    .card {
+      background: #FFF;
+      border-radius: 12px;
+      padding: 24px;
+      margin-bottom: 20px;
+      box-shadow: 0 1px 3px rgba(0,0,0,0.08);
+    }
+    
+    .card h2 {
+      font-size: 18px;
+      color: var(--navy-700);
+      margin-bottom: 16px;
+    }
+    
+    .field {
+      margin-bottom: 16px;
+    }
+    
+    .field-label {
+      display: block;
+      font-size: 14px;
+      font-weight: 600;
+      color: var(--slate-700);
+      margin-bottom: 6px;
+    }
+    
+    .input, .select {
+      width: 100%;
+      padding: 10px 12px;
+      border: 2px solid var(--slate-200);
+      border-radius: 6px;
+      font-size: 14px;
+      color: var(--slate-700);
+    }
+    
+    .input:focus, .select:focus {
+      outline: none;
+      border-color: var(--steel-500);
+    }
+    
+    .btn {
+      padding: 12px 20px;
+      border-radius: 6px;
+      font-size: 14px;
+      font-weight: 600;
+      cursor: pointer;
+      border: none;
+      transition: all 0.15s;
+    }
+    
+    .btn-primary {
+      background: var(--navy-900);
+      color: #FFF;
+    }
+    
+    .btn-primary:hover {
+      background: var(--navy-700);
+    }
+    
+    .btn-secondary {
+      background: var(--slate-100);
+      color: var(--slate-600);
+    }
+    
+    .btn-secondary:hover {
+      background: var(--slate-200);
+    }
+    
+    .generated-links {
+      margin-top: 24px;
+    }
+    
+    .link-item {
+      background: var(--slate-50);
+      border-radius: 8px;
+      padding: 16px;
+      margin-bottom: 12px;
+    }
+    
+    .link-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 8px;
+    }
+    
+    .link-role {
+      font-weight: 600;
+      color: var(--navy-700);
+    }
+    
+    .link-email {
+      font-size: 13px;
+      color: var(--slate-500);
+    }
+    
+    .link-url {
+      background: #FFF;
+      border: 1px solid var(--slate-200);
+      border-radius: 4px;
+      padding: 8px 12px;
+      font-size: 12px;
+      font-family: monospace;
+      word-break: break-all;
+      margin-bottom: 8px;
+    }
+    
+    .link-actions {
+      display: flex;
+      gap: 8px;
+    }
+    
+    .link-actions .btn {
+      padding: 6px 12px;
+      font-size: 12px;
+    }
+    
+    .copied {
+      color: var(--green-500);
+      font-size: 12px;
+      margin-left: 8px;
+    }
+    
+    .personas-list {
+      display: grid;
+      gap: 8px;
+      margin-bottom: 16px;
+    }
+    
+    .persona-row {
+      display: grid;
+      grid-template-columns: 1fr 1fr 1fr auto;
+      gap: 12px;
+      align-items: center;
+      padding: 12px;
+      background: var(--slate-50);
+      border-radius: 8px;
+    }
+    
+    .persona-row .input {
+      padding: 8px 10px;
+      font-size: 13px;
+    }
+    
+    .persona-name {
+      font-weight: 600;
+      color: var(--navy-700);
+    }
+    
+    .step-count {
+      font-size: 12px;
+      color: var(--slate-500);
+    }
+    
+    .remove-btn {
+      background: none;
+      border: none;
+      color: var(--slate-400);
+      cursor: pointer;
+      padding: 4px;
+      font-size: 16px;
+    }
+    
+    .remove-btn:hover {
+      color: #B84A5A;
+    }
+    
+    .info-box {
+      background: rgba(91, 138, 154, 0.1);
+      border-left: 4px solid var(--steel-500);
+      padding: 12px 16px;
+      border-radius: 0 8px 8px 0;
+      margin-bottom: 20px;
+      font-size: 14px;
+      color: var(--slate-600);
+    }
+    
+    .loading {
+      text-align: center;
+      padding: 40px;
+      color: var(--slate-500);
+    }
+    
+    .error {
+      background: rgba(184, 74, 90, 0.1);
+      border-left: 4px solid #B84A5A;
+      padding: 12px 16px;
+      border-radius: 0 8px 8px 0;
+      color: #B84A5A;
+    }
+  </style>
+</head>
+<body>
+  <div id="root"></div>
+  
+  <script src="https://unpkg.com/react@18/umd/react.production.min.js"></script>
+  <script src="https://unpkg.com/react-dom@18/umd/react-dom.production.min.js"></script>
+  <script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
+  
+  <script type="text/babel">
+    const { useState, useEffect } = React;
+    
+    // GitHub config
+    const GITHUB_CONFIG = {
+      owner: 'steveyoung74',
+      repo: 'journeymaps',
+      branch: 'main'
+    };
+    
+    const BASE_SURVEY_URL = 'https://steveyoung74.github.io/journeymaps/survey.html';
+    
+    function LinkGenerator() {
+      const [loading, setLoading] = useState(true);
+      const [error, setError] = useState(null);
+      const [maps, setMaps] = useState([]);
+      const [selectedMapId, setSelectedMapId] = useState('');
+      const [mapConfig, setMapConfig] = useState(null);
+      const [assignments, setAssignments] = useState([]);
+      const [generatedLinks, setGeneratedLinks] = useState([]);
+      const [copiedIndex, setCopiedIndex] = useState(null);
+      const [githubToken, setGithubToken] = useState(localStorage.getItem('fathom-github-token') || '');
+      
+      // Load maps index
+      useEffect(() => {
+        const loadMaps = async () => {
+          try {
+            const url = `https://raw.githubusercontent.com/${GITHUB_CONFIG.owner}/${GITHUB_CONFIG.repo}/${GITHUB_CONFIG.branch}/maps/index.json?t=${Date.now()}`;
+            const response = await fetch(url);
+            if (!response.ok) throw new Error('Failed to load maps');
+            const data = await response.json();
+            setMaps(data.maps || []);
+            setLoading(false);
+          } catch (err) {
+            setError(err.message);
+            setLoading(false);
+          }
+        };
+        loadMaps();
+      }, []);
+      
+      // Load selected map config
+      useEffect(() => {
+        if (!selectedMapId) {
+          setMapConfig(null);
+          setAssignments([]);
+          return;
+        }
+        
+        const loadMapConfig = async () => {
+          try {
+            const url = `https://raw.githubusercontent.com/${GITHUB_CONFIG.owner}/${GITHUB_CONFIG.repo}/${GITHUB_CONFIG.branch}/maps/${selectedMapId}.json?t=${Date.now()}`;
+            const response = await fetch(url);
+            if (!response.ok) throw new Error('Failed to load map');
+            const config = await response.json();
+            setMapConfig(config);
+            
+            // Count steps per persona
+            const stepCounts = {};
+            config.stages?.forEach(stage => {
+              stage.steps?.forEach(step => {
+                if (step.persona) {
+                  stepCounts[step.persona] = (stepCounts[step.persona] || 0) + 1;
+                }
+              });
+            });
+            
+            // Initialize assignments from personas
+            const initialAssignments = config.personas
+              ?.filter(p => stepCounts[p.id] > 0) // Only personas with steps
+              ?.map(p => ({
+                roleId: p.id,
+                roleName: p.label || p.name,
+                email: '',
+                name: '',
+                stepCount: stepCounts[p.id] || 0
+              })) || [];
+            
+            setAssignments(initialAssignments);
+            setGeneratedLinks([]);
+          } catch (err) {
+            setError(err.message);
+          }
+        };
+        
+        loadMapConfig();
+      }, [selectedMapId]);
+      
+      // Update assignment
+      const updateAssignment = (index, field, value) => {
+        setAssignments(prev => prev.map((a, i) => 
+          i === index ? { ...a, [field]: value } : a
+        ));
+      };
+      
+      // Add duplicate assignment (same role, different person)
+      const duplicateAssignment = (index) => {
+        const source = assignments[index];
+        setAssignments(prev => [
+          ...prev.slice(0, index + 1),
+          { ...source, email: '', name: '' },
+          ...prev.slice(index + 1)
+        ]);
+      };
+      
+      // Remove assignment
+      const removeAssignment = (index) => {
+        setAssignments(prev => prev.filter((_, i) => i !== index));
+      };
+      
+      // Generate links
+      const generateLinks = () => {
+        const links = assignments
+          .filter(a => a.email) // Only generate for assignments with email
+          .map(a => {
+            const params = new URLSearchParams({
+              map: selectedMapId,
+              role: a.roleId,
+              email: a.email,
+              name: a.name || a.email.split('@')[0]
+            });
+            
+            // Add token if available
+            if (githubToken) {
+              params.set('token', githubToken);
+            }
+            
+            return {
+              ...a,
+              url: `${BASE_SURVEY_URL}?${params.toString()}`
+            };
+          });
+        
+        setGeneratedLinks(links);
+      };
+      
+      // Copy to clipboard
+      const copyToClipboard = async (text, index) => {
+        try {
+          await navigator.clipboard.writeText(text);
+          setCopiedIndex(index);
+          setTimeout(() => setCopiedIndex(null), 2000);
+        } catch (err) {
+          console.error('Failed to copy:', err);
+        }
+      };
+      
+      // Copy email template
+      const copyEmailTemplate = (link) => {
+        const template = `Hi ${link.name},
+
+We're currently mapping out our "${mapConfig?.meta?.title || 'process'}" to understand how it really works and identify opportunities for improvement.
+
+As someone involved in this process (${link.roleName}), we'd love to get your input. We've put together a short survey (about ${Math.ceil(link.stepCount * 2)} minutes) to capture your experience.
+
+Please complete the survey here:
+${link.url}
+
+Your input is really valuable - thank you!`;
+        
+        copyToClipboard(template, `email-${link.email}`);
+      };
+      
+      // Save token
+      const saveToken = (value) => {
+        setGithubToken(value);
+        localStorage.setItem('fathom-github-token', value);
+      };
+      
+      if (loading) {
+        return (
+          <>
+            <header className="header">
+              <div className="header-content">
+                <div className="header-brand">FATHOM</div>
+                <div className="header-title">Survey Link Generator</div>
+              </div>
+            </header>
+            <main className="main">
+              <div className="loading">Loading maps...</div>
+            </main>
+          </>
+        );
+      }
+      
+      return (
+        <>
+          <header className="header">
+            <div className="header-content">
+              <div className="header-brand">FATHOM</div>
+              <div className="header-title">Survey Link Generator</div>
+            </div>
+          </header>
+          
+          <main className="main">
+            {error && <div className="error">{error}</div>}
+            
+            <div className="card">
+              <h2>1. Select Journey Map</h2>
+              <div className="field">
+                <select 
+                  className="select"
+                  value={selectedMapId}
+                  onChange={(e) => setSelectedMapId(e.target.value)}
+                >
+                  <option value="">Choose a journey map...</option>
+                  {maps.map(map => (
+                    <option key={map.id} value={map.id}>{map.title}</option>
+                  ))}
+                </select>
+              </div>
+            </div>
+            
+            {mapConfig && (
+              <div className="card">
+                <h2>2. Assign People to Roles</h2>
+                <div className="info-box">
+                  Each person will only see the steps assigned to their role. You can assign multiple people to the same role.
+                </div>
+                
+                <div className="personas-list">
+                  {assignments.map((assignment, index) => (
+                    <div key={`${assignment.roleId}-${index}`} className="persona-row">
+                      <div>
+                        <div className="persona-name">{assignment.roleName}</div>
+                        <div className="step-count">{assignment.stepCount} step{assignment.stepCount !== 1 ? 's' : ''}</div>
+                      </div>
+                      <input 
+                        type="email"
+                        className="input"
+                        placeholder="Email address"
+                        value={assignment.email}
+                        onChange={(e) => updateAssignment(index, 'email', e.target.value)}
+                      />
+                      <input 
+                        type="text"
+                        className="input"
+                        placeholder="Name (optional)"
+                        value={assignment.name}
+                        onChange={(e) => updateAssignment(index, 'name', e.target.value)}
+                      />
+                      <div style={{ display: 'flex', gap: '4px' }}>
+                        <button 
+                          className="remove-btn" 
+                          onClick={() => duplicateAssignment(index)}
+                          title="Add another person for this role"
+                        >
+                          +
+                        </button>
+                        {assignments.filter(a => a.roleId === assignment.roleId).length > 1 && (
+                          <button 
+                            className="remove-btn" 
+                            onClick={() => removeAssignment(index)}
+                            title="Remove"
+                          >
+                            ×
+                          </button>
+                        )}
+                      </div>
+                    </div>
+                  ))}
+                </div>
+                
+                <button className="btn btn-primary" onClick={generateLinks}>
+                  Generate Survey Links
+                </button>
+              </div>
+            )}
+            
+            {generatedLinks.length > 0 && (
+              <div className="card">
+                <h2>3. Survey Links</h2>
+                <div className="info-box">
+                  Send these links to each person. They can complete the survey on any device without logging in.
+                </div>
+                
+                <div className="generated-links">
+                  {generatedLinks.map((link, index) => (
+                    <div key={index} className="link-item">
+                      <div className="link-header">
+                        <div>
+                          <span className="link-role">{link.roleName}</span>
+                          <span className="link-email"> — {link.name} ({link.email})</span>
+                        </div>
+                      </div>
+                      <div className="link-url">{link.url}</div>
+                      <div className="link-actions">
+                        <button 
+                          className="btn btn-secondary"
+                          onClick={() => copyToClipboard(link.url, index)}
+                        >
+                          {copiedIndex === index ? '✓ Copied!' : 'Copy Link'}
+                        </button>
+                        <button 
+                          className="btn btn-secondary"
+                          onClick={() => copyEmailTemplate(link)}
+                        >
+                          {copiedIndex === `email-${link.email}` ? '✓ Copied!' : 'Copy Email Template'}
+                        </button>
+                        <button 
+                          className="btn btn-secondary"
+                          onClick={() => window.open(link.url, '_blank')}
+                        >
+                          Preview
+                        </button>
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              </div>
+            )}
+            
+            <div className="card">
+              <h2>Settings</h2>
+              <div className="field">
+                <label className="field-label">GitHub Token (for saving responses)</label>
+                <input 
+                  type="password"
+                  className="input"
+                  value={githubToken}
+                  onChange={(e) => saveToken(e.target.value)}
+                  placeholder="ghp_xxxx..."
+                />
+                <div style={{ fontSize: '12px', color: 'var(--slate-500)', marginTop: '4px' }}>
+                  Optional. If provided, responses will be saved to your GitHub repo. Otherwise, they'll be saved to the respondent's browser localStorage.
+                </div>
+              </div>
+            </div>
+          </main>
+        </>
+      );
+    }
+    
+    ReactDOM.createRoot(document.getElementById('root')).render(<LinkGenerator />);
+  </script>
+</body>
+</html>
