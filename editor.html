@@ -104,17 +104,58 @@
     body { font-family: 'Interstate', -apple-system, BlinkMacSystemFont, sans-serif; color: var(--slate-900); }
     
     /* Main app background with topographic pattern */
-    .app-bg {
-      position: relative;
+    /* Topographic pattern as fixed background layer */
+    .topo-background {
+      position: fixed;
+      inset: 0;
+      background: linear-gradient(135deg, #F4F5F7 0%, #E9EEF4 100%);
+      z-index: -1;
     }
-    .app-bg::before {
+    .topo-background::before {
       content: '';
       position: absolute;
       inset: 0;
       background: url('topography-light.svg') center/600px 600px repeat;
       opacity: 1;
       pointer-events: none;
-      z-index: 0;
+    }
+    
+    /* Main app container - no pattern here */
+    .app-bg {
+      position: relative;
+      z-index: 1;
+    }
+    
+    /* Header must sit above everything */
+    .header-container {
+      position: relative;
+      z-index: 10;
+    }
+    
+    /* Stats bar - solid white, no pattern */
+    .stats-bar {
+      position: relative;
+      z-index: 5;
+      background: #FFF !important;
+      box-shadow: 0 1px 3px rgba(0,0,0,0.05);
+    }
+    
+    /* Stage cards - solid white, no pattern */
+    .stage-card {
+      position: relative;
+      z-index: 2;
+      background: #FFF !important;
+      box-shadow: 0 2px 8px rgba(0,0,0,0.08) !important;
+    }
+    
+    /* Dropdown menus - solid backgrounds */
+    .dropdown-menu, .settings-dropdown {
+      background: #FFF !important;
+    }
+    
+    /* Detail panel - solid background */
+    .detail-panel {
+      background: #FFF !important;
     }
     
     /* Dark screen background with topographic pattern */
@@ -4766,26 +4807,30 @@
       }
 
       return (
-        <div className="app-bg" style={{
-          height: isMobile ? 'auto' : '100vh',
-          minHeight: isMobile ? '100vh' : 'auto',
-          display: 'flex',
-          flexDirection: 'column',
-          background: 'linear-gradient(135deg, #F4F5F7 0%, #E9EEF4 100%)',
-          fontFamily: "'Interstate', sans-serif",
-          color: '#1A2332',
-          overflow: isMobile ? 'auto' : 'hidden'
-        }}>
-          {/* Header */}
-          <header className="header-container" style={{
-            background: '#192B45',
-            color: '#E9EEF4',
-            padding: '16px 24px',
+        <>
+          {/* Fixed topographic background layer */}
+          <div className="topo-background"></div>
+          
+          <div className="app-bg" style={{
+            height: isMobile ? 'auto' : '100vh',
+            minHeight: isMobile ? '100vh' : 'auto',
             display: 'flex',
             flexDirection: 'column',
-            gap: '12px',
-            flexShrink: 0
+            background: 'transparent',
+            fontFamily: "'Interstate', sans-serif",
+            color: '#1A2332',
+            overflow: isMobile ? 'auto' : 'hidden'
           }}>
+            {/* Header */}
+            <header className="header-container" style={{
+              background: '#192B45',
+              color: '#E9EEF4',
+              padding: '16px 24px',
+              display: 'flex',
+              flexDirection: 'column',
+              gap: '12px',
+              flexShrink: 0
+            }}>
             {/* Row 1: Logo + Title/Stats (left) | Export/Settings (right) */}
             <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', gap: '20px' }}>
               {/* Left side: Back Button (multi-user mode) + Logo + Divider + Title/Stats */}
@@ -6949,6 +6994,7 @@
             </div>
           )}
         </div>
+        </>
       );
     }
 
