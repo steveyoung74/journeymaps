@@ -245,7 +245,7 @@
     }
     
     /* Cost Analysis Dashboard Mobile Responsive */
-    @media (max-width: 768px) {
+    @media (max-width: 1024px) {
       .cost-analysis-panel {
         padding: 16px !important;
         margin: 0 -16px 24px -16px !important;
@@ -278,7 +278,7 @@
     }
     
     /* Mobile Responsive Styles */
-    @media (max-width: 768px) {
+    @media (max-width: 1024px) {
       /* Perspective filter: show dropdown, hide buttons */
       .perspective-buttons {
         display: none !important;
@@ -509,7 +509,7 @@
     const { useState, useCallback, useMemo, useEffect, useRef } = React;
     
     // Current app version - always displayed in footer
-    const APP_VERSION = "8.7.0";
+    const APP_VERSION = "8.8.0";
     
     // Fathom official taglines (per Brand Lock v1.0)
     const FATHOM_TAGLINES = [
@@ -3778,7 +3778,7 @@
       const [showStructurePanel, setShowStructurePanel] = useState(false);
       const [showGitHubSettings, setShowGitHubSettings] = useState(false);
       const [showPasswordPrompt, setShowPasswordPrompt] = useState(false);
-      const [isMobile, setIsMobile] = useState(() => window.innerWidth < 768);
+      const [isMobile, setIsMobile] = useState(() => window.innerWidth < 1024);
       const [showCosts, setShowCosts] = useState(true);
       const [isAppUnlocked, setIsAppUnlocked] = useState(() => {
         return sessionStorage.getItem('journeymap-app-unlocked') === 'true';
@@ -3817,7 +3817,7 @@
       
       // Mobile detection effect
       React.useEffect(() => {
-        const handleResize = () => setIsMobile(window.innerWidth < 768);
+        const handleResize = () => setIsMobile(window.innerWidth < 1024);
         window.addEventListener('resize', handleResize);
         return () => window.removeEventListener('resize', handleResize);
       }, []);
@@ -5823,7 +5823,7 @@
                               color: '#92400E',
                               cursor: 'default'
                             }}
-                            title={`${checkpointCount} hard checkpoint${checkpointCount !== 1 ? 's' : ''}`}>
+                            title={`${checkpointCount} checkpoint${checkpointCount !== 1 ? 's' : ''}`}>
                               <span>🚧</span>
                               <span>{checkpointCount} checkpoint{checkpointCount !== 1 ? 's' : ''}</span>
                             </div>
@@ -6100,16 +6100,16 @@
                             })()}
                             {/* Spacer to push reg reqs and pain points to bottom */}
                             <div style={{ flex: 1 }} />
-                            {/* Hard Checkpoint indicator */}
+                            {/* Checkpoint indicator */}
                             {step.isHardCheckpoint && (
                               <div 
                                 className="tooltip" 
-                                data-tooltip={step.checkpointDetails || 'Hard checkpoint - must be completed before proceeding'}
+                                data-tooltip={step.checkpointDetails || 'Checkpoint - must be completed before proceeding'}
                                 style={{ display: 'flex', alignItems: 'center', gap: '8px', padding: '10px 12px', background: '#F5E0E3', borderRadius: '6px', border: '2px solid #B84A5A', marginBottom: '8px', cursor: 'help' }}
                               >
                                 <span style={{ fontSize: '16px' }}>🚧</span>
                                 <div>
-                                  <div style={{ fontFamily: "'Interstate', sans-serif", fontSize: '12px', color: '#B84A5A', fontWeight: 600, textTransform: 'uppercase', letterSpacing: '0.5px' }}>Hard Checkpoint</div>
+                                  <div style={{ fontFamily: "'Interstate', sans-serif", fontSize: '12px', color: '#B84A5A', fontWeight: 600, textTransform: 'uppercase', letterSpacing: '0.5px' }}>Checkpoint</div>
                                   <div style={{ fontFamily: "'Interstate', sans-serif", fontSize: '11px', color: '#9D174D', textTransform: 'capitalize' }}>{step.checkpointType || 'Compliance'}</div>
                                 </div>
                               </div>
@@ -6639,9 +6639,9 @@
                         </div>
                       )}
                     </div>
-                    {/* Hard Checkpoint */}
+                    {/* Checkpoint */}
                     <div style={{ marginBottom: '24px' }}>
-                      <label style={{ display: 'block', fontFamily: "'Interstate', sans-serif", fontSize: '11px', color: '#556275', textTransform: 'uppercase', letterSpacing: '0.5px', marginBottom: '12px' }}>Hard Checkpoint</label>
+                      <label style={{ display: 'block', fontFamily: "'Interstate', sans-serif", fontSize: '11px', color: '#556275', textTransform: 'uppercase', letterSpacing: '0.5px', marginBottom: '12px' }}>Checkpoint</label>
                       {editMode ? (
                         <div style={{ display: 'flex', flexDirection: 'column', gap: '12px' }}>
                           <label style={{ display: 'flex', alignItems: 'center', gap: '12px', cursor: 'pointer' }}>
@@ -6654,7 +6654,7 @@
                               }}
                               style={{ width: '20px', height: '20px', accentColor: '#B84A5A' }}
                             />
-                            <span style={{ fontFamily: "'Interstate', sans-serif", fontSize: '14px' }}>This step is a hard checkpoint</span>
+                            <span style={{ fontFamily: "'Interstate', sans-serif", fontSize: '14px' }}>This step is a checkpoint</span>
                           </label>
                           {selectedStep.isHardCheckpoint && (
                             <>
@@ -6699,7 +6699,7 @@
                           <p style={{ margin: 0, fontSize: '14px', lineHeight: 1.6, fontFamily: "'Interstate', sans-serif", color: '#9D174D' }}>{selectedStep.checkpointDetails || 'No details specified'}</p>
                         </div>
                       ) : (
-                        <p style={{ color: '#8A95A5', fontStyle: 'italic', fontFamily: "'Interstate', sans-serif", fontSize: '14px' }}>No hard checkpoint set for this step</p>
+                        <p style={{ color: '#8A95A5', fontStyle: 'italic', fontFamily: "'Interstate', sans-serif", fontSize: '14px' }}>No checkpoint set for this step</p>
                       )}
                     </div>
                     {/* Regulatory */}
