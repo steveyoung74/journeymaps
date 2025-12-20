@@ -17,5 +17,48 @@
       "isExternal": true
     }
   ],
-  "stages": []
+  "stages": [
+    {
+      "id": "9pump75it",
+      "name": "stage 1",
+      "steps": [],
+      "dropOffCount": 0
+    },
+    {
+      "id": "7gsg6vqq2",
+      "name": "stage 2",
+      "steps": [],
+      "dropOffCount": 0
+    },
+    {
+      "id": "0sasgi2hk",
+      "name": "stage 3",
+      "steps": [],
+      "dropOffCount": 0
+    },
+    {
+      "id": "uuypifs5m",
+      "name": "stage 4",
+      "steps": [],
+      "dropOffCount": 0
+    },
+    {
+      "id": "a2qaqe8sj",
+      "name": "stage 5",
+      "steps": [],
+      "dropOffCount": 0
+    },
+    {
+      "id": "4pno52wl4",
+      "name": "stage 6",
+      "steps": [],
+      "dropOffCount": 0
+    },
+    {
+      "id": "d89blsa3s",
+      "name": "stage 7",
+      "steps": [],
+      "dropOffCount": 0
+    }
+  ]
 }
