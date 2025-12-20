@@ -631,7 +631,7 @@
                   lineHeight: 1.7,
                   maxWidth: '560px'
                 }}>
-                  Map operational processes with precision. Track time, cost, and friction across every role and touchpoint. Transform assumptions into insights.
+                  Map operational processes with precision. Capture ground-truth data from the people who do the work. Transform assumptions into actionable insights.
                 </p>
                 <div className="hero-buttons" style={{ display: 'flex', gap: '16px', flexWrap: 'wrap' }}>
                   <button onClick={onGetStarted} className="btn btn-primary" style={{ padding: '18px 36px', fontSize: '16px' }}>
@@ -759,6 +759,26 @@
                     Automatically flag automation opportunities. See potential savings before you start the transformation project.
                   </p>
                 </div>
+                
+                <div className="feature-card">
+                  <div className="feature-icon">📋</div>
+                  <h3 style={{ fontSize: '20px', fontWeight: 600, marginBottom: '12px', color: 'var(--navy-700)' }}>
+                    Employee Surveys
+                  </h3>
+                  <p style={{ color: 'var(--slate-600)', fontSize: '15px', lineHeight: 1.7 }}>
+                    Collect ground-truth data from the people who do the work. Role-specific questionnaires capture time, friction, and improvement ideas.
+                  </p>
+                </div>
+                
+                <div className="feature-card">
+                  <div className="feature-icon">📊</div>
+                  <h3 style={{ fontSize: '20px', fontWeight: 600, marginBottom: '12px', color: 'var(--navy-700)' }}>
+                    Executive Reports
+                  </h3>
+                  <p style={{ color: 'var(--slate-600)', fontSize: '15px', lineHeight: 1.7 }}>
+                    One-click PDF exports with cost summaries, opportunity rankings, and funnel analysis. Board-ready insight without the busywork.
+                  </p>
+                </div>
               </div>
             </div>
           </section>
@@ -802,6 +822,140 @@
                   <p style={{ color: 'var(--slate-600)', fontSize: '15px', lineHeight: 1.7 }}>
                     Export reports, share with stakeholders, and prioritise improvements based on real impact — not hunches or politics.
                   </p>
+                </div>
+              </div>
+            </div>
+          </section>
+          
+          {/* Collaborative Intelligence Section */}
+          <section className="section section-alt">
+            <div className="container">
+              <div style={{ display: 'flex', gap: '80px', alignItems: 'center', flexWrap: 'wrap' }}>
+                <div style={{ flex: '1 1 400px' }}>
+                  <div style={{ 
+                    background: 'linear-gradient(145deg, #FFF 0%, var(--slate-50) 100%)',
+                    borderRadius: '20px',
+                    padding: '40px',
+                    boxShadow: '0 8px 32px rgba(0,0,0,0.08)',
+                    border: '1px solid var(--slate-200)'
+                  }}>
+                    {/* Survey Preview */}
+                    <div style={{ marginBottom: '24px' }}>
+                      <div style={{ display: 'flex', alignItems: 'center', gap: '12px', marginBottom: '20px' }}>
+                        <div style={{ width: '40px', height: '40px', borderRadius: '10px', background: 'var(--navy-900)', display: 'flex', alignItems: 'center', justifyContent: 'center', color: '#FFF', fontSize: '18px' }}>📋</div>
+                        <div>
+                          <div style={{ fontSize: '13px', color: 'var(--slate-500)' }}>Process Survey</div>
+                          <div style={{ fontWeight: 600, color: 'var(--navy-700)' }}>Client Onboarding</div>
+                        </div>
+                      </div>
+                    </div>
+                    
+                    <div style={{ background: '#FFF', borderRadius: '12px', padding: '20px', border: '1px solid var(--slate-200)', marginBottom: '16px' }}>
+                      <div style={{ fontSize: '11px', color: 'var(--steel-500)', fontWeight: 600, textTransform: 'uppercase', letterSpacing: '0.5px', marginBottom: '8px' }}>Stage 2 · Opportunity Qualification</div>
+                      <div style={{ fontWeight: 600, color: 'var(--navy-700)', marginBottom: '16px' }}>Initial Client Call</div>
+                      
+                      <div style={{ marginBottom: '16px' }}>
+                        <div style={{ fontSize: '13px', color: 'var(--slate-600)', marginBottom: '6px' }}>How long does this typically take you?</div>
+                        <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+                          <div style={{ flex: 1, height: '38px', background: 'var(--slate-100)', borderRadius: '6px', border: '2px solid var(--slate-200)', display: 'flex', alignItems: 'center', paddingLeft: '12px', color: 'var(--slate-500)', fontSize: '14px' }}>25</div>
+                          <div style={{ background: 'var(--slate-100)', padding: '8px 14px', borderRadius: '6px', fontSize: '13px', color: 'var(--slate-600)' }}>minutes</div>
+                        </div>
+                      </div>
+                      
+                      <div>
+                        <div style={{ fontSize: '13px', color: 'var(--slate-600)', marginBottom: '8px' }}>How much friction do you experience?</div>
+                        <div style={{ display: 'flex', gap: '8px' }}>
+                          {[
+                            { emoji: '😊', label: 'None' },
+                            { emoji: '🙂', label: 'Low', selected: true },
+                            { emoji: '😐', label: 'Medium' },
+                            { emoji: '😫', label: 'High' }
+                          ].map((opt, i) => (
+                            <div key={i} style={{ 
+                              flex: 1, 
+                              padding: '10px 6px', 
+                              border: opt.selected ? '2px solid var(--steel-500)' : '1px solid var(--slate-200)', 
+                              borderRadius: '8px', 
+                              textAlign: 'center',
+                              background: opt.selected ? 'rgba(91, 138, 154, 0.1)' : '#FFF'
+                            }}>
+                              <div style={{ fontSize: '20px', marginBottom: '2px' }}>{opt.emoji}</div>
+                              <div style={{ fontSize: '10px', fontWeight: 600, color: 'var(--slate-600)' }}>{opt.label}</div>
+                            </div>
+                          ))}
+                        </div>
+                      </div>
+                    </div>
+                    
+                    <div style={{ display: 'flex', alignItems: 'center', gap: '8px', color: 'var(--slate-500)', fontSize: '13px' }}>
+                      <span>✓</span>
+                      <span>Step 2 of 5 · About 4 minutes remaining</span>
+                    </div>
+                  </div>
+                </div>
+                
+                <div style={{ flex: '1 1 440px' }}>
+                  <div style={{ 
+                    padding: '10px 18px', 
+                    background: 'var(--success-light)', 
+                    borderRadius: '24px', 
+                    display: 'inline-block',
+                    marginBottom: '24px',
+                    fontSize: '13px',
+                    color: 'var(--success)',
+                    fontWeight: 600,
+                    letterSpacing: '0.5px'
+                  }}>
+                    COLLABORATIVE INTELLIGENCE
+                  </div>
+                  <h2 style={{ fontSize: '36px', fontWeight: 300, marginBottom: '24px', color: 'var(--navy-700)', lineHeight: 1.25 }}>
+                    Don't guess.<br/>Ask the people who do the work.
+                  </h2>
+                  <p style={{ color: 'var(--slate-600)', fontSize: '17px', marginBottom: '20px', lineHeight: 1.8 }}>
+                    Top-down process mapping misses the truth. The people doing the work know where time is wasted, what causes friction, and what could be better — <strong style={{ color: 'var(--navy-700)' }}>but no one asks them</strong>.
+                  </p>
+                  <p style={{ color: 'var(--slate-600)', fontSize: '17px', marginBottom: '32px', lineHeight: 1.8 }}>
+                    Fathom's built-in survey system sends personalised questionnaires to everyone involved in your process. Each person only sees the steps relevant to their role. Responses flow back into your journey map automatically — giving you ground-truth data, not boardroom assumptions.
+                  </p>
+                  
+                  <div style={{ display: 'flex', flexDirection: 'column', gap: '16px' }}>
+                    <div style={{ display: 'flex', alignItems: 'flex-start', gap: '14px' }}>
+                      <div style={{ width: '28px', height: '28px', borderRadius: '50%', background: 'var(--success-light)', display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0, marginTop: '2px' }}>
+                        <span style={{ color: 'var(--success)', fontSize: '14px' }}>✓</span>
+                      </div>
+                      <div>
+                        <div style={{ fontWeight: 600, color: 'var(--navy-700)', marginBottom: '2px' }}>Role-specific surveys</div>
+                        <div style={{ fontSize: '14px', color: 'var(--slate-600)' }}>Each person only sees steps assigned to their role</div>
+                      </div>
+                    </div>
+                    <div style={{ display: 'flex', alignItems: 'flex-start', gap: '14px' }}>
+                      <div style={{ width: '28px', height: '28px', borderRadius: '50%', background: 'var(--success-light)', display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0, marginTop: '2px' }}>
+                        <span style={{ color: 'var(--success)', fontSize: '14px' }}>✓</span>
+                      </div>
+                      <div>
+                        <div style={{ fontWeight: 600, color: 'var(--navy-700)', marginBottom: '2px' }}>No login required</div>
+                        <div style={{ fontSize: '14px', color: 'var(--slate-600)' }}>Mobile-friendly links work instantly for all respondents</div>
+                      </div>
+                    </div>
+                    <div style={{ display: 'flex', alignItems: 'flex-start', gap: '14px' }}>
+                      <div style={{ width: '28px', height: '28px', borderRadius: '50%', background: 'var(--success-light)', display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0, marginTop: '2px' }}>
+                        <span style={{ color: 'var(--success)', fontSize: '14px' }}>✓</span>
+                      </div>
+                      <div>
+                        <div style={{ fontWeight: 600, color: 'var(--navy-700)', marginBottom: '2px' }}>Capture pain points & ideas</div>
+                        <div style={{ fontSize: '14px', color: 'var(--slate-600)' }}>Time estimates, friction, regulatory notes, and improvement suggestions</div>
+                      </div>
+                    </div>
+                    <div style={{ display: 'flex', alignItems: 'flex-start', gap: '14px' }}>
+                      <div style={{ width: '28px', height: '28px', borderRadius: '50%', background: 'var(--success-light)', display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0, marginTop: '2px' }}>
+                        <span style={{ color: 'var(--success)', fontSize: '14px' }}>✓</span>
+                      </div>
+                      <div>
+                        <div style={{ fontWeight: 600, color: 'var(--navy-700)', marginBottom: '2px' }}>Build trust, not resentment</div>
+                        <div style={{ fontSize: '14px', color: 'var(--slate-600)' }}>People support change when they helped design it</div>
+                      </div>
+                    </div>
+                  </div>
                 </div>
               </div>
             </div>
