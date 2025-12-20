@@ -103,6 +103,22 @@
     * { box-sizing: border-box; margin: 0; padding: 0; }
     body { font-family: 'Interstate', -apple-system, BlinkMacSystemFont, sans-serif; color: var(--slate-900); }
     
+    /* Modal animations */
+    .dashboard-modal-overlay {
+      opacity: 0;
+      animation: modalFadeIn 0.2s ease forwards;
+    }
+    .dashboard-modal-content {
+      transform: translateY(20px);
+      animation: modalSlideUp 0.3s ease forwards;
+    }
+    @keyframes modalFadeIn {
+      to { opacity: 1; }
+    }
+    @keyframes modalSlideUp {
+      to { transform: translateY(0); }
+    }
+    
     /* Main app background with topographic pattern */
     /* Topographic pattern as fixed background layer */
     .topo-background {
@@ -6900,8 +6916,8 @@
           {/* Modals */}
           {/* Unified Dashboard Modal */}
           {showDashboard && (
-            <div style={{ position: 'fixed', top: 0, left: 0, right: 0, bottom: 0, background: 'rgba(0,0,0,0.4)', backdropFilter: 'blur(8px)', WebkitBackdropFilter: 'blur(8px)', display: 'flex', alignItems: 'center', justifyContent: 'center', zIndex: 3000, padding: '12px' }} onClick={() => setShowDashboard(false)}>
-              <div onClick={(e) => e.stopPropagation()} style={{ background: '#FFF', borderRadius: '12px', maxWidth: '1400px', width: '100%', maxHeight: '90vh', display: 'flex', flexDirection: 'column', overflow: 'hidden', boxShadow: '0 20px 60px rgba(0,0,0,0.3)' }}>
+            <div className="dashboard-modal-overlay" style={{ position: 'fixed', top: 0, left: 0, right: 0, bottom: 0, background: 'rgba(12,22,32,0.6)', backdropFilter: 'blur(8px)', WebkitBackdropFilter: 'blur(8px)', display: 'flex', alignItems: 'center', justifyContent: 'center', zIndex: 3000, padding: '12px' }} onClick={() => setShowDashboard(false)}>
+              <div className="dashboard-modal-content" onClick={(e) => e.stopPropagation()} style={{ background: '#FFF', borderRadius: '12px', maxWidth: '1400px', width: '100%', maxHeight: '90vh', display: 'flex', flexDirection: 'column', overflow: 'hidden', boxShadow: '0 20px 60px rgba(0,0,0,0.3)' }}>
                 {/* Dashboard Header with Tabs */}
                 <div style={{ background: '#192B45', padding: '12px 16px', display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: '12px', flexShrink: 0 }}>
                   {/* Left: Icon + Title (title hidden on mobile) */}
