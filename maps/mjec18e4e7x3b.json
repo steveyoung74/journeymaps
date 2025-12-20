@@ -1,0 +1,279 @@
+{
+  "meta": {
+    "title": "Customer Onboarding Journey",
+    "version": "1.0",
+    "product": "FATHOM v1.3.0",
+    "lastUpdated": "2025-12-20T13:26:53.884Z",
+    "template": "saas_customer_onboarding"
+  },
+  "funnel": {
+    "enabled": true,
+    "initialVolume": 20,
+    "periodLabel": "per month"
+  },
+  "personas": [
+    {
+      "id": "customer",
+      "label": "Customer",
+      "salary": 0,
+      "isExternal": true,
+      "color": "#2D8A6E"
+    },
+    {
+      "id": "sales",
+      "label": "Account Executive",
+      "salary": 70000,
+      "isExternal": false,
+      "color": "#5B8A9A"
+    },
+    {
+      "id": "csm",
+      "label": "Customer Success Manager",
+      "salary": 50000,
+      "isExternal": false,
+      "color": "#5B8A9A"
+    },
+    {
+      "id": "implementation",
+      "label": "Implementation Specialist",
+      "salary": 45000,
+      "isExternal": false,
+      "color": "#5B8A9A"
+    },
+    {
+      "id": "support",
+      "label": "Support Engineer",
+      "salary": 38000,
+      "isExternal": false,
+      "color": "#5B8A9A"
+    }
+  ],
+  "stages": [
+    {
+      "id": "stage-handoff",
+      "name": "Sales Handoff",
+      "dropOffCount": 0,
+      "steps": [
+        {
+          "id": "step-1-1",
+          "name": "Deal Closed",
+          "persona": "sales",
+          "duration": 15,
+          "friction": "none",
+          "notes": ""
+        },
+        {
+          "id": "step-1-2",
+          "name": "Internal Handoff Meeting",
+          "persona": "csm",
+          "duration": 30,
+          "friction": "low",
+          "notes": ""
+        },
+        {
+          "id": "step-1-3",
+          "name": "Assign Implementation Team",
+          "persona": "csm",
+          "duration": 15,
+          "friction": "none",
+          "notes": ""
+        },
+        {
+          "id": "step-1-4",
+          "name": "Send Welcome Email",
+          "persona": "csm",
+          "duration": 15,
+          "friction": "none",
+          "notes": ""
+        }
+      ]
+    },
+    {
+      "id": "stage-kickoff",
+      "name": "Kickoff",
+      "dropOffCount": 1,
+      "steps": [
+        {
+          "id": "step-2-1",
+          "name": "Kickoff Meeting",
+          "persona": "csm",
+          "duration": 60,
+          "friction": "none",
+          "notes": ""
+        },
+        {
+          "id": "step-2-2",
+          "name": "Gather Requirements",
+          "persona": "implementation",
+          "duration": 45,
+          "friction": "medium",
+          "notes": ""
+        },
+        {
+          "id": "step-2-3",
+          "name": "Define Success Criteria",
+          "persona": "csm",
+          "duration": 30,
+          "friction": "low",
+          "notes": ""
+        },
+        {
+          "id": "step-2-4",
+          "name": "Create Implementation Plan",
+          "persona": "implementation",
+          "duration": 60,
+          "friction": "low",
+          "notes": ""
+        }
+      ]
+    },
+    {
+      "id": "stage-setup",
+      "name": "Technical Setup",
+      "dropOffCount": 1,
+      "steps": [
+        {
+          "id": "step-3-1",
+          "name": "Provision Environment",
+          "persona": "implementation",
+          "duration": 30,
+          "friction": "none",
+          "notes": ""
+        },
+        {
+          "id": "step-3-2",
+          "name": "SSO Setup",
+          "persona": "implementation",
+          "duration": 90,
+          "friction": "high",
+          "notes": ""
+        },
+        {
+          "id": "step-3-3",
+          "name": "Data Migration",
+          "persona": "implementation",
+          "duration": 180,
+          "friction": "high",
+          "notes": ""
+        },
+        {
+          "id": "step-3-4",
+          "name": "Integration Setup",
+          "persona": "implementation",
+          "duration": 120,
+          "friction": "high",
+          "notes": ""
+        },
+        {
+          "id": "step-3-5",
+          "name": "Custom Configuration",
+          "persona": "implementation",
+          "duration": 90,
+          "friction": "medium",
+          "notes": ""
+        }
+      ]
+    },
+    {
+      "id": "stage-training",
+      "name": "Training",
+      "dropOffCount": 0,
+      "steps": [
+        {
+          "id": "step-4-1",
+          "name": "Admin Training",
+          "persona": "implementation",
+          "duration": 90,
+          "friction": "low",
+          "notes": ""
+        },
+        {
+          "id": "step-4-2",
+          "name": "End User Training",
+          "persona": "implementation",
+          "duration": 240,
+          "friction": "low",
+          "notes": "Multiple sessions"
+        },
+        {
+          "id": "step-4-3",
+          "name": "Create Documentation",
+          "persona": "csm",
+          "duration": 60,
+          "friction": "medium",
+          "notes": ""
+        }
+      ]
+    },
+    {
+      "id": "stage-golive",
+      "name": "Go-Live",
+      "dropOffCount": 1,
+      "steps": [
+        {
+          "id": "step-5-1",
+          "name": "User Acceptance Testing",
+          "persona": "customer",
+          "duration": 120,
+          "friction": "medium",
+          "notes": ""
+        },
+        {
+          "id": "step-5-2",
+          "name": "Fix UAT Issues",
+          "persona": "implementation",
+          "duration": 90,
+          "friction": "medium",
+          "notes": ""
+        },
+        {
+          "id": "step-5-3",
+          "name": "Go-Live Support",
+          "persona": "support",
+          "duration": 120,
+          "friction": "medium",
+          "notes": ""
+        }
+      ]
+    },
+    {
+      "id": "stage-adoption",
+      "name": "Adoption & Handover",
+      "dropOffCount": 0,
+      "steps": [
+        {
+          "id": "step-6-1",
+          "name": "Monitor Adoption",
+          "persona": "csm",
+          "duration": 30,
+          "friction": "low",
+          "notes": ""
+        },
+        {
+          "id": "step-6-2",
+          "name": "30-Day Success Review",
+          "persona": "csm",
+          "duration": 45,
+          "friction": "none",
+          "notes": ""
+        },
+        {
+          "id": "step-6-3",
+          "name": "Transition to BAU",
+          "persona": "csm",
+          "duration": 30,
+          "friction": "none",
+          "notes": ""
+        },
+        {
+          "id": "step-6-4",
+          "name": "Collect NPS",
+          "persona": "customer",
+          "duration": 15,
+          "friction": "none",
+          "notes": ""
+        }
+      ]
+    }
+  ]
+}
