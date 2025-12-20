@@ -245,7 +245,7 @@
     }
     
     /* Cost Analysis Dashboard Mobile Responsive */
-    @media (max-width: 1280px) {
+    @media (max-width: 768px) {
       .cost-analysis-panel {
         padding: 16px !important;
         margin: 0 -16px 24px -16px !important;
@@ -278,7 +278,7 @@
     }
     
     /* Mobile Responsive Styles */
-    @media (max-width: 1280px) {
+    @media (max-width: 768px) {
       /* Perspective filter: show dropdown, hide buttons */
       .perspective-buttons {
         display: none !important;
@@ -3778,7 +3778,8 @@
       const [showStructurePanel, setShowStructurePanel] = useState(false);
       const [showGitHubSettings, setShowGitHubSettings] = useState(false);
       const [showPasswordPrompt, setShowPasswordPrompt] = useState(false);
-      const [isMobile, setIsMobile] = useState(() => window.innerWidth < 1280);
+      const [isMobile, setIsMobile] = useState(() => window.innerWidth < 768);
+      const [isCompact, setIsCompact] = useState(() => window.innerWidth < 1280 && window.innerWidth >= 768);
       const [showCosts, setShowCosts] = useState(true);
       const [isAppUnlocked, setIsAppUnlocked] = useState(() => {
         return sessionStorage.getItem('journeymap-app-unlocked') === 'true';
@@ -3817,7 +3818,11 @@
       
       // Mobile detection effect
       React.useEffect(() => {
-        const handleResize = () => setIsMobile(window.innerWidth < 1280);
+        const handleResize = () => {
+          const width = window.innerWidth;
+          setIsMobile(width < 768);
+          setIsCompact(width < 1280 && width >= 768);
+        };
         window.addEventListener('resize', handleResize);
         return () => window.removeEventListener('resize', handleResize);
       }, []);
@@ -4906,10 +4911,10 @@
                     {/* GROUP 1: View Mode */}
                     <div style={{ display: 'flex', borderRadius: '4px', overflow: 'hidden', border: '1px solid rgba(255,255,255,0.3)' }}>
                       <button onClick={() => { setViewMode('stages'); }} style={{ padding: '6px 10px', background: viewMode === 'stages' ? '#556275' : 'transparent', color: '#F4F5F7', border: 'none', cursor: 'pointer', fontFamily: "'Interstate', sans-serif", fontSize: '11px', display: 'flex', alignItems: 'center', gap: '4px' }}>
-                        📁 Stages
+                        📁{!isCompact && ' Stages'}
                       </button>
                       <button onClick={() => setViewMode('steps')} style={{ padding: '6px 10px', background: viewMode === 'steps' ? '#556275' : 'transparent', color: '#F4F5F7', border: 'none', borderLeft: '1px solid rgba(255,255,255,0.2)', cursor: 'pointer', fontFamily: "'Interstate', sans-serif", fontSize: '11px', display: 'flex', alignItems: 'center', gap: '4px' }}>
-                        📋 Steps
+                        📋{!isCompact && ' Steps'}
                       </button>
                     </div>
                     
@@ -4917,7 +4922,7 @@
                     {(showCosts || config.funnel?.enabled) && (
                       <>
                         <div style={{ width: '1px', height: '20px', background: 'rgba(255,255,255,0.15)', margin: '0 2px' }} />
-                        <span style={{ fontSize: '9px', color: 'rgba(255,255,255,0.4)', fontFamily: "'Interstate', sans-serif", textTransform: 'uppercase', letterSpacing: '0.5px' }}>Show</span>
+                        {!isCompact && <span style={{ fontSize: '9px', color: 'rgba(255,255,255,0.4)', fontFamily: "'Interstate', sans-serif", textTransform: 'uppercase', letterSpacing: '0.5px' }}>Show</span>}
                         <div style={{ display: 'flex', borderRadius: '4px', overflow: 'hidden', border: '1px solid rgba(255,255,255,0.3)' }}>
                           {showCosts && (
                             <button 
@@ -4943,7 +4948,7 @@
                                 borderRight: config.funnel?.enabled ? '1px solid rgba(255,255,255,0.2)' : 'none'
                               }}
                             >
-                              🎯 Opps
+                              🎯{!isCompact && ' Opps'}
                             </button>
                           )}
                           {config.funnel?.enabled && (
@@ -4969,7 +4974,7 @@
                                 gap: '4px'
                               }}
                             >
-                              🔻 Funnel
+                              🔻{!isCompact && ' Funnel'}
                             </button>
                           )}
                         </div>
@@ -4978,14 +4983,14 @@
                     
                     {/* GROUP 3: Dashboards (open modal overlays) */}
                     <div style={{ width: '1px', height: '20px', background: 'rgba(255,255,255,0.15)', margin: '0 2px' }} />
-                    <span style={{ fontSize: '9px', color: 'rgba(255,255,255,0.4)', fontFamily: "'Interstate', sans-serif", textTransform: 'uppercase', letterSpacing: '0.5px' }}>Analyse</span>
+                    {!isCompact && <span style={{ fontSize: '9px', color: 'rgba(255,255,255,0.4)', fontFamily: "'Interstate', sans-serif", textTransform: 'uppercase', letterSpacing: '0.5px' }}>Analyse</span>}
                     <div style={{ display: 'flex', borderRadius: '4px', overflow: 'hidden', border: '1px solid rgba(255,255,255,0.3)' }}>
                       <button onClick={() => setShowTimeline(!showTimeline)} style={{ padding: '6px 10px', background: showTimeline ? '#556275' : 'transparent', color: '#F4F5F7', border: 'none', cursor: 'pointer', fontFamily: "'Interstate', sans-serif", fontSize: '11px', display: 'flex', alignItems: 'center', gap: '4px', borderRight: '1px solid rgba(255,255,255,0.2)' }}>
-                        📅 Time
+                        📅{!isCompact && ' Time'}
                       </button>
                       {showCosts && (
                         <button onClick={() => setShowCostAnalysis(!showCostAnalysis)} style={{ padding: '6px 10px', background: showCostAnalysis ? '#556275' : 'transparent', color: '#F4F5F7', border: 'none', cursor: 'pointer', fontFamily: "'Interstate', sans-serif", fontSize: '11px', display: 'flex', alignItems: 'center', gap: '4px', borderRight: config.funnel?.enabled ? '1px solid rgba(255,255,255,0.2)' : 'none' }}>
-                          💰 Costs
+                          💰{!isCompact && ' Costs'}
                         </button>
                       )}
                       {config.funnel?.enabled && (
@@ -5004,7 +5009,7 @@
                             gap: '4px'
                           }}
                         >
-                          🔻 Funnel
+                          🔻{!isCompact && ' Funnel'}
                         </button>
                       )}
                     </div>
