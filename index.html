@@ -156,6 +156,54 @@
     @keyframes fadeIn {
       to { opacity: 1; }
     }
+    
+    /* Hero logo entrance animation */
+    .hero-logo {
+      animation: heroLogoIn 0.8s ease-out forwards;
+      opacity: 0;
+    }
+    @keyframes heroLogoIn {
+      0% {
+        opacity: 0;
+        transform: translateY(-20px);
+      }
+      100% {
+        opacity: 1;
+        transform: translateY(0);
+      }
+    }
+    
+    /* Hero content staggered entrance */
+    .hero-badge {
+      animation: heroContentIn 0.7s ease-out 0.2s forwards;
+      opacity: 0;
+    }
+    .hero-headline {
+      animation: heroContentIn 0.7s ease-out 0.35s forwards;
+      opacity: 0;
+    }
+    .hero-subhead {
+      animation: heroContentIn 0.7s ease-out 0.5s forwards;
+      opacity: 0;
+    }
+    .hero-buttons {
+      animation: heroContentIn 0.7s ease-out 0.65s forwards;
+      opacity: 0;
+    }
+    .stats-bar {
+      animation: heroContentIn 0.7s ease-out 0.85s forwards;
+      opacity: 0;
+    }
+    @keyframes heroContentIn {
+      0% {
+        opacity: 0;
+        transform: translateY(20px);
+      }
+      100% {
+        opacity: 1;
+        transform: translateY(0);
+      }
+    }
     .modal {
       background: #FFF;
       border-radius: 20px;
@@ -472,9 +520,15 @@
     // ============================================
     function LandingPage({ onGetStarted }) {
       const [scrolled, setScrolled] = useState(false);
+      const [logoVisible, setLogoVisible] = useState(false);
       
       useEffect(() => {
-        const handleScroll = () => setScrolled(window.scrollY > 50);
+        const handleScroll = () => {
+          const scrollY = window.scrollY;
+          setScrolled(scrollY > 50);
+          // Show nav logo when hero logo scrolls out of view (around 200px)
+          setLogoVisible(scrollY > 200);
+        };
         window.addEventListener('scroll', handleScroll);
         return () => window.removeEventListener('scroll', handleScroll);
       }, []);
@@ -497,7 +551,16 @@
             transition: 'all 0.3s',
             borderBottom: scrolled ? '1px solid rgba(255,255,255,0.1)' : 'none'
           }}>
-            <img src="logo_light.png" alt="FATHOM" style={{ height: '28px' }} />
+            <img 
+              src="logo_light.png" 
+              alt="FATHOM" 
+              style={{ 
+                height: '28px',
+                opacity: logoVisible ? 1 : 0,
+                transform: logoVisible ? 'translateY(0)' : 'translateY(-8px)',
+                transition: 'opacity 0.4s ease, transform 0.4s ease'
+              }} 
+            />
             <div className="nav-links" style={{ display: 'flex', gap: '40px', alignItems: 'center' }}>
               <a href="#features" style={{ color: 'rgba(255,255,255,0.8)', textDecoration: 'none', fontSize: '14px', fontWeight: 500 }}>Features</a>
               <a href="#how-it-works" style={{ color: 'rgba(255,255,255,0.8)', textDecoration: 'none', fontSize: '14px', fontWeight: 500 }}>How It Works</a>
@@ -512,7 +575,18 @@
           <section className="hero-bg" style={{ minHeight: '100vh', display: 'flex', flexDirection: 'column', justifyContent: 'center', padding: '120px 24px 60px' }}>
             <div className="container" style={{ position: 'relative', zIndex: 1 }}>
               <div className="hero-content" style={{ maxWidth: '720px', marginBottom: '48px' }}>
-                <div style={{ 
+                {/* Large Hero Logo */}
+                <img 
+                  src="logo_light.png" 
+                  alt="FATHOM" 
+                  className="hero-logo"
+                  style={{ 
+                    height: '80px',
+                    marginBottom: '48px'
+                  }} 
+                />
+                
+                <div className="hero-badge" style={{ 
                   display: 'inline-block',
                   padding: '10px 20px', 
                   background: 'rgba(91, 138, 154, 0.2)', 
@@ -525,7 +599,7 @@
                 }}>
                   JOURNEY INTELLIGENCE PLATFORM
                 </div>
-                <h1 style={{ 
+                <h1 className="hero-headline" style={{ 
                   fontSize: '60px', 
                   fontWeight: 300, 
                   color: '#FFF', 
@@ -535,7 +609,7 @@
                 }}>
                   See what your journeys <br/><span style={{ color: 'var(--steel-400)' }}>really cost</span>
                 </h1>
-                <p style={{ 
+                <p className="hero-subhead" style={{ 
                   fontSize: '20px', 
                   color: 'var(--slate-300)', 
                   marginBottom: '40px',
