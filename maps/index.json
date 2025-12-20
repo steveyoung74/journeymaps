@@ -8,7 +8,8 @@
       "ownerName": "Steve Young",
       "createdAt": "2024-01-01T00:00:00.000Z",
       "updatedAt": "2024-12-17T00:00:00.000Z",
-      "sharedWith": []
+      "sharedWith": [],
+      "locked": true
     },
     {
       "id": "mjea4tzi0c049",
