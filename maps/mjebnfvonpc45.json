@@ -1,0 +1,286 @@
+{
+  "meta": {
+    "title": "Employee Onboarding Journey",
+    "version": "1.0",
+    "product": "FATHOM v1.3.0",
+    "lastUpdated": "2025-12-20T13:16:10.404Z",
+    "template": "employee_onboarding"
+  },
+  "funnel": {
+    "enabled": true,
+    "initialVolume": 50
+  },
+  "personas": [
+    {
+      "id": "new-hire",
+      "label": "New Hire",
+      "salary": 40000,
+      "isExternal": false,
+      "color": "#5B8A9A"
+    },
+    {
+      "id": "manager",
+      "label": "Hiring Manager",
+      "salary": 65000,
+      "isExternal": false,
+      "color": "#5B8A9A"
+    },
+    {
+      "id": "hr",
+      "label": "HR Coordinator",
+      "salary": 32000,
+      "isExternal": false,
+      "color": "#5B8A9A"
+    },
+    {
+      "id": "it",
+      "label": "IT Support",
+      "salary": 35000,
+      "isExternal": false,
+      "color": "#5B8A9A"
+    },
+    {
+      "id": "facilities",
+      "label": "Facilities",
+      "salary": 28000,
+      "isExternal": false,
+      "color": "#5B8A9A"
+    }
+  ],
+  "stages": [
+    {
+      "id": "stage-preboarding",
+      "name": "Pre-boarding",
+      "dropOff": 3,
+      "steps": [
+        {
+          "id": "step-1-1",
+          "name": "Send Offer Letter",
+          "persona": "hr",
+          "duration": 30,
+          "friction": "none",
+          "notes": ""
+        },
+        {
+          "id": "step-1-2",
+          "name": "Receive Signed Contract",
+          "persona": "new-hire",
+          "duration": 15,
+          "friction": "low",
+          "notes": ""
+        },
+        {
+          "id": "step-1-3",
+          "name": "Collect Personal Details",
+          "persona": "new-hire",
+          "duration": 20,
+          "friction": "low",
+          "notes": ""
+        },
+        {
+          "id": "step-1-4",
+          "name": "Right to Work Check",
+          "persona": "hr",
+          "duration": 30,
+          "friction": "medium",
+          "notes": ""
+        },
+        {
+          "id": "step-1-5",
+          "name": "Send Welcome Email",
+          "persona": "hr",
+          "duration": 15,
+          "friction": "none",
+          "notes": ""
+        }
+      ]
+    },
+    {
+      "id": "stage-it-setup",
+      "name": "IT & Access Setup",
+      "dropOff": 0,
+      "steps": [
+        {
+          "id": "step-2-1",
+          "name": "Create User Accounts",
+          "persona": "it",
+          "duration": 45,
+          "friction": "low",
+          "notes": ""
+        },
+        {
+          "id": "step-2-2",
+          "name": "Provision Equipment",
+          "persona": "it",
+          "duration": 60,
+          "friction": "medium",
+          "notes": ""
+        },
+        {
+          "id": "step-2-3",
+          "name": "Configure Access Permissions",
+          "persona": "it",
+          "duration": 30,
+          "friction": "medium",
+          "notes": ""
+        },
+        {
+          "id": "step-2-4",
+          "name": "Create Building Pass",
+          "persona": "facilities",
+          "duration": 20,
+          "friction": "none",
+          "notes": ""
+        }
+      ]
+    },
+    {
+      "id": "stage-day-one",
+      "name": "First Day",
+      "dropOff": 1,
+      "steps": [
+        {
+          "id": "step-3-1",
+          "name": "Reception & Welcome",
+          "persona": "hr",
+          "duration": 15,
+          "friction": "none",
+          "notes": ""
+        },
+        {
+          "id": "step-3-2",
+          "name": "IT Equipment Handover",
+          "persona": "it",
+          "duration": 30,
+          "friction": "low",
+          "notes": ""
+        },
+        {
+          "id": "step-3-3",
+          "name": "HR Paperwork Session",
+          "persona": "hr",
+          "duration": 60,
+          "friction": "medium",
+          "notes": ""
+        },
+        {
+          "id": "step-3-4",
+          "name": "Manager Welcome Meeting",
+          "persona": "manager",
+          "duration": 45,
+          "friction": "none",
+          "notes": ""
+        },
+        {
+          "id": "step-3-5",
+          "name": "Team Introductions",
+          "persona": "manager",
+          "duration": 30,
+          "friction": "none",
+          "notes": ""
+        }
+      ]
+    },
+    {
+      "id": "stage-first-week",
+      "name": "First Week",
+      "dropOff": 1,
+      "steps": [
+        {
+          "id": "step-4-1",
+          "name": "Company Induction",
+          "persona": "hr",
+          "duration": 120,
+          "friction": "low",
+          "notes": ""
+        },
+        {
+          "id": "step-4-2",
+          "name": "Health & Safety Training",
+          "persona": "new-hire",
+          "duration": 60,
+          "friction": "low",
+          "notes": ""
+        },
+        {
+          "id": "step-4-3",
+          "name": "Role-Specific Orientation",
+          "persona": "manager",
+          "duration": 180,
+          "friction": "low",
+          "notes": ""
+        },
+        {
+          "id": "step-4-4",
+          "name": "End of Week Check-in",
+          "persona": "manager",
+          "duration": 30,
+          "friction": "none",
+          "notes": ""
+        }
+      ]
+    },
+    {
+      "id": "stage-first-month",
+      "name": "First Month",
+      "dropOff": 2,
+      "steps": [
+        {
+          "id": "step-5-1",
+          "name": "Complete Compliance Training",
+          "persona": "new-hire",
+          "duration": 240,
+          "friction": "medium",
+          "notes": ""
+        },
+        {
+          "id": "step-5-2",
+          "name": "Weekly 1:1s",
+          "persona": "manager",
+          "duration": 120,
+          "friction": "none",
+          "notes": "4 sessions"
+        },
+        {
+          "id": "step-5-3",
+          "name": "30-Day Review",
+          "persona": "manager",
+          "duration": 45,
+          "friction": "low",
+          "notes": ""
+        }
+      ]
+    },
+    {
+      "id": "stage-probation",
+      "name": "Probation & Sign-off",
+      "dropOff": 2,
+      "steps": [
+        {
+          "id": "step-6-1",
+          "name": "90-Day Review",
+          "persona": "manager",
+          "duration": 60,
+          "friction": "low",
+          "notes": ""
+        },
+        {
+          "id": "step-6-2",
+          "name": "Probation Sign-off",
+          "persona": "hr",
+          "duration": 30,
+          "friction": "medium",
+          "notes": ""
+        },
+        {
+          "id": "step-6-3",
+          "name": "Onboarding Survey",
+          "persona": "new-hire",
+          "duration": 15,
+          "friction": "none",
+          "notes": ""
+        }
+      ]
+    }
+  ]
+}
