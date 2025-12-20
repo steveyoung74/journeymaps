@@ -1164,6 +1164,7 @@
       const [showDeleteModal, setShowDeleteModal] = useState(null);
       const [showTokenModal, setShowTokenModal] = useState(false);
       const [activeTab, setActiveTab] = useState('my-maps');
+      const [viewMode, setViewMode] = useState('grid'); // 'grid' or 'list'
 
       useEffect(() => {
         fetchMaps();
@@ -1226,14 +1227,16 @@
           ? (stepsWithFriction.reduce((acc, s) => acc + s.frictionScore, 0) / stepsWithFriction.length).toFixed(1)
           : null;
         
-        // Calculate total cost if personas exist
+        // Calculate total cost if personas exist with salaries
         let totalCost = 0;
+        let hasCostData = false;
         if (config.personas && config.personas.length > 0) {
           allSteps.forEach(step => {
             const persona = config.personas.find(p => p.id === step.owner);
-            if (persona) {
+            if (persona && persona.salary > 0) {
+              hasCostData = true;
               const hourlyRate = (persona.salary * (persona.burdenMultiplier || 1.4)) / (52 * (persona.hoursPerWeek || 37.5));
-              const stepCost = (step.timeMinutes / 60) * hourlyRate + (step.additionalCosts || 0);
+              const stepCost = ((step.timeMinutes || 0) / 60) * hourlyRate + (step.additionalCosts || 0);
               totalCost += stepCost;
             }
           });
@@ -1247,7 +1250,7 @@
           highImprovements,
           totalRegReqs,
           avgFriction,
-          totalCost: totalCost > 0 ? totalCost : null
+          totalCost: hasCostData ? totalCost : null
         };
       };
 
@@ -1387,40 +1390,76 @@
               </button>
             </div>
 
-            {/* Tabs */}
-            <div style={{ display: 'flex', gap: '8px', marginBottom: '28px', borderBottom: '1px solid var(--slate-200)', paddingBottom: '8px' }}>
-              <button 
-                onClick={() => setActiveTab('my-maps')}
-                style={{ 
-                  padding: '10px 20px', 
-                  background: activeTab === 'my-maps' ? 'var(--navy-700)' : 'transparent',
-                  color: activeTab === 'my-maps' ? '#FFF' : 'var(--slate-600)',
-                  border: 'none',
-                  borderRadius: '6px',
-                  cursor: 'pointer',
-                  fontFamily: 'inherit',
-                  fontSize: '14px',
-                  fontWeight: 500
-                }}
-              >
-                My Maps ({myMaps.length})
-              </button>
-              <button 
-                onClick={() => setActiveTab('shared')}
-                style={{ 
-                  padding: '10px 20px', 
-                  background: activeTab === 'shared' ? 'var(--navy-700)' : 'transparent',
-                  color: activeTab === 'shared' ? '#FFF' : 'var(--slate-600)',
-                  border: 'none',
-                  borderRadius: '6px',
-                  cursor: 'pointer',
-                  fontFamily: 'inherit',
-                  fontSize: '14px',
-                  fontWeight: 500
-                }}
-              >
-                Shared with Me ({sharedMaps.length})
-              </button>
+            {/* Tabs + View Toggle */}
+            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '28px', borderBottom: '1px solid var(--slate-200)', paddingBottom: '8px' }}>
+              <div style={{ display: 'flex', gap: '8px' }}>
+                <button 
+                  onClick={() => setActiveTab('my-maps')}
+                  style={{ 
+                    padding: '10px 20px', 
+                    background: activeTab === 'my-maps' ? 'var(--navy-700)' : 'transparent',
+                    color: activeTab === 'my-maps' ? '#FFF' : 'var(--slate-600)',
+                    border: 'none',
+                    borderRadius: '6px',
+                    cursor: 'pointer',
+                    fontFamily: 'inherit',
+                    fontSize: '14px',
+                    fontWeight: 500
+                  }}
+                >
+                  My Maps ({myMaps.length})
+                </button>
+                <button 
+                  onClick={() => setActiveTab('shared')}
+                  style={{ 
+                    padding: '10px 20px', 
+                    background: activeTab === 'shared' ? 'var(--navy-700)' : 'transparent',
+                    color: activeTab === 'shared' ? '#FFF' : 'var(--slate-600)',
+                    border: 'none',
+                    borderRadius: '6px',
+                    cursor: 'pointer',
+                    fontFamily: 'inherit',
+                    fontSize: '14px',
+                    fontWeight: 500
+                  }}
+                >
+                  Shared with Me ({sharedMaps.length})
+                </button>
+              </div>
+              
+              {/* View Toggle */}
+              <div style={{ display: 'flex', gap: '4px', border: '1px solid var(--slate-200)', borderRadius: '6px', padding: '2px' }}>
+                <button
+                  onClick={() => setViewMode('grid')}
+                  title="Grid view"
+                  style={{
+                    padding: '6px 10px',
+                    background: viewMode === 'grid' ? 'var(--navy-700)' : 'transparent',
+                    color: viewMode === 'grid' ? '#FFF' : 'var(--slate-500)',
+                    border: 'none',
+                    borderRadius: '4px',
+                    cursor: 'pointer',
+                    fontSize: '14px'
+                  }}
+                >
+                  ▦
+                </button>
+                <button
+                  onClick={() => setViewMode('list')}
+                  title="List view"
+                  style={{
+                    padding: '6px 10px',
+                    background: viewMode === 'list' ? 'var(--navy-700)' : 'transparent',
+                    color: viewMode === 'list' ? '#FFF' : 'var(--slate-500)',
+                    border: 'none',
+                    borderRadius: '4px',
+                    cursor: 'pointer',
+                    fontSize: '14px'
+                  }}
+                >
+                  ☰
+                </button>
+              </div>
             </div>
 
             {/* Loading / Error / Maps */}
@@ -1432,7 +1471,8 @@
               <div style={{ textAlign: 'center', padding: '80px', color: 'var(--error)' }}>
                 {error}
               </div>
-            ) : (
+            ) : viewMode === 'grid' ? (
+              /* Grid View */
               <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(340px, 1fr))', gap: '24px' }}>
                 {(activeTab === 'my-maps' ? myMaps : sharedMaps).map(map => {
                   const metrics = getMapMetrics(map.id);
@@ -1493,7 +1533,7 @@
                             </div>
                           </>
                         )}
-                        {metrics.totalCost && (
+                        {metrics.totalCost !== null && (
                           <>
                             <span style={{ color: 'var(--slate-300)' }}>·</span>
                             <div style={{ display: 'flex', alignItems: 'center', gap: '4px' }} title="Total cost per journey">
@@ -1537,6 +1577,91 @@
                 })}
                 {(activeTab === 'my-maps' ? myMaps : sharedMaps).length === 0 && (
                   <div style={{ gridColumn: '1 / -1', textAlign: 'center', padding: '80px', color: 'var(--slate-500)' }}>
+                    {activeTab === 'my-maps' ? 'No maps yet. Create your first one!' : 'No maps shared with you yet.'}
+                  </div>
+                )}
+              </div>
+            ) : (
+              /* List View */
+              <div style={{ display: 'flex', flexDirection: 'column', gap: '12px', overflowX: 'auto' }}>
+                {/* List Header */}
+                <div style={{ 
+                  display: 'grid', 
+                  gridTemplateColumns: '2fr 1fr 80px 80px 80px 80px 80px 100px 100px',
+                  gap: '16px',
+                  padding: '12px 20px',
+                  background: 'var(--slate-100)',
+                  borderRadius: '8px',
+                  fontSize: '11px',
+                  fontWeight: 600,
+                  color: 'var(--slate-500)',
+                  textTransform: 'uppercase',
+                  letterSpacing: '0.5px',
+                  minWidth: '900px'
+                }}>
+                  <div>Journey</div>
+                  <div>Description</div>
+                  <div style={{ textAlign: 'center' }}>Time</div>
+                  <div style={{ textAlign: 'center' }}>Steps</div>
+                  <div style={{ textAlign: 'center' }}>Friction</div>
+                  <div style={{ textAlign: 'center' }}>Pain</div>
+                  <div style={{ textAlign: 'center' }}>Opps</div>
+                  <div style={{ textAlign: 'right' }}>Cost</div>
+                  <div style={{ textAlign: 'right' }}>Updated</div>
+                </div>
+                
+                {/* List Rows */}
+                {(activeTab === 'my-maps' ? myMaps : sharedMaps).map(map => {
+                  const metrics = getMapMetrics(map.id);
+                  return (
+                    <div 
+                      key={map.id} 
+                      className="card"
+                      onClick={() => openMap(map.id)}
+                      style={{ 
+                        display: 'grid', 
+                        gridTemplateColumns: '2fr 1fr 80px 80px 80px 80px 80px 100px 100px',
+                        gap: '16px',
+                        padding: '16px 20px',
+                        cursor: 'pointer',
+                        alignItems: 'center',
+                        transition: 'all 0.15s',
+                        minWidth: '900px'
+                      }}
+                    >
+                      <div>
+                        <div style={{ fontWeight: 600, color: 'var(--navy-700)', fontSize: '15px', marginBottom: '2px' }}>{map.title}</div>
+                        <span className={`badge badge-${getPermission(map)}`} style={{ fontSize: '10px', padding: '2px 8px' }}>{getPermission(map)}</span>
+                      </div>
+                      <div style={{ fontSize: '13px', color: 'var(--slate-500)', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
+                        {map.description || '—'}
+                      </div>
+                      <div style={{ textAlign: 'center', fontWeight: 600, fontSize: '13px', color: 'var(--navy-700)' }}>
+                        {metrics ? formatTime(metrics.totalTime) : '...'}
+                      </div>
+                      <div style={{ textAlign: 'center', fontSize: '13px', color: 'var(--slate-600)' }}>
+                        {metrics ? `${metrics.stageCount} / ${metrics.totalSteps}` : '...'}
+                      </div>
+                      <div style={{ textAlign: 'center', fontSize: '13px', color: metrics?.avgFriction >= 4 ? 'var(--error)' : 'var(--slate-600)' }}>
+                        {metrics?.avgFriction ? `${metrics.avgFriction}/5` : '—'}
+                      </div>
+                      <div style={{ textAlign: 'center', fontSize: '13px', color: metrics?.totalPainPoints > 0 ? 'var(--error)' : 'var(--slate-400)' }}>
+                        {metrics?.totalPainPoints || '—'}
+                      </div>
+                      <div style={{ textAlign: 'center', fontSize: '13px', color: metrics?.highImprovements > 0 ? 'var(--success)' : 'var(--slate-400)' }}>
+                        {metrics?.highImprovements || '—'}
+                      </div>
+                      <div style={{ textAlign: 'right', fontWeight: 600, fontSize: '13px', color: 'var(--navy-700)' }}>
+                        {metrics?.totalCost !== null ? formatCurrency(metrics.totalCost) : '—'}
+                      </div>
+                      <div style={{ textAlign: 'right', fontSize: '12px', color: 'var(--slate-500)' }}>
+                        {formatDate(map.updatedAt)}
+                      </div>
+                    </div>
+                  );
+                })}
+                {(activeTab === 'my-maps' ? myMaps : sharedMaps).length === 0 && (
+                  <div style={{ textAlign: 'center', padding: '80px', color: 'var(--slate-500)' }}>
                     {activeTab === 'my-maps' ? 'No maps yet. Create your first one!' : 'No maps shared with you yet.'}
                   </div>
                 )}
