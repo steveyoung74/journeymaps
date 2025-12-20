@@ -509,7 +509,7 @@
     const { useState, useCallback, useMemo, useEffect, useRef } = React;
     
     // Current app version - always displayed in footer
-    const APP_VERSION = "8.6.0";
+    const APP_VERSION = "8.7.0";
     
     // Fathom official taglines (per Brand Lock v1.0)
     const FATHOM_TAGLINES = [
@@ -3173,7 +3173,7 @@
                 <span style={{ fontSize: '24px' }}>🐙</span>
                 <div>
                   <h3 style={{ margin: 0, fontSize: '20px', fontWeight: 600 }}>GitHub Settings</h3>
-                  <p style={{ margin: '4px 0 0', fontSize: '13px', color: '#556275' }}>Connect to save & load your journey map</p>
+                  <p style={{ margin: '4px 0 0', fontSize: '13px', color: '#556275' }}>Connect to save & load your journey</p>
                 </div>
               </div>
               <button onClick={onClose} style={{ background: 'none', border: 'none', fontSize: '24px', cursor: 'pointer', color: '#8A95A5' }}>×</button>
@@ -3904,7 +3904,7 @@
           
           // Prepare content
           const content = btoa(unescape(encodeURIComponent(jsonContent)));
-          const commitMessage = `Update journey map - ${config.meta.title} - ${new Date().toLocaleString()}`;
+          const commitMessage = `Update ${config.meta.title} - ${new Date().toLocaleString()}`;
           
           // Create or update file
           const response = await fetch(apiUrl, {
@@ -4669,7 +4669,7 @@
             <div style={{ textAlign: 'center', color: '#FFF' }}>
               <div style={{ fontSize: '24px', marginBottom: '16px' }}>Loading...</div>
               <div style={{ fontSize: '14px', opacity: 0.7, fontFamily: "'Interstate', sans-serif" }}>
-                {configLoading ? 'Loading latest journey map...' : 'Initializing...'}
+                {configLoading ? 'Loading journey...' : 'Initializing...'}
               </div>
             </div>
           </div>
