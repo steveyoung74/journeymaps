@@ -1,6 +1,6 @@
 {
   "meta": {
-    "title": "Client Onboarding Journey Digital Twin",
+    "title": "Evelyn: Client Onboarding - Digital Twin",
     "version": "2.0",
     "product": "FATHOM v8.6.0",
     "lastUpdated": "2025-12-19T21:22:26.296Z",
@@ -132,7 +132,10 @@
             "new-business-exec": "Reviews and categorises incoming enquiries",
             "client": "Inputs information into our contact form"
           },
-          "clientTouchpoint": true
+          "clientTouchpoint": true,
+          "friction": "none",
+          "notes": "",
+          "persona": null
         },
         {
           "id": "fast-track",
@@ -172,7 +175,10 @@
           "actions": {
             "ops": "",
             "new-business-exec": "Assesses client information quality, checks FP availability, routes accordingly"
-          }
+          },
+          "friction": "none",
+          "notes": "",
+          "persona": null
         }
       ],
       "dropOffCount": 0
@@ -219,7 +225,10 @@
             "ops": "",
             "new-business-exec": "Conducts initial call, gathers basic information, listens to client carefully",
             "client": "Answers questions and describes the outcome they want"
-          }
+          },
+          "friction": "none",
+          "notes": "",
+          "persona": null
         },
         {
           "id": "update-systems",
@@ -261,7 +270,10 @@
           "actions": {
             "ops": "",
             "new-business-exec": "Updates all relevant systems with prospect information"
-          }
+          },
+          "friction": "none",
+          "notes": "",
+          "persona": null
         },
         {
           "id": "review-prospect-email",
@@ -295,7 +307,10 @@
           "actions": {
             "fp": "Reviews prospect email and requirements",
             "im": "Reviews prospect email for investment needs"
-          }
+          },
+          "friction": "none",
+          "notes": "",
+          "persona": null
         },
         {
           "id": "prospect-call",
@@ -335,7 +350,10 @@
           "actions": {
             "fp": "Conducts discovery call, understands financial goals",
             "im": "Discusses investment approach and philosophy"
-          }
+          },
+          "friction": "none",
+          "notes": "",
+          "persona": null
         },
         {
           "id": "update-xplan-triage",
@@ -369,7 +387,10 @@
           "actions": {
             "fp": "Updates Xplan with triage notes",
             "im": "Adds investment-related notes"
-          }
+          },
+          "friction": "none",
+          "notes": "",
+          "persona": null
         }
       ],
       "dropOffCount": 290
@@ -425,7 +446,10 @@
           "clientTouchpoint": true,
           "isHardCheckpoint": true,
           "checkpointType": "compliance",
-          "checkpointDetails": "Clients must have access to our Privacy Policy before we do ID&V / Screening\n"
+          "checkpointDetails": "Clients must have access to our Privacy Policy before we do ID&V / Screening\n",
+          "friction": "none",
+          "notes": "",
+          "persona": null
         },
         {
           "id": "idv",
@@ -484,7 +508,10 @@
               "amount": 50,
               "category": "third-party"
             }
-          ]
+          ],
+          "friction": "none",
+          "notes": "",
+          "persona": null
         },
         {
           "id": "screening",
@@ -539,7 +566,10 @@
               "amount": 50,
               "category": "third-party"
             }
-          ]
+          ],
+          "friction": "none",
+          "notes": "",
+          "persona": null
         },
         {
           "id": "loas",
@@ -595,7 +625,10 @@
           },
           "isHardCheckpoint": true,
           "clientTouchpoint": true,
-          "checkpointType": "regulatory"
+          "checkpointType": "regulatory",
+          "friction": "none",
+          "notes": "",
+          "persona": null
         },
         {
           "id": "fact-find-a",
@@ -653,7 +686,10 @@
           },
           "isHardCheckpoint": true,
           "checkpointType": "vetting",
-          "checkpointDetails": "FFA exists in the DNL and information provided reviewed"
+          "checkpointDetails": "FFA exists in the DNL and information provided reviewed",
+          "friction": "none",
+          "notes": "",
+          "persona": null
         },
         {
           "id": "craf",
@@ -702,7 +738,10 @@
           },
           "isHardCheckpoint": true,
           "checkpointType": "regulatory",
-          "checkpointDetails": "Client Risk Assessment needs to be completed (including any enhanced due diligence and approvals) and signed off by Front Office prior to completing Fact Find B."
+          "checkpointDetails": "Client Risk Assessment needs to be completed (including any enhanced due diligence and approvals) and signed off by Front Office prior to completing Fact Find B.",
+          "friction": "none",
+          "notes": "",
+          "persona": null
         },
         {
           "id": "fact-find-b",
@@ -745,7 +784,10 @@
           },
           "isHardCheckpoint": true,
           "checkpointType": "vetting",
-          "checkpointDetails": "FFB needs to be in place before Stage 4 can commence"
+          "checkpointDetails": "FFB needs to be in place before Stage 4 can commence",
+          "friction": "none",
+          "notes": "",
+          "persona": null
         }
       ],
       "dropOffCount": 833
@@ -800,7 +842,10 @@
             "fp": "Submits request to Paraplanner",
             "im": "",
             "paraplanner": "1, Checks that all correct information has been collected by FP\n2, Conducts research and develops propositions"
-          }
+          },
+          "friction": "none",
+          "notes": "",
+          "persona": null
         },
         {
           "id": "fee-illustration",
@@ -846,7 +891,10 @@
             "fp": "",
             "im": "",
             "paraplanner": "Prepares fee illustrations"
-          }
+          },
+          "friction": "none",
+          "notes": "",
+          "persona": null
         },
         {
           "id": "advice-report",
@@ -894,7 +942,10 @@
             "im": "Contributes investment rationale section",
             "paraplanner": "Writes comprehensive suitability and advice report",
             "client": "Reviews report"
-          }
+          },
+          "friction": "none",
+          "notes": "",
+          "persona": null
         },
         {
           "id": "account-opening-forms",
@@ -952,7 +1003,10 @@
           "clientTouchpoint": true,
           "isHardCheckpoint": true,
           "checkpointType": "vetting",
-          "checkpointDetails": "Cannot open the accounts if the Account opening form has not been completed or signed"
+          "checkpointDetails": "Cannot open the accounts if the Account opening form has not been completed or signed",
+          "friction": "none",
+          "notes": "",
+          "persona": null
         },
         {
           "id": "vetting",
@@ -1006,7 +1060,10 @@
           },
           "isHardCheckpoint": true,
           "checkpointType": "vetting",
-          "checkpointDetails": "Cannot commence account opening until the case has passed vetting"
+          "checkpointDetails": "Cannot commence account opening until the case has passed vetting",
+          "friction": "none",
+          "notes": "",
+          "persona": null
         },
         {
           "id": "account-opening",
@@ -1047,7 +1104,10 @@
           },
           "actions": {
             "ops": "Key data from xplan to Avaloq or SEI to open the accounts"
-          }
+          },
+          "friction": "none",
+          "notes": "",
+          "persona": null
         }
       ],
       "dropOffCount": 508
@@ -1092,7 +1152,10 @@
             "fp": "Approves transfer initiation",
             "im": "Confirms transfer requirements",
             "ops": "Submits transfer requests"
-          }
+          },
+          "friction": "none",
+          "notes": "",
+          "persona": null
         },
         {
           "id": "new-transfer-validation",
@@ -1127,7 +1190,10 @@
           },
           "actions": {
             "ops": "Validates transfer data and documentation"
-          }
+          },
+          "friction": "none",
+          "notes": "",
+          "persona": null
         },
         {
           "id": "chase-counterparty",
@@ -1165,7 +1231,10 @@
           },
           "actions": {
             "ops": "Chases ceding providers for transfer progress"
-          }
+          },
+          "friction": "none",
+          "notes": "",
+          "persona": null
         },
         {
           "id": "check-valuation",
@@ -1205,7 +1274,10 @@
             "fp": "Reviews valuation accuracy",
             "im": "Confirms investment valuations",
             "ops": "Checks and reconciles valuations"
-          }
+          },
+          "friction": "none",
+          "notes": "",
+          "persona": null
         },
         {
           "id": "trades-acceptance",
@@ -1246,7 +1318,10 @@
             "fp": "Approves trade execution",
             "im": "Confirms investment allocation",
             "ops": "Executes trades and processes transfers"
-          }
+          },
+          "friction": "none",
+          "notes": "",
+          "persona": null
         },
         {
           "id": "update-portfolio",
@@ -1279,7 +1354,10 @@
           },
           "actions": {
             "ops": "Updates portfolio records"
-          }
+          },
+          "friction": "none",
+          "notes": "",
+          "persona": null
         },
         {
           "id": "check-transfer-status",
@@ -1312,7 +1390,10 @@
           },
           "actions": {
             "ops": "Monitors transfer status"
-          }
+          },
+          "friction": "none",
+          "notes": "",
+          "persona": null
         },
         {
           "id": "closure",
@@ -1348,7 +1429,10 @@
           },
           "actions": {
             "ops": "Closes transfer case, updates records"
-          }
+          },
+          "friction": "none",
+          "notes": "",
+          "persona": null
         }
       ],
       "dropOffCount": 23
