@@ -2009,7 +2009,7 @@
                       )}
                       
                       {/* Journey Title & Description */}
-                      <div>
+                      <div style={{ minWidth: 0 }}>
                         <div style={{ display: 'flex', alignItems: 'center', gap: '8px', marginBottom: '3px' }}>
                           <span style={{ fontWeight: 600, color: 'var(--navy-700)', fontSize: '14px' }}>{map.title}</span>
                           {map.favourite && <span title="Favourite" style={{ fontSize: '12px' }}>⭐</span>}
@@ -2019,7 +2019,15 @@
                             <span className={`badge badge-${getPermission(map)}`} style={{ fontSize: '9px', padding: '2px 6px' }}>{getPermission(map)}</span>
                           )}
                         </div>
-                        <div style={{ fontSize: '12px', color: 'var(--slate-500)', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
+                        <div style={{ 
+                          fontSize: '12px', 
+                          color: 'var(--slate-500)', 
+                          overflow: 'hidden',
+                          display: '-webkit-box',
+                          WebkitLineClamp: 2,
+                          WebkitBoxOrient: 'vertical',
+                          lineHeight: '1.4'
+                        }}>
                           {map.description || 'No description'}
                         </div>
                       </div>
