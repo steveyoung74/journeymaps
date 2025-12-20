@@ -430,7 +430,7 @@
   <script type="text/babel">
     const { useState, useEffect } = React;
     
-    const APP_VERSION = '1.4.0';
+    const APP_VERSION = '1.5.0';
     
     // Helper to safely format dates
     const formatDate = (dateStr) => {
@@ -824,6 +824,428 @@
                   <p style={{ color: 'var(--slate-600)', fontSize: '15px', lineHeight: 1.7 }}>
                     Export reports, share with stakeholders, and prioritise improvements based on real impact — not hunches or politics.
                   </p>
+                </div>
+              </div>
+            </div>
+          </section>
+          
+          {/* Visual Journey Editor Showcase */}
+          <section className="section section-alt">
+            <div className="container">
+              <div style={{ display: 'flex', gap: '80px', alignItems: 'center', flexWrap: 'wrap' }}>
+                <div style={{ flex: '1 1 440px' }}>
+                  <div style={{ 
+                    padding: '10px 18px', 
+                    background: 'var(--steel-100)', 
+                    borderRadius: '24px', 
+                    display: 'inline-block',
+                    marginBottom: '24px',
+                    fontSize: '13px',
+                    color: 'var(--steel-500)',
+                    fontWeight: 600,
+                    letterSpacing: '0.5px'
+                  }}>
+                    VISUAL EDITOR
+                  </div>
+                  <h2 style={{ fontSize: '36px', fontWeight: 300, marginBottom: '24px', color: 'var(--navy-700)', lineHeight: 1.25 }}>
+                    See the whole journey.<br/>Zoom into any step.
+                  </h2>
+                  <p style={{ color: 'var(--slate-600)', fontSize: '17px', marginBottom: '20px', lineHeight: 1.8 }}>
+                    Fathom's editor shows your entire process at a glance — stages flow left to right, steps stack within each stage. Click any step to see the full picture: who does it, how long it takes, what pain points exist.
+                  </p>
+                  <p style={{ color: 'var(--slate-600)', fontSize: '17px', marginBottom: '32px', lineHeight: 1.8 }}>
+                    Colour-coded time bars show duration at a glance. Friction indicators reveal where work is hardest. Status icons flag checkpoints, regulatory requirements, and improvement opportunities.
+                  </p>
+                  
+                  <div style={{ display: 'flex', flexDirection: 'column', gap: '16px' }}>
+                    <div style={{ display: 'flex', alignItems: 'flex-start', gap: '14px' }}>
+                      <div style={{ width: '28px', height: '28px', borderRadius: '50%', background: 'var(--steel-100)', display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0, marginTop: '2px' }}>
+                        <span style={{ color: 'var(--steel-500)', fontSize: '14px' }}>✓</span>
+                      </div>
+                      <div>
+                        <div style={{ fontWeight: 600, color: 'var(--navy-700)', marginBottom: '2px' }}>Drag and drop organisation</div>
+                        <div style={{ fontSize: '14px', color: 'var(--slate-600)' }}>Reorder stages and steps with simple drag gestures</div>
+                      </div>
+                    </div>
+                    <div style={{ display: 'flex', alignItems: 'flex-start', gap: '14px' }}>
+                      <div style={{ width: '28px', height: '28px', borderRadius: '50%', background: 'var(--steel-100)', display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0, marginTop: '2px' }}>
+                        <span style={{ color: 'var(--steel-500)', fontSize: '14px' }}>✓</span>
+                      </div>
+                      <div>
+                        <div style={{ fontWeight: 600, color: 'var(--navy-700)', marginBottom: '2px' }}>Role-based perspectives</div>
+                        <div style={{ fontSize: '14px', color: 'var(--slate-600)' }}>Filter to see just client-facing steps, or just back-office</div>
+                      </div>
+                    </div>
+                    <div style={{ display: 'flex', alignItems: 'flex-start', gap: '14px' }}>
+                      <div style={{ width: '28px', height: '28px', borderRadius: '50%', background: 'var(--steel-100)', display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0, marginTop: '2px' }}>
+                        <span style={{ color: 'var(--steel-500)', fontSize: '14px' }}>✓</span>
+                      </div>
+                      <div>
+                        <div style={{ fontWeight: 600, color: 'var(--navy-700)', marginBottom: '2px' }}>Industry templates</div>
+                        <div style={{ fontSize: '14px', color: 'var(--slate-600)' }}>Start from financial services, insurance, or HR templates</div>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+                
+                <div style={{ flex: '1 1 480px' }}>
+                  <div style={{ 
+                    background: 'linear-gradient(145deg, #FFF 0%, var(--slate-50) 100%)',
+                    borderRadius: '20px',
+                    padding: '24px',
+                    boxShadow: '0 8px 32px rgba(0,0,0,0.08)',
+                    border: '1px solid var(--slate-200)'
+                  }}>
+                    {/* Mini Stage Cards */}
+                    <div style={{ display: 'flex', gap: '12px', overflowX: 'auto' }}>
+                      {[
+                        { name: 'Discovery', time: '2h 15m', steps: ['Initial Call', 'Requirements', 'Proposal'] },
+                        { name: 'Compliance', time: '4h 30m', steps: ['KYC Check', 'AML Verify', 'Risk Profile'], highlight: true },
+                        { name: 'Onboarding', time: '1h 45m', steps: ['Account Setup', 'Welcome Pack'] }
+                      ].map((stage, i) => (
+                        <div key={i} style={{ 
+                          flex: '1 0 160px',
+                          background: '#FFF',
+                          borderRadius: '12px',
+                          overflow: 'hidden',
+                          border: '1px solid var(--slate-200)'
+                        }}>
+                          <div style={{ 
+                            background: stage.highlight ? 'var(--navy-700)' : 'var(--navy-900)', 
+                            color: '#FFF', 
+                            padding: '12px 14px',
+                            display: 'flex',
+                            justifyContent: 'space-between',
+                            alignItems: 'center'
+                          }}>
+                            <div style={{ fontSize: '12px', fontWeight: 600 }}>{stage.name}</div>
+                            <div style={{ fontSize: '11px', opacity: 0.8 }}>{stage.time}</div>
+                          </div>
+                          <div style={{ padding: '10px' }}>
+                            {stage.steps.map((step, j) => (
+                              <div key={j} style={{ 
+                                padding: '8px 10px', 
+                                marginBottom: '6px',
+                                background: 'var(--slate-50)', 
+                                borderRadius: '6px',
+                                fontSize: '11px',
+                                color: 'var(--navy-700)',
+                                display: 'flex',
+                                alignItems: 'center',
+                                gap: '6px'
+                              }}>
+                                <span style={{ color: 'var(--slate-400)', fontSize: '10px' }}>{i+1}.{j+1}</span>
+                                {step}
+                                {j === 1 && stage.highlight && <span style={{ marginLeft: 'auto', fontSize: '10px' }}>😤</span>}
+                              </div>
+                            ))}
+                          </div>
+                        </div>
+                      ))}
+                    </div>
+                    
+                    {/* Stats Preview */}
+                    <div style={{ 
+                      marginTop: '16px', 
+                      padding: '14px 18px', 
+                      background: '#FFF', 
+                      borderRadius: '10px',
+                      border: '1px solid var(--slate-200)',
+                      display: 'flex',
+                      gap: '24px',
+                      justifyContent: 'center',
+                      flexWrap: 'wrap'
+                    }}>
+                      <div style={{ textAlign: 'center' }}>
+                        <div style={{ fontSize: '10px', color: 'var(--slate-500)', textTransform: 'uppercase', marginBottom: '4px' }}>Total Time</div>
+                        <div style={{ fontSize: '16px', fontWeight: 600, color: 'var(--navy-700)' }}>8h 30m</div>
+                      </div>
+                      <div style={{ textAlign: 'center' }}>
+                        <div style={{ fontSize: '10px', color: 'var(--slate-500)', textTransform: 'uppercase', marginBottom: '4px' }}>Steps</div>
+                        <div style={{ fontSize: '16px', fontWeight: 600, color: 'var(--navy-700)' }}>8</div>
+                      </div>
+                      <div style={{ textAlign: 'center' }}>
+                        <div style={{ fontSize: '10px', color: 'var(--slate-500)', textTransform: 'uppercase', marginBottom: '4px' }}>Pain Points</div>
+                        <div style={{ fontSize: '16px', fontWeight: 600, color: 'var(--error)' }}>3</div>
+                      </div>
+                      <div style={{ textAlign: 'center' }}>
+                        <div style={{ fontSize: '10px', color: 'var(--slate-500)', textTransform: 'uppercase', marginBottom: '4px' }}>Opportunities</div>
+                        <div style={{ fontSize: '16px', fontWeight: 600, color: 'var(--success)' }}>4</div>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </section>
+          
+          {/* Cost Analysis Showcase */}
+          <section className="section">
+            <div className="container">
+              <div style={{ display: 'flex', gap: '80px', alignItems: 'center', flexWrap: 'wrap' }}>
+                <div style={{ flex: '1 1 480px', order: 1 }}>
+                  <div style={{ 
+                    background: 'linear-gradient(145deg, #FFF 0%, var(--slate-50) 100%)',
+                    borderRadius: '20px',
+                    padding: '28px',
+                    boxShadow: '0 8px 32px rgba(0,0,0,0.08)',
+                    border: '1px solid var(--slate-200)'
+                  }}>
+                    {/* Cost Header */}
+                    <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '20px' }}>
+                      <div>
+                        <div style={{ fontSize: '11px', color: 'var(--slate-500)', textTransform: 'uppercase', letterSpacing: '0.5px' }}>Cost per Journey</div>
+                        <div style={{ fontSize: '32px', fontWeight: 300, color: 'var(--navy-700)' }}>£2,847</div>
+                      </div>
+                      <div style={{ 
+                        background: 'var(--success-light)', 
+                        padding: '8px 14px', 
+                        borderRadius: '20px',
+                        fontSize: '13px',
+                        color: 'var(--success)',
+                        fontWeight: 600
+                      }}>
+                        💷 Cost View
+                      </div>
+                    </div>
+                    
+                    {/* Cost Breakdown Bars */}
+                    <div style={{ marginBottom: '20px' }}>
+                      {[
+                        { label: 'Compliance Team', good: 65, bad: 35, total: '£1,240' },
+                        { label: 'Client-Facing', good: 85, bad: 15, total: '£890' },
+                        { label: 'Operations', good: 45, bad: 55, total: '£520' },
+                        { label: 'External Services', good: 100, bad: 0, total: '£197' }
+                      ].map((row, i) => (
+                        <div key={i} style={{ marginBottom: '12px' }}>
+                          <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '4px' }}>
+                            <span style={{ fontSize: '12px', color: 'var(--slate-600)' }}>{row.label}</span>
+                            <span style={{ fontSize: '12px', fontWeight: 600, color: 'var(--navy-700)' }}>{row.total}</span>
+                          </div>
+                          <div style={{ display: 'flex', height: '8px', borderRadius: '4px', overflow: 'hidden', background: 'var(--slate-100)' }}>
+                            <div style={{ width: `${row.good}%`, background: 'var(--success)' }}></div>
+                            <div style={{ width: `${row.bad}%`, background: 'var(--error)', opacity: 0.7 }}></div>
+                          </div>
+                        </div>
+                      ))}
+                    </div>
+                    
+                    {/* Legend */}
+                    <div style={{ display: 'flex', gap: '20px', padding: '12px 16px', background: '#FFF', borderRadius: '8px', border: '1px solid var(--slate-200)' }}>
+                      <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+                        <div style={{ width: '12px', height: '12px', borderRadius: '3px', background: 'var(--success)' }}></div>
+                        <span style={{ fontSize: '12px', color: 'var(--slate-600)' }}>Good Cost (productive)</span>
+                      </div>
+                      <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+                        <div style={{ width: '12px', height: '12px', borderRadius: '3px', background: 'var(--error)', opacity: 0.7 }}></div>
+                        <span style={{ fontSize: '12px', color: 'var(--slate-600)' }}>Bad Cost (waste)</span>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+                
+                <div style={{ flex: '1 1 440px', order: 2 }}>
+                  <div style={{ 
+                    padding: '10px 18px', 
+                    background: 'var(--amber-100)', 
+                    borderRadius: '24px', 
+                    display: 'inline-block',
+                    marginBottom: '24px',
+                    fontSize: '13px',
+                    color: 'var(--amber-700)',
+                    fontWeight: 600,
+                    letterSpacing: '0.5px'
+                  }}>
+                    TRUE COST ANALYSIS
+                  </div>
+                  <h2 style={{ fontSize: '36px', fontWeight: 300, marginBottom: '24px', color: 'var(--navy-700)', lineHeight: 1.25 }}>
+                    Know the real cost.<br/>Not just salaries.
+                  </h2>
+                  <p style={{ color: 'var(--slate-600)', fontSize: '17px', marginBottom: '20px', lineHeight: 1.8 }}>
+                    A £50k salary costs far more than £50k. Add employer NI, pension contributions, workspace, equipment, and software licenses — the true cost is often <strong style={{ color: 'var(--navy-700)' }}>40% higher</strong>.
+                  </p>
+                  <p style={{ color: 'var(--slate-600)', fontSize: '17px', marginBottom: '32px', lineHeight: 1.8 }}>
+                    Fathom calculates fully-burdened costs automatically. See exactly what each step costs, who's spending the money, and whether it's productive work or waste waiting to be eliminated.
+                  </p>
+                  
+                  <div style={{ display: 'flex', flexDirection: 'column', gap: '16px' }}>
+                    <div style={{ display: 'flex', alignItems: 'flex-start', gap: '14px' }}>
+                      <div style={{ width: '28px', height: '28px', borderRadius: '50%', background: 'var(--amber-100)', display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0, marginTop: '2px' }}>
+                        <span style={{ color: 'var(--amber-700)', fontSize: '14px' }}>✓</span>
+                      </div>
+                      <div>
+                        <div style={{ fontWeight: 600, color: 'var(--navy-700)', marginBottom: '2px' }}>Burden multipliers built in</div>
+                        <div style={{ fontSize: '14px', color: 'var(--slate-600)' }}>Configure NI, pension, and overhead rates per role</div>
+                      </div>
+                    </div>
+                    <div style={{ display: 'flex', alignItems: 'flex-start', gap: '14px' }}>
+                      <div style={{ width: '28px', height: '28px', borderRadius: '50%', background: 'var(--amber-100)', display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0, marginTop: '2px' }}>
+                        <span style={{ color: 'var(--amber-700)', fontSize: '14px' }}>✓</span>
+                      </div>
+                      <div>
+                        <div style={{ fontWeight: 600, color: 'var(--navy-700)', marginBottom: '2px' }}>Good cost vs bad cost</div>
+                        <div style={{ fontSize: '14px', color: 'var(--slate-600)' }}>See productive spend versus waste from drop-offs</div>
+                      </div>
+                    </div>
+                    <div style={{ display: 'flex', alignItems: 'flex-start', gap: '14px' }}>
+                      <div style={{ width: '28px', height: '28px', borderRadius: '50%', background: 'var(--amber-100)', display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0, marginTop: '2px' }}>
+                        <span style={{ color: 'var(--amber-700)', fontSize: '14px' }}>✓</span>
+                      </div>
+                      <div>
+                        <div style={{ fontWeight: 600, color: 'var(--navy-700)', marginBottom: '2px' }}>Third-party costs included</div>
+                        <div style={{ fontSize: '14px', color: 'var(--slate-600)' }}>Credit checks, verification services, and external fees</div>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </section>
+          
+          {/* Funnel Analysis Showcase */}
+          <section className="section section-alt">
+            <div className="container">
+              <div style={{ display: 'flex', gap: '80px', alignItems: 'center', flexWrap: 'wrap' }}>
+                <div style={{ flex: '1 1 440px' }}>
+                  <div style={{ 
+                    padding: '10px 18px', 
+                    background: 'var(--error-light)', 
+                    borderRadius: '24px', 
+                    display: 'inline-block',
+                    marginBottom: '24px',
+                    fontSize: '13px',
+                    color: 'var(--error)',
+                    fontWeight: 600,
+                    letterSpacing: '0.5px'
+                  }}>
+                    FUNNEL ANALYSIS
+                  </div>
+                  <h2 style={{ fontSize: '36px', fontWeight: 300, marginBottom: '24px', color: 'var(--navy-700)', lineHeight: 1.25 }}>
+                    Find the leaks.<br/>Stop the waste.
+                  </h2>
+                  <p style={{ color: 'var(--slate-600)', fontSize: '17px', marginBottom: '20px', lineHeight: 1.8 }}>
+                    Not everyone who starts a journey finishes it. Clients drop out, applications stall, deals fall through. Each drop-off represents wasted investment — time and money spent on someone who never converted.
+                  </p>
+                  <p style={{ color: 'var(--slate-600)', fontSize: '17px', marginBottom: '32px', lineHeight: 1.8 }}>
+                    Fathom tracks volumes through every stage. See exactly where people drop off, calculate the cost of each lost client, and identify which stages leak the most value.
+                  </p>
+                  
+                  <div style={{ display: 'flex', flexDirection: 'column', gap: '16px' }}>
+                    <div style={{ display: 'flex', alignItems: 'flex-start', gap: '14px' }}>
+                      <div style={{ width: '28px', height: '28px', borderRadius: '50%', background: 'var(--error-light)', display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0, marginTop: '2px' }}>
+                        <span style={{ color: 'var(--error)', fontSize: '14px' }}>✓</span>
+                      </div>
+                      <div>
+                        <div style={{ fontWeight: 600, color: 'var(--navy-700)', marginBottom: '2px' }}>Volume tracking per stage</div>
+                        <div style={{ fontSize: '14px', color: 'var(--slate-600)' }}>Enter starting volumes and drop-off counts</div>
+                      </div>
+                    </div>
+                    <div style={{ display: 'flex', alignItems: 'flex-start', gap: '14px' }}>
+                      <div style={{ width: '28px', height: '28px', borderRadius: '50%', background: 'var(--error-light)', display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0, marginTop: '2px' }}>
+                        <span style={{ color: 'var(--error)', fontSize: '14px' }}>✓</span>
+                      </div>
+                      <div>
+                        <div style={{ fontWeight: 600, color: 'var(--navy-700)', marginBottom: '2px' }}>Waste calculation</div>
+                        <div style={{ fontSize: '14px', color: 'var(--slate-600)' }}>See exactly how much each drop-off costs you</div>
+                      </div>
+                    </div>
+                    <div style={{ display: 'flex', alignItems: 'flex-start', gap: '14px' }}>
+                      <div style={{ width: '28px', height: '28px', borderRadius: '50%', background: 'var(--error-light)', display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0, marginTop: '2px' }}>
+                        <span style={{ color: 'var(--error)', fontSize: '14px' }}>✓</span>
+                      </div>
+                      <div>
+                        <div style={{ fontWeight: 600, color: 'var(--navy-700)', marginBottom: '2px' }}>Conversion benchmarking</div>
+                        <div style={{ fontSize: '14px', color: 'var(--slate-600)' }}>Compare actual vs target completion rates</div>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+                
+                <div style={{ flex: '1 1 480px' }}>
+                  <div style={{ 
+                    background: 'linear-gradient(145deg, #FFF 0%, var(--slate-50) 100%)',
+                    borderRadius: '20px',
+                    padding: '28px',
+                    boxShadow: '0 8px 32px rgba(0,0,0,0.08)',
+                    border: '1px solid var(--slate-200)'
+                  }}>
+                    {/* Funnel Header */}
+                    <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '24px' }}>
+                      <div>
+                        <div style={{ fontSize: '11px', color: 'var(--slate-500)', textTransform: 'uppercase', letterSpacing: '0.5px' }}>Annual Volume</div>
+                        <div style={{ fontSize: '28px', fontWeight: 300, color: 'var(--navy-700)' }}>1,000 clients</div>
+                      </div>
+                      <div style={{ textAlign: 'right' }}>
+                        <div style={{ fontSize: '11px', color: 'var(--slate-500)', textTransform: 'uppercase' }}>Waste</div>
+                        <div style={{ fontSize: '24px', fontWeight: 600, color: 'var(--error)' }}>£284k</div>
+                      </div>
+                    </div>
+                    
+                    {/* Funnel Stages */}
+                    <div style={{ position: 'relative' }}>
+                      {[
+                        { stage: 'Discovery', entered: 1000, passed: 850, width: '100%' },
+                        { stage: 'Compliance', entered: 850, passed: 680, width: '85%' },
+                        { stage: 'Proposal', entered: 680, passed: 620, width: '68%' },
+                        { stage: 'Onboarding', entered: 620, passed: 580, width: '62%' }
+                      ].map((row, i) => (
+                        <div key={i} style={{ marginBottom: '12px' }}>
+                          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '6px' }}>
+                            <span style={{ fontSize: '13px', fontWeight: 600, color: 'var(--navy-700)' }}>{row.stage}</span>
+                            <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
+                              <span style={{ fontSize: '12px', color: 'var(--slate-600)' }}>{row.entered} → {row.passed}</span>
+                              {row.entered - row.passed > 0 && (
+                                <span style={{ fontSize: '11px', color: 'var(--error)', fontWeight: 600 }}>
+                                  -{row.entered - row.passed} dropped
+                                </span>
+                              )}
+                            </div>
+                          </div>
+                          <div style={{ 
+                            height: '24px', 
+                            background: 'var(--slate-100)', 
+                            borderRadius: '6px',
+                            overflow: 'hidden',
+                            position: 'relative'
+                          }}>
+                            <div style={{ 
+                              width: row.width, 
+                              height: '100%', 
+                              background: 'linear-gradient(90deg, var(--steel-500) 0%, var(--steel-400) 100%)',
+                              borderRadius: '6px',
+                              display: 'flex',
+                              alignItems: 'center',
+                              justifyContent: 'flex-end',
+                              paddingRight: '10px'
+                            }}>
+                              <span style={{ fontSize: '11px', color: '#FFF', fontWeight: 600 }}>{row.passed}</span>
+                            </div>
+                          </div>
+                        </div>
+                      ))}
+                    </div>
+                    
+                    {/* Completion Rate */}
+                    <div style={{ 
+                      marginTop: '20px', 
+                      padding: '14px 18px', 
+                      background: '#FFF', 
+                      borderRadius: '10px',
+                      border: '1px solid var(--slate-200)',
+                      display: 'flex',
+                      justifyContent: 'space-between',
+                      alignItems: 'center'
+                    }}>
+                      <div>
+                        <div style={{ fontSize: '11px', color: 'var(--slate-500)', textTransform: 'uppercase' }}>Completion Rate</div>
+                        <div style={{ fontSize: '20px', fontWeight: 600, color: 'var(--navy-700)' }}>58%</div>
+                      </div>
+                      <div style={{ textAlign: 'right' }}>
+                        <div style={{ fontSize: '11px', color: 'var(--slate-500)', textTransform: 'uppercase' }}>Lost Clients</div>
+                        <div style={{ fontSize: '20px', fontWeight: 600, color: 'var(--error)' }}>420</div>
+                      </div>
+                    </div>
+                  </div>
                 </div>
               </div>
             </div>
