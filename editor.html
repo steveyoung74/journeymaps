@@ -245,7 +245,7 @@
     }
     
     /* Cost Analysis Dashboard Mobile Responsive */
-    @media (max-width: 1024px) {
+    @media (max-width: 1280px) {
       .cost-analysis-panel {
         padding: 16px !important;
         margin: 0 -16px 24px -16px !important;
@@ -278,7 +278,7 @@
     }
     
     /* Mobile Responsive Styles */
-    @media (max-width: 1024px) {
+    @media (max-width: 1280px) {
       /* Perspective filter: show dropdown, hide buttons */
       .perspective-buttons {
         display: none !important;
@@ -3778,7 +3778,7 @@
       const [showStructurePanel, setShowStructurePanel] = useState(false);
       const [showGitHubSettings, setShowGitHubSettings] = useState(false);
       const [showPasswordPrompt, setShowPasswordPrompt] = useState(false);
-      const [isMobile, setIsMobile] = useState(() => window.innerWidth < 1024);
+      const [isMobile, setIsMobile] = useState(() => window.innerWidth < 1280);
       const [showCosts, setShowCosts] = useState(true);
       const [isAppUnlocked, setIsAppUnlocked] = useState(() => {
         return sessionStorage.getItem('journeymap-app-unlocked') === 'true';
@@ -3817,7 +3817,7 @@
       
       // Mobile detection effect
       React.useEffect(() => {
-        const handleResize = () => setIsMobile(window.innerWidth < 1024);
+        const handleResize = () => setIsMobile(window.innerWidth < 1280);
         window.addEventListener('resize', handleResize);
         return () => window.removeEventListener('resize', handleResize);
       }, []);
