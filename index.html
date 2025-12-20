@@ -1771,7 +1771,8 @@
             },
             funnel: { 
               enabled: templateConfig.funnelConfig?.enabled || false, 
-              initialVolume: templateConfig.funnelConfig?.startVolume || 100 
+              initialVolume: templateConfig.funnelConfig?.startVolume || 100,
+              periodLabel: 'per month'
             },
             personas: templateConfig.personas.map(p => ({
               id: p.id,
@@ -1783,7 +1784,7 @@
             stages: templateConfig.stages.map(stage => ({
               id: stage.id,
               name: stage.name,
-              dropOff: templateConfig.funnelConfig?.stages?.[stage.id]?.dropOff || 0,
+              dropOffCount: templateConfig.funnelConfig?.stages?.[stage.id]?.dropOff || 0,
               steps: stage.steps.map(step => ({
                 id: step.id,
                 name: step.name,
