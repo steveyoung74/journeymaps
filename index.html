@@ -1157,6 +1157,7 @@
     // ============================================
     function Dashboard({ user, token, onLogout, onUpdateToken }) {
       const [maps, setMaps] = useState([]);
+      const [mapConfigs, setMapConfigs] = useState({}); // Store full configs for metrics
       const [loading, setLoading] = useState(true);
       const [error, setError] = useState('');
       const [showCreateModal, setShowCreateModal] = useState(false);
@@ -1167,6 +1168,13 @@
       useEffect(() => {
         fetchMaps();
       }, []);
+
+      // Fetch full configs for metrics after maps are loaded
+      useEffect(() => {
+        if (maps.length > 0) {
+          fetchMapConfigs();
+        }
+      }, [maps]);
 
       const fetchMaps = async () => {
         setLoading(true);
@@ -1183,6 +1191,80 @@
           setError('Failed to load maps. Please refresh.');
         }
         setLoading(false);
+      };
+
+      const fetchMapConfigs = async () => {
+        const configs = {};
+        for (const map of maps) {
+          try {
+            const config = await fetchFromGitHub(`${GITHUB_CONFIG.mapsPath}/${map.id}.json`);
+            if (config) {
+              configs[map.id] = config;
+            }
+          } catch (err) {
+            console.warn(`Failed to fetch config for ${map.id}:`, err);
+          }
+        }
+        setMapConfigs(configs);
+      };
+
+      // Calculate metrics from config
+      const getMapMetrics = (mapId) => {
+        const config = mapConfigs[mapId];
+        if (!config || !config.stages) return null;
+        
+        const allSteps = config.stages.flatMap(s => s.steps || []);
+        const totalTime = allSteps.reduce((acc, s) => acc + (s.timeMinutes || 0), 0);
+        const totalSteps = allSteps.length;
+        const totalPainPoints = allSteps.reduce((acc, s) => acc + (s.painPoints?.length || 0), 0);
+        const highImprovements = allSteps.filter(s => s.automationOpportunity === 'high').length;
+        const totalRegReqs = allSteps.reduce((acc, s) => acc + (s.regulatoryRequirements?.length || 0), 0);
+        
+        // Calculate average friction
+        const stepsWithFriction = allSteps.filter(s => s.frictionScore);
+        const avgFriction = stepsWithFriction.length > 0 
+          ? (stepsWithFriction.reduce((acc, s) => acc + s.frictionScore, 0) / stepsWithFriction.length).toFixed(1)
+          : null;
+        
+        // Calculate total cost if personas exist
+        let totalCost = 0;
+        if (config.personas && config.personas.length > 0) {
+          allSteps.forEach(step => {
+            const persona = config.personas.find(p => p.id === step.owner);
+            if (persona) {
+              const hourlyRate = (persona.salary * (persona.burdenMultiplier || 1.4)) / (52 * (persona.hoursPerWeek || 37.5));
+              const stepCost = (step.timeMinutes / 60) * hourlyRate + (step.additionalCosts || 0);
+              totalCost += stepCost;
+            }
+          });
+        }
+        
+        return {
+          totalTime,
+          totalSteps,
+          stageCount: config.stages.length,
+          totalPainPoints,
+          highImprovements,
+          totalRegReqs,
+          avgFriction,
+          totalCost: totalCost > 0 ? totalCost : null
+        };
+      };
+
+      // Format time helper
+      const formatTime = (minutes) => {
+        if (!minutes) return '0m';
+        const hrs = Math.floor(minutes / 60);
+        const mins = minutes % 60;
+        if (hrs === 0) return `${mins}m`;
+        if (mins === 0) return `${hrs}h`;
+        return `${hrs}h ${mins}m`;
+      };
+
+      // Format currency helper
+      const formatCurrency = (amount) => {
+        if (!amount) return null;
+        return new Intl.NumberFormat('en-GB', { style: 'currency', currency: 'GBP', minimumFractionDigits: 0, maximumFractionDigits: 0 }).format(amount);
       };
 
       const myMaps = maps.filter(m => m.owner === user.email);
@@ -1352,15 +1434,90 @@
               </div>
             ) : (
               <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(340px, 1fr))', gap: '24px' }}>
-                {(activeTab === 'my-maps' ? myMaps : sharedMaps).map(map => (
-                  <div key={map.id} className="card" style={{ padding: '28px', cursor: 'pointer', transition: 'all 0.2s' }} onClick={() => openMap(map.id)}>
-                    <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: '14px' }}>
-                      <h3 style={{ fontSize: '19px', fontWeight: 500, color: 'var(--navy-700)' }}>{map.title}</h3>
+                {(activeTab === 'my-maps' ? myMaps : sharedMaps).map(map => {
+                  const metrics = getMapMetrics(map.id);
+                  return (
+                  <div key={map.id} className="card" style={{ padding: '24px', cursor: 'pointer', transition: 'all 0.2s' }} onClick={() => openMap(map.id)}>
+                    <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: '10px' }}>
+                      <h3 style={{ fontSize: '18px', fontWeight: 600, color: 'var(--navy-700)', lineHeight: 1.3 }}>{map.title}</h3>
                       <span className={`badge badge-${getPermission(map)}`}>{getPermission(map)}</span>
                     </div>
-                    <p className="text-muted" style={{ marginBottom: '20px', fontSize: '14px', lineHeight: 1.6 }}>
+                    <p className="text-muted" style={{ marginBottom: '16px', fontSize: '13px', lineHeight: 1.5 }}>
                       {map.description || 'No description'}
                     </p>
+                    
+                    {/* Metrics Row */}
+                    {metrics ? (
+                      <div style={{ 
+                        display: 'flex', 
+                        flexWrap: 'wrap',
+                        gap: '8px', 
+                        marginBottom: '16px',
+                        padding: '12px',
+                        background: 'var(--slate-50)',
+                        borderRadius: '8px'
+                      }}>
+                        <div style={{ display: 'flex', alignItems: 'center', gap: '4px' }} title="Total time">
+                          <span style={{ fontSize: '12px' }}>⏱️</span>
+                          <span style={{ fontSize: '12px', fontWeight: 600, color: 'var(--navy-700)' }}>{formatTime(metrics.totalTime)}</span>
+                        </div>
+                        <span style={{ color: 'var(--slate-300)' }}>·</span>
+                        <div style={{ display: 'flex', alignItems: 'center', gap: '4px' }} title={`${metrics.stageCount} stages, ${metrics.totalSteps} steps`}>
+                          <span style={{ fontSize: '12px' }}>📋</span>
+                          <span style={{ fontSize: '12px', color: 'var(--slate-600)' }}>{metrics.stageCount} / {metrics.totalSteps}</span>
+                        </div>
+                        {metrics.avgFriction && (
+                          <>
+                            <span style={{ color: 'var(--slate-300)' }}>·</span>
+                            <div style={{ display: 'flex', alignItems: 'center', gap: '4px' }} title="Average friction">
+                              <span style={{ fontSize: '12px' }}>{metrics.avgFriction >= 4 ? '😰' : metrics.avgFriction >= 3 ? '😐' : '🙂'}</span>
+                              <span style={{ fontSize: '12px', color: metrics.avgFriction >= 4 ? 'var(--error)' : 'var(--slate-600)' }}>{metrics.avgFriction}/5</span>
+                            </div>
+                          </>
+                        )}
+                        {metrics.totalPainPoints > 0 && (
+                          <>
+                            <span style={{ color: 'var(--slate-300)' }}>·</span>
+                            <div style={{ display: 'flex', alignItems: 'center', gap: '4px' }} title={`${metrics.totalPainPoints} pain points`}>
+                              <span style={{ fontSize: '12px' }}>⚠️</span>
+                              <span style={{ fontSize: '12px', color: 'var(--error)' }}>{metrics.totalPainPoints}</span>
+                            </div>
+                          </>
+                        )}
+                        {metrics.highImprovements > 0 && (
+                          <>
+                            <span style={{ color: 'var(--slate-300)' }}>·</span>
+                            <div style={{ display: 'flex', alignItems: 'center', gap: '4px' }} title={`${metrics.highImprovements} high improvement opportunities`}>
+                              <span style={{ fontSize: '12px' }}>🎯</span>
+                              <span style={{ fontSize: '12px', color: 'var(--success)' }}>{metrics.highImprovements}</span>
+                            </div>
+                          </>
+                        )}
+                        {metrics.totalCost && (
+                          <>
+                            <span style={{ color: 'var(--slate-300)' }}>·</span>
+                            <div style={{ display: 'flex', alignItems: 'center', gap: '4px' }} title="Total cost per journey">
+                              <span style={{ fontSize: '12px' }}>💷</span>
+                              <span style={{ fontSize: '12px', fontWeight: 600, color: 'var(--navy-700)' }}>{formatCurrency(metrics.totalCost)}</span>
+                            </div>
+                          </>
+                        )}
+                      </div>
+                    ) : (
+                      <div style={{ 
+                        height: '44px',
+                        marginBottom: '16px',
+                        padding: '12px',
+                        background: 'var(--slate-50)',
+                        borderRadius: '8px',
+                        display: 'flex',
+                        alignItems: 'center',
+                        justifyContent: 'center'
+                      }}>
+                        <span style={{ fontSize: '12px', color: 'var(--slate-400)' }}>Loading metrics...</span>
+                      </div>
+                    )}
+                    
                     <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
                       <span className="text-muted text-small">
                         Updated {formatDate(map.updatedAt)}
@@ -1376,7 +1533,8 @@
                       )}
                     </div>
                   </div>
-                ))}
+                  );
+                })}
                 {(activeTab === 'my-maps' ? myMaps : sharedMaps).length === 0 && (
                   <div style={{ gridColumn: '1 / -1', textAlign: 'center', padding: '80px', color: 'var(--slate-500)' }}>
                     {activeTab === 'my-maps' ? 'No maps yet. Create your first one!' : 'No maps shared with you yet.'}
