@@ -362,7 +362,7 @@
         right: 0;
         padding: 8px 24px !important;
         font-size: 9pt;
-        border-top: 1px solid #ccc;
+        border-top: 1px solid #A9B2BE;
         background: #f9f9f9 !important;
       }
     }
@@ -443,6 +443,24 @@
       "See what your journeys really cost",
       "Understand deeply. Improve decisively."
     ];
+    
+    // Stage colors - brand-aligned vibrant palette for visual differentiation
+    const STAGE_COLORS = [
+      { base: '#5B8A9A', light: '#96BCC7', dark: '#3A6070' },  // Steel Blue
+      { base: '#456A8A', light: '#6889A8', dark: '#2F5070' },  // Navy 400
+      { base: '#5A5B8A', light: '#8A8BB0', dark: '#3D3D6A' },  // Indigo
+      { base: '#B84A5A', light: '#D4848F', dark: '#8A3644' },  // Rose
+      { base: '#C4942A', light: '#E4C87A', dark: '#8B6914' },  // Amber
+      { base: '#2D8A6E', light: '#74B89E', dark: '#1E6B54' },  // Teal
+      { base: '#9A6B5B', light: '#C4A090', dark: '#6B4A3D' },  // Copper
+      { base: '#6889A8', light: '#9BB1C7', dark: '#456A8A' },  // Navy 300
+    ];
+    
+    // Helper to get stage color (cycles through palette)
+    const getStageColor = (index, variant = 'base') => {
+      const color = STAGE_COLORS[index % STAGE_COLORS.length];
+      return color[variant] || color.base;
+    };
 
     const generateId = () => Math.random().toString(36).substr(2, 9);
 
@@ -1287,22 +1305,22 @@
     const emotionColors = {
       hopeful: { bg: '#D4EDE5', text: '#2D8A6E', icon: '🌱' },
       curious: { bg: '#E8F0FE', text: '#1967D2', icon: '🔍' },
-      overwhelmed: { bg: '#FCE8E6', text: '#C5221F', icon: '😰' },
+      overwhelmed: { bg: '#F5E0E3', text: '#B84A5A', icon: '😰' },
       engaged: { bg: '#D4EDE5', text: '#2D8A6E', icon: '💬' },
       uncertain: { bg: '#FAF0D6', text: '#B06000', icon: '🤔' },
       waiting: { bg: '#E1EEF2', text: '#5A5B8A', icon: '⏳' },
       excited: { bg: '#D4EDE5', text: '#2D8A6E', icon: '✨' },
       neutral: { bg: '#F1F3F4', text: '#5F6368', icon: '➡️' },
       satisfied: { bg: '#D4EDE5', text: '#2D8A6E', icon: '✅' },
-      frustrated: { bg: '#FCE8E6', text: '#C5221F', icon: '😤' },
+      frustrated: { bg: '#F5E0E3', text: '#B84A5A', icon: '😤' },
       confident: { bg: '#D4EDE5', text: '#2D8A6E', icon: '💪' },
       anxious: { bg: '#FAF0D6', text: '#B06000', icon: '😟' }
     };
 
     const automationColors = {
       high: { bg: '#D4EDE5', text: '#2D8A6E', label: 'High' },
-      medium: { bg: '#FAF0D6', text: '#854D0E', label: 'Medium' },
-      low: { bg: '#F5E0E3', text: '#991B1B', label: 'Low' },
+      medium: { bg: '#FAF0D6', text: '#8B6914', label: 'Medium' },
+      low: { bg: '#F5E0E3', text: '#B84A5A', label: 'Low' },
       none: { bg: '#F4F5F7', text: '#6E7B8C', label: 'None' }
     };
 
@@ -1311,7 +1329,7 @@
       2: { emoji: '😐', color: '#84CC16', bg: '#ECFCCB', label: 'Mild' },
       3: { emoji: '😕', color: '#EAB308', bg: '#FAF0D6', label: 'Moderate' },
       4: { emoji: '😣', color: '#F97316', bg: '#FFEDD5', label: 'High' },
-      5: { emoji: '🥵', color: '#EF4444', bg: '#F5E0E3', label: 'Severe' }
+      5: { emoji: '🥵', color: '#B84A5A', bg: '#F5E0E3', label: 'Severe' }
     };
 
     // Cost calculation helpers
@@ -1489,8 +1507,8 @@
               <span>🔻</span> Funnel Analysis Dashboard
             </h3>
             <div style={{ display: 'flex', gap: '24px', alignItems: 'center' }}>
-              <span style={{ fontFamily: "'Interstate', sans-serif", fontSize: '12px', color: '#666' }}>{periodLabel}</span>
-              {onClose && <button onClick={onClose} style={{ background: 'none', border: 'none', fontSize: '20px', cursor: 'pointer', color: '#999', padding: '0 4px' }}>×</button>}
+              <span style={{ fontFamily: "'Interstate', sans-serif", fontSize: '12px', color: '#556275' }}>{periodLabel}</span>
+              {onClose && <button onClick={onClose} style={{ background: 'none', border: 'none', fontSize: '20px', cursor: 'pointer', color: '#8A95A5', padding: '0 4px' }}>×</button>}
             </div>
           </div>
           
@@ -1528,7 +1546,7 @@
 
           {/* Funnel Visualization */}
           <div style={{ marginBottom: '24px' }}>
-            <div style={{ fontSize: '11px', fontFamily: "'Interstate', sans-serif", color: '#666', marginBottom: '8px', textTransform: 'uppercase', letterSpacing: '0.5px' }}>
+            <div style={{ fontSize: '11px', fontFamily: "'Interstate', sans-serif", color: '#556275', marginBottom: '8px', textTransform: 'uppercase', letterSpacing: '0.5px' }}>
               Volume Flow by Stage
             </div>
             <div style={{ display: 'flex', flexDirection: 'column', gap: '4px' }}>
@@ -1537,15 +1555,15 @@
                 const exitWidthPercent = initialVolume > 0 ? (stage.exitVolume / initialVolume) * 100 : 0;
                 return (
                   <div key={stage.stageId} style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
-                    <div style={{ width: '140px', fontSize: '12px', fontFamily: "'Interstate', sans-serif", color: '#333', textAlign: 'right' }}>{stage.stageName}</div>
+                    <div style={{ width: '140px', fontSize: '12px', fontFamily: "'Interstate', sans-serif", color: '#3D4A5C', textAlign: 'right' }}>{stage.stageName}</div>
                     <div style={{ flex: 1, position: 'relative', height: '32px', background: '#F4F5F7', borderRadius: '4px' }}>
-                      <div style={{ position: 'absolute', left: 0, top: 0, height: '100%', width: `${widthPercent}%`, background: `hsl(${i * 45 + 180}, 35%, 75%)`, borderRadius: '4px', transition: 'width 0.3s' }} />
-                      <div style={{ position: 'absolute', left: 0, top: 0, height: '100%', width: `${exitWidthPercent}%`, background: `hsl(${i * 45 + 180}, 35%, 55%)`, borderRadius: '4px', transition: 'width 0.3s' }} />
+                      <div style={{ position: 'absolute', left: 0, top: 0, height: '100%', width: `${widthPercent}%`, background: getStageColor(i, 'light'), borderRadius: '4px', transition: 'width 0.3s' }} />
+                      <div style={{ position: 'absolute', left: 0, top: 0, height: '100%', width: `${exitWidthPercent}%`, background: getStageColor(i), borderRadius: '4px', transition: 'width 0.3s' }} />
                       {stage.dropOff > 0 && (
-                        <div style={{ position: 'absolute', left: `${exitWidthPercent}%`, top: '50%', transform: 'translateY(-50%)', background: '#EF4444', color: '#FFF', padding: '2px 6px', borderRadius: '4px', fontSize: '10px', fontFamily: "'Interstate', sans-serif", fontWeight: 600, marginLeft: '4px' }}>-{stage.dropOff}</div>
+                        <div style={{ position: 'absolute', left: `${exitWidthPercent}%`, top: '50%', transform: 'translateY(-50%)', background: '#B84A5A', color: '#FFF', padding: '2px 6px', borderRadius: '4px', fontSize: '10px', fontFamily: "'Interstate', sans-serif", fontWeight: 600, marginLeft: '4px' }}>-{stage.dropOff}</div>
                       )}
                     </div>
-                    <div style={{ width: '80px', fontSize: '12px', fontFamily: "'Interstate', sans-serif", color: '#666' }}>{stage.exitVolume.toLocaleString()} ({stage.completionRate.toFixed(0)}%)</div>
+                    <div style={{ width: '80px', fontSize: '12px', fontFamily: "'Interstate', sans-serif", color: '#556275' }}>{stage.exitVolume.toLocaleString()} ({stage.completionRate.toFixed(0)}%)</div>
                   </div>
                 );
               })}
@@ -1554,17 +1572,17 @@
 
           {/* Stage Breakdown Table */}
           <div style={{ marginTop: '24px' }}>
-            <div style={{ fontSize: '11px', fontFamily: "'Interstate', sans-serif", color: '#666', marginBottom: '8px', textTransform: 'uppercase', letterSpacing: '0.5px' }}>Stage-by-Stage Breakdown</div>
+            <div style={{ fontSize: '11px', fontFamily: "'Interstate', sans-serif", color: '#556275', marginBottom: '8px', textTransform: 'uppercase', letterSpacing: '0.5px' }}>Stage-by-Stage Breakdown</div>
             <div style={{ overflowX: 'auto' }}>
               <table style={{ width: '100%', borderCollapse: 'collapse', fontFamily: "'Interstate', sans-serif", fontSize: '12px' }}>
                 <thead>
                   <tr style={{ borderBottom: '2px solid #E4E7EB' }}>
-                    <th style={{ textAlign: 'left', padding: '10px 8px', color: '#666', fontWeight: 600 }}>Stage</th>
-                    <th style={{ textAlign: 'right', padding: '10px 8px', color: '#666', fontWeight: 600 }}>Entry</th>
-                    <th style={{ textAlign: 'right', padding: '10px 8px', color: '#666', fontWeight: 600 }}>Drop-off</th>
-                    <th style={{ textAlign: 'right', padding: '10px 8px', color: '#666', fontWeight: 600 }}>Exit</th>
-                    <th style={{ textAlign: 'right', padding: '10px 8px', color: '#666', fontWeight: 600 }}>Rate</th>
-                    <th style={{ textAlign: 'right', padding: '10px 8px', color: '#666', fontWeight: 600 }}>Cost/Client</th>
+                    <th style={{ textAlign: 'left', padding: '10px 8px', color: '#556275', fontWeight: 600 }}>Stage</th>
+                    <th style={{ textAlign: 'right', padding: '10px 8px', color: '#556275', fontWeight: 600 }}>Entry</th>
+                    <th style={{ textAlign: 'right', padding: '10px 8px', color: '#556275', fontWeight: 600 }}>Drop-off</th>
+                    <th style={{ textAlign: 'right', padding: '10px 8px', color: '#556275', fontWeight: 600 }}>Exit</th>
+                    <th style={{ textAlign: 'right', padding: '10px 8px', color: '#556275', fontWeight: 600 }}>Rate</th>
+                    <th style={{ textAlign: 'right', padding: '10px 8px', color: '#556275', fontWeight: 600 }}>Cost/Client</th>
                     <th style={{ textAlign: 'right', padding: '10px 8px', color: '#2D8A6E', fontWeight: 600 }}>Good Cost</th>
                     <th style={{ textAlign: 'right', padding: '10px 8px', color: '#B84A5A', fontWeight: 600 }}>Bad Cost</th>
                   </tr>
@@ -1572,12 +1590,12 @@
                 <tbody>
                   {stageMetrics.map((stage, i) => (
                     <tr key={stage.stageId} style={{ borderBottom: '1px solid #E9EEF4' }}>
-                      <td style={{ padding: '10px 8px', fontWeight: 500 }}><span style={{ display: 'inline-block', width: '8px', height: '8px', borderRadius: '2px', background: `hsl(${i * 45 + 180}, 35%, 55%)`, marginRight: '8px' }} />{stage.stageName}</td>
+                      <td style={{ padding: '10px 8px', fontWeight: 500 }}><span style={{ display: 'inline-block', width: '8px', height: '8px', borderRadius: '2px', background: getStageColor(i), marginRight: '8px' }} />{stage.stageName}</td>
                       <td style={{ textAlign: 'right', padding: '10px 8px', color: '#456A8A' }}>{stage.entryVolume.toLocaleString()}</td>
-                      <td style={{ textAlign: 'right', padding: '10px 8px', color: stage.dropOff > 0 ? '#B84A5A' : '#999' }}>{stage.dropOff > 0 ? `-${stage.dropOff.toLocaleString()}` : '—'}</td>
+                      <td style={{ textAlign: 'right', padding: '10px 8px', color: stage.dropOff > 0 ? '#B84A5A' : '#8A95A5' }}>{stage.dropOff > 0 ? `-${stage.dropOff.toLocaleString()}` : '—'}</td>
                       <td style={{ textAlign: 'right', padding: '10px 8px', color: '#2D8A6E' }}>{stage.exitVolume.toLocaleString()}</td>
-                      <td style={{ textAlign: 'right', padding: '10px 8px' }}><span style={{ padding: '2px 8px', borderRadius: '10px', background: stage.completionRate >= 90 ? '#D4EDE5' : stage.completionRate >= 70 ? '#FAF0D6' : '#F5E0E3', color: stage.completionRate >= 90 ? '#2D8A6E' : stage.completionRate >= 70 ? '#854D0E' : '#B84A5A', fontWeight: 500 }}>{stage.completionRate.toFixed(0)}%</span></td>
-                      <td style={{ textAlign: 'right', padding: '10px 8px', color: '#666' }}>{formatCurrency(stage.stageCostPerClient)}</td>
+                      <td style={{ textAlign: 'right', padding: '10px 8px' }}><span style={{ padding: '2px 8px', borderRadius: '10px', background: stage.completionRate >= 90 ? '#D4EDE5' : stage.completionRate >= 70 ? '#FAF0D6' : '#F5E0E3', color: stage.completionRate >= 90 ? '#2D8A6E' : stage.completionRate >= 70 ? '#8B6914' : '#B84A5A', fontWeight: 500 }}>{stage.completionRate.toFixed(0)}%</span></td>
+                      <td style={{ textAlign: 'right', padding: '10px 8px', color: '#556275' }}>{formatCurrency(stage.stageCostPerClient)}</td>
                       <td style={{ textAlign: 'right', padding: '10px 8px', fontWeight: 500, color: '#2D8A6E' }}>{formatCurrency(stage.stageInvestment)}</td>
                       <td style={{ textAlign: 'right', padding: '10px 8px', color: '#B84A5A', fontWeight: stage.wastedCost > 0 ? 600 : 400 }}>{stage.wastedCost > 0 ? formatCurrency(stage.wastedCost) : '—'}</td>
                     </tr>
@@ -1590,7 +1608,7 @@
                     <td style={{ textAlign: 'right', padding: '10px 8px', fontWeight: 600, color: '#B84A5A' }}>-{totalDropOff.toLocaleString()}</td>
                     <td style={{ textAlign: 'right', padding: '10px 8px', fontWeight: 600, color: '#2D8A6E' }}>{finalVolume.toLocaleString()}</td>
                     <td style={{ textAlign: 'right', padding: '10px 8px', fontWeight: 600 }}>{overallConversionRate.toFixed(1)}%</td>
-                    <td style={{ textAlign: 'right', padding: '10px 8px', fontWeight: 600, color: '#666' }}>{formatCurrency(totalCostPerClient)}</td>
+                    <td style={{ textAlign: 'right', padding: '10px 8px', fontWeight: 600, color: '#556275' }}>{formatCurrency(totalCostPerClient)}</td>
                     <td style={{ textAlign: 'right', padding: '10px 8px', fontWeight: 600, color: '#2D8A6E' }}>{formatCurrency(totalStageInvestment)}</td>
                     <td style={{ textAlign: 'right', padding: '10px 8px', fontWeight: 600, color: '#B84A5A' }}>{formatCurrency(totalWastedCost)}</td>
                   </tr>
@@ -1603,7 +1621,7 @@
           <div style={{ marginTop: '24px', display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(280px, 1fr))', gap: '16px' }}>
             <div style={{ background: '#F5E0E3', border: '1px solid #FECACA', borderRadius: '12px', padding: '16px' }}>
               <div style={{ fontSize: '11px', fontFamily: "'Interstate', sans-serif", color: '#B84A5A', textTransform: 'uppercase', letterSpacing: '0.5px', marginBottom: '8px' }}>⚠️ Biggest Drop-off</div>
-              <div style={{ fontSize: '16px', fontWeight: 600, color: '#991B1B' }}>{worstStage.stageName}</div>
+              <div style={{ fontSize: '16px', fontWeight: 600, color: '#B84A5A' }}>{worstStage.stageName}</div>
               <div style={{ fontSize: '12px', color: '#B84A5A', fontFamily: "'Interstate', sans-serif", marginTop: '4px' }}>{worstStage.dropOff.toLocaleString()} clients lost ({(100 - worstStage.completionRate).toFixed(0)}% drop-off rate)</div>
             </div>
             <div style={{ background: '#FAF0D6', border: '1px solid #F0DDA8', borderRadius: '12px', padding: '16px' }}>
@@ -1651,7 +1669,7 @@
           <div style={{ background: '#FFF', borderRadius: '12px', padding: '32px', width: '600px', maxWidth: '95vw', maxHeight: '90vh', overflow: 'auto', boxShadow: '0 20px 60px rgba(0,0,0,0.3)' }} onClick={e => e.stopPropagation()}>
             <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '24px' }}>
               <h3 style={{ margin: 0, fontSize: '18px', fontWeight: 600 }}>📊 Funnel Settings</h3>
-              <button onClick={onClose} style={{ background: 'none', border: 'none', fontSize: '20px', cursor: 'pointer', color: '#999' }}>×</button>
+              <button onClick={onClose} style={{ background: 'none', border: 'none', fontSize: '20px', cursor: 'pointer', color: '#8A95A5' }}>×</button>
             </div>
 
             <div style={{ marginBottom: '24px', padding: '16px', background: '#F4F5F7', borderRadius: '8px' }}>
@@ -1659,7 +1677,7 @@
                 <input type="checkbox" checked={localFunnel.enabled} onChange={(e) => setLocalFunnel(prev => ({ ...prev, enabled: e.target.checked }))} style={{ width: '18px', height: '18px', cursor: 'pointer' }} />
                 <div>
                   <div style={{ fontWeight: 500, fontSize: '14px' }}>Enable Funnel Tracking</div>
-                  <div style={{ fontSize: '12px', color: '#666', fontFamily: "'Interstate', sans-serif" }}>Track volume, drop-offs, and calculate wasted costs</div>
+                  <div style={{ fontSize: '12px', color: '#556275', fontFamily: "'Interstate', sans-serif" }}>Track volume, drop-offs, and calculate wasted costs</div>
                 </div>
               </label>
             </div>
@@ -1667,7 +1685,7 @@
             {localFunnel.enabled && (
               <>
                 <div style={{ marginBottom: '24px' }}>
-                  <label style={{ display: 'block', fontSize: '12px', fontFamily: "'Interstate', sans-serif", color: '#666', marginBottom: '6px', textTransform: 'uppercase', letterSpacing: '0.5px' }}>Initial Volume (Starting Clients)</label>
+                  <label style={{ display: 'block', fontSize: '12px', fontFamily: "'Interstate', sans-serif", color: '#556275', marginBottom: '6px', textTransform: 'uppercase', letterSpacing: '0.5px' }}>Initial Volume (Starting Clients)</label>
                   <div style={{ display: 'flex', gap: '12px' }}>
                     <input type="number" value={localFunnel.initialVolume} onChange={(e) => setLocalFunnel(prev => ({ ...prev, initialVolume: parseInt(e.target.value) || 0 }))} style={{ flex: 1, padding: '10px 14px', border: '2px solid #E4E7EB', borderRadius: '8px', fontSize: '16px', fontFamily: "'Interstate', sans-serif" }} />
                     <input type="text" value={localFunnel.periodLabel} onChange={(e) => setLocalFunnel(prev => ({ ...prev, periodLabel: e.target.value }))} placeholder="per quarter" style={{ width: '150px', padding: '10px 14px', border: '2px solid #E4E7EB', borderRadius: '8px', fontSize: '14px', fontFamily: "'Interstate', sans-serif" }} />
@@ -1675,18 +1693,18 @@
                 </div>
 
                 <div>
-                  <label style={{ display: 'block', fontSize: '12px', fontFamily: "'Interstate', sans-serif", color: '#666', marginBottom: '12px', textTransform: 'uppercase', letterSpacing: '0.5px' }}>Drop-off per Stage</label>
+                  <label style={{ display: 'block', fontSize: '12px', fontFamily: "'Interstate', sans-serif", color: '#556275', marginBottom: '12px', textTransform: 'uppercase', letterSpacing: '0.5px' }}>Drop-off per Stage</label>
                   <div style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
                     {localStages.map((stage, i) => {
                       const previewData = preview[i];
                       return (
-                        <div key={stage.id} style={{ display: 'flex', alignItems: 'center', gap: '12px', padding: '12px 16px', background: '#F4F5F7', borderRadius: '8px', borderLeft: `3px solid hsl(${i * 45 + 180}, 35%, 55%)` }}>
+                        <div key={stage.id} style={{ display: 'flex', alignItems: 'center', gap: '12px', padding: '12px 16px', background: '#F4F5F7', borderRadius: '8px', borderLeft: `3px solid ${getStageColor(i)}` }}>
                           <div style={{ flex: 1 }}>
                             <div style={{ fontWeight: 500, fontSize: '13px' }}>{stage.name}</div>
-                            <div style={{ fontSize: '11px', color: '#666', fontFamily: "'Interstate', sans-serif", marginTop: '2px' }}>{previewData.entry.toLocaleString()} → {previewData.exit.toLocaleString()}</div>
+                            <div style={{ fontSize: '11px', color: '#556275', fontFamily: "'Interstate', sans-serif", marginTop: '2px' }}>{previewData.entry.toLocaleString()} → {previewData.exit.toLocaleString()}</div>
                           </div>
                           <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
-                            <span style={{ fontSize: '12px', color: '#666', fontFamily: "'Interstate', sans-serif" }}>Drop:</span>
+                            <span style={{ fontSize: '12px', color: '#556275', fontFamily: "'Interstate', sans-serif" }}>Drop:</span>
                             <input type="number" value={stage.dropOffCount} onChange={(e) => { const value = parseInt(e.target.value) || 0; setLocalStages(prev => prev.map(s => s.id === stage.id ? { ...s, dropOffCount: value } : s)); }} style={{ width: '80px', padding: '6px 10px', border: '2px solid #E4E7EB', borderRadius: '6px', fontSize: '14px', fontFamily: "'Interstate', sans-serif", textAlign: 'right' }} />
                           </div>
                         </div>
@@ -1698,9 +1716,9 @@
                 <div style={{ marginTop: '24px', padding: '16px', background: '#EFF6FF', borderRadius: '8px', border: '1px solid #BDD6DE' }}>
                   <div style={{ fontSize: '12px', fontFamily: "'Interstate', sans-serif", color: '#456A8A', fontWeight: 600, marginBottom: '8px' }}>Preview</div>
                   <div style={{ display: 'flex', gap: '24px', fontSize: '13px', fontFamily: "'Interstate', sans-serif" }}>
-                    <div><span style={{ color: '#666' }}>Start: </span><span style={{ fontWeight: 600 }}>{localFunnel.initialVolume.toLocaleString()}</span></div>
-                    <div><span style={{ color: '#666' }}>Complete: </span><span style={{ fontWeight: 600, color: '#2D8A6E' }}>{runningVolume.toLocaleString()}</span></div>
-                    <div><span style={{ color: '#666' }}>Conversion: </span><span style={{ fontWeight: 600, color: '#5A5B8A' }}>{localFunnel.initialVolume > 0 ? ((runningVolume / localFunnel.initialVolume) * 100).toFixed(1) : 0}%</span></div>
+                    <div><span style={{ color: '#556275' }}>Start: </span><span style={{ fontWeight: 600 }}>{localFunnel.initialVolume.toLocaleString()}</span></div>
+                    <div><span style={{ color: '#556275' }}>Complete: </span><span style={{ fontWeight: 600, color: '#2D8A6E' }}>{runningVolume.toLocaleString()}</span></div>
+                    <div><span style={{ color: '#556275' }}>Conversion: </span><span style={{ fontWeight: 600, color: '#5A5B8A' }}>{localFunnel.initialVolume > 0 ? ((runningVolume / localFunnel.initialVolume) * 100).toFixed(1) : 0}%</span></div>
                   </div>
                 </div>
               </>
@@ -1801,7 +1819,7 @@
                 </span>
               )}
               {onClose && (
-                <button onClick={onClose} style={{ background: 'none', border: 'none', fontSize: '20px', cursor: 'pointer', color: '#999', padding: '0 4px' }}>×</button>
+                <button onClick={onClose} style={{ background: 'none', border: 'none', fontSize: '20px', cursor: 'pointer', color: '#8A95A5', padding: '0 4px' }}>×</button>
               )}
             </div>
           </div>
@@ -1830,7 +1848,7 @@
           <div style={{
             fontSize: '11px',
             fontFamily: "'Interstate', sans-serif",
-            color: '#666',
+            color: '#556275',
             marginBottom: '8px',
             textTransform: 'uppercase',
             letterSpacing: '0.5px'
@@ -1856,7 +1874,7 @@
                   data-tooltip={`${stage.name}: ${formatTime(stageTime)} (${Math.round(percentage)}%)`}
                   style={{
                     width: `${percentage}%`,
-                    background: `hsl(${i * 45 + 180}, 35%, 55%)`,
+                    background: getStageColor(i),
                     display: 'flex',
                     alignItems: 'center',
                     justifyContent: 'center',
@@ -1881,7 +1899,7 @@
           <div style={{ marginTop: '24px', display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(280px, 1fr))', gap: '24px' }}>
             {/* Top 5 Longest Steps */}
             <div>
-              <h4 style={{ margin: '0 0 12px', fontSize: '13px', fontFamily: "'Interstate', sans-serif", textTransform: 'uppercase', letterSpacing: '0.5px', color: '#666' }}>
+              <h4 style={{ margin: '0 0 12px', fontSize: '13px', fontFamily: "'Interstate', sans-serif", textTransform: 'uppercase', letterSpacing: '0.5px', color: '#556275' }}>
                 ⏰ Top 5 Longest Steps
               </h4>
               <div style={{ display: 'flex', flexDirection: 'column', gap: '6px' }}>
@@ -1900,7 +1918,7 @@
                       height: '22px', 
                       borderRadius: '50%', 
                       background: i === 0 ? '#456A8A' : '#E4E7EB',
-                      color: i === 0 ? '#FFF' : '#666',
+                      color: i === 0 ? '#FFF' : '#556275',
                       display: 'flex',
                       alignItems: 'center',
                       justifyContent: 'center',
@@ -1912,7 +1930,7 @@
                     </div>
                     <div style={{ flex: 1, minWidth: 0 }}>
                       <div style={{ fontWeight: 600, fontSize: '12px', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>{step.name}</div>
-                      <div style={{ fontSize: '10px', color: '#666', fontFamily: "'Interstate', sans-serif" }}>{step.stageName}</div>
+                      <div style={{ fontSize: '10px', color: '#556275', fontFamily: "'Interstate', sans-serif" }}>{step.stageName}</div>
                     </div>
                     <div style={{ fontWeight: 600, color: '#456A8A', fontSize: '13px', flexShrink: 0 }}>{formatTime(step.timeMinutes)}</div>
                   </div>
@@ -1922,7 +1940,7 @@
             
             {/* Top 5 Highest Friction Steps */}
             <div>
-              <h4 style={{ margin: '0 0 12px', fontSize: '13px', fontFamily: "'Interstate', sans-serif", textTransform: 'uppercase', letterSpacing: '0.5px', color: '#666' }}>
+              <h4 style={{ margin: '0 0 12px', fontSize: '13px', fontFamily: "'Interstate', sans-serif", textTransform: 'uppercase', letterSpacing: '0.5px', color: '#556275' }}>
                 😰 Highest Friction Steps
               </h4>
               <div style={{ display: 'flex', flexDirection: 'column', gap: '6px' }}>
@@ -1940,7 +1958,7 @@
                       <div style={{ fontSize: '18px' }}>{frictionConfig[friction]?.emoji}</div>
                       <div style={{ flex: 1, minWidth: 0 }}>
                         <div style={{ fontWeight: 600, fontSize: '12px', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>{step.name}</div>
-                        <div style={{ fontSize: '10px', color: '#666', fontFamily: "'Interstate', sans-serif" }}>{step.stageName} · {formatTime(step.timeMinutes)}</div>
+                        <div style={{ fontSize: '10px', color: '#556275', fontFamily: "'Interstate', sans-serif" }}>{step.stageName} · {formatTime(step.timeMinutes)}</div>
                       </div>
                       <div style={{ 
                         fontWeight: 600, 
@@ -1958,7 +1976,7 @@
             
             {/* Time by Role */}
             <div>
-              <h4 style={{ margin: '0 0 12px', fontSize: '13px', fontFamily: "'Interstate', sans-serif", textTransform: 'uppercase', letterSpacing: '0.5px', color: '#666' }}>
+              <h4 style={{ margin: '0 0 12px', fontSize: '13px', fontFamily: "'Interstate', sans-serif", textTransform: 'uppercase', letterSpacing: '0.5px', color: '#556275' }}>
                 👥 Time by Role
               </h4>
               <div style={{ display: 'flex', flexDirection: 'column', gap: '6px' }}>
@@ -1974,13 +1992,13 @@
                   }}>
                     <div style={{ flex: 1 }}>
                       <div style={{ fontWeight: 600, fontSize: '12px', color: role.color }}>{role.label}</div>
-                      <div style={{ fontSize: '10px', color: '#666', fontFamily: "'Interstate', sans-serif" }}>
+                      <div style={{ fontSize: '10px', color: '#556275', fontFamily: "'Interstate', sans-serif" }}>
                         {role.stepCount} steps
                       </div>
                     </div>
                     <div style={{ textAlign: 'right' }}>
                       <div style={{ fontWeight: 600, color: '#456A8A', fontSize: '13px' }}>{formatTime(role.totalMinutes)}</div>
-                      <div style={{ fontSize: '10px', color: '#666', fontFamily: "'Interstate', sans-serif" }}>
+                      <div style={{ fontSize: '10px', color: '#556275', fontFamily: "'Interstate', sans-serif" }}>
                         {totalTime > 0 ? Math.round((role.totalMinutes / totalTime) * 100) : 0}%
                       </div>
                     </div>
@@ -2004,7 +2022,7 @@
             
             {/* Stage Ranking by Time */}
             <div>
-              <h4 style={{ margin: '0 0 12px', fontSize: '13px', fontFamily: "'Interstate', sans-serif", textTransform: 'uppercase', letterSpacing: '0.5px', color: '#666' }}>
+              <h4 style={{ margin: '0 0 12px', fontSize: '13px', fontFamily: "'Interstate', sans-serif", textTransform: 'uppercase', letterSpacing: '0.5px', color: '#556275' }}>
                 📊 Stages by Time
               </h4>
               <div style={{ display: 'flex', flexDirection: 'column', gap: '6px' }}>
@@ -2018,18 +2036,18 @@
                       padding: '10px',
                       background: '#F4F5F7',
                       borderRadius: '8px',
-                      borderLeft: `3px solid hsl(${stage.stageIndex * 45 + 180}, 35%, 55%)`
+                      borderLeft: `3px solid ${getStageColor(stage.stageIndex)}`
                     }}>
                       <div style={{ flex: 1 }}>
                         <div style={{ fontWeight: 600, fontSize: '12px' }}>{stage.name}</div>
-                        <div style={{ fontSize: '10px', color: '#666', fontFamily: "'Interstate', sans-serif" }}>
+                        <div style={{ fontSize: '10px', color: '#556275', fontFamily: "'Interstate', sans-serif" }}>
                           {stage.stepCount} steps
                         </div>
                       </div>
                       <div style={{ fontSize: '14px' }}>{frictionConfig[roundedFriction]?.emoji}</div>
                       <div style={{ textAlign: 'right' }}>
                         <div style={{ fontWeight: 600, color: '#456A8A', fontSize: '13px' }}>{formatTime(stage.time)}</div>
-                        <div style={{ fontSize: '10px', color: '#666', fontFamily: "'Interstate', sans-serif" }}>
+                        <div style={{ fontSize: '10px', color: '#556275', fontFamily: "'Interstate', sans-serif" }}>
                           {totalTime > 0 ? Math.round((stage.time / totalTime) * 100) : 0}%
                         </div>
                       </div>
@@ -2045,7 +2063,7 @@
             <div style={{
               fontSize: '11px',
               fontFamily: "'Interstate', sans-serif",
-              color: '#666',
+              color: '#556275',
               marginBottom: '8px',
               textTransform: 'uppercase',
               letterSpacing: '0.5px'
@@ -2086,7 +2104,7 @@
       const [localPersonas, setLocalPersonas] = useState(JSON.parse(JSON.stringify(personas)));
       const [editingId, setEditingId] = useState(null);
       const [showAddForm, setShowAddForm] = useState(false);
-      const [newRole, setNewRole] = useState({ label: '', color: '#666666', annualSalary: 0, burdenMultiplier: 1.35, workspaceHourlyCost: 6.00, isExternal: false });
+      const [newRole, setNewRole] = useState({ label: '', color: '#556275666', annualSalary: 0, burdenMultiplier: 1.35, workspaceHourlyCost: 6.00, isExternal: false });
       
       const colorOptions = ['#2D8A6E', '#9A6B5B', '#456A8A', '#5A5B8A', '#B84A5A', '#2D8A6E', '#C4942A', '#556275', '#5A5B8A', '#0369A1'];
 
@@ -2102,7 +2120,7 @@
         if (!newRole.label.trim()) return;
         const id = newRole.label.toLowerCase().replace(/\s+/g, '-').replace(/[^a-z0-9-]/g, '');
         setLocalPersonas(prev => [...prev, { ...newRole, id, label: newRole.label.trim() }]);
-        setNewRole({ label: '', color: '#666666', annualSalary: 0, burdenMultiplier: 1.35, workspaceHourlyCost: 6.00, isExternal: false });
+        setNewRole({ label: '', color: '#556275666', annualSalary: 0, burdenMultiplier: 1.35, workspaceHourlyCost: 6.00, isExternal: false });
         setShowAddForm(false);
       };
 
@@ -2127,11 +2145,11 @@
           }} onClick={e => e.stopPropagation()}>
             <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '8px' }}>
               <h3 style={{ margin: 0, fontSize: '20px' }}>👥 Role Management</h3>
-              <button onClick={() => setShowAddForm(!showAddForm)} style={{ padding: '8px 16px', background: showAddForm ? '#F4F5F7' : '#2D8A6E', color: showAddForm ? '#666' : '#FFF', border: 'none', borderRadius: '6px', cursor: 'pointer', fontFamily: "'Interstate', sans-serif", fontSize: '13px' }}>
+              <button onClick={() => setShowAddForm(!showAddForm)} style={{ padding: '8px 16px', background: showAddForm ? '#F4F5F7' : '#2D8A6E', color: showAddForm ? '#556275' : '#FFF', border: 'none', borderRadius: '6px', cursor: 'pointer', fontFamily: "'Interstate', sans-serif", fontSize: '13px' }}>
                 {showAddForm ? 'Cancel' : '+ Add Role'}
               </button>
             </div>
-            <p style={{ margin: '0 0 24px', color: '#666', fontFamily: "'Interstate', sans-serif", fontSize: '14px' }}>
+            <p style={{ margin: '0 0 24px', color: '#556275', fontFamily: "'Interstate', sans-serif", fontSize: '14px' }}>
               Manage roles and fully-loaded costs. Based on {WORKING_HOURS_PER_YEAR} working hours/year.
             </p>
 
@@ -2141,7 +2159,7 @@
                 <div style={{ fontFamily: "'Interstate', sans-serif", fontSize: '13px', fontWeight: 600, color: '#2D8A6E', marginBottom: '16px' }}>Add New Role</div>
                 <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '16px' }}>
                   <div>
-                    <label style={{ display: 'block', fontFamily: "'Interstate', sans-serif", fontSize: '11px', color: '#666', marginBottom: '6px' }}>Role Name</label>
+                    <label style={{ display: 'block', fontFamily: "'Interstate', sans-serif", fontSize: '11px', color: '#556275', marginBottom: '6px' }}>Role Name</label>
                     <input
                       type="text"
                       value={newRole.label}
@@ -2151,7 +2169,7 @@
                     />
                   </div>
                   <div>
-                    <label style={{ display: 'block', fontFamily: "'Interstate', sans-serif", fontSize: '11px', color: '#666', marginBottom: '6px' }}>Annual Salary (£)</label>
+                    <label style={{ display: 'block', fontFamily: "'Interstate', sans-serif", fontSize: '11px', color: '#556275', marginBottom: '6px' }}>Annual Salary (£)</label>
                     <input
                       type="number"
                       value={newRole.annualSalary || ''}
@@ -2161,7 +2179,7 @@
                     />
                   </div>
                   <div>
-                    <label style={{ display: 'block', fontFamily: "'Interstate', sans-serif", fontSize: '11px', color: '#666', marginBottom: '6px' }}>Burden Multiplier</label>
+                    <label style={{ display: 'block', fontFamily: "'Interstate', sans-serif", fontSize: '11px', color: '#556275', marginBottom: '6px' }}>Burden Multiplier</label>
                     <input
                       type="number"
                       step="0.01"
@@ -2170,10 +2188,10 @@
                       placeholder="1.35"
                       style={{ width: '100%', padding: '10px 12px', border: '2px solid #E4E7EB', borderRadius: '6px', fontSize: '14px', boxSizing: 'border-box' }}
                     />
-                    <div style={{ fontFamily: "'Interstate', sans-serif", fontSize: '10px', color: '#999', marginTop: '4px' }}>NI, pension, benefits (typ. 1.3-1.5)</div>
+                    <div style={{ fontFamily: "'Interstate', sans-serif", fontSize: '10px', color: '#8A95A5', marginTop: '4px' }}>NI, pension, benefits (typ. 1.3-1.5)</div>
                   </div>
                   <div>
-                    <label style={{ display: 'block', fontFamily: "'Interstate', sans-serif", fontSize: '11px', color: '#666', marginBottom: '6px' }}>Workspace Cost (£/hr)</label>
+                    <label style={{ display: 'block', fontFamily: "'Interstate', sans-serif", fontSize: '11px', color: '#556275', marginBottom: '6px' }}>Workspace Cost (£/hr)</label>
                     <input
                       type="number"
                       step="0.50"
@@ -2182,10 +2200,10 @@
                       placeholder="6.00"
                       style={{ width: '100%', padding: '10px 12px', border: '2px solid #E4E7EB', borderRadius: '6px', fontSize: '14px', boxSizing: 'border-box' }}
                     />
-                    <div style={{ fontFamily: "'Interstate', sans-serif", fontSize: '10px', color: '#999', marginTop: '4px' }}>Desk, equipment, facilities</div>
+                    <div style={{ fontFamily: "'Interstate', sans-serif", fontSize: '10px', color: '#8A95A5', marginTop: '4px' }}>Desk, equipment, facilities</div>
                   </div>
                   <div>
-                    <label style={{ display: 'block', fontFamily: "'Interstate', sans-serif", fontSize: '11px', color: '#666', marginBottom: '6px' }}>Colour</label>
+                    <label style={{ display: 'block', fontFamily: "'Interstate', sans-serif", fontSize: '11px', color: '#556275', marginBottom: '6px' }}>Colour</label>
                     <div style={{ display: 'flex', gap: '6px', flexWrap: 'wrap' }}>
                       {colorOptions.map(color => (
                         <button
@@ -2197,10 +2215,10 @@
                     </div>
                   </div>
                   <div>
-                    <label style={{ display: 'block', fontFamily: "'Interstate', sans-serif", fontSize: '11px', color: '#666', marginBottom: '6px' }}>External (no cost)?</label>
+                    <label style={{ display: 'block', fontFamily: "'Interstate', sans-serif", fontSize: '11px', color: '#556275', marginBottom: '6px' }}>External (no cost)?</label>
                     <button
                       onClick={() => setNewRole(prev => ({ ...prev, isExternal: !prev.isExternal }))}
-                      style={{ padding: '10px 20px', background: newRole.isExternal ? '#2D8A6E' : '#F4F5F7', color: newRole.isExternal ? '#FFF' : '#666', border: 'none', borderRadius: '6px', cursor: 'pointer', fontFamily: "'Interstate', sans-serif", fontSize: '13px' }}
+                      style={{ padding: '10px 20px', background: newRole.isExternal ? '#2D8A6E' : '#F4F5F7', color: newRole.isExternal ? '#FFF' : '#556275', border: 'none', borderRadius: '6px', cursor: 'pointer', fontFamily: "'Interstate', sans-serif", fontSize: '13px' }}
                     >
                       {newRole.isExternal ? 'Yes (External)' : 'No (Internal)'}
                     </button>
@@ -2219,7 +2237,7 @@
                   <button
                     onClick={handleAddRole}
                     disabled={!newRole.label.trim()}
-                    style={{ padding: '10px 24px', background: newRole.label.trim() ? '#2D8A6E' : '#CCC', color: '#FFF', border: 'none', borderRadius: '6px', cursor: newRole.label.trim() ? 'pointer' : 'not-allowed', fontFamily: "'Interstate', sans-serif", fontSize: '13px' }}
+                    style={{ padding: '10px 24px', background: newRole.label.trim() ? '#2D8A6E' : '#A9B2BE', color: '#FFF', border: 'none', borderRadius: '6px', cursor: newRole.label.trim() ? 'pointer' : 'not-allowed', fontFamily: "'Interstate', sans-serif", fontSize: '13px' }}
                   >
                     Add Role
                   </button>
@@ -2276,14 +2294,14 @@
                         }}
                       />
                       {persona.isExternal && (
-                        <div style={{ fontFamily: "'Interstate', sans-serif", fontSize: '11px', color: '#999' }}>External (no cost)</div>
+                        <div style={{ fontFamily: "'Interstate', sans-serif", fontSize: '11px', color: '#8A95A5' }}>External (no cost)</div>
                       )}
                     </div>
 
                     {/* External Toggle */}
                     <button
                       onClick={() => handleUpdatePersona(persona.id, 'isExternal', !persona.isExternal)}
-                      style={{ padding: '6px 12px', background: persona.isExternal ? '#E4E7EB' : '#FFF', border: '1px solid #DDD', borderRadius: '4px', cursor: 'pointer', fontFamily: "'Interstate', sans-serif", fontSize: '11px', color: '#666' }}
+                      style={{ padding: '6px 12px', background: persona.isExternal ? '#E4E7EB' : '#FFF', border: '1px solid #C8CED6', borderRadius: '4px', cursor: 'pointer', fontFamily: "'Interstate', sans-serif", fontSize: '11px', color: '#556275' }}
                       title={persona.isExternal ? 'Mark as internal' : 'Mark as external (no cost)'}
                     >
                       {persona.isExternal ? 'External' : 'Internal'}
@@ -2302,9 +2320,9 @@
                     <div style={{ display: 'grid', gridTemplateColumns: 'repeat(4, 1fr)', gap: '12px', paddingTop: '12px', borderTop: '1px solid #E9EEF4' }}>
                       {/* Annual Salary */}
                       <div>
-                        <label style={{ display: 'block', fontFamily: "'Interstate', sans-serif", fontSize: '10px', color: '#999', marginBottom: '4px' }}>Annual Salary</label>
+                        <label style={{ display: 'block', fontFamily: "'Interstate', sans-serif", fontSize: '10px', color: '#8A95A5', marginBottom: '4px' }}>Annual Salary</label>
                         <div style={{ display: 'flex', alignItems: 'center', gap: '4px' }}>
-                          <span style={{ fontFamily: "'Interstate', sans-serif", fontSize: '12px', color: '#666' }}>£</span>
+                          <span style={{ fontFamily: "'Interstate', sans-serif", fontSize: '12px', color: '#556275' }}>£</span>
                           <input
                             type="number"
                             value={persona.annualSalary || ''}
@@ -2313,14 +2331,14 @@
                             style={{ width: '100%', padding: '6px 8px', border: '1px solid #E4E7EB', borderRadius: '4px', fontSize: '13px', textAlign: 'right' }}
                           />
                         </div>
-                        <div style={{ fontFamily: "'Interstate', sans-serif", fontSize: '10px', color: '#999', marginTop: '2px' }}>
+                        <div style={{ fontFamily: "'Interstate', sans-serif", fontSize: '10px', color: '#8A95A5', marginTop: '2px' }}>
                           Base: {formatCurrencyDetailed(calculateHourlyRate(persona.annualSalary || 0))}/hr
                         </div>
                       </div>
 
                       {/* Burden Multiplier */}
                       <div>
-                        <label style={{ display: 'block', fontFamily: "'Interstate', sans-serif", fontSize: '10px', color: '#999', marginBottom: '4px' }}>Burden ×</label>
+                        <label style={{ display: 'block', fontFamily: "'Interstate', sans-serif", fontSize: '10px', color: '#8A95A5', marginBottom: '4px' }}>Burden ×</label>
                         <input
                           type="number"
                           step="0.01"
@@ -2329,14 +2347,14 @@
                           placeholder="1.35"
                           style={{ width: '100%', padding: '6px 8px', border: '1px solid #E4E7EB', borderRadius: '4px', fontSize: '13px', textAlign: 'right' }}
                         />
-                        <div style={{ fontFamily: "'Interstate', sans-serif", fontSize: '10px', color: '#999', marginTop: '2px' }}>
+                        <div style={{ fontFamily: "'Interstate', sans-serif", fontSize: '10px', color: '#8A95A5', marginTop: '2px' }}>
                           NI, pension, benefits
                         </div>
                       </div>
 
                       {/* Workspace Cost */}
                       <div>
-                        <label style={{ display: 'block', fontFamily: "'Interstate', sans-serif", fontSize: '10px', color: '#999', marginBottom: '4px' }}>Workspace £/hr</label>
+                        <label style={{ display: 'block', fontFamily: "'Interstate', sans-serif", fontSize: '10px', color: '#8A95A5', marginBottom: '4px' }}>Workspace £/hr</label>
                         <input
                           type="number"
                           step="0.50"
@@ -2345,7 +2363,7 @@
                           placeholder="6.00"
                           style={{ width: '100%', padding: '6px 8px', border: '1px solid #E4E7EB', borderRadius: '4px', fontSize: '13px', textAlign: 'right' }}
                         />
-                        <div style={{ fontFamily: "'Interstate', sans-serif", fontSize: '10px', color: '#999', marginTop: '2px' }}>
+                        <div style={{ fontFamily: "'Interstate', sans-serif", fontSize: '10px', color: '#8A95A5', marginTop: '2px' }}>
                           Desk, equipment
                         </div>
                       </div>
@@ -2462,7 +2480,7 @@
             }}>
               <span>💰</span> Cost Analysis Dashboard
             </h3>
-            <button onClick={onClose} style={{ background: 'none', border: 'none', fontSize: '20px', cursor: 'pointer', color: '#999' }}>×</button>
+            <button onClick={onClose} style={{ background: 'none', border: 'none', fontSize: '20px', cursor: 'pointer', color: '#8A95A5' }}>×</button>
           </div>
           
           {/* Summary Cards */}
@@ -2488,7 +2506,7 @@
           <div className="cost-analysis-grid" style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(300px, 1fr))', gap: '24px' }}>
             {/* Stage Comparison */}
             <div>
-              <h4 style={{ margin: '0 0 16px', fontSize: '14px', fontFamily: "'Interstate', sans-serif", textTransform: 'uppercase', letterSpacing: '0.5px', color: '#666' }}>
+              <h4 style={{ margin: '0 0 16px', fontSize: '14px', fontFamily: "'Interstate', sans-serif", textTransform: 'uppercase', letterSpacing: '0.5px', color: '#556275' }}>
                 Stage Comparison
               </h4>
               <div style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
@@ -2500,17 +2518,17 @@
                     padding: '12px',
                     background: '#F4F5F7',
                     borderRadius: '8px',
-                    borderLeft: `4px solid hsl(${stage.stageIndex * 45 + 180}, 35%, 55%)`
+                    borderLeft: `4px solid ${getStageColor(stage.stageIndex)}`
                   }}>
                     <div style={{ flex: 1 }}>
                       <div style={{ fontWeight: 600, fontSize: '14px' }}>{stage.name}</div>
-                      <div style={{ fontSize: '11px', color: '#666', fontFamily: "'Interstate', sans-serif" }}>
+                      <div style={{ fontSize: '11px', color: '#556275', fontFamily: "'Interstate', sans-serif" }}>
                         {stage.stepCount} steps · {formatTime(stage.minutes)}
                       </div>
                     </div>
                     <div style={{ textAlign: 'right' }}>
                       <div style={{ fontWeight: 600, color: '#8B6914' }}>{formatCurrency(stage.cost)}</div>
-                      <div style={{ fontSize: '11px', color: '#666', fontFamily: "'Interstate', sans-serif" }}>
+                      <div style={{ fontSize: '11px', color: '#556275', fontFamily: "'Interstate', sans-serif" }}>
                         {formatCurrencyDetailed(stage.costPerMinute)}/min
                       </div>
                     </div>
@@ -2524,7 +2542,7 @@
                       <div style={{
                         width: `${(stage.cost / Math.max(...stageMetrics.map(s => s.cost))) * 100}%`,
                         height: '100%',
-                        background: `hsl(${stage.stageIndex * 45 + 180}, 35%, 55%)`
+                        background: getStageColor(stage.stageIndex)
                       }} />
                     </div>
                   </div>
@@ -2534,7 +2552,7 @@
             
             {/* Cost by Role */}
             <div>
-              <h4 style={{ margin: '0 0 16px', fontSize: '14px', fontFamily: "'Interstate', sans-serif", textTransform: 'uppercase', letterSpacing: '0.5px', color: '#666' }}>
+              <h4 style={{ margin: '0 0 16px', fontSize: '14px', fontFamily: "'Interstate', sans-serif", textTransform: 'uppercase', letterSpacing: '0.5px', color: '#556275' }}>
                 Cost by Role
               </h4>
               <div style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
@@ -2550,13 +2568,13 @@
                   }}>
                     <div style={{ flex: 1 }}>
                       <div style={{ fontWeight: 600, fontSize: '14px', color: role.color }}>{role.label}</div>
-                      <div style={{ fontSize: '11px', color: '#666', fontFamily: "'Interstate', sans-serif" }}>
+                      <div style={{ fontSize: '11px', color: '#556275', fontFamily: "'Interstate', sans-serif" }}>
                         {formatTime(role.totalMinutes)} total time
                       </div>
                     </div>
                     <div style={{ textAlign: 'right' }}>
                       <div style={{ fontWeight: 600, color: '#8B6914' }}>{formatCurrency(role.totalCost)}</div>
-                      <div style={{ fontSize: '11px', color: '#666', fontFamily: "'Interstate', sans-serif" }}>
+                      <div style={{ fontSize: '11px', color: '#556275', fontFamily: "'Interstate', sans-serif" }}>
                         {totalCost > 0 ? Math.round((role.totalCost / totalCost) * 100) : 0}% of total
                       </div>
                     </div>
@@ -2580,7 +2598,7 @@
             
             {/* Most Expensive Steps */}
             <div>
-              <h4 style={{ margin: '0 0 16px', fontSize: '14px', fontFamily: "'Interstate', sans-serif", textTransform: 'uppercase', letterSpacing: '0.5px', color: '#666' }}>
+              <h4 style={{ margin: '0 0 16px', fontSize: '14px', fontFamily: "'Interstate', sans-serif", textTransform: 'uppercase', letterSpacing: '0.5px', color: '#556275' }}>
                 💰 Top 5 Most Expensive Steps
               </h4>
               <div style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
@@ -2592,14 +2610,14 @@
                     padding: '12px',
                     background: i === 0 ? '#F5E0E3' : '#F4F5F7',
                     borderRadius: '8px',
-                    border: i === 0 ? '1px solid #FEE4E2' : 'none'
+                    border: i === 0 ? '1px solid #F5E0E3' : 'none'
                   }}>
                     <div style={{ 
                       width: '24px', 
                       height: '24px', 
                       borderRadius: '50%', 
                       background: i === 0 ? '#B84A5A' : '#E4E7EB',
-                      color: i === 0 ? '#FFF' : '#666',
+                      color: i === 0 ? '#FFF' : '#556275',
                       display: 'flex',
                       alignItems: 'center',
                       justifyContent: 'center',
@@ -2610,7 +2628,7 @@
                     </div>
                     <div style={{ flex: 1 }}>
                       <div style={{ fontWeight: 600, fontSize: '13px' }}>{step.name}</div>
-                      <div style={{ fontSize: '11px', color: '#666', fontFamily: "'Interstate', sans-serif" }}>{step.stageName}</div>
+                      <div style={{ fontSize: '11px', color: '#556275', fontFamily: "'Interstate', sans-serif" }}>{step.stageName}</div>
                     </div>
                     <div style={{ fontWeight: 600, color: '#8B6914' }}>{formatCurrency(step.cost)}</div>
                   </div>
@@ -2620,7 +2638,7 @@
             
             {/* Highest Cost per Minute */}
             <div>
-              <h4 style={{ margin: '0 0 16px', fontSize: '14px', fontFamily: "'Interstate', sans-serif", textTransform: 'uppercase', letterSpacing: '0.5px', color: '#666' }}>
+              <h4 style={{ margin: '0 0 16px', fontSize: '14px', fontFamily: "'Interstate', sans-serif", textTransform: 'uppercase', letterSpacing: '0.5px', color: '#556275' }}>
                 ⚡ Highest Cost/Minute Steps
               </h4>
               <div style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
@@ -2639,7 +2657,7 @@
                       height: '24px', 
                       borderRadius: '50%', 
                       background: i === 0 ? '#456A8A' : '#E4E7EB',
-                      color: i === 0 ? '#FFF' : '#666',
+                      color: i === 0 ? '#FFF' : '#556275',
                       display: 'flex',
                       alignItems: 'center',
                       justifyContent: 'center',
@@ -2650,7 +2668,7 @@
                     </div>
                     <div style={{ flex: 1 }}>
                       <div style={{ fontWeight: 600, fontSize: '13px' }}>{step.name}</div>
-                      <div style={{ fontSize: '11px', color: '#666', fontFamily: "'Interstate', sans-serif" }}>{step.stageName} · {formatTime(step.timeMinutes)}</div>
+                      <div style={{ fontSize: '11px', color: '#556275', fontFamily: "'Interstate', sans-serif" }}>{step.stageName} · {formatTime(step.timeMinutes)}</div>
                     </div>
                     <div style={{ textAlign: 'right' }}>
                       <div style={{ fontWeight: 600, color: '#456A8A' }}>{formatCurrencyDetailed(step.costPerMinute)}/min</div>
@@ -2775,7 +2793,7 @@
                 disabled={!name.trim()}
                 style={{
                   padding: '10px 20px',
-                  background: name.trim() ? '#2D8A6E' : '#CCC',
+                  background: name.trim() ? '#2D8A6E' : '#A9B2BE',
                   color: '#FFF',
                   border: 'none',
                   borderRadius: '6px',
@@ -2824,7 +2842,7 @@
             <h3 style={{ margin: '0 0 8px', fontSize: '20px' }}>Add New Step</h3>
             <p style={{ 
               margin: '0 0 24px', 
-              color: '#666',
+              color: '#556275',
               fontFamily: "'Interstate', sans-serif",
               fontSize: '14px'
             }}>
@@ -2837,7 +2855,7 @@
                   display: 'block',
                   fontFamily: "'Interstate', sans-serif",
                   fontSize: '12px',
-                  color: '#666',
+                  color: '#556275',
                   marginBottom: '6px',
                   textTransform: 'uppercase',
                   letterSpacing: '0.5px'
@@ -2865,7 +2883,7 @@
                   display: 'block',
                   fontFamily: "'Interstate', sans-serif",
                   fontSize: '12px',
-                  color: '#666',
+                  color: '#556275',
                   marginBottom: '6px',
                   textTransform: 'uppercase',
                   letterSpacing: '0.5px'
@@ -2894,7 +2912,7 @@
                     display: 'block',
                     fontFamily: "'Interstate', sans-serif",
                     fontSize: '12px',
-                    color: '#666',
+                    color: '#556275',
                     marginBottom: '6px',
                     textTransform: 'uppercase',
                     letterSpacing: '0.5px'
@@ -2921,7 +2939,7 @@
                     display: 'block',
                     fontFamily: "'Interstate', sans-serif",
                     fontSize: '12px',
-                    color: '#666',
+                    color: '#556275',
                     marginBottom: '6px',
                     textTransform: 'uppercase',
                     letterSpacing: '0.5px'
@@ -2953,7 +2971,7 @@
                     display: 'block',
                     fontFamily: "'Interstate', sans-serif",
                     fontSize: '12px',
-                    color: '#666',
+                    color: '#556275',
                     marginBottom: '6px',
                     textTransform: 'uppercase',
                     letterSpacing: '0.5px'
@@ -2973,7 +2991,7 @@
                           borderColor: step.frictionScore >= n ? frictionConfig[step.frictionScore]?.color : '#E4E7EB',
                           borderRadius: '6px',
                           background: step.frictionScore >= n ? frictionConfig[step.frictionScore]?.color : '#FFF',
-                          color: step.frictionScore >= n ? '#FFF' : '#333',
+                          color: step.frictionScore >= n ? '#FFF' : '#3D4A5C',
                           cursor: 'pointer',
                           fontWeight: 600,
                           transition: 'all 0.15s'
@@ -2990,7 +3008,7 @@
                     display: 'block',
                     fontFamily: "'Interstate', sans-serif",
                     fontSize: '12px',
-                    color: '#666',
+                    color: '#556275',
                     marginBottom: '6px',
                     textTransform: 'uppercase',
                     letterSpacing: '0.5px'
@@ -3037,7 +3055,7 @@
                 disabled={!step.name.trim()}
                 style={{
                   padding: '10px 20px',
-                  background: step.name.trim() ? '#2D8A6E' : '#CCC',
+                  background: step.name.trim() ? '#2D8A6E' : '#A9B2BE',
                   color: '#FFF',
                   border: 'none',
                   borderRadius: '6px',
@@ -3082,60 +3100,60 @@
                 <span style={{ fontSize: '24px' }}>🐙</span>
                 <div>
                   <h3 style={{ margin: 0, fontSize: '20px', fontWeight: 600 }}>GitHub Settings</h3>
-                  <p style={{ margin: '4px 0 0', fontSize: '13px', color: '#666' }}>Connect to save & load your journey map</p>
+                  <p style={{ margin: '4px 0 0', fontSize: '13px', color: '#556275' }}>Connect to save & load your journey map</p>
                 </div>
               </div>
-              <button onClick={onClose} style={{ background: 'none', border: 'none', fontSize: '24px', cursor: 'pointer', color: '#999' }}>×</button>
+              <button onClick={onClose} style={{ background: 'none', border: 'none', fontSize: '24px', cursor: 'pointer', color: '#8A95A5' }}>×</button>
             </div>
 
             {/* Content */}
             <div style={{ padding: '24px 32px' }}>
               <div style={{ marginBottom: '20px' }}>
-                <label style={{ display: 'block', fontSize: '13px', fontWeight: 500, marginBottom: '6px', color: '#333' }}>Repository Owner</label>
+                <label style={{ display: 'block', fontSize: '13px', fontWeight: 500, marginBottom: '6px', color: '#3D4A5C' }}>Repository Owner</label>
                 <input
                   type="text"
                   value={localConfig.owner}
                   onChange={(e) => setLocalConfig({ ...localConfig, owner: e.target.value })}
                   placeholder="e.g., steveyoung74"
-                  style={{ width: '100%', padding: '10px 12px', border: '1px solid #DDD', borderRadius: '6px', fontSize: '14px' }}
+                  style={{ width: '100%', padding: '10px 12px', border: '1px solid #C8CED6', borderRadius: '6px', fontSize: '14px' }}
                 />
               </div>
 
               <div style={{ marginBottom: '20px' }}>
-                <label style={{ display: 'block', fontSize: '13px', fontWeight: 500, marginBottom: '6px', color: '#333' }}>Repository Name</label>
+                <label style={{ display: 'block', fontSize: '13px', fontWeight: 500, marginBottom: '6px', color: '#3D4A5C' }}>Repository Name</label>
                 <input
                   type="text"
                   value={localConfig.repo}
                   onChange={(e) => setLocalConfig({ ...localConfig, repo: e.target.value })}
                   placeholder="e.g., journeymaps"
-                  style={{ width: '100%', padding: '10px 12px', border: '1px solid #DDD', borderRadius: '6px', fontSize: '14px' }}
+                  style={{ width: '100%', padding: '10px 12px', border: '1px solid #C8CED6', borderRadius: '6px', fontSize: '14px' }}
                 />
               </div>
 
               <div style={{ marginBottom: '20px' }}>
-                <label style={{ display: 'block', fontSize: '13px', fontWeight: 500, marginBottom: '6px', color: '#333' }}>File Path</label>
+                <label style={{ display: 'block', fontSize: '13px', fontWeight: 500, marginBottom: '6px', color: '#3D4A5C' }}>File Path</label>
                 <input
                   type="text"
                   value={localConfig.path}
                   onChange={(e) => setLocalConfig({ ...localConfig, path: e.target.value })}
                   placeholder="e.g., onboarding/journey-map.json"
-                  style={{ width: '100%', padding: '10px 12px', border: '1px solid #DDD', borderRadius: '6px', fontSize: '14px' }}
+                  style={{ width: '100%', padding: '10px 12px', border: '1px solid #C8CED6', borderRadius: '6px', fontSize: '14px' }}
                 />
               </div>
 
               <div style={{ marginBottom: '20px' }}>
-                <label style={{ display: 'block', fontSize: '13px', fontWeight: 500, marginBottom: '6px', color: '#333' }}>Branch</label>
+                <label style={{ display: 'block', fontSize: '13px', fontWeight: 500, marginBottom: '6px', color: '#3D4A5C' }}>Branch</label>
                 <input
                   type="text"
                   value={localConfig.branch}
                   onChange={(e) => setLocalConfig({ ...localConfig, branch: e.target.value })}
                   placeholder="e.g., main"
-                  style={{ width: '100%', padding: '10px 12px', border: '1px solid #DDD', borderRadius: '6px', fontSize: '14px' }}
+                  style={{ width: '100%', padding: '10px 12px', border: '1px solid #C8CED6', borderRadius: '6px', fontSize: '14px' }}
                 />
               </div>
 
               <div style={{ marginBottom: '24px' }}>
-                <label style={{ display: 'block', fontSize: '13px', fontWeight: 500, marginBottom: '6px', color: '#333' }}>
+                <label style={{ display: 'block', fontSize: '13px', fontWeight: 500, marginBottom: '6px', color: '#3D4A5C' }}>
                   Personal Access Token
                   <a href="https://github.com/settings/tokens/new?scopes=repo&description=Journey%20Map" target="_blank" rel="noopener noreferrer" style={{ marginLeft: '8px', fontSize: '12px', color: '#2563EB' }}>Generate token →</a>
                 </label>
@@ -3145,7 +3163,7 @@
                     value={localConfig.token}
                     onChange={(e) => setLocalConfig({ ...localConfig, token: e.target.value })}
                     placeholder="ghp_xxxxxxxxxxxx"
-                    style={{ width: '100%', padding: '10px 12px', paddingRight: '80px', border: '1px solid #DDD', borderRadius: '6px', fontSize: '14px', fontFamily: 'monospace' }}
+                    style={{ width: '100%', padding: '10px 12px', paddingRight: '80px', border: '1px solid #C8CED6', borderRadius: '6px', fontSize: '14px', fontFamily: 'monospace' }}
                   />
                   <button
                     onClick={() => setShowToken(!showToken)}
@@ -3154,7 +3172,7 @@
                     {showToken ? 'Hide' : 'Show'}
                   </button>
                 </div>
-                <p style={{ margin: '8px 0 0', fontSize: '12px', color: '#666' }}>
+                <p style={{ margin: '8px 0 0', fontSize: '12px', color: '#556275' }}>
                   🔒 Stored locally in your browser only. Never sent anywhere except GitHub.
                 </p>
               </div>
@@ -3186,7 +3204,7 @@
                     flex: 1, 
                     padding: '12px', 
                     background: localConfig.token && !status.loading ? '#2563EB' : '#E4E7EB', 
-                    color: localConfig.token && !status.loading ? '#FFF' : '#999', 
+                    color: localConfig.token && !status.loading ? '#FFF' : '#8A95A5', 
                     border: 'none', 
                     borderRadius: '8px', 
                     cursor: localConfig.token && !status.loading ? 'pointer' : 'not-allowed',
@@ -3207,7 +3225,7 @@
                     flex: 1, 
                     padding: '12px', 
                     background: localConfig.token && !status.loading ? '#2D8A6E' : '#E4E7EB', 
-                    color: localConfig.token && !status.loading ? '#FFF' : '#999', 
+                    color: localConfig.token && !status.loading ? '#FFF' : '#8A95A5', 
                     border: 'none', 
                     borderRadius: '8px', 
                     cursor: localConfig.token && !status.loading ? 'pointer' : 'not-allowed',
@@ -3300,9 +3318,9 @@
             <div style={{ padding: '24px 32px', borderBottom: '1px solid #E4E7EB', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
               <div>
                 <h3 style={{ margin: 0, fontSize: '20px', fontWeight: 600 }}>Structure Configuration</h3>
-                <p style={{ margin: '4px 0 0', fontSize: '13px', color: '#666' }}>Add, remove, and reorder stages and steps</p>
+                <p style={{ margin: '4px 0 0', fontSize: '13px', color: '#556275' }}>Add, remove, and reorder stages and steps</p>
               </div>
-              <button onClick={onClose} style={{ background: 'none', border: 'none', fontSize: '24px', cursor: 'pointer', color: '#999' }}>×</button>
+              <button onClick={onClose} style={{ background: 'none', border: 'none', fontSize: '24px', cursor: 'pointer', color: '#8A95A5' }}>×</button>
             </div>
 
             {/* Content */}
@@ -3316,7 +3334,7 @@
                     onChange={(e) => setNewStageName(e.target.value)}
                     placeholder="New stage name..."
                     autoFocus
-                    style={{ flex: 1, padding: '8px 12px', border: '1px solid #DDD', borderRadius: '6px', fontSize: '14px' }}
+                    style={{ flex: 1, padding: '8px 12px', border: '1px solid #C8CED6', borderRadius: '6px', fontSize: '14px' }}
                     onKeyDown={(e) => e.key === 'Enter' && handleAddStage()}
                   />
                   <button onClick={handleAddStage} style={{ padding: '8px 16px', background: '#2D8A6E', color: '#FFF', border: 'none', borderRadius: '6px', cursor: 'pointer', fontWeight: 500 }}>Add</button>
@@ -3340,7 +3358,7 @@
                     alignItems: 'center', 
                     gap: '8px', 
                     padding: '12px 16px', 
-                    background: `hsl(${stageIndex * 45 + 180}, 35%, 45%)`, 
+                    background: getStageColor(stageIndex), 
                     borderRadius: expandedStages.includes(stage.id) ? '8px 8px 0 0' : '8px',
                     color: '#FFF'
                   }}>
@@ -3372,7 +3390,7 @@
 
                   {/* Steps within Stage */}
                   {expandedStages.includes(stage.id) && (
-                    <div style={{ background: '#F4F5F7', borderRadius: '0 0 8px 8px', padding: '8px', borderLeft: `3px solid hsl(${stageIndex * 45 + 180}, 35%, 45%)` }}>
+                    <div style={{ background: '#F4F5F7', borderRadius: '0 0 8px 8px', padding: '8px', borderLeft: `3px solid ${getStageColor(stageIndex)}` }}>
                       {/* Add Step at Start of Stage */}
                       {addingStepIn?.stageId === stage.id && addingStepIn?.afterIndex === -1 ? (
                         <div style={{ display: 'flex', gap: '8px', marginBottom: '8px', padding: '8px', background: '#FFF', borderRadius: '6px', border: '2px solid #2D8A6E' }}>
@@ -3382,7 +3400,7 @@
                             onChange={(e) => setNewStepName(e.target.value)}
                             placeholder="New step name..."
                             autoFocus
-                            style={{ flex: 1, padding: '6px 10px', border: '1px solid #DDD', borderRadius: '4px', fontSize: '13px' }}
+                            style={{ flex: 1, padding: '6px 10px', border: '1px solid #C8CED6', borderRadius: '4px', fontSize: '13px' }}
                             onKeyDown={(e) => e.key === 'Enter' && handleAddStep()}
                           />
                           <button onClick={handleAddStep} style={{ padding: '6px 12px', background: '#2D8A6E', color: '#FFF', border: 'none', borderRadius: '4px', cursor: 'pointer', fontSize: '12px' }}>Add</button>
@@ -3409,9 +3427,9 @@
                             marginBottom: '4px',
                             border: step.isHardCheckpoint ? '1px solid #F5E0E3' : '1px solid #E4E7EB'
                           }}>
-                            <span style={{ color: '#999', fontSize: '12px', minWidth: '36px' }}>{stageIndex + 1}.{stepIndex + 1}</span>
+                            <span style={{ color: '#8A95A5', fontSize: '12px', minWidth: '36px' }}>{stageIndex + 1}.{stepIndex + 1}</span>
                             {step.isHardCheckpoint && <span style={{ fontSize: '12px' }}>🚧</span>}
-                            <span style={{ flex: 1, fontSize: '14px', color: step.isHardCheckpoint ? '#B84A5A' : '#333' }}>{step.name}</span>
+                            <span style={{ flex: 1, fontSize: '14px', color: step.isHardCheckpoint ? '#B84A5A' : '#3D4A5C' }}>{step.name}</span>
                             <div style={{ display: 'flex', gap: '4px' }}>
                               <button 
                                 onClick={() => onMoveStep(stage.id, step.id, 'up')} 
@@ -3439,7 +3457,7 @@
                                 onChange={(e) => setNewStepName(e.target.value)}
                                 placeholder="New step name..."
                                 autoFocus
-                                style={{ flex: 1, padding: '6px 10px', border: '1px solid #DDD', borderRadius: '4px', fontSize: '13px' }}
+                                style={{ flex: 1, padding: '6px 10px', border: '1px solid #C8CED6', borderRadius: '4px', fontSize: '13px' }}
                                 onKeyDown={(e) => e.key === 'Enter' && handleAddStep()}
                               />
                               <button onClick={handleAddStep} style={{ padding: '6px 12px', background: '#2D8A6E', color: '#FFF', border: 'none', borderRadius: '4px', cursor: 'pointer', fontSize: '12px' }}>Add</button>
@@ -3458,7 +3476,7 @@
                       ))}
 
                       {stage.steps.length === 0 && (
-                        <p style={{ color: '#999', fontSize: '13px', fontStyle: 'italic', textAlign: 'center', padding: '12px' }}>No steps yet</p>
+                        <p style={{ color: '#8A95A5', fontSize: '13px', fontStyle: 'italic', textAlign: 'center', padding: '12px' }}>No steps yet</p>
                       )}
                     </div>
                   )}
@@ -3472,7 +3490,7 @@
                         onChange={(e) => setNewStageName(e.target.value)}
                         placeholder="New stage name..."
                         autoFocus
-                        style={{ flex: 1, padding: '8px 12px', border: '1px solid #DDD', borderRadius: '6px', fontSize: '14px' }}
+                        style={{ flex: 1, padding: '8px 12px', border: '1px solid #C8CED6', borderRadius: '6px', fontSize: '14px' }}
                         onKeyDown={(e) => e.key === 'Enter' && handleAddStage()}
                       />
                       <button onClick={handleAddStage} style={{ padding: '8px 16px', background: '#2D8A6E', color: '#FFF', border: 'none', borderRadius: '6px', cursor: 'pointer', fontWeight: 500 }}>Add</button>
@@ -3492,7 +3510,7 @@
               ))}
 
               {config.stages.length === 0 && (
-                <p style={{ color: '#999', fontSize: '14px', fontStyle: 'italic', textAlign: 'center', padding: '24px' }}>No stages yet. Add your first stage above.</p>
+                <p style={{ color: '#8A95A5', fontSize: '14px', fontStyle: 'italic', textAlign: 'center', padding: '24px' }}>No stages yet. Add your first stage above.</p>
               )}
             </div>
 
@@ -4000,7 +4018,7 @@
 
       const getPersonaColor = (personaId) => {
         const persona = config.personas.find(p => p.id === personaId);
-        return persona?.color || '#666';
+        return persona?.color || '#556275';
       };
 
       const updateStep = useCallback((stageId, stepId, updates) => {
@@ -4392,26 +4410,26 @@
           .summary-value { font-size: 22pt; font-weight: 700; color: #2D8A6E; }
           .summary-card.highlight .summary-value { color: #8B6914; }
           .summary-card.success .summary-value { color: #2D8A6E; }
-          .summary-label { font-size: 9pt; color: #666; text-transform: uppercase; margin-top: 4px; }
+          .summary-label { font-size: 9pt; color: #556275; text-transform: uppercase; margin-top: 4px; }
           .stage { margin-bottom: 20px; page-break-inside: avoid; }
           .stage-header { background: #2D8A6E; color: #FFF; padding: 10px 14px; border-radius: 6px 6px 0 0; display: flex; justify-content: space-between; }
           .stage-name { font-weight: 600; font-size: 11pt; }
           .stage-stats { font-size: 9pt; opacity: 0.85; }
           table { width: 100%; border-collapse: collapse; background: #FFF; margin-bottom: 16px; }
-          th { background: #F4F5F7; padding: 8px 10px; text-align: left; font-size: 9pt; font-weight: 600; color: #666; border-bottom: 2px solid #E4E7EB; }
+          th { background: #F4F5F7; padding: 8px 10px; text-align: left; font-size: 9pt; font-weight: 600; color: #556275; border-bottom: 2px solid #E4E7EB; }
           td { padding: 10px; border-bottom: 1px solid #EEE; font-size: 10pt; vertical-align: top; }
           .cost { color: #8B6914; font-weight: 600; }
-          .time { color: #666; }
+          .time { color: #556275; }
           .step-name { font-weight: 500; }
           .step-desc { font-size: 9pt; color: #888; margin-top: 2px; }
           .pain-point { font-size: 9pt; color: #B84A5A; }
           .reg-req { font-size: 9pt; color: #5A5B8A; }
           .auto-high { background: #D4EDE5; color: #2D8A6E; padding: 2px 8px; border-radius: 10px; font-size: 9pt; }
           .auto-medium { background: #FAF0D6; color: #8B6914; padding: 2px 8px; border-radius: 10px; font-size: 9pt; }
-          .auto-low { background: #E4E7EB; color: #666; padding: 2px 8px; border-radius: 10px; font-size: 9pt; }
-          .role-bar { display: flex; align-items: center; gap: 16px; padding: 12px 16px; background: #F4F5F7; border-radius: 6px; margin-bottom: 8px; border-left: 4px solid #666; }
+          .auto-low { background: #E4E7EB; color: #556275; padding: 2px 8px; border-radius: 10px; font-size: 9pt; }
+          .role-bar { display: flex; align-items: center; gap: 16px; padding: 12px 16px; background: #F4F5F7; border-radius: 6px; margin-bottom: 8px; border-left: 4px solid #556275; }
           .opp-card { background: #E1EEF2; border: 1px solid #96BCC7; border-radius: 8px; padding: 12px 16px; margin-bottom: 8px; display: flex; justify-content: space-between; }
-          .footer { margin-top: 32px; padding-top: 16px; border-top: 1px solid #DDD; font-size: 9pt; color: #999; display: flex; justify-content: space-between; }
+          .footer { margin-top: 32px; padding-top: 16px; border-top: 1px solid #C8CED6; font-size: 9pt; color: #8A95A5; display: flex; justify-content: space-between; }
           @media print { body { padding: 16px; } }
         `;
 
@@ -4483,9 +4501,9 @@
             html += '<div class="role-bar" style="border-color:' + role.color + '">';
             html += '<div style="min-width:140px;font-weight:600;color:' + role.color + '">' + role.label + '</div>';
             html += '<div style="flex:1;display:flex;gap:24px">';
-            html += '<div style="text-align:center"><div style="font-size:14pt;font-weight:600;color:' + role.color + '">' + formatCurrency(role.totalCost) + '</div><div style="font-size:8pt;color:#666">COST</div></div>';
-            html += '<div style="text-align:center"><div style="font-size:14pt;font-weight:600">' + formatTime(role.totalTime) + '</div><div style="font-size:8pt;color:#666">TIME</div></div>';
-            html += '<div style="text-align:center"><div style="font-size:14pt;font-weight:600">' + Math.round((role.totalCost / totalCost) * 100) + '%</div><div style="font-size:8pt;color:#666">OF TOTAL</div></div>';
+            html += '<div style="text-align:center"><div style="font-size:14pt;font-weight:600;color:' + role.color + '">' + formatCurrency(role.totalCost) + '</div><div style="font-size:8pt;color:#556275">COST</div></div>';
+            html += '<div style="text-align:center"><div style="font-size:14pt;font-weight:600">' + formatTime(role.totalTime) + '</div><div style="font-size:8pt;color:#556275">TIME</div></div>';
+            html += '<div style="text-align:center"><div style="font-size:14pt;font-weight:600">' + Math.round((role.totalCost / totalCost) * 100) + '%</div><div style="font-size:8pt;color:#556275">OF TOTAL</div></div>';
             html += '</div></div>';
           });
 
@@ -4503,7 +4521,7 @@
           
           opportunities.forEach(step => {
             html += '<div class="opp-card"><div><div style="font-weight:500">' + step.name + '</div>';
-            html += '<div style="font-size:9pt;color:#666">' + step.stageName + ' · ' + formatTime(step.timeMinutes) + ' · Current: ' + formatCurrency(step.stepCost) + '</div></div>';
+            html += '<div style="font-size:9pt;color:#556275">' + step.stageName + ' · ' + formatTime(step.timeMinutes) + ' · Current: ' + formatCurrency(step.stepCost) + '</div></div>';
             html += '<div style="text-align:right"><div style="font-size:14pt;font-weight:700;color:#2D8A6E">Save ' + formatCurrency(step.savings) + '</div>';
             html += '<div style="font-size:9pt;color:#2D8A6E">' + step.automationOpportunity + ' potential</div></div></div>';
           });
@@ -4516,9 +4534,9 @@
             .sort((a, b) => b.stepCost - a.stepCost)
             .slice(0, 10)
             .forEach((step, i) => {
-              html += '<tr><td style="font-weight:600;color:' + (i < 3 ? '#B84A5A' : '#666') + '">#' + (i+1) + '</td>';
+              html += '<tr><td style="font-weight:600;color:' + (i < 3 ? '#B84A5A' : '#556275') + '">#' + (i+1) + '</td>';
               html += '<td class="step-name">' + step.name + '</td>';
-              html += '<td style="color:#666">' + step.stageName + '</td>';
+              html += '<td style="color:#556275">' + step.stageName + '</td>';
               html += '<td>' + formatTime(step.timeMinutes) + '</td>';
               html += '<td class="cost">' + formatCurrency(step.stepCost) + '</td></tr>';
             });
@@ -4616,7 +4634,7 @@
               <h1 style={{ margin: '0 0 8px', fontSize: '20px', fontWeight: 600, color: '#B84A5A' }}>
                 Configuration Error
               </h1>
-              <p style={{ margin: '0 0 24px', fontSize: '14px', color: '#666', fontFamily: "'Interstate', sans-serif" }}>
+              <p style={{ margin: '0 0 24px', fontSize: '14px', color: '#556275', fontFamily: "'Interstate', sans-serif" }}>
                 Could not load application configuration.<br/>
                 Please contact the administrator.
               </p>
@@ -4664,7 +4682,7 @@
               <p style={{ 
                 margin: '0 0 32px', 
                 fontSize: '14px', 
-                color: '#666',
+                color: '#556275',
                 fontFamily: "'Interstate', sans-serif"
               }}>
                 Enter password to continue
@@ -4681,7 +4699,7 @@
                     width: '100%',
                     padding: '14px 16px',
                     fontSize: '16px',
-                    border: appPasswordError ? '2px solid #B84A5A' : '1px solid #DDD',
+                    border: appPasswordError ? '2px solid #B84A5A' : '1px solid #C8CED6',
                     borderRadius: '8px',
                     marginBottom: '16px',
                     fontFamily: "'Interstate', sans-serif",
@@ -4945,14 +4963,14 @@
                       </button>
                       {showExportMenu && (
                         <div onClick={(e) => e.stopPropagation()} style={{ position: 'absolute', top: '100%', right: 0, marginTop: '4px', background: '#FFF', borderRadius: '8px', boxShadow: '0 4px 20px rgba(0,0,0,0.2)', overflow: 'hidden', zIndex: 100, minWidth: '180px' }}>
-                          <button onClick={() => { generatePDF('summary'); setShowExportMenu(false); }} style={{ display: 'flex', alignItems: 'center', gap: '10px', width: '100%', padding: '10px 14px', border: 'none', background: '#FFF', cursor: 'pointer', textAlign: 'left', fontFamily: "'Interstate', sans-serif", fontSize: '13px', color: '#333', borderBottom: '1px solid #EEE' }} onMouseOver={(e) => e.currentTarget.style.background = '#F4F5F7'} onMouseOut={(e) => e.currentTarget.style.background = '#FFF'}>
+                          <button onClick={() => { generatePDF('summary'); setShowExportMenu(false); }} style={{ display: 'flex', alignItems: 'center', gap: '10px', width: '100%', padding: '10px 14px', border: 'none', background: '#FFF', cursor: 'pointer', textAlign: 'left', fontFamily: "'Interstate', sans-serif", fontSize: '13px', color: '#3D4A5C', borderBottom: '1px solid #EEE' }} onMouseOver={(e) => e.currentTarget.style.background = '#F4F5F7'} onMouseOut={(e) => e.currentTarget.style.background = '#FFF'}>
                             <span>📋</span> Summary Report
                           </button>
-                          <button onClick={() => { generatePDF('detailed'); setShowExportMenu(false); }} style={{ display: 'flex', alignItems: 'center', gap: '10px', width: '100%', padding: '10px 14px', border: 'none', background: '#FFF', cursor: 'pointer', textAlign: 'left', fontFamily: "'Interstate', sans-serif", fontSize: '13px', color: '#333', borderBottom: showCosts ? '1px solid #EEE' : 'none' }} onMouseOver={(e) => e.currentTarget.style.background = '#F4F5F7'} onMouseOut={(e) => e.currentTarget.style.background = '#FFF'}>
+                          <button onClick={() => { generatePDF('detailed'); setShowExportMenu(false); }} style={{ display: 'flex', alignItems: 'center', gap: '10px', width: '100%', padding: '10px 14px', border: 'none', background: '#FFF', cursor: 'pointer', textAlign: 'left', fontFamily: "'Interstate', sans-serif", fontSize: '13px', color: '#3D4A5C', borderBottom: showCosts ? '1px solid #EEE' : 'none' }} onMouseOver={(e) => e.currentTarget.style.background = '#F4F5F7'} onMouseOut={(e) => e.currentTarget.style.background = '#FFF'}>
                             <span>📄</span> Detailed Report
                           </button>
                           {showCosts && (
-                            <button onClick={() => { generatePDF('cost-analysis'); setShowExportMenu(false); }} style={{ display: 'flex', alignItems: 'center', gap: '10px', width: '100%', padding: '10px 14px', border: 'none', background: '#FFF', cursor: 'pointer', textAlign: 'left', fontFamily: "'Interstate', sans-serif", fontSize: '13px', color: '#333' }} onMouseOver={(e) => e.currentTarget.style.background = '#F4F5F7'} onMouseOut={(e) => e.currentTarget.style.background = '#FFF'}>
+                            <button onClick={() => { generatePDF('cost-analysis'); setShowExportMenu(false); }} style={{ display: 'flex', alignItems: 'center', gap: '10px', width: '100%', padding: '10px 14px', border: 'none', background: '#FFF', cursor: 'pointer', textAlign: 'left', fontFamily: "'Interstate', sans-serif", fontSize: '13px', color: '#3D4A5C' }} onMouseOver={(e) => e.currentTarget.style.background = '#F4F5F7'} onMouseOut={(e) => e.currentTarget.style.background = '#FFF'}>
                               <span>💰</span> Cost Analysis
                             </button>
                           )}
@@ -4975,37 +4993,37 @@
                       </button>
                       {showSettingsMenu && isSettingsUnlocked && (
                         <div onClick={(e) => e.stopPropagation()} style={{ position: 'absolute', top: '100%', right: 0, marginTop: '4px', background: '#FFF', borderRadius: '8px', boxShadow: '0 4px 20px rgba(0,0,0,0.2)', overflow: 'hidden', zIndex: 100, minWidth: '180px' }}>
-                          <button onClick={enterEditMode} style={{ display: 'flex', alignItems: 'center', gap: '10px', width: '100%', padding: '10px 14px', border: 'none', background: '#FFF', cursor: 'pointer', textAlign: 'left', fontFamily: "'Interstate', sans-serif", fontSize: '13px', color: '#333', borderBottom: '1px solid #EEE' }} onMouseOver={(e) => e.currentTarget.style.background = '#F4F5F7'} onMouseOut={(e) => e.currentTarget.style.background = '#FFF'}>
+                          <button onClick={enterEditMode} style={{ display: 'flex', alignItems: 'center', gap: '10px', width: '100%', padding: '10px 14px', border: 'none', background: '#FFF', cursor: 'pointer', textAlign: 'left', fontFamily: "'Interstate', sans-serif", fontSize: '13px', color: '#3D4A5C', borderBottom: '1px solid #EEE' }} onMouseOver={(e) => e.currentTarget.style.background = '#F4F5F7'} onMouseOut={(e) => e.currentTarget.style.background = '#FFF'}>
                             <span>✏️</span> Edit Mode
                           </button>
-                          <button onClick={() => { setShowSalarySettings(true); setShowSettingsMenu(false); }} style={{ display: 'flex', alignItems: 'center', gap: '10px', width: '100%', padding: '10px 14px', border: 'none', background: '#FFF', cursor: 'pointer', textAlign: 'left', fontFamily: "'Interstate', sans-serif", fontSize: '13px', color: '#333', borderBottom: '1px solid #EEE' }} onMouseOver={(e) => e.currentTarget.style.background = '#F4F5F7'} onMouseOut={(e) => e.currentTarget.style.background = '#FFF'}>
+                          <button onClick={() => { setShowSalarySettings(true); setShowSettingsMenu(false); }} style={{ display: 'flex', alignItems: 'center', gap: '10px', width: '100%', padding: '10px 14px', border: 'none', background: '#FFF', cursor: 'pointer', textAlign: 'left', fontFamily: "'Interstate', sans-serif", fontSize: '13px', color: '#3D4A5C', borderBottom: '1px solid #EEE' }} onMouseOver={(e) => e.currentTarget.style.background = '#F4F5F7'} onMouseOut={(e) => e.currentTarget.style.background = '#FFF'}>
                             <span>👥</span> Manage Roles
                           </button>
-                          <button onClick={() => { setShowStructurePanel(true); setShowSettingsMenu(false); }} style={{ display: 'flex', alignItems: 'center', gap: '10px', width: '100%', padding: '10px 14px', border: 'none', background: '#FFF', cursor: 'pointer', textAlign: 'left', fontFamily: "'Interstate', sans-serif", fontSize: '13px', color: '#333', borderBottom: '1px solid #EEE' }} onMouseOver={(e) => e.currentTarget.style.background = '#F4F5F7'} onMouseOut={(e) => e.currentTarget.style.background = '#FFF'}>
+                          <button onClick={() => { setShowStructurePanel(true); setShowSettingsMenu(false); }} style={{ display: 'flex', alignItems: 'center', gap: '10px', width: '100%', padding: '10px 14px', border: 'none', background: '#FFF', cursor: 'pointer', textAlign: 'left', fontFamily: "'Interstate', sans-serif", fontSize: '13px', color: '#3D4A5C', borderBottom: '1px solid #EEE' }} onMouseOver={(e) => e.currentTarget.style.background = '#F4F5F7'} onMouseOut={(e) => e.currentTarget.style.background = '#FFF'}>
                             <span>🏗️</span> Configure Structure
                           </button>
-                          <button onClick={() => { setShowFunnelSettings(true); setShowSettingsMenu(false); }} style={{ display: 'flex', alignItems: 'center', gap: '10px', width: '100%', padding: '10px 14px', border: 'none', background: '#FFF', cursor: 'pointer', textAlign: 'left', fontFamily: "'Interstate', sans-serif", fontSize: '13px', color: '#333', borderBottom: '1px solid #EEE' }} onMouseOver={(e) => e.currentTarget.style.background = '#F4F5F7'} onMouseOut={(e) => e.currentTarget.style.background = '#FFF'}>
+                          <button onClick={() => { setShowFunnelSettings(true); setShowSettingsMenu(false); }} style={{ display: 'flex', alignItems: 'center', gap: '10px', width: '100%', padding: '10px 14px', border: 'none', background: '#FFF', cursor: 'pointer', textAlign: 'left', fontFamily: "'Interstate', sans-serif", fontSize: '13px', color: '#3D4A5C', borderBottom: '1px solid #EEE' }} onMouseOver={(e) => e.currentTarget.style.background = '#F4F5F7'} onMouseOut={(e) => e.currentTarget.style.background = '#FFF'}>
                             <span>🔻</span> Funnel Settings
                           </button>
                           <div style={{ height: '1px', background: '#EEE', margin: '4px 0' }}></div>
-                          <button onClick={() => { setShowGitHubSettings(true); setShowSettingsMenu(false); }} style={{ display: 'flex', alignItems: 'center', gap: '10px', width: '100%', padding: '10px 14px', border: 'none', background: '#FFF', cursor: 'pointer', textAlign: 'left', fontFamily: "'Interstate', sans-serif", fontSize: '13px', color: '#333', borderBottom: '1px solid #EEE' }} onMouseOver={(e) => e.currentTarget.style.background = '#F4F5F7'} onMouseOut={(e) => e.currentTarget.style.background = '#FFF'}>
+                          <button onClick={() => { setShowGitHubSettings(true); setShowSettingsMenu(false); }} style={{ display: 'flex', alignItems: 'center', gap: '10px', width: '100%', padding: '10px 14px', border: 'none', background: '#FFF', cursor: 'pointer', textAlign: 'left', fontFamily: "'Interstate', sans-serif", fontSize: '13px', color: '#3D4A5C', borderBottom: '1px solid #EEE' }} onMouseOver={(e) => e.currentTarget.style.background = '#F4F5F7'} onMouseOut={(e) => e.currentTarget.style.background = '#FFF'}>
                             <span>🐙</span> GitHub Settings
                           </button>
-                          <button onClick={() => { saveToGitHub(); setShowSettingsMenu(false); }} disabled={!gitHubConfig.token} style={{ display: 'flex', alignItems: 'center', gap: '10px', width: '100%', padding: '10px 14px', border: 'none', background: '#FFF', cursor: gitHubConfig.token ? 'pointer' : 'not-allowed', textAlign: 'left', fontFamily: "'Interstate', sans-serif", fontSize: '13px', color: gitHubConfig.token ? '#333' : '#AAA', borderBottom: '1px solid #EEE' }} onMouseOver={(e) => gitHubConfig.token && (e.currentTarget.style.background = '#F4F5F7')} onMouseOut={(e) => e.currentTarget.style.background = '#FFF'}>
+                          <button onClick={() => { saveToGitHub(); setShowSettingsMenu(false); }} disabled={!gitHubConfig.token} style={{ display: 'flex', alignItems: 'center', gap: '10px', width: '100%', padding: '10px 14px', border: 'none', background: '#FFF', cursor: gitHubConfig.token ? 'pointer' : 'not-allowed', textAlign: 'left', fontFamily: "'Interstate', sans-serif", fontSize: '13px', color: gitHubConfig.token ? '#3D4A5C' : '#AAA', borderBottom: '1px solid #EEE' }} onMouseOver={(e) => gitHubConfig.token && (e.currentTarget.style.background = '#F4F5F7')} onMouseOut={(e) => e.currentTarget.style.background = '#FFF'}>
                             <span style={{ opacity: gitHubConfig.token ? 1 : 0.5 }}>📤</span> Save to GitHub
                           </button>
-                          <button onClick={() => { loadFromGitHub(); setShowSettingsMenu(false); }} disabled={!gitHubConfig.token} style={{ display: 'flex', alignItems: 'center', gap: '10px', width: '100%', padding: '10px 14px', border: 'none', background: '#FFF', cursor: gitHubConfig.token ? 'pointer' : 'not-allowed', textAlign: 'left', fontFamily: "'Interstate', sans-serif", fontSize: '13px', color: gitHubConfig.token ? '#333' : '#AAA', borderBottom: '1px solid #EEE' }} onMouseOver={(e) => gitHubConfig.token && (e.currentTarget.style.background = '#F4F5F7')} onMouseOut={(e) => e.currentTarget.style.background = '#FFF'}>
+                          <button onClick={() => { loadFromGitHub(); setShowSettingsMenu(false); }} disabled={!gitHubConfig.token} style={{ display: 'flex', alignItems: 'center', gap: '10px', width: '100%', padding: '10px 14px', border: 'none', background: '#FFF', cursor: gitHubConfig.token ? 'pointer' : 'not-allowed', textAlign: 'left', fontFamily: "'Interstate', sans-serif", fontSize: '13px', color: gitHubConfig.token ? '#3D4A5C' : '#AAA', borderBottom: '1px solid #EEE' }} onMouseOver={(e) => gitHubConfig.token && (e.currentTarget.style.background = '#F4F5F7')} onMouseOut={(e) => e.currentTarget.style.background = '#FFF'}>
                             <span style={{ opacity: gitHubConfig.token ? 1 : 0.5 }}>📥</span> Load from GitHub
                           </button>
                           <div style={{ height: '1px', background: '#EEE', margin: '4px 0' }}></div>
-                          <button onClick={() => { exportConfig(); setShowSettingsMenu(false); }} style={{ display: 'flex', alignItems: 'center', gap: '10px', width: '100%', padding: '10px 14px', border: 'none', background: '#FFF', cursor: 'pointer', textAlign: 'left', fontFamily: "'Interstate', sans-serif", fontSize: '13px', color: '#333', borderBottom: '1px solid #EEE' }} onMouseOver={(e) => e.currentTarget.style.background = '#F4F5F7'} onMouseOut={(e) => e.currentTarget.style.background = '#FFF'}>
+                          <button onClick={() => { exportConfig(); setShowSettingsMenu(false); }} style={{ display: 'flex', alignItems: 'center', gap: '10px', width: '100%', padding: '10px 14px', border: 'none', background: '#FFF', cursor: 'pointer', textAlign: 'left', fontFamily: "'Interstate', sans-serif", fontSize: '13px', color: '#3D4A5C', borderBottom: '1px solid #EEE' }} onMouseOver={(e) => e.currentTarget.style.background = '#F4F5F7'} onMouseOut={(e) => e.currentTarget.style.background = '#FFF'}>
                             <span>💾</span> Export JSON
                           </button>
-                          <label style={{ display: 'flex', alignItems: 'center', gap: '10px', width: '100%', padding: '10px 14px', border: 'none', background: '#FFF', cursor: 'pointer', textAlign: 'left', fontFamily: "'Interstate', sans-serif", fontSize: '13px', color: '#333', borderBottom: '1px solid #EEE' }} onMouseOver={(e) => e.currentTarget.style.background = '#F4F5F7'} onMouseOut={(e) => e.currentTarget.style.background = '#FFF'}>
+                          <label style={{ display: 'flex', alignItems: 'center', gap: '10px', width: '100%', padding: '10px 14px', border: 'none', background: '#FFF', cursor: 'pointer', textAlign: 'left', fontFamily: "'Interstate', sans-serif", fontSize: '13px', color: '#3D4A5C', borderBottom: '1px solid #EEE' }} onMouseOver={(e) => e.currentTarget.style.background = '#F4F5F7'} onMouseOut={(e) => e.currentTarget.style.background = '#FFF'}>
                             <span>📂</span> Import JSON
                             <input type="file" accept=".json" onChange={(e) => { importConfig(e); setShowSettingsMenu(false); }} style={{ display: 'none' }} />
                           </label>
-                          <button onClick={() => { setShowJson(!showJson); setShowSettingsMenu(false); }} style={{ display: 'flex', alignItems: 'center', gap: '10px', width: '100%', padding: '10px 14px', border: 'none', background: '#FFF', cursor: 'pointer', textAlign: 'left', fontFamily: "'Interstate', sans-serif", fontSize: '13px', color: '#333', borderBottom: '1px solid #EEE' }} onMouseOver={(e) => e.currentTarget.style.background = '#F4F5F7'} onMouseOut={(e) => e.currentTarget.style.background = '#FFF'}>
+                          <button onClick={() => { setShowJson(!showJson); setShowSettingsMenu(false); }} style={{ display: 'flex', alignItems: 'center', gap: '10px', width: '100%', padding: '10px 14px', border: 'none', background: '#FFF', cursor: 'pointer', textAlign: 'left', fontFamily: "'Interstate', sans-serif", fontSize: '13px', color: '#3D4A5C', borderBottom: '1px solid #EEE' }} onMouseOver={(e) => e.currentTarget.style.background = '#F4F5F7'} onMouseOut={(e) => e.currentTarget.style.background = '#FFF'}>
                             <span>{'{ }'}</span> {showJson ? 'Hide' : 'View'} JSON
                           </button>
                           <div style={{ height: '1px', background: '#EEE', margin: '4px 0' }}></div>
@@ -5023,7 +5041,7 @@
                               textAlign: 'left', 
                               fontFamily: "'Interstate', sans-serif", 
                               fontSize: '13px', 
-                              color: '#333',
+                              color: '#3D4A5C',
                               borderBottom: '1px solid #EEE'
                             }} 
                             onMouseOver={(e) => e.currentTarget.style.background = '#F4F5F7'} 
@@ -5194,35 +5212,35 @@
             <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
               <span style={{ fontSize: '20px' }}>⏱️</span>
               <div>
-                <div style={{ fontFamily: "'Interstate', sans-serif", fontSize: '11px', color: '#999', textTransform: 'uppercase' }}>Total Time</div>
+                <div style={{ fontFamily: "'Interstate', sans-serif", fontSize: '11px', color: '#8A95A5', textTransform: 'uppercase' }}>Total Time</div>
                 <div style={{ fontWeight: 600 }}>{formatTime(totalTime)}</div>
               </div>
             </div>
             <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
               <span style={{ fontSize: '20px' }}>{frictionConfig[Math.round(stats.avgFriction) || 3]?.emoji || '😕'}</span>
               <div>
-                <div style={{ fontFamily: "'Interstate', sans-serif", fontSize: '11px', color: '#999', textTransform: 'uppercase' }}>Avg Friction</div>
-                <div style={{ fontWeight: 600, color: frictionConfig[Math.round(stats.avgFriction) || 3]?.color || '#666' }}>{stats.avgFriction}/5</div>
+                <div style={{ fontFamily: "'Interstate', sans-serif", fontSize: '11px', color: '#8A95A5', textTransform: 'uppercase' }}>Avg Friction</div>
+                <div style={{ fontWeight: 600, color: frictionConfig[Math.round(stats.avgFriction) || 3]?.color || '#556275' }}>{stats.avgFriction}/5</div>
               </div>
             </div>
             <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
               <span style={{ fontSize: '20px' }}>⚠️</span>
               <div>
-                <div style={{ fontFamily: "'Interstate', sans-serif", fontSize: '11px', color: '#999', textTransform: 'uppercase' }}>Pain Points</div>
+                <div style={{ fontFamily: "'Interstate', sans-serif", fontSize: '11px', color: '#8A95A5', textTransform: 'uppercase' }}>Pain Points</div>
                 <div style={{ fontWeight: 600 }}>{stats.totalPainPoints}</div>
               </div>
             </div>
             <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
               <span style={{ fontSize: '20px' }}>💡</span>
               <div>
-                <div style={{ fontFamily: "'Interstate', sans-serif", fontSize: '11px', color: '#999', textTransform: 'uppercase' }}>High Improvement</div>
+                <div style={{ fontFamily: "'Interstate', sans-serif", fontSize: '11px', color: '#8A95A5', textTransform: 'uppercase' }}>High Improvement</div>
                 <div style={{ fontWeight: 600 }}>{stats.highAutomation} steps</div>
               </div>
             </div>
             <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
               <span style={{ fontSize: '20px' }}>📋</span>
               <div>
-                <div style={{ fontFamily: "'Interstate', sans-serif", fontSize: '11px', color: '#999', textTransform: 'uppercase' }}>Regulatory Reqs</div>
+                <div style={{ fontFamily: "'Interstate', sans-serif", fontSize: '11px', color: '#8A95A5', textTransform: 'uppercase' }}>Regulatory Reqs</div>
                 <div style={{ fontWeight: 600 }}>{stats.totalRegReqs}</div>
               </div>
             </div>
@@ -5324,13 +5342,13 @@
           {/* Perspective Filter - only show in steps view */}
           {viewMode === 'steps' && (
             <div className="perspective-filter no-print" style={{ background: '#F9F9F9', borderBottom: '1px solid #E0E0E0', padding: '12px 40px', display: 'flex', gap: '12px', alignItems: 'center', flexWrap: 'wrap' }}>
-              <span style={{ fontFamily: "'Interstate', sans-serif", fontSize: '13px', color: '#666', marginRight: '8px' }}>Filter by perspective:</span>
+              <span style={{ fontFamily: "'Interstate', sans-serif", fontSize: '13px', color: '#556275', marginRight: '8px' }}>Filter by perspective:</span>
               
               {/* Desktop: Button row */}
               <div className="perspective-buttons" style={{ display: 'flex', gap: '8px', flexWrap: 'wrap' }}>
-                <button onClick={() => setActivePerspective('all')} style={{ padding: '8px 16px', background: activePerspective === 'all' ? '#1A2332' : '#FFF', color: activePerspective === 'all' ? '#FFF' : '#1A2332', border: '1px solid #DDD', borderRadius: '20px', cursor: 'pointer', fontFamily: "'Interstate', sans-serif", fontSize: '12px', fontWeight: 500 }}>All</button>
+                <button onClick={() => setActivePerspective('all')} style={{ padding: '8px 16px', background: activePerspective === 'all' ? '#1A2332' : '#FFF', color: activePerspective === 'all' ? '#FFF' : '#1A2332', border: '1px solid #C8CED6', borderRadius: '20px', cursor: 'pointer', fontFamily: "'Interstate', sans-serif", fontSize: '12px', fontWeight: 500 }}>All</button>
                 {config.personas.map(persona => (
-                  <button key={persona.id} onClick={() => setActivePerspective(persona.id)} style={{ padding: '8px 16px', background: activePerspective === persona.id ? persona.color : '#FFF', color: activePerspective === persona.id ? '#FFF' : '#1A2332', border: '1px solid #DDD', borderRadius: '20px', cursor: 'pointer', fontFamily: "'Interstate', sans-serif", fontSize: '12px', fontWeight: 500 }}>{persona.label}</button>
+                  <button key={persona.id} onClick={() => setActivePerspective(persona.id)} style={{ padding: '8px 16px', background: activePerspective === persona.id ? persona.color : '#FFF', color: activePerspective === persona.id ? '#FFF' : '#1A2332', border: '1px solid #C8CED6', borderRadius: '20px', cursor: 'pointer', fontFamily: "'Interstate', sans-serif", fontSize: '12px', fontWeight: 500 }}>{persona.label}</button>
                 ))}
               </div>
               
@@ -5366,7 +5384,7 @@
 
           {/* JSON Panel */}
           {showJson && (
-            <div className="no-print" style={{ background: '#1E1E1E', color: '#D4D4D4', padding: '20px 40px', fontFamily: "'Monaco', 'Menlo', 'Courier New', monospace", fontSize: '12px', maxHeight: '300px', overflow: 'auto', borderBottom: '1px solid #333' }}>
+            <div className="no-print" style={{ background: '#1E1E1E', color: '#D4D4D4', padding: '20px 40px', fontFamily: "'Monaco', 'Menlo', 'Courier New', monospace", fontSize: '12px', maxHeight: '300px', overflow: 'auto', borderBottom: '1px solid #3D4A5C' }}>
               <pre style={{ margin: 0 }}>{JSON.stringify(config, null, 2)}</pre>
             </div>
           )}
@@ -5431,8 +5449,8 @@
                   const medAutoOps = stage.steps.filter(step => step.automationOpportunity === 'medium').length;
                   const checkpointCount = stage.steps.filter(step => step.isHardCheckpoint).length;
                   const maxStepTime = Math.max(...stage.steps.map(s => s.timeMinutes), 1);
-                  const stageColor = `hsl(${stageIndex * 45 + 180}, 35%, 45%)`;
-                  const stageColorLight = `hsl(${stageIndex * 45 + 180}, 35%, 85%)`;
+                  const stageColor = getStageColor(stageIndex);
+                  const stageColorLight = getStageColor(stageIndex, 'light');
                   
                   // Get funnel metrics for this stage
                   const stageFunnelData = funnelMetrics?.stageMetrics?.[stageIndex];
@@ -5469,7 +5487,7 @@
                     }}>
                       {/* Stage Header */}
                       <div style={{ 
-                        background: `hsl(${stageIndex * 45 + 180}, 35%, 45%)`, 
+                        background: getStageColor(stageIndex), 
                         padding: '16px 20px',
                         color: '#FFF',
                         flexShrink: 0
@@ -5542,7 +5560,7 @@
                       <div style={{ padding: '16px 20px', flex: isMobile ? 'none' : 1, overflowY: isMobile ? 'visible' : 'auto' }}>
                         {/* Steps List */}
                         <div style={{ marginBottom: '16px' }}>
-                          <div style={{ fontSize: '11px', color: '#999', textTransform: 'uppercase', letterSpacing: '0.5px', marginBottom: '8px' }}>
+                          <div style={{ fontSize: '11px', color: '#8A95A5', textTransform: 'uppercase', letterSpacing: '0.5px', marginBottom: '8px' }}>
                             {stage.steps.length} Steps
                           </div>
                           <div style={{ display: 'flex', flexDirection: 'column', gap: highlightOpportunities ? '8px' : '6px', paddingTop: highlightOpportunities ? '8px' : 0, paddingLeft: highlightOpportunities ? '8px' : 0 }}>
@@ -5614,15 +5632,15 @@
                                     zIndex: 0
                                   }} />
                                 )}
-                                <span style={{ color: '#999', fontWeight: 500, minWidth: '24px', position: 'relative', zIndex: 1 }}>{stageIndex + 1}.{idx + 1}</span>
+                                <span style={{ color: '#8A95A5', fontWeight: 500, minWidth: '24px', position: 'relative', zIndex: 1 }}>{stageIndex + 1}.{idx + 1}</span>
                                 {step.isHardCheckpoint && <span style={{ fontSize: '12px', position: 'relative', zIndex: 1 }}>🚧</span>}
-                                <span style={{ flex: 1, color: showOppHighlight ? (isHighOpp ? '#2D8A6E' : '#8B6914') : step.isHardCheckpoint ? '#B84A5A' : '#333', position: 'relative', zIndex: 1, fontWeight: showOppHighlight && isTopFive ? 600 : showOppHighlight ? 500 : 400, opacity: showOppHighlight && !isTopFive ? 0.8 : 1 }}>{step.name}</span>
+                                <span style={{ flex: 1, color: showOppHighlight ? (isHighOpp ? '#2D8A6E' : '#8B6914') : step.isHardCheckpoint ? '#B84A5A' : '#3D4A5C', position: 'relative', zIndex: 1, fontWeight: showOppHighlight && isTopFive ? 600 : showOppHighlight ? 500 : 400, opacity: showOppHighlight && !isTopFive ? 0.8 : 1 }}>{step.name}</span>
                                 {showOppHighlight ? (
                                   <span style={{ color: isHighOpp ? '#2D8A6E' : '#8B6914', fontSize: '11px', position: 'relative', zIndex: 1, fontWeight: isTopFive ? 700 : 500, opacity: isTopFive ? 1 : 0.7 }}>
                                     {formatTime(Math.round(stepTimeSavings))} · {formatCurrency(stepSavings)} ({isHighOpp ? '70' : '40'}%)
                                   </span>
                                 ) : (
-                                  <span style={{ color: '#666', fontSize: '12px', position: 'relative', zIndex: 1 }}>{formatTime(step.timeMinutes)}</span>
+                                  <span style={{ color: '#556275', fontSize: '12px', position: 'relative', zIndex: 1 }}>{formatTime(step.timeMinutes)}</span>
                                 )}
                               </div>
                             );})}
@@ -5747,7 +5765,7 @@
                 return (
                   <div key={stage.id} style={{ flex: stage.steps.length > 0 ? `${stage.steps.length} 0 ${stage.steps.length * 220}px` : '0 0 220px', minWidth: stage.steps.length > 0 ? stage.steps.length * 220 + 'px' : '220px' }}>
                     {/* Stage Header */}
-                    <div style={{ background: `hsl(${stageIndex * 45 + 180}, 35%, 45%)`, padding: '16px 20px', borderRadius: '8px 8px 0 0', color: '#FFF' }}>
+                    <div style={{ background: getStageColor(stageIndex), padding: '16px 20px', borderRadius: '8px 8px 0 0', color: '#FFF' }}>
                       <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start' }}>
                         <div>
                           <div style={{ fontSize: '10px', opacity: 0.7, textTransform: 'uppercase', letterSpacing: '0.5px', marginBottom: '2px' }}>Stage {stageIndex + 1}</div>
@@ -5846,8 +5864,8 @@
                           : step.automationOpportunity === 'low' ? step.timeMinutes * 0.1 : 0;
                         const isHighOpportunity = highlightOpportunities && step.automationOpportunity === 'high' && stepCost > 50;
                         const isMediumOpportunity = highlightOpportunities && step.automationOpportunity === 'medium' && stepCost > 100;
-                        const stageColor = `hsl(${stageIndex * 45 + 180}, 35%, 45%)`;
-                        const stageColorDark = `hsl(${stageIndex * 45 + 180}, 40%, 35%)`;
+                        const stageColor = getStageColor(stageIndex);
+                        const stageColorDark = getStageColor(stageIndex, 'dark');
                         
                         return (
                           <div key={step.id} className="step-card" onClick={() => setSelectedStep(isSelected ? null : { ...step, stageId: stage.id, stageIndex })} style={{ 
@@ -5894,9 +5912,9 @@
                               </div>
                             )}
                             <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '12px' }}>
-                              <span style={{ fontFamily: "'Interstate', sans-serif", fontSize: '11px', color: '#999', textTransform: 'uppercase', letterSpacing: '0.5px' }}>Step {stageIndex + 1}.{stepIndex + 1}</span>
+                              <span style={{ fontFamily: "'Interstate', sans-serif", fontSize: '11px', color: '#8A95A5', textTransform: 'uppercase', letterSpacing: '0.5px' }}>Step {stageIndex + 1}.{stepIndex + 1}</span>
                               <div style={{ display: 'flex', gap: '6px', alignItems: 'center' }}>
-                                <span style={{ fontFamily: "'Interstate', sans-serif", fontSize: '12px', color: '#666', background: '#E9EEF4', padding: '2px 8px', borderRadius: '10px' }}>{formatTime(step.timeMinutes)}</span>
+                                <span style={{ fontFamily: "'Interstate', sans-serif", fontSize: '12px', color: '#556275', background: '#E9EEF4', padding: '2px 8px', borderRadius: '10px' }}>{formatTime(step.timeMinutes)}</span>
                                 {showCosts && (
                                   <span style={{ fontFamily: "'Interstate', sans-serif", fontSize: '12px', color: '#8B6914', background: '#FAF0D6', padding: '2px 8px', borderRadius: '10px', fontWeight: 500 }}>
                                     {formatCurrency(stepCost)}
@@ -5918,7 +5936,7 @@
                                   lineHeight: 1.3, 
                                   width: '100%', 
                                   padding: '4px 6px', 
-                                  border: '1px solid #DDD', 
+                                  border: '1px solid #C8CED6', 
                                   borderRadius: '4px', 
                                   fontFamily: "'Interstate', sans-serif",
                                   resize: 'none',
@@ -5934,7 +5952,7 @@
                                 onChange={(e) => updateStep(stage.id, step.id, { description: e.target.value })}
                                 onClick={(e) => e.stopPropagation()}
                                 rows={2}
-                                style={{ margin: '0 0 12px', fontSize: '13px', lineHeight: 1.5, color: '#555', fontFamily: "'Interstate', sans-serif", width: '100%', padding: '4px 6px', border: '1px solid #DDD', borderRadius: '4px', resize: 'vertical' }}
+                                style={{ margin: '0 0 12px', fontSize: '13px', lineHeight: 1.5, color: '#555', fontFamily: "'Interstate', sans-serif", width: '100%', padding: '4px 6px', border: '1px solid #C8CED6', borderRadius: '4px', resize: 'vertical' }}
                               />
                             ) : (
                               <p style={{ margin: '0 0 12px', fontSize: '13px', lineHeight: 1.5, color: '#555', fontFamily: "'Interstate', sans-serif" }}>{step.description}</p>
@@ -5958,11 +5976,11 @@
                                 
                                 return involvedRoles.map((role, idx) => (
                                   <div key={role.roleId} style={{ display: 'inline-flex', alignItems: 'center', gap: '6px' }}>
-                                    <span style={{ width: '8px', height: '8px', borderRadius: '50%', background: role.isOwner ? (role.persona?.color || '#666') : 'transparent', border: role.isOwner ? 'none' : `2px solid ${role.persona?.color || '#666'}`, boxSizing: 'border-box' }} />
-                                    <span style={{ fontFamily: "'Interstate', sans-serif", fontSize: '11px', color: role.persona?.color || '#666', fontWeight: role.isOwner ? 600 : 400 }}>
+                                    <span style={{ width: '8px', height: '8px', borderRadius: '50%', background: role.isOwner ? (role.persona?.color || '#556275') : 'transparent', border: role.isOwner ? 'none' : `2px solid ${role.persona?.color || '#556275'}`, boxSizing: 'border-box' }} />
+                                    <span style={{ fontFamily: "'Interstate', sans-serif", fontSize: '11px', color: role.persona?.color || '#556275', fontWeight: role.isOwner ? 600 : 400 }}>
                                       {role.persona?.label || role.roleId}
                                     </span>
-                                    <span style={{ fontFamily: "'Interstate', sans-serif", fontSize: '10px', color: '#999' }}>
+                                    <span style={{ fontFamily: "'Interstate', sans-serif", fontSize: '10px', color: '#8A95A5' }}>
                                       {formatTime(role.timeMinutes)}{role.headcount > 1 ? ` × ${role.headcount}` : ''}
                                     </span>
                                   </div>
@@ -5973,12 +5991,12 @@
                               <div style={{ display: 'flex', alignItems: 'center', gap: '4px', padding: '4px 8px', background: frictionConfig[step.frictionScore || 3]?.bg || '#F4F5F7', borderRadius: '12px' }}>
                                 <span style={{ fontSize: '10px' }}>{frictionConfig[step.frictionScore || 3]?.emoji || '😕'}</span>
                                 <div style={{ display: 'flex', gap: '2px' }}>
-                                  {[1,2,3,4,5].map(n => (<div key={n} style={{ width: '6px', height: '6px', borderRadius: '1px', background: n <= (step.frictionScore || 3) ? frictionConfig[step.frictionScore || 3]?.color : '#DDD' }} />))}
+                                  {[1,2,3,4,5].map(n => (<div key={n} style={{ width: '6px', height: '6px', borderRadius: '1px', background: n <= (step.frictionScore || 3) ? frictionConfig[step.frictionScore || 3]?.color : '#C8CED6' }} />))}
                                 </div>
                               </div>
                               <div style={{ display: 'flex', alignItems: 'center', gap: '4px', padding: '4px 8px', background: automationColors[step.automationOpportunity]?.bg || '#F4F5F7', borderRadius: '12px' }}>
                                 <span style={{ fontSize: '10px' }}>💡</span>
-                                <span style={{ fontFamily: "'Interstate', sans-serif", fontSize: '10px', color: automationColors[step.automationOpportunity]?.text || '#666', fontWeight: 500 }}>{automationColors[step.automationOpportunity]?.label || 'N/A'}</span>
+                                <span style={{ fontFamily: "'Interstate', sans-serif", fontSize: '10px', color: automationColors[step.automationOpportunity]?.text || '#556275', fontWeight: 500 }}>{automationColors[step.automationOpportunity]?.label || 'N/A'}</span>
                               </div>
                               {step.clientTouchpoint && (
                                 <div style={{ display: 'flex', alignItems: 'center', gap: '4px', padding: '4px 8px', background: '#D4EDE5', borderRadius: '12px', border: '1px solid #2D8A6E' }}>
@@ -5994,7 +6012,7 @@
                                   {stepEmotions.map(emotion => (
                                     <div key={emotion} style={{ display: 'inline-flex', alignItems: 'center', gap: '4px', padding: '4px 8px', background: emotionColors[emotion]?.bg || '#F4F5F7', borderRadius: '12px' }}>
                                       <span style={{ fontSize: '12px' }}>{emotionColors[emotion]?.icon || '😐'}</span>
-                                      <span style={{ fontFamily: "'Interstate', sans-serif", fontSize: '10px', color: emotionColors[emotion]?.text || '#666', textTransform: 'capitalize', fontWeight: 500 }}>{emotion}</span>
+                                      <span style={{ fontFamily: "'Interstate', sans-serif", fontSize: '10px', color: emotionColors[emotion]?.text || '#556275', textTransform: 'capitalize', fontWeight: 500 }}>{emotion}</span>
                                     </div>
                                   ))}
                                 </div>
@@ -6032,7 +6050,7 @@
                                 <div 
                                   className="tooltip" 
                                   data-tooltip={step.painPoints.join(' • ')}
-                                  style={{ display: 'flex', alignItems: 'center', gap: '6px', padding: '8px 12px', background: '#F5E0E3', borderRadius: '6px', border: '1px solid #FEE4E2', cursor: 'help' }}
+                                  style={{ display: 'flex', alignItems: 'center', gap: '6px', padding: '8px 12px', background: '#F5E0E3', borderRadius: '6px', border: '1px solid #F5E0E3', cursor: 'help' }}
                                 >
                                   <span style={{ fontSize: '14px' }}>⚠️</span>
                                   <span style={{ fontFamily: "'Interstate', sans-serif", fontSize: '12px', color: '#B84A5A', fontWeight: 500 }}>{step.painPoints.length} pain point{step.painPoints.length > 1 ? 's' : ''}</span>
@@ -6090,7 +6108,7 @@
                   flexDirection: 'column',
                   overflow: 'hidden'
                 }}>
-                <div style={{ background: `hsl(${(selectedStep.stageIndex || 0) * 45 + 180}, 35%, 40%)`, color: '#FFF', padding: isMobile ? '20px 24px' : '24px 32px', display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexShrink: 0 }}>
+                <div style={{ background: getStageColor(selectedStep.stageIndex || 0, 'dark'), color: '#FFF', padding: isMobile ? '20px 24px' : '24px 32px', display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexShrink: 0 }}>
                   <div>
                     <h2 style={{ margin: 0, fontSize: isMobile ? '20px' : '24px', fontWeight: 400 }}>{selectedStep.name}</h2>
                     <p style={{ margin: '8px 0 0', opacity: 0.7, fontFamily: "'Interstate', sans-serif", fontSize: '14px' }}>{selectedStep.description}</p>
@@ -6101,18 +6119,18 @@
                   <div style={{ display: 'flex', flexDirection: 'column', gap: '24px' }}>
                     <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '16px' }}>
                       <div style={{ padding: '16px', background: '#F4F5F7', borderRadius: '8px' }}>
-                        <label style={{ display: 'block', fontFamily: "'Interstate', sans-serif", fontSize: '11px', color: '#666', textTransform: 'uppercase', letterSpacing: '0.5px', marginBottom: '8px' }}>Time Required</label>
+                        <label style={{ display: 'block', fontFamily: "'Interstate', sans-serif", fontSize: '11px', color: '#556275', textTransform: 'uppercase', letterSpacing: '0.5px', marginBottom: '8px' }}>Time Required</label>
                         <span style={{ fontSize: '24px', fontWeight: 600 }}>{formatTime(selectedStep.timeMinutes)}</span>
                         {editMode && (
-                          <div style={{ fontFamily: "'Interstate', sans-serif", fontSize: '10px', color: '#999', marginTop: '4px' }}>
+                          <div style={{ fontFamily: "'Interstate', sans-serif", fontSize: '10px', color: '#8A95A5', marginTop: '4px' }}>
                             Auto-calculated from roles below
                           </div>
                         )}
                       </div>
                       <div style={{ padding: '16px', background: '#F4F5F7', borderRadius: '8px' }}>
-                        <label style={{ display: 'block', fontFamily: "'Interstate', sans-serif", fontSize: '11px', color: '#666', textTransform: 'uppercase', letterSpacing: '0.5px', marginBottom: '8px' }}>Primary Owner</label>
+                        <label style={{ display: 'block', fontFamily: "'Interstate', sans-serif", fontSize: '11px', color: '#556275', textTransform: 'uppercase', letterSpacing: '0.5px', marginBottom: '8px' }}>Primary Owner</label>
                         {editMode ? (
-                          <select value={selectedStep.owner} onChange={(e) => { updateStep(selectedStep.stageId, selectedStep.id, { owner: e.target.value }); setSelectedStep(prev => ({ ...prev, owner: e.target.value })); }} style={{ width: '100%', padding: '8px', border: '1px solid #DDD', borderRadius: '4px', fontSize: '14px', background: '#FFF' }}>
+                          <select value={selectedStep.owner} onChange={(e) => { updateStep(selectedStep.stageId, selectedStep.id, { owner: e.target.value }); setSelectedStep(prev => ({ ...prev, owner: e.target.value })); }} style={{ width: '100%', padding: '8px', border: '1px solid #C8CED6', borderRadius: '4px', fontSize: '14px', background: '#FFF' }}>
                             {config.personas.map(p => (<option key={p.id} value={p.id}>{p.label}</option>))}
                           </select>
                         ) : (
@@ -6126,7 +6144,7 @@
                     {/* Friction */}
                     <div style={{ padding: '16px', background: frictionConfig[selectedStep.frictionScore || 3]?.bg || '#F4F5F7', borderRadius: '8px', marginBottom: '16px', transition: 'background 0.2s' }}>
                       <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '12px' }}>
-                        <label style={{ fontFamily: "'Interstate', sans-serif", fontSize: '11px', color: '#666', textTransform: 'uppercase', letterSpacing: '0.5px' }}>Friction</label>
+                        <label style={{ fontFamily: "'Interstate', sans-serif", fontSize: '11px', color: '#556275', textTransform: 'uppercase', letterSpacing: '0.5px' }}>Friction</label>
                         <div style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
                           <span style={{ fontSize: '18px' }}>{frictionConfig[selectedStep.frictionScore || 3]?.emoji}</span>
                           <span style={{ fontFamily: "'Interstate', sans-serif", fontSize: '12px', fontWeight: 600, color: frictionConfig[selectedStep.frictionScore || 3]?.color }}>{frictionConfig[selectedStep.frictionScore || 3]?.label}</span>
@@ -6134,21 +6152,21 @@
                       </div>
                       <div style={{ display: 'flex', gap: '8px' }}>
                         {[1,2,3,4,5].map(n => (
-                          <button key={n} onClick={() => { if (editMode) { updateStep(selectedStep.stageId, selectedStep.id, { frictionScore: n }); setSelectedStep(prev => ({ ...prev, frictionScore: n })); }}} disabled={!editMode} style={{ width: '40px', height: '40px', border: '2px solid', borderColor: (selectedStep.frictionScore || 3) >= n ? frictionConfig[selectedStep.frictionScore || 3]?.color : '#E4E7EB', borderRadius: '8px', background: (selectedStep.frictionScore || 3) >= n ? frictionConfig[selectedStep.frictionScore || 3]?.color : '#FFF', color: (selectedStep.frictionScore || 3) >= n ? '#FFF' : '#333', cursor: editMode ? 'pointer' : 'default', fontWeight: 600, fontSize: '14px', transition: 'all 0.2s' }}>{n}</button>
+                          <button key={n} onClick={() => { if (editMode) { updateStep(selectedStep.stageId, selectedStep.id, { frictionScore: n }); setSelectedStep(prev => ({ ...prev, frictionScore: n })); }}} disabled={!editMode} style={{ width: '40px', height: '40px', border: '2px solid', borderColor: (selectedStep.frictionScore || 3) >= n ? frictionConfig[selectedStep.frictionScore || 3]?.color : '#E4E7EB', borderRadius: '8px', background: (selectedStep.frictionScore || 3) >= n ? frictionConfig[selectedStep.frictionScore || 3]?.color : '#FFF', color: (selectedStep.frictionScore || 3) >= n ? '#FFF' : '#3D4A5C', cursor: editMode ? 'pointer' : 'default', fontWeight: 600, fontSize: '14px', transition: 'all 0.2s' }}>{n}</button>
                         ))}
                       </div>
                     </div>
                     {/* Improvement Opportunity */}
                     <div style={{ padding: '16px', background: '#F4F5F7', borderRadius: '8px', marginBottom: '16px' }}>
-                      <label style={{ display: 'block', fontFamily: "'Interstate', sans-serif", fontSize: '11px', color: '#666', textTransform: 'uppercase', letterSpacing: '0.5px', marginBottom: '12px' }}>Improvement Opportunity</label>
+                      <label style={{ display: 'block', fontFamily: "'Interstate', sans-serif", fontSize: '11px', color: '#556275', textTransform: 'uppercase', letterSpacing: '0.5px', marginBottom: '12px' }}>Improvement Opportunity</label>
                       {editMode ? (
                         <>
                           <div style={{ display: 'flex', gap: '8px', marginBottom: '12px' }}>
                             {['high', 'medium', 'low', 'none'].map(level => (
-                              <button key={level} onClick={() => { updateStep(selectedStep.stageId, selectedStep.id, { automationOpportunity: level }); setSelectedStep(prev => ({ ...prev, automationOpportunity: level })); }} style={{ padding: '8px 16px', border: '2px solid', borderColor: selectedStep.automationOpportunity === level ? automationColors[level].text : '#E4E7EB', borderRadius: '20px', background: selectedStep.automationOpportunity === level ? automationColors[level].bg : '#FFF', color: selectedStep.automationOpportunity === level ? automationColors[level].text : '#666', cursor: 'pointer', fontFamily: "'Interstate', sans-serif", fontSize: '12px', fontWeight: 500, textTransform: 'capitalize' }}>{level}</button>
+                              <button key={level} onClick={() => { updateStep(selectedStep.stageId, selectedStep.id, { automationOpportunity: level }); setSelectedStep(prev => ({ ...prev, automationOpportunity: level })); }} style={{ padding: '8px 16px', border: '2px solid', borderColor: selectedStep.automationOpportunity === level ? automationColors[level].text : '#E4E7EB', borderRadius: '20px', background: selectedStep.automationOpportunity === level ? automationColors[level].bg : '#FFF', color: selectedStep.automationOpportunity === level ? automationColors[level].text : '#556275', cursor: 'pointer', fontFamily: "'Interstate', sans-serif", fontSize: '12px', fontWeight: 500, textTransform: 'capitalize' }}>{level}</button>
                             ))}
                           </div>
-                          <textarea value={selectedStep.automationNotes || ''} onChange={(e) => { updateStep(selectedStep.stageId, selectedStep.id, { automationNotes: e.target.value }); setSelectedStep(prev => ({ ...prev, automationNotes: e.target.value })); }} placeholder="Notes on improvement potential..." style={{ width: '100%', padding: '10px', border: '1px solid #DDD', borderRadius: '6px', fontSize: '13px', fontFamily: "'Interstate', sans-serif", resize: 'vertical', minHeight: '60px' }} />
+                          <textarea value={selectedStep.automationNotes || ''} onChange={(e) => { updateStep(selectedStep.stageId, selectedStep.id, { automationNotes: e.target.value }); setSelectedStep(prev => ({ ...prev, automationNotes: e.target.value })); }} placeholder="Notes on improvement potential..." style={{ width: '100%', padding: '10px', border: '1px solid #C8CED6', borderRadius: '6px', fontSize: '13px', fontFamily: "'Interstate', sans-serif", resize: 'vertical', minHeight: '60px' }} />
                         </>
                       ) : (
                         <>
@@ -6156,7 +6174,7 @@
                             <span>💡</span>
                             <span style={{ fontFamily: "'Interstate', sans-serif", fontSize: '14px', color: automationColors[selectedStep.automationOpportunity]?.text, fontWeight: 500, textTransform: 'capitalize' }}>{selectedStep.automationOpportunity} potential</span>
                           </div>
-                          {selectedStep.automationNotes && <p style={{ margin: 0, fontSize: '13px', color: '#666', fontFamily: "'Interstate', sans-serif", lineHeight: 1.5 }}>{selectedStep.automationNotes}</p>}
+                          {selectedStep.automationNotes && <p style={{ margin: 0, fontSize: '13px', color: '#556275', fontFamily: "'Interstate', sans-serif", lineHeight: 1.5 }}>{selectedStep.automationNotes}</p>}
                         </>
                       )}
                     </div>
@@ -6165,10 +6183,10 @@
                     <div style={{ padding: '16px', background: selectedStep.clientTouchpoint ? '#D4EDE5' : '#F4F5F7', borderRadius: '8px', marginBottom: '16px', border: selectedStep.clientTouchpoint ? '1px solid #2D8A6E' : '1px solid transparent' }}>
                       <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
                         <div>
-                          <label style={{ display: 'block', fontFamily: "'Interstate', sans-serif", fontSize: '11px', color: '#666', textTransform: 'uppercase', letterSpacing: '0.5px', marginBottom: '8px' }}>Client Touchpoint</label>
+                          <label style={{ display: 'block', fontFamily: "'Interstate', sans-serif", fontSize: '11px', color: '#556275', textTransform: 'uppercase', letterSpacing: '0.5px', marginBottom: '8px' }}>Client Touchpoint</label>
                           <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
                             <span style={{ fontSize: '16px' }}>{selectedStep.clientTouchpoint ? '👤' : '👤'}</span>
-                            <span style={{ fontFamily: "'Interstate', sans-serif", fontSize: '13px', color: selectedStep.clientTouchpoint ? '#2D8A6E' : '#666', fontWeight: 500 }}>
+                            <span style={{ fontFamily: "'Interstate', sans-serif", fontSize: '13px', color: selectedStep.clientTouchpoint ? '#2D8A6E' : '#556275', fontWeight: 500 }}>
                               {selectedStep.clientTouchpoint ? 'This step has direct client involvement' : 'This step DOES NOT have direct client involvement'}
                             </span>
                           </div>
@@ -6185,7 +6203,7 @@
                               height: '32px', 
                               borderRadius: '16px', 
                               border: 'none',
-                              background: selectedStep.clientTouchpoint ? '#2D8A6E' : '#CCC',
+                              background: selectedStep.clientTouchpoint ? '#2D8A6E' : '#A9B2BE',
                               cursor: 'pointer',
                               position: 'relative',
                               transition: 'background 0.2s',
@@ -6315,7 +6333,7 @@
                                   <div style={{
                                     fontFamily: "'Interstate', sans-serif",
                                     fontSize: '10px',
-                                    color: '#999'
+                                    color: '#8A95A5'
                                   }}>
                                     {formatCurrencyDetailed(fullyLoadedRate)}/hr (loaded)
                                   </div>
@@ -6324,7 +6342,7 @@
                                 {editMode ? (
                                   <>
                                     <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '2px' }}>
-                                      <span style={{ fontFamily: "'Interstate', sans-serif", fontSize: '9px', color: '#999', textTransform: 'uppercase' }}>Mins</span>
+                                      <span style={{ fontFamily: "'Interstate', sans-serif", fontSize: '9px', color: '#8A95A5', textTransform: 'uppercase' }}>Mins</span>
                                       <input
                                         type="number"
                                         value={involvement.timeMinutes || 0}
@@ -6349,7 +6367,7 @@
                                         style={{
                                           width: '60px',
                                           padding: '6px',
-                                          border: '1px solid #DDD',
+                                          border: '1px solid #C8CED6',
                                           borderRadius: '4px',
                                           fontSize: '12px',
                                           textAlign: 'center'
@@ -6357,7 +6375,7 @@
                                       />
                                     </div>
                                     <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '2px' }}>
-                                      <span style={{ fontFamily: "'Interstate', sans-serif", fontSize: '9px', color: '#999', textTransform: 'uppercase' }}>People</span>
+                                      <span style={{ fontFamily: "'Interstate', sans-serif", fontSize: '9px', color: '#8A95A5', textTransform: 'uppercase' }}>People</span>
                                       <input
                                         type="number"
                                         min="1"
@@ -6376,7 +6394,7 @@
                                         style={{
                                           width: '50px',
                                           padding: '6px',
-                                          border: '1px solid #DDD',
+                                          border: '1px solid #C8CED6',
                                           borderRadius: '4px',
                                           fontSize: '12px',
                                           textAlign: 'center'
@@ -6386,7 +6404,7 @@
                                   </>
                                 ) : (
                                   <>
-                                    <div style={{ fontFamily: "'Interstate', sans-serif", fontSize: '12px', color: '#666' }}>
+                                    <div style={{ fontFamily: "'Interstate', sans-serif", fontSize: '12px', color: '#556275' }}>
                                       {involvement.timeMinutes}m × {involvement.headcount || 1} {(involvement.headcount || 1) > 1 ? 'people' : 'person'}
                                     </div>
                                   </>
@@ -6430,7 +6448,7 @@
                         </div>
                         
                         {(!selectedStep.additionalCosts || selectedStep.additionalCosts.length === 0) && !editMode ? (
-                          <div style={{ padding: '12px', background: '#FFF', borderRadius: '6px', fontFamily: "'Interstate', sans-serif", fontSize: '12px', color: '#999', fontStyle: 'italic' }}>
+                          <div style={{ padding: '12px', background: '#FFF', borderRadius: '6px', fontFamily: "'Interstate', sans-serif", fontSize: '12px', color: '#8A95A5', fontStyle: 'italic' }}>
                             No additional costs
                           </div>
                         ) : (
@@ -6455,7 +6473,7 @@
                                         updateStep(selectedStep.stageId, selectedStep.id, { additionalCosts: newCosts });
                                         setSelectedStep(prev => ({ ...prev, additionalCosts: newCosts }));
                                       }}
-                                      style={{ padding: '6px', border: '1px solid #DDD', borderRadius: '4px', fontSize: '11px', fontFamily: "'Interstate', sans-serif" }}
+                                      style={{ padding: '6px', border: '1px solid #C8CED6', borderRadius: '4px', fontSize: '11px', fontFamily: "'Interstate', sans-serif" }}
                                     >
                                       <option value="third-party">🔌 Third-party</option>
                                       <option value="materials">📄 Materials</option>
@@ -6471,10 +6489,10 @@
                                         setSelectedStep(prev => ({ ...prev, additionalCosts: newCosts }));
                                       }}
                                       placeholder="Description"
-                                      style={{ flex: 1, padding: '6px', border: '1px solid #DDD', borderRadius: '4px', fontSize: '12px', fontFamily: "'Interstate', sans-serif" }}
+                                      style={{ flex: 1, padding: '6px', border: '1px solid #C8CED6', borderRadius: '4px', fontSize: '12px', fontFamily: "'Interstate', sans-serif" }}
                                     />
                                     <div style={{ display: 'flex', alignItems: 'center', gap: '4px' }}>
-                                      <span style={{ fontFamily: "'Interstate', sans-serif", fontSize: '12px', color: '#666' }}>£</span>
+                                      <span style={{ fontFamily: "'Interstate', sans-serif", fontSize: '12px', color: '#556275' }}>£</span>
                                       <input
                                         type="number"
                                         step="0.01"
@@ -6485,7 +6503,7 @@
                                           updateStep(selectedStep.stageId, selectedStep.id, { additionalCosts: newCosts });
                                           setSelectedStep(prev => ({ ...prev, additionalCosts: newCosts }));
                                         }}
-                                        style={{ width: '70px', padding: '6px', border: '1px solid #DDD', borderRadius: '4px', fontSize: '12px', textAlign: 'right' }}
+                                        style={{ width: '70px', padding: '6px', border: '1px solid #C8CED6', borderRadius: '4px', fontSize: '12px', textAlign: 'right' }}
                                       />
                                     </div>
                                     <button
@@ -6520,9 +6538,9 @@
 
                     {/* Pain Points */}
                     <div style={{ marginBottom: '24px' }}>
-                      <label style={{ display: 'block', fontFamily: "'Interstate', sans-serif", fontSize: '11px', color: '#666', textTransform: 'uppercase', letterSpacing: '0.5px', marginBottom: '12px' }}>Pain Points</label>
+                      <label style={{ display: 'block', fontFamily: "'Interstate', sans-serif", fontSize: '11px', color: '#556275', textTransform: 'uppercase', letterSpacing: '0.5px', marginBottom: '12px' }}>Pain Points</label>
                       {selectedStep.painPoints.length === 0 && !editMode ? (
-                        <p style={{ color: '#999', fontStyle: 'italic', fontFamily: "'Interstate', sans-serif", fontSize: '14px' }}>No pain points identified</p>
+                        <p style={{ color: '#8A95A5', fontStyle: 'italic', fontFamily: "'Interstate', sans-serif", fontSize: '14px' }}>No pain points identified</p>
                       ) : (
                         <ul style={{ margin: 0, padding: 0, listStyle: 'none' }}>
                           {selectedStep.painPoints.map((pp, i) => (
@@ -6536,14 +6554,14 @@
                       )}
                       {editMode && (
                         <div style={{ marginTop: '12px', display: 'flex', gap: '8px' }}>
-                          <input type="text" placeholder="Add a pain point..." id="new-pain-point" style={{ flex: 1, padding: '10px 12px', border: '1px solid #DDD', borderRadius: '6px', fontSize: '14px', fontFamily: "'Interstate', sans-serif" }} onKeyDown={(e) => { if (e.key === 'Enter' && e.target.value.trim()) { const val = e.target.value.trim(); addPainPoint(selectedStep.stageId, selectedStep.id, val); setSelectedStep(prev => ({ ...prev, painPoints: [...prev.painPoints, val] })); e.target.value = ''; }}} />
+                          <input type="text" placeholder="Add a pain point..." id="new-pain-point" style={{ flex: 1, padding: '10px 12px', border: '1px solid #C8CED6', borderRadius: '6px', fontSize: '14px', fontFamily: "'Interstate', sans-serif" }} onKeyDown={(e) => { if (e.key === 'Enter' && e.target.value.trim()) { const val = e.target.value.trim(); addPainPoint(selectedStep.stageId, selectedStep.id, val); setSelectedStep(prev => ({ ...prev, painPoints: [...prev.painPoints, val] })); e.target.value = ''; }}} />
                           <button onClick={() => { const input = document.getElementById('new-pain-point'); if (input.value.trim()) { const val = input.value.trim(); addPainPoint(selectedStep.stageId, selectedStep.id, val); setSelectedStep(prev => ({ ...prev, painPoints: [...prev.painPoints, val] })); input.value = ''; }}} style={{ padding: '10px 20px', background: '#B84A5A', color: '#FFF', border: 'none', borderRadius: '6px', cursor: 'pointer', fontFamily: "'Interstate', sans-serif", fontSize: '13px' }}>Add</button>
                         </div>
                       )}
                     </div>
                     {/* Hard Checkpoint */}
                     <div style={{ marginBottom: '24px' }}>
-                      <label style={{ display: 'block', fontFamily: "'Interstate', sans-serif", fontSize: '11px', color: '#666', textTransform: 'uppercase', letterSpacing: '0.5px', marginBottom: '12px' }}>Hard Checkpoint</label>
+                      <label style={{ display: 'block', fontFamily: "'Interstate', sans-serif", fontSize: '11px', color: '#556275', textTransform: 'uppercase', letterSpacing: '0.5px', marginBottom: '12px' }}>Hard Checkpoint</label>
                       {editMode ? (
                         <div style={{ display: 'flex', flexDirection: 'column', gap: '12px' }}>
                           <label style={{ display: 'flex', alignItems: 'center', gap: '12px', cursor: 'pointer' }}>
@@ -6561,14 +6579,14 @@
                           {selectedStep.isHardCheckpoint && (
                             <>
                               <div>
-                                <label style={{ display: 'block', fontFamily: "'Interstate', sans-serif", fontSize: '12px', color: '#666', marginBottom: '6px' }}>Checkpoint Type</label>
+                                <label style={{ display: 'block', fontFamily: "'Interstate', sans-serif", fontSize: '12px', color: '#556275', marginBottom: '6px' }}>Checkpoint Type</label>
                                 <select 
                                   value={selectedStep.checkpointType || 'compliance'} 
                                   onChange={(e) => { 
                                     updateStep(selectedStep.stageId, selectedStep.id, { checkpointType: e.target.value }); 
                                     setSelectedStep(prev => ({ ...prev, checkpointType: e.target.value })); 
                                   }}
-                                  style={{ width: '100%', padding: '10px 12px', border: '1px solid #DDD', borderRadius: '6px', fontSize: '14px', fontFamily: "'Interstate', sans-serif" }}
+                                  style={{ width: '100%', padding: '10px 12px', border: '1px solid #C8CED6', borderRadius: '6px', fontSize: '14px', fontFamily: "'Interstate', sans-serif" }}
                                 >
                                   <option value="compliance">Compliance</option>
                                   <option value="regulatory">Regulatory</option>
@@ -6578,7 +6596,7 @@
                                 </select>
                               </div>
                               <div>
-                                <label style={{ display: 'block', fontFamily: "'Interstate', sans-serif", fontSize: '12px', color: '#666', marginBottom: '6px' }}>Checkpoint Requirements</label>
+                                <label style={{ display: 'block', fontFamily: "'Interstate', sans-serif", fontSize: '12px', color: '#556275', marginBottom: '6px' }}>Checkpoint Requirements</label>
                                 <textarea 
                                   value={selectedStep.checkpointDetails || ''} 
                                   onChange={(e) => { 
@@ -6586,7 +6604,7 @@
                                     setSelectedStep(prev => ({ ...prev, checkpointDetails: e.target.value })); 
                                   }}
                                   placeholder="Describe what must be verified or completed at this checkpoint..."
-                                  style={{ width: '100%', minHeight: '80px', padding: '10px 12px', border: '1px solid #DDD', borderRadius: '6px', fontSize: '14px', fontFamily: "'Interstate', sans-serif", resize: 'vertical' }}
+                                  style={{ width: '100%', minHeight: '80px', padding: '10px 12px', border: '1px solid #C8CED6', borderRadius: '6px', fontSize: '14px', fontFamily: "'Interstate', sans-serif", resize: 'vertical' }}
                                 />
                               </div>
                             </>
@@ -6601,14 +6619,14 @@
                           <p style={{ margin: 0, fontSize: '14px', lineHeight: 1.6, fontFamily: "'Interstate', sans-serif", color: '#9D174D' }}>{selectedStep.checkpointDetails || 'No details specified'}</p>
                         </div>
                       ) : (
-                        <p style={{ color: '#999', fontStyle: 'italic', fontFamily: "'Interstate', sans-serif", fontSize: '14px' }}>No hard checkpoint set for this step</p>
+                        <p style={{ color: '#8A95A5', fontStyle: 'italic', fontFamily: "'Interstate', sans-serif", fontSize: '14px' }}>No hard checkpoint set for this step</p>
                       )}
                     </div>
                     {/* Regulatory */}
                     <div>
-                      <label style={{ display: 'block', fontFamily: "'Interstate', sans-serif", fontSize: '11px', color: '#666', textTransform: 'uppercase', letterSpacing: '0.5px', marginBottom: '12px' }}>Regulatory Requirements</label>
+                      <label style={{ display: 'block', fontFamily: "'Interstate', sans-serif", fontSize: '11px', color: '#556275', textTransform: 'uppercase', letterSpacing: '0.5px', marginBottom: '12px' }}>Regulatory Requirements</label>
                       {(!selectedStep.regulatoryRequirements || selectedStep.regulatoryRequirements.length === 0) && !editMode ? (
-                        <p style={{ color: '#999', fontStyle: 'italic', fontFamily: "'Interstate', sans-serif", fontSize: '14px' }}>No regulatory requirements specified</p>
+                        <p style={{ color: '#8A95A5', fontStyle: 'italic', fontFamily: "'Interstate', sans-serif", fontSize: '14px' }}>No regulatory requirements specified</p>
                       ) : (
                         <ul style={{ margin: 0, padding: 0, listStyle: 'none' }}>
                           {(selectedStep.regulatoryRequirements || []).map((req, i) => (
@@ -6622,14 +6640,14 @@
                       )}
                       {editMode && (
                         <div style={{ marginTop: '12px', display: 'flex', gap: '8px' }}>
-                          <input type="text" placeholder="Add a regulatory requirement..." id="new-reg-req" style={{ flex: 1, padding: '10px 12px', border: '1px solid #DDD', borderRadius: '6px', fontSize: '14px', fontFamily: "'Interstate', sans-serif" }} onKeyDown={(e) => { if (e.key === 'Enter' && e.target.value.trim()) { const val = e.target.value.trim(); addRegRequirement(selectedStep.stageId, selectedStep.id, val); setSelectedStep(prev => ({ ...prev, regulatoryRequirements: [...(prev.regulatoryRequirements || []), val] })); e.target.value = ''; }}} />
+                          <input type="text" placeholder="Add a regulatory requirement..." id="new-reg-req" style={{ flex: 1, padding: '10px 12px', border: '1px solid #C8CED6', borderRadius: '6px', fontSize: '14px', fontFamily: "'Interstate', sans-serif" }} onKeyDown={(e) => { if (e.key === 'Enter' && e.target.value.trim()) { const val = e.target.value.trim(); addRegRequirement(selectedStep.stageId, selectedStep.id, val); setSelectedStep(prev => ({ ...prev, regulatoryRequirements: [...(prev.regulatoryRequirements || []), val] })); e.target.value = ''; }}} />
                           <button onClick={() => { const input = document.getElementById('new-reg-req'); if (input.value.trim()) { const val = input.value.trim(); addRegRequirement(selectedStep.stageId, selectedStep.id, val); setSelectedStep(prev => ({ ...prev, regulatoryRequirements: [...(prev.regulatoryRequirements || []), val] })); input.value = ''; }}} style={{ padding: '10px 20px', background: '#5A5B8A', color: '#FFF', border: 'none', borderRadius: '6px', cursor: 'pointer', fontFamily: "'Interstate', sans-serif", fontSize: '13px' }}>Add</button>
                         </div>
                       )}
                     </div>
                     {/* Actions by Role */}
                     <div>
-                    <label style={{ display: 'block', fontFamily: "'Interstate', sans-serif", fontSize: '11px', color: '#666', textTransform: 'uppercase', letterSpacing: '0.5px', marginBottom: '16px' }}>Actions by Role</label>
+                    <label style={{ display: 'block', fontFamily: "'Interstate', sans-serif", fontSize: '11px', color: '#556275', textTransform: 'uppercase', letterSpacing: '0.5px', marginBottom: '16px' }}>Actions by Role</label>
                     <div style={{ display: 'flex', flexDirection: 'column', gap: '12px' }}>
                       {config.personas.map(persona => {
                         const action = selectedStep.actions?.[persona.id];
@@ -6638,7 +6656,7 @@
                           <div key={persona.id} style={{ padding: '16px', background: '#F4F5F7', borderRadius: '8px', borderLeft: `4px solid ${persona.color}` }}>
                             <div style={{ fontFamily: "'Interstate', sans-serif", fontSize: '12px', color: persona.color, fontWeight: 600, marginBottom: '8px', textTransform: 'uppercase', letterSpacing: '0.5px' }}>{persona.label}</div>
                             {editMode ? (
-                              <textarea value={action || ''} onChange={(e) => { const newActions = { ...(selectedStep.actions || {}), [persona.id]: e.target.value }; updateStep(selectedStep.stageId, selectedStep.id, { actions: newActions }); setSelectedStep(prev => ({ ...prev, actions: newActions })); }} placeholder={`What does the ${persona.label.toLowerCase()} do?`} style={{ width: '100%', minHeight: '60px', padding: '8px', border: '1px solid #DDD', borderRadius: '4px', fontSize: '14px', fontFamily: "'Interstate', sans-serif", resize: 'vertical' }} />
+                              <textarea value={action || ''} onChange={(e) => { const newActions = { ...(selectedStep.actions || {}), [persona.id]: e.target.value }; updateStep(selectedStep.stageId, selectedStep.id, { actions: newActions }); setSelectedStep(prev => ({ ...prev, actions: newActions })); }} placeholder={`What does the ${persona.label.toLowerCase()} do?`} style={{ width: '100%', minHeight: '60px', padding: '8px', border: '1px solid #C8CED6', borderRadius: '4px', fontSize: '14px', fontFamily: "'Interstate', sans-serif", resize: 'vertical' }} />
                             ) : (
                               <p style={{ margin: 0, fontSize: '14px', lineHeight: 1.5, fontFamily: "'Interstate', sans-serif" }}>{action}</p>
                             )}
@@ -6649,7 +6667,7 @@
                     </div>
                     {/* Touchpoints */}
                     <div style={{ marginTop: '24px' }}>
-                      <label style={{ display: 'block', fontFamily: "'Interstate', sans-serif", fontSize: '11px', color: '#666', textTransform: 'uppercase', letterSpacing: '0.5px', marginBottom: '12px' }}>Touchpoints</label>
+                      <label style={{ display: 'block', fontFamily: "'Interstate', sans-serif", fontSize: '11px', color: '#556275', textTransform: 'uppercase', letterSpacing: '0.5px', marginBottom: '12px' }}>Touchpoints</label>
                       <div style={{ display: 'flex', flexWrap: 'wrap', gap: '8px' }}>
                         {(selectedStep.touchpoints || []).map((tp, i) => (
                           <span key={i} style={{ padding: '6px 12px', background: '#E8E8E8', borderRadius: '16px', fontFamily: "'Interstate', sans-serif", fontSize: '13px', display: 'flex', alignItems: 'center', gap: '6px' }}>
@@ -6661,7 +6679,7 @@
                                   updateStep(selectedStep.stageId, selectedStep.id, { touchpoints: newTouchpoints }); 
                                   setSelectedStep(prev => ({ ...prev, touchpoints: newTouchpoints })); 
                                 }} 
-                                style={{ background: 'none', border: 'none', color: '#666', cursor: 'pointer', fontSize: '14px', padding: '0 0 0 2px', lineHeight: 1 }}
+                                style={{ background: 'none', border: 'none', color: '#556275', cursor: 'pointer', fontSize: '14px', padding: '0 0 0 2px', lineHeight: 1 }}
                               >×</button>
                             )}
                           </span>
@@ -6673,7 +6691,7 @@
                             type="text" 
                             placeholder="Add a touchpoint..." 
                             id="new-touchpoint" 
-                            style={{ flex: 1, padding: '8px 12px', border: '1px solid #DDD', borderRadius: '6px', fontSize: '13px', fontFamily: "'Interstate', sans-serif" }} 
+                            style={{ flex: 1, padding: '8px 12px', border: '1px solid #C8CED6', borderRadius: '6px', fontSize: '13px', fontFamily: "'Interstate', sans-serif" }} 
                             onKeyDown={(e) => { 
                               if (e.key === 'Enter' && e.target.value.trim()) { 
                                 const val = e.target.value.trim(); 
@@ -6695,14 +6713,14 @@
                                 input.value = ''; 
                               }
                             }} 
-                            style={{ padding: '8px 16px', background: '#666', color: '#FFF', border: 'none', borderRadius: '6px', cursor: 'pointer', fontFamily: "'Interstate', sans-serif", fontSize: '13px' }}
+                            style={{ padding: '8px 16px', background: '#556275', color: '#FFF', border: 'none', borderRadius: '6px', cursor: 'pointer', fontFamily: "'Interstate', sans-serif", fontSize: '13px' }}
                           >Add</button>
                         </div>
                       )}
                     </div>
                     {/* Emotion */}
                     <div style={{ marginTop: '24px' }}>
-                      <label style={{ display: 'block', fontFamily: "'Interstate', sans-serif", fontSize: '11px', color: '#666', textTransform: 'uppercase', letterSpacing: '0.5px', marginBottom: '12px' }}>Client Emotions <span style={{ fontWeight: 400, textTransform: 'none' }}>(select multiple)</span></label>
+                      <label style={{ display: 'block', fontFamily: "'Interstate', sans-serif", fontSize: '11px', color: '#556275', textTransform: 'uppercase', letterSpacing: '0.5px', marginBottom: '12px' }}>Client Emotions <span style={{ fontWeight: 400, textTransform: 'none' }}>(select multiple)</span></label>
                       {editMode ? (
                         <div style={{ display: 'flex', flexWrap: 'wrap', gap: '8px' }}>
                           {Object.entries(emotionColors).map(([emotion, colors]) => {
@@ -6717,7 +6735,7 @@
                                 setSelectedStep(prev => ({ ...prev, emotions: newEmotions })); 
                               }} style={{ padding: '8px 14px', background: isSelected ? colors.bg : '#F4F5F7', border: '2px solid', borderColor: isSelected ? colors.text : 'transparent', borderRadius: '20px', cursor: 'pointer', display: 'flex', alignItems: 'center', gap: '6px' }}>
                                 <span>{colors.icon}</span>
-                                <span style={{ fontFamily: "'Interstate', sans-serif", fontSize: '12px', color: isSelected ? colors.text : '#666', textTransform: 'capitalize' }}>{emotion}</span>
+                                <span style={{ fontFamily: "'Interstate', sans-serif", fontSize: '12px', color: isSelected ? colors.text : '#556275', textTransform: 'capitalize' }}>{emotion}</span>
                               </button>
                             );
                           })}
@@ -6729,12 +6747,12 @@
                             return displayEmotions.length > 0 ? displayEmotions.map(emotion => (
                               <div key={emotion} style={{ display: 'inline-flex', alignItems: 'center', gap: '8px', padding: '10px 16px', background: emotionColors[emotion]?.bg || '#F4F5F7', borderRadius: '20px' }}>
                                 <span style={{ fontSize: '18px' }}>{emotionColors[emotion]?.icon || '😐'}</span>
-                                <span style={{ fontFamily: "'Interstate', sans-serif", fontSize: '14px', color: emotionColors[emotion]?.text || '#666', textTransform: 'capitalize', fontWeight: 500 }}>{emotion}</span>
+                                <span style={{ fontFamily: "'Interstate', sans-serif", fontSize: '14px', color: emotionColors[emotion]?.text || '#556275', textTransform: 'capitalize', fontWeight: 500 }}>{emotion}</span>
                               </div>
                             )) : (
                               <div style={{ display: 'inline-flex', alignItems: 'center', gap: '8px', padding: '10px 16px', background: '#F4F5F7', borderRadius: '20px' }}>
                                 <span style={{ fontSize: '18px' }}>😐</span>
-                                <span style={{ fontFamily: "'Interstate', sans-serif", fontSize: '14px', color: '#666', fontWeight: 500 }}>No emotion set</span>
+                                <span style={{ fontFamily: "'Interstate', sans-serif", fontSize: '14px', color: '#556275', fontWeight: 500 }}>No emotion set</span>
                               </div>
                             );
                           })()}
@@ -6749,7 +6767,7 @@
           </main>
 
           {/* Footer */}
-          <footer style={{ background: '#192B45', color: '#999', padding: '20px 40px', fontFamily: "'Interstate', sans-serif", fontSize: '12px', display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexShrink: 0 }}>
+          <footer style={{ background: '#192B45', color: '#8A95A5', padding: '20px 40px', fontFamily: "'Interstate', sans-serif", fontSize: '12px', display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexShrink: 0 }}>
             <span>{isMultiUserMode ? `${mapTitle} · ` : "FATHOM "}v{APP_VERSION}</span>
             <div style={{ display: 'flex', alignItems: 'center', gap: '16px' }}>
               <button 
@@ -6757,10 +6775,10 @@
                 disabled={refreshStatus.loading}
                 style={{ 
                   background: 'transparent', 
-                  border: '1px solid #666', 
+                  border: '1px solid #556275', 
                   borderRadius: '4px', 
                   padding: '4px 12px', 
-                  color: refreshStatus.message ? (refreshStatus.message.includes('✓') ? '#4ADE80' : refreshStatus.message.includes('✗') ? '#F87171' : '#999') : '#999', 
+                  color: refreshStatus.message ? (refreshStatus.message.includes('✓') ? '#4ADE80' : refreshStatus.message.includes('✗') ? '#F87171' : '#8A95A5') : '#8A95A5', 
                   cursor: refreshStatus.loading ? 'wait' : 'pointer', 
                   fontFamily: "'Interstate', sans-serif", 
                   fontSize: '11px',
@@ -6769,8 +6787,8 @@
                   gap: '6px',
                   transition: 'all 0.2s'
                 }}
-                onMouseOver={(e) => !refreshStatus.loading && (e.currentTarget.style.borderColor = '#999', e.currentTarget.style.color = '#CCC')}
-                onMouseOut={(e) => (e.currentTarget.style.borderColor = '#666', e.currentTarget.style.color = refreshStatus.message ? (refreshStatus.message.includes('✓') ? '#4ADE80' : '#F87171') : '#999')}
+                onMouseOver={(e) => !refreshStatus.loading && (e.currentTarget.style.borderColor = '#8A95A5', e.currentTarget.style.color = '#A9B2BE')}
+                onMouseOut={(e) => (e.currentTarget.style.borderColor = '#556275', e.currentTarget.style.color = refreshStatus.message ? (refreshStatus.message.includes('✓') ? '#4ADE80' : '#F87171') : '#8A95A5')}
               >
                 <span className={refreshStatus.loading ? 'refresh-spinning' : ''}>🔄</span>
                 {refreshStatus.loading ? 'Refreshing...' : refreshStatus.message || 'Refresh Data'}
@@ -6846,7 +6864,7 @@
             <div style={{ position: 'fixed', top: 0, left: 0, right: 0, bottom: 0, background: 'rgba(0,0,0,0.5)', display: 'flex', alignItems: 'center', justifyContent: 'center', zIndex: 10000 }} onClick={() => setShowPasswordPrompt(false)}>
               <div onClick={(e) => e.stopPropagation()} style={{ background: '#FFF', borderRadius: '12px', padding: '32px', width: '320px', maxWidth: '90%', boxShadow: '0 20px 60px rgba(0,0,0,0.3)' }}>
                 <h3 style={{ margin: '0 0 8px', fontSize: '18px', fontWeight: 600 }}>🔒 Settings Locked</h3>
-                <p style={{ margin: '0 0 20px', fontSize: '14px', color: '#666', fontFamily: "'Interstate', sans-serif" }}>Enter password to access settings</p>
+                <p style={{ margin: '0 0 20px', fontSize: '14px', color: '#556275', fontFamily: "'Interstate', sans-serif" }}>Enter password to access settings</p>
                 <input 
                   type="password" 
                   id="settings-password"
