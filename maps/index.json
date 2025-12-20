@@ -14,6 +14,36 @@
           "permission": "view"
         }
       ]
+    },
+    {
+      "id": "mje6ssttvms1t",
+      "title": "Steve test",
+      "description": "Just testing a new journey map",
+      "owner": "steveyoung74@gmail.com",
+      "createdAt": "2025-12-20T11:00:22.385Z",
+      "updatedAt": "2025-12-20T11:00:22.385Z",
+      "sharedWith": [],
+      "config": {
+        "meta": {
+          "title": "Steve test",
+          "version": "1.0",
+          "product": "FATHOM v1.3.0",
+          "lastUpdated": "2025-12-20T11:00:22.385Z"
+        },
+        "funnel": {
+          "enabled": false,
+          "initialVolume": 100
+        },
+        "personas": [
+          {
+            "id": "client",
+            "label": "Client",
+            "color": "#2D8A6E",
+            "isExternal": true
+          }
+        ],
+        "stages": []
+      }
     }
   ]
 }
