@@ -1,5 +1,16 @@
 {
   "maps": [
+{
+      "id": "client-onboarding",
+      "title": "Client Onboarding Journey",
+      "description": "Standard client onboarding process for financial services",
+      "owner": "steveyoung74@gmail.com",
+      "ownerName": "Steve Young",
+      "created": "2024-01-01T00:00:00.000Z",
+      "updated": "2024-12-17T00:00:00.000Z",
+      "sharedWith": []
+    }
+
     {
       "id": "mjea4ibe5opzc",
       "title": "Employee Onboarding Journey",
