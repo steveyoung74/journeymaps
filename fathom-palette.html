@@ -1,0 +1,466 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>FATHOM Color Palette</title>
+  <style>
+    /* Interstate Font Family */
+    @font-face {
+      font-family: 'Interstate';
+      src: url('https://steveyoung74.github.io/journeymaps/fonts/Interstate-light.ttf') format('truetype');
+      font-weight: 300;
+      font-style: normal;
+    }
+    @font-face {
+      font-family: 'Interstate';
+      src: url('https://steveyoung74.github.io/journeymaps/fonts/Interstate-regular.ttf') format('truetype');
+      font-weight: 400;
+      font-style: normal;
+    }
+    @font-face {
+      font-family: 'Interstate';
+      src: url('https://steveyoung74.github.io/journeymaps/fonts/Interstate-bold.ttf') format('truetype');
+      font-weight: 700;
+      font-style: normal;
+    }
+    
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    body { 
+      font-family: 'Interstate', -apple-system, sans-serif; 
+      background: #F4F5F7; 
+      padding: 20px;
+      padding-bottom: 60px;
+      color: #1A2332;
+    }
+    
+    .header {
+      text-align: center;
+      margin-bottom: 32px;
+      padding: 24px;
+      background: #192B45;
+      border-radius: 16px;
+      color: #FFF;
+    }
+    .header h1 {
+      font-size: 24px;
+      font-weight: 600;
+      letter-spacing: 2px;
+      margin-bottom: 4px;
+    }
+    .header p {
+      font-size: 12px;
+      opacity: 0.6;
+    }
+    
+    .section {
+      margin-bottom: 28px;
+    }
+    .section-title {
+      font-size: 11px;
+      font-weight: 600;
+      text-transform: uppercase;
+      letter-spacing: 1px;
+      color: #556275;
+      margin-bottom: 12px;
+      padding-left: 4px;
+    }
+    
+    .scale {
+      display: flex;
+      flex-direction: column;
+      border-radius: 12px;
+      overflow: hidden;
+      box-shadow: 0 2px 8px rgba(25, 43, 69, 0.1);
+    }
+    .swatch {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 14px 16px;
+      font-size: 12px;
+    }
+    .swatch-name {
+      font-weight: 500;
+    }
+    .swatch-hex {
+      font-family: 'SF Mono', 'Monaco', monospace;
+      font-size: 11px;
+      opacity: 0.8;
+    }
+    
+    .grid {
+      display: grid;
+      grid-template-columns: repeat(2, 1fr);
+      gap: 8px;
+    }
+    .grid .swatch {
+      border-radius: 10px;
+      flex-direction: column;
+      align-items: flex-start;
+      gap: 4px;
+      min-height: 72px;
+      box-shadow: 0 2px 8px rgba(25, 43, 69, 0.1);
+    }
+    
+    .data-grid {
+      display: grid;
+      grid-template-columns: repeat(4, 1fr);
+      gap: 6px;
+    }
+    .data-swatch {
+      aspect-ratio: 1;
+      border-radius: 10px;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      font-size: 9px;
+      font-weight: 500;
+      text-align: center;
+      box-shadow: 0 2px 8px rgba(25, 43, 69, 0.1);
+    }
+    .data-swatch span {
+      margin-top: 4px;
+      font-family: 'SF Mono', 'Monaco', monospace;
+      font-size: 8px;
+      opacity: 0.8;
+    }
+    
+    .quick-ref {
+      background: #FFF;
+      border-radius: 12px;
+      padding: 16px;
+      box-shadow: 0 2px 8px rgba(25, 43, 69, 0.1);
+    }
+    .quick-ref-row {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      padding: 8px 0;
+      border-bottom: 1px solid #E4E7EB;
+    }
+    .quick-ref-row:last-child {
+      border-bottom: none;
+    }
+    .quick-ref-dot {
+      width: 32px;
+      height: 32px;
+      border-radius: 8px;
+      flex-shrink: 0;
+    }
+    .quick-ref-label {
+      flex: 1;
+      font-size: 13px;
+      font-weight: 500;
+      color: #1A2332;
+    }
+    .quick-ref-hex {
+      font-family: 'SF Mono', 'Monaco', monospace;
+      font-size: 11px;
+      color: #6E7B8C;
+    }
+  </style>
+</head>
+<body>
+
+  <div class="header">
+    <h1>FATHOM</h1>
+    <p>Color Palette v1.0</p>
+  </div>
+
+  <!-- Quick Reference -->
+  <div class="section">
+    <div class="section-title">Quick Reference</div>
+    <div class="quick-ref">
+      <div class="quick-ref-row">
+        <div class="quick-ref-dot" style="background: #192B45;"></div>
+        <div class="quick-ref-label">Brand Navy</div>
+        <div class="quick-ref-hex">#192B45</div>
+      </div>
+      <div class="quick-ref-row">
+        <div class="quick-ref-dot" style="background: #5B8A9A;"></div>
+        <div class="quick-ref-label">Steel Accent</div>
+        <div class="quick-ref-hex">#5B8A9A</div>
+      </div>
+      <div class="quick-ref-row">
+        <div class="quick-ref-dot" style="background: #C4942A;"></div>
+        <div class="quick-ref-label">Warm Accent</div>
+        <div class="quick-ref-hex">#C4942A</div>
+      </div>
+      <div class="quick-ref-row">
+        <div class="quick-ref-dot" style="background: #2D8A6E;"></div>
+        <div class="quick-ref-label">Success</div>
+        <div class="quick-ref-hex">#2D8A6E</div>
+      </div>
+      <div class="quick-ref-row">
+        <div class="quick-ref-dot" style="background: #B84A5A;"></div>
+        <div class="quick-ref-label">Error</div>
+        <div class="quick-ref-hex">#B84A5A</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Navy Scale -->
+  <div class="section">
+    <div class="section-title">Navy Scale (Primary)</div>
+    <div class="scale">
+      <div class="swatch" style="background: #0C1620; color: #9BB1C7;">
+        <span class="swatch-name">Navy 950</span>
+        <span class="swatch-hex">#0C1620</span>
+      </div>
+      <div class="swatch" style="background: #111E2E; color: #9BB1C7;">
+        <span class="swatch-name">Navy 900</span>
+        <span class="swatch-hex">#111E2E</span>
+      </div>
+      <div class="swatch" style="background: #15243A; color: #9BB1C7;">
+        <span class="swatch-name">Navy 800</span>
+        <span class="swatch-hex">#15243A</span>
+      </div>
+      <div class="swatch" style="background: #192B45; color: #C8D5E2;">
+        <span class="swatch-name">Navy 700 ★</span>
+        <span class="swatch-hex">#192B45</span>
+      </div>
+      <div class="swatch" style="background: #243D5C; color: #C8D5E2;">
+        <span class="swatch-name">Navy 600</span>
+        <span class="swatch-hex">#243D5C</span>
+      </div>
+      <div class="swatch" style="background: #2F5070; color: #E9EEF4;">
+        <span class="swatch-name">Navy 500</span>
+        <span class="swatch-hex">#2F5070</span>
+      </div>
+      <div class="swatch" style="background: #456A8A; color: #FFF;">
+        <span class="swatch-name">Navy 400</span>
+        <span class="swatch-hex">#456A8A</span>
+      </div>
+      <div class="swatch" style="background: #6889A8; color: #FFF;">
+        <span class="swatch-name">Navy 300</span>
+        <span class="swatch-hex">#6889A8</span>
+      </div>
+      <div class="swatch" style="background: #9BB1C7; color: #192B45;">
+        <span class="swatch-name">Navy 200</span>
+        <span class="swatch-hex">#9BB1C7</span>
+      </div>
+      <div class="swatch" style="background: #C8D5E2; color: #192B45;">
+        <span class="swatch-name">Navy 100</span>
+        <span class="swatch-hex">#C8D5E2</span>
+      </div>
+      <div class="swatch" style="background: #E9EEF4; color: #192B45;">
+        <span class="swatch-name">Navy 50</span>
+        <span class="swatch-hex">#E9EEF4</span>
+      </div>
+    </div>
+  </div>
+
+  <!-- Steel Blue Accent -->
+  <div class="section">
+    <div class="section-title">Steel Blue Accent</div>
+    <div class="scale">
+      <div class="swatch" style="background: #3A6070; color: #BDD6DE;">
+        <span class="swatch-name">Steel 700</span>
+        <span class="swatch-hex">#3A6070</span>
+      </div>
+      <div class="swatch" style="background: #4A7485; color: #E1EEF2;">
+        <span class="swatch-name">Steel 600</span>
+        <span class="swatch-hex">#4A7485</span>
+      </div>
+      <div class="swatch" style="background: #5B8A9A; color: #FFF;">
+        <span class="swatch-name">Steel 500 ★</span>
+        <span class="swatch-hex">#5B8A9A</span>
+      </div>
+      <div class="swatch" style="background: #74A0AE; color: #FFF;">
+        <span class="swatch-name">Steel 400</span>
+        <span class="swatch-hex">#74A0AE</span>
+      </div>
+      <div class="swatch" style="background: #96BCC7; color: #192B45;">
+        <span class="swatch-name">Steel 300</span>
+        <span class="swatch-hex">#96BCC7</span>
+      </div>
+      <div class="swatch" style="background: #BDD6DE; color: #192B45;">
+        <span class="swatch-name">Steel 200</span>
+        <span class="swatch-hex">#BDD6DE</span>
+      </div>
+      <div class="swatch" style="background: #E1EEF2; color: #192B45;">
+        <span class="swatch-name">Steel 100</span>
+        <span class="swatch-hex">#E1EEF2</span>
+      </div>
+    </div>
+  </div>
+
+  <!-- Warm Accent -->
+  <div class="section">
+    <div class="section-title">Warm Accent (Amber)</div>
+    <div class="scale">
+      <div class="swatch" style="background: #8B6914; color: #F0DDA8;">
+        <span class="swatch-name">Amber 700</span>
+        <span class="swatch-hex">#8B6914</span>
+      </div>
+      <div class="swatch" style="background: #A67C1A; color: #FAF0D6;">
+        <span class="swatch-name">Amber 600</span>
+        <span class="swatch-hex">#A67C1A</span>
+      </div>
+      <div class="swatch" style="background: #C4942A; color: #FFF;">
+        <span class="swatch-name">Amber 500 ★</span>
+        <span class="swatch-hex">#C4942A</span>
+      </div>
+      <div class="swatch" style="background: #D4AA4D; color: #FFF;">
+        <span class="swatch-name">Amber 400</span>
+        <span class="swatch-hex">#D4AA4D</span>
+      </div>
+      <div class="swatch" style="background: #E4C87A; color: #192B45;">
+        <span class="swatch-name">Amber 300</span>
+        <span class="swatch-hex">#E4C87A</span>
+      </div>
+      <div class="swatch" style="background: #F0DDA8; color: #192B45;">
+        <span class="swatch-name">Amber 200</span>
+        <span class="swatch-hex">#F0DDA8</span>
+      </div>
+      <div class="swatch" style="background: #FAF0D6; color: #192B45;">
+        <span class="swatch-name">Amber 100</span>
+        <span class="swatch-hex">#FAF0D6</span>
+      </div>
+    </div>
+  </div>
+
+  <!-- Semantic Colors -->
+  <div class="section">
+    <div class="section-title">Semantic Colors</div>
+    <div class="grid">
+      <div class="swatch" style="background: #2D8A6E; color: #FFF;">
+        <span class="swatch-name">Success</span>
+        <span class="swatch-hex">#2D8A6E</span>
+      </div>
+      <div class="swatch" style="background: #D4EDE5; color: #2D8A6E;">
+        <span class="swatch-name">Success Light</span>
+        <span class="swatch-hex">#D4EDE5</span>
+      </div>
+      <div class="swatch" style="background: #C4942A; color: #FFF;">
+        <span class="swatch-name">Warning</span>
+        <span class="swatch-hex">#C4942A</span>
+      </div>
+      <div class="swatch" style="background: #FAF0D6; color: #8B6914;">
+        <span class="swatch-name">Warning Light</span>
+        <span class="swatch-hex">#FAF0D6</span>
+      </div>
+      <div class="swatch" style="background: #B84A5A; color: #FFF;">
+        <span class="swatch-name">Error</span>
+        <span class="swatch-hex">#B84A5A</span>
+      </div>
+      <div class="swatch" style="background: #F5E0E3; color: #B84A5A;">
+        <span class="swatch-name">Error Light</span>
+        <span class="swatch-hex">#F5E0E3</span>
+      </div>
+      <div class="swatch" style="background: #5B8A9A; color: #FFF;">
+        <span class="swatch-name">Info</span>
+        <span class="swatch-hex">#5B8A9A</span>
+      </div>
+      <div class="swatch" style="background: #E1EEF2; color: #3A6070;">
+        <span class="swatch-name">Info Light</span>
+        <span class="swatch-hex">#E1EEF2</span>
+      </div>
+    </div>
+  </div>
+
+  <!-- Slate Neutrals -->
+  <div class="section">
+    <div class="section-title">Slate Neutrals</div>
+    <div class="scale">
+      <div class="swatch" style="background: #1A2332; color: #A9B2BE;">
+        <span class="swatch-name">Slate 900</span>
+        <span class="swatch-hex">#1A2332</span>
+      </div>
+      <div class="swatch" style="background: #2A3544; color: #A9B2BE;">
+        <span class="swatch-name">Slate 800</span>
+        <span class="swatch-hex">#2A3544</span>
+      </div>
+      <div class="swatch" style="background: #3D4A5C; color: #C8CED6;">
+        <span class="swatch-name">Slate 700</span>
+        <span class="swatch-hex">#3D4A5C</span>
+      </div>
+      <div class="swatch" style="background: #556275; color: #E4E7EB;">
+        <span class="swatch-name">Slate 600</span>
+        <span class="swatch-hex">#556275</span>
+      </div>
+      <div class="swatch" style="background: #6E7B8C; color: #FFF;">
+        <span class="swatch-name">Slate 500</span>
+        <span class="swatch-hex">#6E7B8C</span>
+      </div>
+      <div class="swatch" style="background: #8A95A5; color: #FFF;">
+        <span class="swatch-name">Slate 400</span>
+        <span class="swatch-hex">#8A95A5</span>
+      </div>
+      <div class="swatch" style="background: #A9B2BE; color: #1A2332;">
+        <span class="swatch-name">Slate 300</span>
+        <span class="swatch-hex">#A9B2BE</span>
+      </div>
+      <div class="swatch" style="background: #C8CED6; color: #1A2332;">
+        <span class="swatch-name">Slate 200</span>
+        <span class="swatch-hex">#C8CED6</span>
+      </div>
+      <div class="swatch" style="background: #E4E7EB; color: #1A2332;">
+        <span class="swatch-name">Slate 100</span>
+        <span class="swatch-hex">#E4E7EB</span>
+      </div>
+      <div class="swatch" style="background: #F4F5F7; color: #1A2332;">
+        <span class="swatch-name">Slate 50</span>
+        <span class="swatch-hex">#F4F5F7</span>
+      </div>
+    </div>
+  </div>
+
+  <!-- Data Visualization -->
+  <div class="section">
+    <div class="section-title">Data Visualization</div>
+    <div class="data-grid">
+      <div class="data-swatch" style="background: #192B45; color: #FFF;">
+        Navy<span>#192B45</span>
+      </div>
+      <div class="data-swatch" style="background: #5B8A9A; color: #FFF;">
+        Steel<span>#5B8A9A</span>
+      </div>
+      <div class="data-swatch" style="background: #2D8A6E; color: #FFF;">
+        Teal<span>#2D8A6E</span>
+      </div>
+      <div class="data-swatch" style="background: #C4942A; color: #FFF;">
+        Amber<span>#C4942A</span>
+      </div>
+      <div class="data-swatch" style="background: #6E7B8C; color: #FFF;">
+        Slate<span>#6E7B8C</span>
+      </div>
+      <div class="data-swatch" style="background: #B84A5A; color: #FFF;">
+        Rose<span>#B84A5A</span>
+      </div>
+      <div class="data-swatch" style="background: #5A5B8A; color: #FFF;">
+        Indigo<span>#5A5B8A</span>
+      </div>
+      <div class="data-swatch" style="background: #9A6B5B; color: #FFF;">
+        Copper<span>#9A6B5B</span>
+      </div>
+    </div>
+  </div>
+
+  <!-- Surfaces -->
+  <div class="section">
+    <div class="section-title">Surfaces</div>
+    <div class="grid">
+      <div class="swatch" style="background: #FFFFFF; color: #1A2332; border: 1px solid #E4E7EB;">
+        <span class="swatch-name">Background</span>
+        <span class="swatch-hex">#FFFFFF</span>
+      </div>
+      <div class="swatch" style="background: #F4F5F7; color: #1A2332;">
+        <span class="swatch-name">Surface 1</span>
+        <span class="swatch-hex">#F4F5F7</span>
+      </div>
+      <div class="swatch" style="background: #E9EEF4; color: #1A2332;">
+        <span class="swatch-name">Surface 2</span>
+        <span class="swatch-hex">#E9EEF4</span>
+      </div>
+      <div class="swatch" style="background: #C8D5E2; color: #192B45;">
+        <span class="swatch-name">Surface 3</span>
+        <span class="swatch-hex">#C8D5E2</span>
+      </div>
+    </div>
+  </div>
+
+</body>
+</html>
