@@ -297,9 +297,13 @@
       }
       
       .header-logo-title {
-        flex-direction: column !important;
-        align-items: flex-start !important;
-        gap: 8px !important;
+        flex-wrap: wrap !important;
+        gap: 8px 12px !important;
+      }
+      
+      .header-logo-title .header-title-wrapper {
+        flex-basis: 100% !important;
+        order: 2 !important;
       }
       
       .header-divider {
@@ -4871,7 +4875,7 @@
                 {!isMobile && <div className="header-divider" style={{ width: '1px', height: '32px', background: 'rgba(255,255,255,0.2)', flexShrink: 0 }} />}
                 
                 {/* Title */}
-                <div style={{ minWidth: 0, flex: 1 }}>
+                <div className="header-title-wrapper" style={{ minWidth: 0, flex: 1 }}>
                   <h1 style={{ margin: 0, fontSize: isMobile ? '16px' : '18px', fontWeight: 500, letterSpacing: '-0.3px', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>
                     {editMode ? (
                       <input 
