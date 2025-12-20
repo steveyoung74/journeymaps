@@ -3571,34 +3571,73 @@
       // Use map-specific localStorage key in multi-user mode
       const STORAGE_KEY = isMultiUserMode ? `journeymap-config-${mapId}` : 'journeymap-config';
       
+      // Normalize config to handle different field names from templates vs editor
+      const normalizeConfig = (data) => {
+        if (!data) return defaultConfig;
+        
+        // Ensure meta exists
+        if (!data.meta) {
+          data.meta = { title: mapTitle || 'Journey Map', version: '1.0' };
+        }
+        
+        // Ensure funnel object exists
+        if (!data.funnel) {
+          data.funnel = { enabled: true, initialVolume: 1000, periodLabel: 'per quarter' };
+        }
+        
+        // Ensure stages array exists
+        if (!data.stages) {
+          data.stages = [];
+        }
+        
+        // Normalize stages
+        data.stages = data.stages.map(stage => ({
+          ...stage,
+          dropOffCount: stage.dropOffCount || stage.dropOff || 0,
+          steps: (stage.steps || []).map(step => ({
+            ...step,
+            // Convert duration to timeMinutes if needed
+            timeMinutes: step.timeMinutes ?? step.duration ?? step.time ?? 0,
+            // Ensure friction exists
+            friction: step.friction || 'none',
+            frictionScore: step.frictionScore ?? (step.friction === 'high' ? 5 : step.friction === 'medium' ? 3 : 1),
+            // Ensure notes exists
+            notes: step.notes || '',
+            painPoints: step.painPoints || [],
+            // Map persona field
+            persona: step.persona || null
+          }))
+        }));
+        
+        // Ensure personas array exists
+        if (!data.personas) {
+          data.personas = [];
+        }
+        
+        // Normalize personas
+        data.personas = data.personas.map(persona => ({
+          ...persona,
+          burdenMultiplier: persona.burdenMultiplier || (persona.isExternal ? undefined : 1.35),
+          workspaceHourlyCost: persona.workspaceHourlyCost || (persona.isExternal ? undefined : 6.00)
+        }));
+        
+        return data;
+      };
+      
       const [config, setConfig] = useState(() => {
+        // In multi-user mode, start with default config and load from GitHub in useEffect
+        if (isMultiUserMode) {
+          console.log('📄 Multi-user mode, will load from GitHub...');
+          return defaultConfig;
+        }
+        
+        // Legacy mode: try localStorage first
         const saved = localStorage.getItem(STORAGE_KEY);
         if (saved) {
           try {
             const parsed = JSON.parse(saved);
             console.log('📂 Loaded config from localStorage');
-            
-            // Ensure funnel object exists for backward compatibility
-            if (!parsed.funnel) {
-              parsed.funnel = { enabled: true, initialVolume: 1000, periodLabel: 'per quarter' };
-            }
-            // Ensure stages have dropOffCount for backward compatibility
-            if (parsed.stages) {
-              parsed.stages = parsed.stages.map(stage => ({
-                ...stage,
-                dropOffCount: stage.dropOffCount || 0
-              }));
-            }
-            // Ensure personas have cost fields for backward compatibility
-            if (parsed.personas) {
-              parsed.personas = parsed.personas.map(persona => ({
-                ...persona,
-                burdenMultiplier: persona.burdenMultiplier || (persona.isExternal ? undefined : 1.35),
-                workspaceHourlyCost: persona.workspaceHourlyCost || (persona.isExternal ? undefined : 6.00)
-              }));
-            }
-            
-            return parsed;
+            return normalizeConfig(parsed);
           } catch (e) {
             console.warn('Failed to parse saved config, using default');
           }
@@ -3609,53 +3648,61 @@
       });
       
       const [configLoading, setConfigLoading] = useState(() => {
-        // Only show loading if no localStorage data
-        return !localStorage.getItem(STORAGE_KEY);
+        // In multi-user mode (dashboard maps), always show loading to fetch from GitHub
+        // For legacy mode, only show loading if no localStorage data
+        return isMultiUserMode || !localStorage.getItem(STORAGE_KEY);
       });
       
-      // Try to load config from public GitHub if no localStorage data
+      // Load config - prioritize GitHub for multi-user mode maps
       React.useEffect(() => {
         const loadFromGitHub = async () => {
-          // Skip if we already have localStorage data
-          if (localStorage.getItem(STORAGE_KEY)) {
+          // For legacy mode with localStorage data, skip GitHub fetch
+          if (!isMultiUserMode && localStorage.getItem(STORAGE_KEY)) {
             setConfigLoading(false);
             return;
           }
           
-          console.log('🌐 Fetching latest config from GitHub...');
+          console.log('🌐 Fetching config from GitHub...');
           try {
             const response = await fetch(PUBLIC_CONFIG_URL + '?t=' + Date.now()); // Cache bust
             if (response.ok) {
               const data = await response.json();
               console.log('✅ Loaded config from GitHub');
               
-              // Ensure funnel object exists for backward compatibility
-              if (!data.funnel) {
-                data.funnel = { enabled: true, initialVolume: 1000, periodLabel: 'per quarter' };
-              }
-              // Ensure stages have dropOffCount for backward compatibility
-              if (data.stages) {
-                data.stages = data.stages.map(stage => ({
-                  ...stage,
-                  dropOffCount: stage.dropOffCount || 0
-                }));
-              }
-              // Ensure personas have cost fields for backward compatibility
-              if (data.personas) {
-                data.personas = data.personas.map(persona => ({
-                  ...persona,
-                  burdenMultiplier: persona.burdenMultiplier || (persona.isExternal ? undefined : 1.35),
-                  workspaceHourlyCost: persona.workspaceHourlyCost || (persona.isExternal ? undefined : 6.00)
-                }));
-              }
-              
-              setConfig(data);
-              localStorage.setItem(STORAGE_KEY, JSON.stringify(data));
+              const normalized = normalizeConfig(data);
+              setConfig(normalized);
+              localStorage.setItem(STORAGE_KEY, JSON.stringify(normalized));
             } else {
-              console.warn('⚠️ Could not load from GitHub, using default config');
+              // GitHub fetch failed - try localStorage as fallback for multi-user mode
+              if (isMultiUserMode) {
+                const saved = localStorage.getItem(STORAGE_KEY);
+                if (saved) {
+                  try {
+                    const parsed = JSON.parse(saved);
+                    console.log('⚠️ GitHub unavailable, using localStorage fallback');
+                    setConfig(normalizeConfig(parsed));
+                  } catch (e) {
+                    console.warn('⚠️ localStorage also invalid, using default');
+                  }
+                }
+              }
+              console.warn('⚠️ Could not load from GitHub');
             }
           } catch (err) {
             console.warn('⚠️ GitHub fetch failed:', err.message);
+            // Try localStorage as fallback
+            if (isMultiUserMode) {
+              const saved = localStorage.getItem(STORAGE_KEY);
+              if (saved) {
+                try {
+                  const parsed = JSON.parse(saved);
+                  console.log('⚠️ Using localStorage fallback');
+                  setConfig(normalizeConfig(parsed));
+                } catch (e) {
+                  console.warn('⚠️ localStorage invalid');
+                }
+              }
+            }
           }
           setConfigLoading(false);
         };
@@ -3900,28 +3947,9 @@
           
           // Parse JSON config
           const loadedConfig = JSON.parse(content);
+          const normalized = normalizeConfig(loadedConfig);
           
-          // Ensure funnel object exists for backward compatibility
-          if (!loadedConfig.funnel) {
-            loadedConfig.funnel = { enabled: true, initialVolume: 1000, periodLabel: 'per quarter' };
-          }
-          // Ensure stages have dropOffCount for backward compatibility
-          if (loadedConfig.stages) {
-            loadedConfig.stages = loadedConfig.stages.map(stage => ({
-              ...stage,
-              dropOffCount: stage.dropOffCount || 0
-            }));
-          }
-          // Ensure personas have cost fields for backward compatibility
-          if (loadedConfig.personas) {
-            loadedConfig.personas = loadedConfig.personas.map(persona => ({
-              ...persona,
-              burdenMultiplier: persona.burdenMultiplier || (persona.isExternal ? undefined : 1.35),
-              workspaceHourlyCost: persona.workspaceHourlyCost || (persona.isExternal ? undefined : 6.00)
-            }));
-          }
-          
-          setConfig(loadedConfig);
+          setConfig(normalized);
           
           setGitHubStatus({ loading: false, message: '✓ Loaded from GitHub!', error: false });
           setTimeout(() => setGitHubStatus({ loading: false, message: '', error: false }), 3000);
@@ -3941,29 +3969,10 @@
           }
           
           const data = await response.json();
+          const normalized = normalizeConfig(data);
           
-          // Ensure funnel object exists for backward compatibility
-          if (!data.funnel) {
-            data.funnel = { enabled: true, initialVolume: 1000, periodLabel: 'per quarter' };
-          }
-          // Ensure stages have dropOffCount for backward compatibility
-          if (data.stages) {
-            data.stages = data.stages.map(stage => ({
-              ...stage,
-              dropOffCount: stage.dropOffCount || 0
-            }));
-          }
-          // Ensure personas have cost fields for backward compatibility
-          if (data.personas) {
-            data.personas = data.personas.map(persona => ({
-              ...persona,
-              burdenMultiplier: persona.burdenMultiplier || (persona.isExternal ? undefined : 1.35),
-              workspaceHourlyCost: persona.workspaceHourlyCost || (persona.isExternal ? undefined : 6.00)
-            }));
-          }
-          
-          setConfig(data);
-          localStorage.setItem('journeymap-config', JSON.stringify(data));
+          setConfig(normalized);
+          localStorage.setItem(STORAGE_KEY, JSON.stringify(normalized));
           
           setRefreshStatus({ loading: false, message: '✓ Updated!' });
           setTimeout(() => setRefreshStatus({ loading: false, message: '' }), 2000);
@@ -4363,24 +4372,8 @@
           reader.onload = (e) => {
             try {
               const imported = JSON.parse(e.target.result);
-              // Ensure funnel object exists for backward compatibility
-              if (!imported.funnel) {
-                imported.funnel = { enabled: true, initialVolume: 1000, periodLabel: 'per quarter' };
-              }
-              // Ensure stages have dropOffCount for backward compatibility
-              imported.stages = imported.stages.map(stage => ({
-                ...stage,
-                dropOffCount: stage.dropOffCount || 0
-              }));
-              // Ensure personas have cost fields for backward compatibility
-              if (imported.personas) {
-                imported.personas = imported.personas.map(persona => ({
-                  ...persona,
-                  burdenMultiplier: persona.burdenMultiplier || (persona.isExternal ? undefined : 1.35),
-                  workspaceHourlyCost: persona.workspaceHourlyCost || (persona.isExternal ? undefined : 6.00)
-                }));
-              }
-              setConfig(imported);
+              const normalized = normalizeConfig(imported);
+              setConfig(normalized);
               setSelectedStep(null);
             } catch (err) {
               alert('Invalid JSON file');
