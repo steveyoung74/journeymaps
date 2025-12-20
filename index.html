@@ -219,6 +219,57 @@
     }
     .section-alt {
       background: var(--slate-50);
+      position: relative;
+    }
+    .section-alt::before {
+      content: '';
+      position: absolute;
+      inset: 0;
+      background: url('topography-light.svg') center/600px 600px repeat;
+      opacity: 1;
+      pointer-events: none;
+    }
+    .section-alt > * {
+      position: relative;
+      z-index: 1;
+    }
+    
+    /* Dashboard background with topographic pattern */
+    .dashboard-bg {
+      min-height: 100vh;
+      background: var(--slate-50);
+      position: relative;
+    }
+    .dashboard-bg::before {
+      content: '';
+      position: absolute;
+      inset: 0;
+      background: url('topography-light.svg') center/600px 600px repeat;
+      opacity: 1;
+      pointer-events: none;
+    }
+    .dashboard-bg > * {
+      position: relative;
+      z-index: 1;
+    }
+    
+    /* CTA section with topographic pattern */
+    .cta-section {
+      background: linear-gradient(135deg, var(--navy-700) 0%, var(--navy-900) 100%);
+      padding: 100px 24px;
+      position: relative;
+    }
+    .cta-section::before {
+      content: '';
+      position: absolute;
+      inset: 0;
+      background: url('topography-dark.svg') center/600px 600px repeat;
+      opacity: 1;
+      pointer-events: none;
+    }
+    .cta-section > * {
+      position: relative;
+      z-index: 1;
     }
     .container {
       max-width: 1140px;
@@ -737,7 +788,7 @@
           </section>
           
           {/* CTA Section */}
-          <section className="section" style={{ background: 'linear-gradient(135deg, var(--navy-700) 0%, var(--navy-900) 100%)', padding: '100px 24px' }}>
+          <section className="cta-section">
             <div className="container" style={{ textAlign: 'center' }}>
               <h2 style={{ fontSize: '42px', fontWeight: 300, color: '#FFF', marginBottom: '20px', letterSpacing: '-0.5px' }}>
                 Ready to see what your journeys really cost?
@@ -960,7 +1011,7 @@
       };
 
       return (
-        <div style={{ minHeight: '100vh', background: 'var(--slate-50)' }}>
+        <div className="dashboard-bg">
           {/* Header */}
           <header style={{ 
             background: 'var(--navy-700)', 

@@ -102,6 +102,42 @@
     
     * { box-sizing: border-box; margin: 0; padding: 0; }
     body { font-family: 'Interstate', -apple-system, BlinkMacSystemFont, sans-serif; color: var(--slate-900); }
+    
+    /* Main app background with topographic pattern */
+    .app-bg {
+      position: relative;
+    }
+    .app-bg::before {
+      content: '';
+      position: absolute;
+      inset: 0;
+      background: url('topography-light.svg') center/600px 600px repeat;
+      opacity: 1;
+      pointer-events: none;
+      z-index: 0;
+    }
+    .app-bg > * {
+      position: relative;
+      z-index: 1;
+    }
+    
+    /* Dark screen background with topographic pattern */
+    .dark-bg {
+      position: relative;
+    }
+    .dark-bg::before {
+      content: '';
+      position: absolute;
+      inset: 0;
+      background: url('topography-dark.svg') center/600px 600px repeat;
+      opacity: 1;
+      pointer-events: none;
+      z-index: 0;
+    }
+    .dark-bg > * {
+      position: relative;
+      z-index: 1;
+    }
     ::-webkit-scrollbar { height: 8px; width: 8px; }
     ::-webkit-scrollbar-track { background: var(--slate-100); }
     ::-webkit-scrollbar-thumb { background: var(--slate-300); border-radius: 4px; }
@@ -4592,7 +4628,7 @@
       // Loading screen while fetching passwords or config
       if (passwordsLoading || configLoading) {
         return (
-          <div style={{
+          <div className="dark-bg" style={{
             minHeight: '100vh',
             display: 'flex',
             alignItems: 'center',
@@ -4613,7 +4649,7 @@
       // Error screen if passwords failed to load
       if (passwordsError) {
         return (
-          <div style={{
+          <div className="dark-bg" style={{
             minHeight: '100vh',
             display: 'flex',
             alignItems: 'center',
@@ -4661,7 +4697,7 @@
       // Login screen
       if (!isAppUnlocked) {
         return (
-          <div style={{
+          <div className="dark-bg" style={{
             minHeight: '100vh',
             display: 'flex',
             alignItems: 'center',
@@ -4741,7 +4777,7 @@
       }
 
       return (
-        <div style={{
+        <div className="app-bg" style={{
           height: isMobile ? 'auto' : '100vh',
           minHeight: isMobile ? '100vh' : 'auto',
           display: 'flex',
