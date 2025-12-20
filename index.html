@@ -430,7 +430,7 @@
   <script type="text/babel">
     const { useState, useEffect } = React;
     
-    const APP_VERSION = '1.5.0';
+    const APP_VERSION = '1.6.0';
     
     // Helper to safely format dates
     const formatDate = (dateStr) => {
@@ -581,6 +581,7 @@
             <div className="nav-links" style={{ display: 'flex', gap: '40px', alignItems: 'center' }}>
               <a href="#features" style={{ color: 'rgba(255,255,255,0.8)', textDecoration: 'none', fontSize: '14px', fontWeight: 500 }}>Features</a>
               <a href="#how-it-works" style={{ color: 'rgba(255,255,255,0.8)', textDecoration: 'none', fontSize: '14px', fontWeight: 500 }}>How It Works</a>
+              <a href="#templates" style={{ color: 'rgba(255,255,255,0.8)', textDecoration: 'none', fontSize: '14px', fontWeight: 500 }}>Templates</a>
               <a href="#use-cases" style={{ color: 'rgba(255,255,255,0.8)', textDecoration: 'none', fontSize: '14px', fontWeight: 500 }}>Use Cases</a>
               <button onClick={onGetStarted} className="btn btn-light" style={{ padding: '10px 24px' }}>
                 Sign In
@@ -1450,6 +1451,283 @@
                     </div>
                   </div>
                 </div>
+              </div>
+            </div>
+          </section>
+          
+          {/* Templates Library Section */}
+          <section id="templates" className="section">
+            <div className="container">
+              <div style={{ textAlign: 'center', marginBottom: '56px' }}>
+                <div style={{ fontSize: '13px', color: 'var(--steel-500)', fontWeight: 600, letterSpacing: '1px', marginBottom: '12px' }}>STARTER TEMPLATES</div>
+                <h2 style={{ fontSize: '40px', fontWeight: 300, marginBottom: '16px', color: 'var(--navy-700)' }}>
+                  Hit the ground running with <span style={{ fontWeight: 600 }}>23 ready-made templates</span>
+                </h2>
+                <p style={{ fontSize: '18px', color: 'var(--slate-600)', maxWidth: '680px', margin: '0 auto' }}>
+                  Don't start from scratch. Each template includes realistic stages, steps, personas, time estimates, and funnel data — ready to customise for your organisation.
+                </p>
+              </div>
+              
+              {/* Template Categories */}
+              <div style={{ display: 'flex', flexDirection: 'column', gap: '40px' }}>
+                
+                {/* Financial Services */}
+                <div>
+                  <div style={{ display: 'flex', alignItems: 'center', gap: '12px', marginBottom: '20px' }}>
+                    <span style={{ fontSize: '24px' }}>🏦</span>
+                    <h3 style={{ fontSize: '20px', fontWeight: 600, color: 'var(--navy-700)', margin: 0 }}>Financial Services</h3>
+                  </div>
+                  <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(280px, 1fr))', gap: '16px' }}>
+                    {[
+                      { icon: '🏦', name: 'Client Onboarding', desc: 'Wealth management with KYC & compliance' },
+                      { icon: '🏠', name: 'Mortgage Application', desc: 'Enquiry to completion, 30-60 day cycle' },
+                      { icon: '🛡️', name: 'Insurance Claim', desc: 'FNOL to settlement with fraud checks' },
+                      { icon: '💳', name: 'Bank Account Opening', desc: 'Personal or business with AML screening' },
+                      { icon: '💵', name: 'Personal Loan', desc: 'Application to disbursement' }
+                    ].map((t, i) => (
+                      <div key={i} style={{ 
+                        background: '#FFF', 
+                        border: '1px solid var(--slate-200)', 
+                        borderRadius: '12px', 
+                        padding: '20px',
+                        display: 'flex',
+                        gap: '14px',
+                        alignItems: 'flex-start',
+                        transition: 'all 0.15s',
+                        cursor: 'default'
+                      }}>
+                        <span style={{ fontSize: '24px' }}>{t.icon}</span>
+                        <div>
+                          <div style={{ fontWeight: 600, color: 'var(--navy-700)', marginBottom: '4px' }}>{t.name}</div>
+                          <div style={{ fontSize: '13px', color: 'var(--slate-500)', lineHeight: 1.5 }}>{t.desc}</div>
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+                </div>
+                
+                {/* Healthcare */}
+                <div>
+                  <div style={{ display: 'flex', alignItems: 'center', gap: '12px', marginBottom: '20px' }}>
+                    <span style={{ fontSize: '24px' }}>🏥</span>
+                    <h3 style={{ fontSize: '20px', fontWeight: 600, color: 'var(--navy-700)', margin: 0 }}>Healthcare</h3>
+                  </div>
+                  <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(280px, 1fr))', gap: '16px' }}>
+                    {[
+                      { icon: '🏨', name: 'Patient Registration & Admission', desc: 'Front door, insurance verification, consent' },
+                      { icon: '🏥', name: 'Patient Referral', desc: 'NHS/private pathway tracking' }
+                    ].map((t, i) => (
+                      <div key={i} style={{ 
+                        background: '#FFF', 
+                        border: '1px solid var(--slate-200)', 
+                        borderRadius: '12px', 
+                        padding: '20px',
+                        display: 'flex',
+                        gap: '14px',
+                        alignItems: 'flex-start'
+                      }}>
+                        <span style={{ fontSize: '24px' }}>{t.icon}</span>
+                        <div>
+                          <div style={{ fontWeight: 600, color: 'var(--navy-700)', marginBottom: '4px' }}>{t.name}</div>
+                          <div style={{ fontSize: '13px', color: 'var(--slate-500)', lineHeight: 1.5 }}>{t.desc}</div>
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+                </div>
+                
+                {/* HR / People Operations */}
+                <div>
+                  <div style={{ display: 'flex', alignItems: 'center', gap: '12px', marginBottom: '20px' }}>
+                    <span style={{ fontSize: '24px' }}>👥</span>
+                    <h3 style={{ fontSize: '20px', fontWeight: 600, color: 'var(--navy-700)', margin: 0 }}>HR / People Operations</h3>
+                  </div>
+                  <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(280px, 1fr))', gap: '16px' }}>
+                    {[
+                      { icon: '👋', name: 'Employee Onboarding', desc: 'Offer acceptance to full productivity' },
+                      { icon: '👔', name: 'Recruitment & Hiring', desc: 'Requisition to offer acceptance' },
+                      { icon: '🚪', name: 'Employee Offboarding', desc: 'Knowledge transfer, access revocation, exit' }
+                    ].map((t, i) => (
+                      <div key={i} style={{ 
+                        background: '#FFF', 
+                        border: '1px solid var(--slate-200)', 
+                        borderRadius: '12px', 
+                        padding: '20px',
+                        display: 'flex',
+                        gap: '14px',
+                        alignItems: 'flex-start'
+                      }}>
+                        <span style={{ fontSize: '24px' }}>{t.icon}</span>
+                        <div>
+                          <div style={{ fontWeight: 600, color: 'var(--navy-700)', marginBottom: '4px' }}>{t.name}</div>
+                          <div style={{ fontSize: '13px', color: 'var(--slate-500)', lineHeight: 1.5 }}>{t.desc}</div>
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+                </div>
+                
+                {/* Property & Real Estate */}
+                <div>
+                  <div style={{ display: 'flex', alignItems: 'center', gap: '12px', marginBottom: '20px' }}>
+                    <span style={{ fontSize: '24px' }}>🏡</span>
+                    <h3 style={{ fontSize: '20px', fontWeight: 600, color: 'var(--navy-700)', margin: 0 }}>Property & Real Estate</h3>
+                  </div>
+                  <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(280px, 1fr))', gap: '16px' }}>
+                    {[
+                      { icon: '🏡', name: 'Property Purchase', desc: 'Conveyancing from offer to completion' },
+                      { icon: '🔑', name: 'Tenant Move-In', desc: 'References, contracts, key handover' }
+                    ].map((t, i) => (
+                      <div key={i} style={{ 
+                        background: '#FFF', 
+                        border: '1px solid var(--slate-200)', 
+                        borderRadius: '12px', 
+                        padding: '20px',
+                        display: 'flex',
+                        gap: '14px',
+                        alignItems: 'flex-start'
+                      }}>
+                        <span style={{ fontSize: '24px' }}>{t.icon}</span>
+                        <div>
+                          <div style={{ fontWeight: 600, color: 'var(--navy-700)', marginBottom: '4px' }}>{t.name}</div>
+                          <div style={{ fontSize: '13px', color: 'var(--slate-500)', lineHeight: 1.5 }}>{t.desc}</div>
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+                </div>
+                
+                {/* Legal & Professional Services */}
+                <div>
+                  <div style={{ display: 'flex', alignItems: 'center', gap: '12px', marginBottom: '20px' }}>
+                    <span style={{ fontSize: '24px' }}>⚖️</span>
+                    <h3 style={{ fontSize: '20px', fontWeight: 600, color: 'var(--navy-700)', margin: 0 }}>Legal & Professional Services</h3>
+                  </div>
+                  <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(280px, 1fr))', gap: '16px' }}>
+                    {[
+                      { icon: '⚖️', name: 'Client Intake (Law Firm)', desc: 'Conflict checks, engagement letters, AML/KYC' },
+                      { icon: '📝', name: 'Contract Lifecycle', desc: 'Request, negotiation, approval, execution' }
+                    ].map((t, i) => (
+                      <div key={i} style={{ 
+                        background: '#FFF', 
+                        border: '1px solid var(--slate-200)', 
+                        borderRadius: '12px', 
+                        padding: '20px',
+                        display: 'flex',
+                        gap: '14px',
+                        alignItems: 'flex-start'
+                      }}>
+                        <span style={{ fontSize: '24px' }}>{t.icon}</span>
+                        <div>
+                          <div style={{ fontWeight: 600, color: 'var(--navy-700)', marginBottom: '4px' }}>{t.name}</div>
+                          <div style={{ fontSize: '13px', color: 'var(--slate-500)', lineHeight: 1.5 }}>{t.desc}</div>
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+                </div>
+                
+                {/* B2B / SaaS */}
+                <div>
+                  <div style={{ display: 'flex', alignItems: 'center', gap: '12px', marginBottom: '20px' }}>
+                    <span style={{ fontSize: '24px' }}>💼</span>
+                    <h3 style={{ fontSize: '20px', fontWeight: 600, color: 'var(--navy-700)', margin: 0 }}>B2B / SaaS</h3>
+                  </div>
+                  <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(280px, 1fr))', gap: '16px' }}>
+                    {[
+                      { icon: '💻', name: 'Customer Onboarding (SaaS)', desc: 'Implementation to go-live' },
+                      { icon: '🤝', name: 'Vendor/Supplier Onboarding', desc: 'Due diligence, contracting, setup' },
+                      { icon: '📈', name: 'Enterprise Sales Cycle', desc: 'Lead to closed deal with procurement' }
+                    ].map((t, i) => (
+                      <div key={i} style={{ 
+                        background: '#FFF', 
+                        border: '1px solid var(--slate-200)', 
+                        borderRadius: '12px', 
+                        padding: '20px',
+                        display: 'flex',
+                        gap: '14px',
+                        alignItems: 'flex-start'
+                      }}>
+                        <span style={{ fontSize: '24px' }}>{t.icon}</span>
+                        <div>
+                          <div style={{ fontWeight: 600, color: 'var(--navy-700)', marginBottom: '4px' }}>{t.name}</div>
+                          <div style={{ fontSize: '13px', color: 'var(--slate-500)', lineHeight: 1.5 }}>{t.desc}</div>
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+                </div>
+                
+                {/* Public Sector / Government */}
+                <div>
+                  <div style={{ display: 'flex', alignItems: 'center', gap: '12px', marginBottom: '20px' }}>
+                    <span style={{ fontSize: '24px' }}>🏛️</span>
+                    <h3 style={{ fontSize: '20px', fontWeight: 600, color: 'var(--navy-700)', margin: 0 }}>Public Sector / Government</h3>
+                  </div>
+                  <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(280px, 1fr))', gap: '16px' }}>
+                    {[
+                      { icon: '💰', name: 'Grant Application & Award', desc: 'Eligibility, assessment, disbursement' },
+                      { icon: '🏛️', name: 'Permit/License Application', desc: 'Submission to issuance with appeals' }
+                    ].map((t, i) => (
+                      <div key={i} style={{ 
+                        background: '#FFF', 
+                        border: '1px solid var(--slate-200)', 
+                        borderRadius: '12px', 
+                        padding: '20px',
+                        display: 'flex',
+                        gap: '14px',
+                        alignItems: 'flex-start'
+                      }}>
+                        <span style={{ fontSize: '24px' }}>{t.icon}</span>
+                        <div>
+                          <div style={{ fontWeight: 600, color: 'var(--navy-700)', marginBottom: '4px' }}>{t.name}</div>
+                          <div style={{ fontSize: '13px', color: 'var(--slate-500)', lineHeight: 1.5 }}>{t.desc}</div>
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+                </div>
+                
+                {/* Operations / Service */}
+                <div>
+                  <div style={{ display: 'flex', alignItems: 'center', gap: '12px', marginBottom: '20px' }}>
+                    <span style={{ fontSize: '24px' }}>⚙️</span>
+                    <h3 style={{ fontSize: '20px', fontWeight: 600, color: 'var(--navy-700)', margin: 0 }}>Operations / Service</h3>
+                  </div>
+                  <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(280px, 1fr))', gap: '16px' }}>
+                    {[
+                      { icon: '📢', name: 'Complaint Handling', desc: 'Receipt to resolution and learning' },
+                      { icon: '📦', name: 'Product Return & Refund', desc: 'E-commerce returns processing' },
+                      { icon: '🚨', name: 'IT Incident Management', desc: 'Detection to resolution and PIR' }
+                    ].map((t, i) => (
+                      <div key={i} style={{ 
+                        background: '#FFF', 
+                        border: '1px solid var(--slate-200)', 
+                        borderRadius: '12px', 
+                        padding: '20px',
+                        display: 'flex',
+                        gap: '14px',
+                        alignItems: 'flex-start'
+                      }}>
+                        <span style={{ fontSize: '24px' }}>{t.icon}</span>
+                        <div>
+                          <div style={{ fontWeight: 600, color: 'var(--navy-700)', marginBottom: '4px' }}>{t.name}</div>
+                          <div style={{ fontSize: '13px', color: 'var(--slate-500)', lineHeight: 1.5 }}>{t.desc}</div>
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+                </div>
+              </div>
+              
+              {/* CTA */}
+              <div style={{ textAlign: 'center', marginTop: '56px' }}>
+                <p style={{ fontSize: '16px', color: 'var(--slate-600)', marginBottom: '20px' }}>
+                  Don't see your industry? Start with a <strong>Blank Canvas</strong> and build your own.
+                </p>
+                <button onClick={onGetStarted} className="btn btn-primary" style={{ padding: '16px 36px' }}>
+                  Browse All Templates →
+                </button>
               </div>
             </div>
           </section>
