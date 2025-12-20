@@ -2,7 +2,7 @@
   "meta": {
     "title": "Client Onboarding Journey Digital Twin",
     "version": "2.0",
-    "product": "Steve's Journey Map v6.1",
+    "product": "FATHOM v8.6.0",
     "lastUpdated": "2025-12-19T21:22:26.296Z",
     "audience": "Internal Operations",
     "perspective": "client"
@@ -11,14 +11,14 @@
     {
       "id": "client",
       "label": "Client",
-      "color": "#2D5A4B",
+      "color": "#2D8A6E",
       "annualSalary": 0,
       "isExternal": true
     },
     {
       "id": "fp",
       "label": "Financial Planner",
-      "color": "#8B4513",
+      "color": "#9A6B5B",
       "annualSalary": 75000,
       "isExternal": false,
       "burdenMultiplier": 1.3,
@@ -27,7 +27,7 @@
     {
       "id": "im",
       "label": "Investment Manager",
-      "color": "#1E40AF",
+      "color": "#456A8A",
       "annualSalary": 80000,
       "isExternal": false,
       "burdenMultiplier": 1.3,
@@ -36,7 +36,7 @@
     {
       "id": "ops",
       "label": "Operations",
-      "color": "#6B46C1",
+      "color": "#5A5B8A",
       "annualSalary": 25000,
       "isExternal": false,
       "burdenMultiplier": 1.3,
@@ -45,7 +45,7 @@
     {
       "id": "administrator",
       "label": "FP Administrator",
-      "color": "#8B4513",
+      "color": "#9A6B5B",
       "annualSalary": 35000,
       "isExternal": false,
       "burdenMultiplier": 1.3,
@@ -54,7 +54,7 @@
     {
       "id": "compliance",
       "label": "Compliance",
-      "color": "#C53030",
+      "color": "#B84A5A",
       "annualSalary": 55000,
       "isExternal": false,
       "burdenMultiplier": 1.3,
@@ -62,7 +62,7 @@
     },
     {
       "label": "Paraplanner",
-      "color": "#B45309",
+      "color": "#C4942A",
       "annualSalary": 45000,
       "isExternal": false,
       "id": "paraplanner",
@@ -71,7 +71,7 @@
     },
     {
       "label": "New Business Exec",
-      "color": "#7C3AED",
+      "color": "#5B8A9A",
       "annualSalary": 25000,
       "isExternal": false,
       "id": "new-business-exec",
@@ -80,7 +80,7 @@
     },
     {
       "label": "IM Adminitrator",
-      "color": "#1E40AF",
+      "color": "#456A8A",
       "annualSalary": 35000,
       "isExternal": false,
       "id": "im-adminitrator",
