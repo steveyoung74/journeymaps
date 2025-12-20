@@ -454,16 +454,12 @@
       `https://api.github.com/repos/${GITHUB_CONFIG.owner}/${GITHUB_CONFIG.repo}/contents/${path}`;
     
     async function fetchFromGitHub(path) {
-      // Use double cache-bust to avoid CDN caching issues
+      // Use cache-bust query param to avoid CDN caching
+      // Don't use custom headers as they trigger CORS preflight which raw.githubusercontent.com doesn't support
       const cacheBust = `${Date.now()}-${Math.random().toString(36).substr(2, 9)}`;
       const url = getRawUrl(path) + '?t=' + cacheBust;
       console.log('Fetching:', url);
-      const response = await fetch(url, {
-        cache: 'no-store',
-        headers: {
-          'Cache-Control': 'no-cache'
-        }
-      });
+      const response = await fetch(url);
       if (!response.ok) {
         if (response.status === 404) return null;
         throw new Error(`GitHub fetch failed: ${response.status}`);
@@ -1042,11 +1038,16 @@
       );
 
       const handleCreate = async (newMap) => {
-        const updatedMaps = [...maps, newMap];
         try {
           console.log('Creating map:', newMap.title);
           
-          // Save to index first
+          // Separate metadata from config
+          const { config, ...mapMetadata } = newMap;
+          
+          // Add to maps array (metadata only for index)
+          const updatedMaps = [...maps, mapMetadata];
+          
+          // Save metadata to index
           const indexResult = await saveToGitHub(
             GITHUB_CONFIG.indexFile,
             { maps: updatedMaps },
@@ -1055,10 +1056,10 @@
           );
           console.log('Index updated:', indexResult);
           
-          // Then create the map file
+          // Save full config to separate file
           const mapResult = await saveToGitHub(
             `${GITHUB_CONFIG.mapsPath}/${newMap.id}.json`,
-            newMap.config,
+            config,
             token,
             `Create map: ${newMap.title}`
           );
