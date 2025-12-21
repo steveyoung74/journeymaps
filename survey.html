@@ -9,23 +9,47 @@
        FATHOM RFI SURVEY - BRAND STYLES
        ============================================ */
     
+    /* Interstate Font Family */
+    @font-face {
+      font-family: 'Interstate';
+      src: url('https://steveyoung74.github.io/journeymaps/fonts/Interstate-regular.ttf') format('truetype');
+      font-weight: 400;
+      font-style: normal;
+    }
+    @font-face {
+      font-family: 'Interstate';
+      src: url('https://steveyoung74.github.io/journeymaps/fonts/Interstate-bold.ttf') format('truetype');
+      font-weight: 700;
+      font-style: normal;
+    }
+    
     :root {
-      --navy-900: #192B45;
-      --navy-700: #2A4063;
-      --navy-500: #3D5A80;
+      --navy-950: #0C1620;
+      --navy-900: #111E2E;
+      --navy-800: #15243A;
+      --navy-700: #192B45;
+      --navy-600: #243D5C;
+      --navy-500: #2F5070;
+      --steel-600: #4A7485;
       --steel-500: #5B8A9A;
-      --steel-400: #7BA3B0;
-      --slate-50: #F8F9FA;
-      --slate-100: #F1F3F5;
-      --slate-200: #E9ECEF;
-      --slate-300: #DEE2E6;
-      --slate-400: #ADB5BD;
-      --slate-500: #6C757D;
-      --slate-600: #495057;
-      --slate-700: #343A40;
+      --steel-400: #74A0AE;
+      --steel-300: #96BCC7;
+      --steel-100: #E1EEF2;
+      --slate-50: #F4F5F7;
+      --slate-100: #E4E7EB;
+      --slate-200: #C8CED6;
+      --slate-300: #A9B2BE;
+      --slate-400: #8A95A5;
+      --slate-500: #6E7B8C;
+      --slate-600: #556275;
+      --slate-700: #3D4A5C;
+      --slate-900: #1A2332;
       --amber-500: #C4942A;
-      --green-500: #2D8A6E;
-      --red-500: #B84A5A;
+      --amber-100: #FAF0D6;
+      --success: #2D8A6E;
+      --success-light: #D4EDE5;
+      --error: #B84A5A;
+      --error-light: #F5E0E3;
     }
     
     * {
@@ -35,11 +59,33 @@
     }
     
     body {
-      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, sans-serif;
+      font-family: 'Interstate', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, sans-serif;
       background: var(--slate-50);
       color: var(--slate-700);
       line-height: 1.6;
       min-height: 100vh;
+    }
+    
+    /* Page background with topographic pattern */
+    .page-bg {
+      min-height: 100vh;
+      background: var(--slate-50);
+      position: relative;
+    }
+    .page-bg::before {
+      content: '';
+      position: absolute;
+      inset: 0;
+      background: url('https://steveyoung74.github.io/journeymaps/topography-light.svg') center/600px 600px repeat;
+      opacity: 1;
+      pointer-events: none;
+      z-index: 0;
+    }
+    .page-bg > header,
+    .page-bg > .progress-container,
+    .page-bg > main {
+      position: relative;
+      z-index: 1;
     }
     
     /* ============================================
@@ -47,31 +93,42 @@
        ============================================ */
     
     .header {
-      background: var(--navy-900);
+      background: linear-gradient(135deg, var(--navy-700) 0%, var(--navy-900) 100%);
       color: #FFF;
-      padding: 20px 24px;
+      padding: 16px 24px;
       position: sticky;
       top: 0;
       z-index: 100;
+      overflow: hidden;
+    }
+    
+    .header::before {
+      content: '';
+      position: absolute;
+      inset: 0;
+      background: url('https://steveyoung74.github.io/journeymaps/topography-dark.svg') center/600px 600px repeat;
+      opacity: 1;
+      pointer-events: none;
     }
     
     .header-content {
       max-width: 640px;
       margin: 0 auto;
+      display: flex;
+      align-items: center;
+      gap: 16px;
+      position: relative;
+      z-index: 1;
     }
     
-    .header-brand {
-      font-size: 12px;
-      font-weight: 600;
-      letter-spacing: 2px;
-      text-transform: uppercase;
-      opacity: 0.7;
-      margin-bottom: 4px;
+    .header-logo {
+      height: 24px;
     }
     
     .header-title {
-      font-size: 20px;
+      font-size: 18px;
       font-weight: 600;
+      opacity: 0.9;
     }
     
     /* ============================================
@@ -82,7 +139,7 @@
       background: var(--slate-200);
       height: 4px;
       position: sticky;
-      top: 72px;
+      top: 56px;
       z-index: 99;
     }
     
@@ -794,10 +851,10 @@
       
       if (loading) {
         return (
-          <>
+          <div className="page-bg">
             <header className="header">
               <div className="header-content">
-                <div className="header-brand">FATHOM</div>
+                <img src="https://steveyoung74.github.io/journeymaps/logo_light.png" alt="FATHOM" className="header-logo" />
                 <div className="header-title">Process Survey</div>
               </div>
             </header>
@@ -807,16 +864,16 @@
                 <p>Loading survey...</p>
               </div>
             </main>
-          </>
+          </div>
         );
       }
       
       if (error) {
         return (
-          <>
+          <div className="page-bg">
             <header className="header">
               <div className="header-content">
-                <div className="header-brand">FATHOM</div>
+                <img src="https://steveyoung74.github.io/journeymaps/logo_light.png" alt="FATHOM" className="header-logo" />
                 <div className="header-title">Process Survey</div>
               </div>
             </header>
@@ -827,17 +884,17 @@
                 <p>{error}</p>
               </div>
             </main>
-          </>
+          </div>
         );
       }
       
       // Success screen
       if (currentStep === -3) {
         return (
-          <>
+          <div className="page-bg">
             <header className="header">
               <div className="header-content">
-                <div className="header-brand">FATHOM</div>
+                <img src="https://steveyoung74.github.io/journeymaps/logo_light.png" alt="FATHOM" className="header-logo" />
                 <div className="header-title">{mapConfig?.meta?.title || 'Process Survey'}</div>
               </div>
             </header>
@@ -848,15 +905,15 @@
                 <p>Your responses have been submitted successfully. Your input will help us better understand and improve this process.</p>
               </div>
             </main>
-          </>
+          </div>
         );
       }
       
       return (
-        <>
+        <div className="page-bg">
           <header className="header">
             <div className="header-content">
-              <div className="header-brand">FATHOM</div>
+              <img src="https://steveyoung74.github.io/journeymaps/logo_light.png" alt="FATHOM" className="header-logo" />
               <div className="header-title">{mapConfig?.meta?.title || 'Process Survey'}</div>
             </div>
           </header>
@@ -1117,7 +1174,7 @@
               </>
             )}
           </main>
-        </>
+        </div>
       );
     }
     

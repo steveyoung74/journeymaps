@@ -26,10 +26,13 @@
     }
     
     :root {
+      --navy-950: #0C1620;
       --navy-900: #111E2E;
+      --navy-800: #15243A;
       --navy-700: #192B45;
       --navy-600: #243D5C;
       --navy-500: #2F5070;
+      --steel-700: #3A6070;
       --steel-600: #4A7485;
       --steel-500: #5B8A9A;
       --steel-400: #74A0AE;
@@ -66,12 +69,33 @@
       min-height: 100vh;
     }
     
+    /* Page background with topographic pattern */
+    .page-bg {
+      min-height: 100vh;
+      background: var(--slate-50);
+      position: relative;
+    }
+    .page-bg::before {
+      content: '';
+      position: absolute;
+      inset: 0;
+      background: url('https://steveyoung74.github.io/journeymaps/topography-light.svg') center/600px 600px repeat;
+      opacity: 1;
+      pointer-events: none;
+      z-index: 0;
+    }
+    .page-bg > header,
+    .page-bg > main {
+      position: relative;
+      z-index: 1;
+    }
+    
     /* ============================================
        HEADER
        ============================================ */
     
     .header {
-      background: var(--navy-700);
+      background: linear-gradient(135deg, var(--navy-700) 0%, var(--navy-900) 100%);
       color: #FFF;
       padding: 16px 32px;
       display: flex;
@@ -80,6 +104,21 @@
       position: sticky;
       top: 0;
       z-index: 100;
+      overflow: hidden;
+    }
+    
+    .header::before {
+      content: '';
+      position: absolute;
+      inset: 0;
+      background: url('https://steveyoung74.github.io/journeymaps/topography-dark.svg') center/600px 600px repeat;
+      opacity: 1;
+      pointer-events: none;
+    }
+    
+    .header > * {
+      position: relative;
+      z-index: 1;
     }
     
     .header-left {
@@ -88,17 +127,14 @@
       gap: 20px;
     }
     
-    .header-brand {
-      font-size: 11px;
-      font-weight: 700;
-      letter-spacing: 2.5px;
-      text-transform: uppercase;
-      opacity: 0.6;
+    .header-logo {
+      height: 28px;
     }
     
     .header-title {
       font-size: 18px;
       font-weight: 600;
+      opacity: 0.9;
     }
     
     .header-back {
@@ -1054,10 +1090,10 @@
       
       if (loading) {
         return (
-          <>
+          <div className="page-bg">
             <header className="header">
               <div className="header-left">
-                <div className="header-brand">FATHOM</div>
+                <img src="https://steveyoung74.github.io/journeymaps/logo_light.png" alt="FATHOM" className="header-logo" />
                 <div className="header-title">Loading...</div>
               </div>
             </header>
@@ -1067,16 +1103,16 @@
                 <p>Loading survey responses...</p>
               </div>
             </main>
-          </>
+          </div>
         );
       }
       
       if (error) {
         return (
-          <>
+          <div className="page-bg">
             <header className="header">
               <div className="header-left">
-                <div className="header-brand">FATHOM</div>
+                <img src="https://steveyoung74.github.io/journeymaps/logo_light.png" alt="FATHOM" className="header-logo" />
                 <div className="header-title">Error</div>
               </div>
               <a href="index.html" className="header-back">← Back to Dashboard</a>
@@ -1089,15 +1125,15 @@
                 <a href="index.html" className="btn btn-primary">Go to Dashboard</a>
               </div>
             </main>
-          </>
+          </div>
         );
       }
       
       return (
-        <>
+        <div className="page-bg">
           <header className="header">
             <div className="header-left">
-              <div className="header-brand">FATHOM</div>
+              <img src="https://steveyoung74.github.io/journeymaps/logo_light.png" alt="FATHOM" className="header-logo" />
               <div className="header-title">{mapConfig?.meta?.title || 'Survey Responses'}</div>
             </div>
             <div style={{ display: 'flex', gap: '12px' }}>
@@ -1407,7 +1443,7 @@
               </>
             )}
           </main>
-        </>
+        </div>
       );
     }
     
