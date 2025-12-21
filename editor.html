@@ -1510,6 +1510,345 @@
       }).format(amount);
     };
 
+    // Export Report Function - generates printable HTML
+    const exportReport = (reportType, config, data) => {
+      const { title } = config;
+      const date = new Date().toLocaleDateString('en-GB', { day: 'numeric', month: 'long', year: 'numeric' });
+      
+      let reportContent = '';
+      let reportTitle = '';
+      
+      if (reportType === 'cost') {
+        reportTitle = 'Cost Analysis Report';
+        const { totalCost, totalMinutes, stageMetrics, roleCosts, totalAutomationSavings, formatTime } = data;
+        
+        reportContent = `
+          <div class="summary-grid">
+            <div class="summary-card">
+              <div class="summary-value">${formatCurrency(totalCost)}</div>
+              <div class="summary-label">Total Process Cost</div>
+            </div>
+            <div class="summary-card">
+              <div class="summary-value">${formatTime(totalMinutes)}</div>
+              <div class="summary-label">Total Time</div>
+            </div>
+            <div class="summary-card">
+              <div class="summary-value">${formatCurrency(totalAutomationSavings)}</div>
+              <div class="summary-label">Potential Savings</div>
+            </div>
+            <div class="summary-card">
+              <div class="summary-value">${totalMinutes > 0 ? formatCurrency(totalCost / totalMinutes * 60) : '£0'}/hr</div>
+              <div class="summary-label">Average Cost Rate</div>
+            </div>
+          </div>
+          
+          <h2>Cost by Stage</h2>
+          <table>
+            <thead>
+              <tr>
+                <th>Stage</th>
+                <th>Steps</th>
+                <th>Time</th>
+                <th>Cost</th>
+                <th>% of Total</th>
+              </tr>
+            </thead>
+            <tbody>
+              ${stageMetrics.map(s => `
+                <tr>
+                  <td>${s.name}</td>
+                  <td>${s.stepCount}</td>
+                  <td>${formatTime(s.minutes)}</td>
+                  <td>${formatCurrency(s.cost)}</td>
+                  <td>${totalCost > 0 ? ((s.cost / totalCost) * 100).toFixed(1) : 0}%</td>
+                </tr>
+              `).join('')}
+            </tbody>
+          </table>
+          
+          <h2>Cost by Role</h2>
+          <table>
+            <thead>
+              <tr>
+                <th>Role</th>
+                <th>Time Invested</th>
+                <th>Total Cost</th>
+                <th>% of Total</th>
+              </tr>
+            </thead>
+            <tbody>
+              ${roleCosts.map(r => `
+                <tr>
+                  <td>${r.name}</td>
+                  <td>${formatTime(r.totalMinutes)}</td>
+                  <td>${formatCurrency(r.totalCost)}</td>
+                  <td>${totalCost > 0 ? ((r.totalCost / totalCost) * 100).toFixed(1) : 0}%</td>
+                </tr>
+              `).join('')}
+            </tbody>
+          </table>
+        `;
+      } else if (reportType === 'time') {
+        reportTitle = 'Timeline Analysis Report';
+        const { totalTime, avgTimePerStep, highFrictionSteps, totalPainPoints, stageData, formatTime } = data;
+        
+        reportContent = `
+          <div class="summary-grid">
+            <div class="summary-card">
+              <div class="summary-value">${formatTime(totalTime)}</div>
+              <div class="summary-label">Total Process Time</div>
+            </div>
+            <div class="summary-card">
+              <div class="summary-value">${formatTime(Math.round(avgTimePerStep))}</div>
+              <div class="summary-label">Avg Time per Step</div>
+            </div>
+            <div class="summary-card highlight-red">
+              <div class="summary-value">${highFrictionSteps}</div>
+              <div class="summary-label">High Friction Steps</div>
+            </div>
+            <div class="summary-card highlight-amber">
+              <div class="summary-value">${totalPainPoints}</div>
+              <div class="summary-label">Pain Points</div>
+            </div>
+          </div>
+          
+          <h2>Time by Stage</h2>
+          <table>
+            <thead>
+              <tr>
+                <th>Stage</th>
+                <th>Steps</th>
+                <th>Time</th>
+                <th>% of Total</th>
+                <th>Friction</th>
+              </tr>
+            </thead>
+            <tbody>
+              ${stageData.map(s => `
+                <tr>
+                  <td>${s.name}</td>
+                  <td>${s.stepCount}</td>
+                  <td>${formatTime(s.time)}</td>
+                  <td>${totalTime > 0 ? ((s.time / totalTime) * 100).toFixed(1) : 0}%</td>
+                  <td>${s.avgFriction}</td>
+                </tr>
+              `).join('')}
+            </tbody>
+          </table>
+        `;
+      } else if (reportType === 'funnel') {
+        reportTitle = 'Funnel Analysis Report';
+        const { stageMetrics, initialVolume, finalVolume, totalDropOff, overallConversionRate, totalStageInvestment, totalWastedCost, periodLabel } = data;
+        
+        reportContent = `
+          <p class="period-label">Analysis Period: ${periodLabel}</p>
+          
+          <div class="summary-grid">
+            <div class="summary-card">
+              <div class="summary-value">${initialVolume.toLocaleString()}</div>
+              <div class="summary-label">Initial Volume</div>
+            </div>
+            <div class="summary-card highlight-green">
+              <div class="summary-value">${finalVolume.toLocaleString()}</div>
+              <div class="summary-label">Completed</div>
+            </div>
+            <div class="summary-card highlight-red">
+              <div class="summary-value">${totalDropOff.toLocaleString()}</div>
+              <div class="summary-label">Total Drop-off</div>
+            </div>
+            <div class="summary-card">
+              <div class="summary-value">${overallConversionRate.toFixed(1)}%</div>
+              <div class="summary-label">Conversion Rate</div>
+            </div>
+          </div>
+          
+          <div class="summary-grid cols-3">
+            <div class="summary-card highlight-green">
+              <div class="summary-value">${formatCurrency(totalStageInvestment)}</div>
+              <div class="summary-label">Good Cost (Completed)</div>
+            </div>
+            <div class="summary-card highlight-red">
+              <div class="summary-value">${formatCurrency(totalWastedCost)}</div>
+              <div class="summary-label">Bad Cost (Drop-offs)</div>
+            </div>
+            <div class="summary-card highlight-amber">
+              <div class="summary-value">${formatCurrency(totalStageInvestment + totalWastedCost)}</div>
+              <div class="summary-label">Total Investment</div>
+            </div>
+          </div>
+          
+          <h2>Stage-by-Stage Breakdown</h2>
+          <table>
+            <thead>
+              <tr>
+                <th>Stage</th>
+                <th>Entry</th>
+                <th>Exit</th>
+                <th>Drop-off</th>
+                <th>Rate</th>
+                <th>Good Cost</th>
+                <th>Bad Cost</th>
+              </tr>
+            </thead>
+            <tbody>
+              ${stageMetrics.map(s => `
+                <tr>
+                  <td>${s.name}</td>
+                  <td>${s.entryVolume.toLocaleString()}</td>
+                  <td>${s.exitVolume.toLocaleString()}</td>
+                  <td class="text-red">${s.dropOff.toLocaleString()}</td>
+                  <td>${s.completionRate.toFixed(1)}%</td>
+                  <td class="text-green">${formatCurrency(s.stageCost)}</td>
+                  <td class="text-red">${formatCurrency(s.wastedCost)}</td>
+                </tr>
+              `).join('')}
+            </tbody>
+          </table>
+        `;
+      }
+      
+      const html = `
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="UTF-8">
+  <title>${reportTitle} - ${title}</title>
+  <style>
+    @page { margin: 20mm; size: A4; }
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+      color: #1F2937;
+      line-height: 1.5;
+      padding: 40px;
+      max-width: 900px;
+      margin: 0 auto;
+    }
+    .header {
+      border-bottom: 3px solid #192B45;
+      padding-bottom: 20px;
+      margin-bottom: 30px;
+    }
+    .header h1 {
+      font-size: 28px;
+      font-weight: 600;
+      color: #192B45;
+      margin-bottom: 4px;
+    }
+    .header .journey-name {
+      font-size: 18px;
+      color: #64748B;
+      margin-bottom: 8px;
+    }
+    .header .date {
+      font-size: 13px;
+      color: #94A3B8;
+    }
+    .period-label {
+      font-size: 14px;
+      color: #64748B;
+      margin-bottom: 20px;
+    }
+    .summary-grid {
+      display: grid;
+      grid-template-columns: repeat(4, 1fr);
+      gap: 16px;
+      margin-bottom: 32px;
+    }
+    .summary-grid.cols-3 {
+      grid-template-columns: repeat(3, 1fr);
+    }
+    .summary-card {
+      background: #F8FAFC;
+      border: 1px solid #E2E8F0;
+      border-radius: 8px;
+      padding: 16px;
+      text-align: center;
+    }
+    .summary-card.highlight-green { background: #D1FAE5; border-color: #A7F3D0; }
+    .summary-card.highlight-red { background: #FEE2E2; border-color: #FECACA; }
+    .summary-card.highlight-amber { background: #FEF3C7; border-color: #FDE68A; }
+    .summary-value {
+      font-size: 24px;
+      font-weight: 700;
+      color: #192B45;
+    }
+    .summary-label {
+      font-size: 11px;
+      color: #64748B;
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+      margin-top: 4px;
+    }
+    h2 {
+      font-size: 16px;
+      font-weight: 600;
+      color: #192B45;
+      margin: 24px 0 12px;
+      padding-bottom: 8px;
+      border-bottom: 1px solid #E2E8F0;
+    }
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      font-size: 13px;
+      margin-bottom: 24px;
+    }
+    th, td {
+      padding: 10px 12px;
+      text-align: left;
+      border-bottom: 1px solid #E2E8F0;
+    }
+    th {
+      background: #F8FAFC;
+      font-weight: 600;
+      color: #475569;
+      font-size: 11px;
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+    }
+    .text-green { color: #059669; }
+    .text-red { color: #DC2626; }
+    .footer {
+      margin-top: 40px;
+      padding-top: 20px;
+      border-top: 1px solid #E2E8F0;
+      font-size: 11px;
+      color: #94A3B8;
+      text-align: center;
+    }
+    @media print {
+      body { padding: 0; }
+      .no-print { display: none; }
+    }
+  </style>
+</head>
+<body>
+  <div class="header">
+    <h1>${reportTitle}</h1>
+    <div class="journey-name">${title}</div>
+    <div class="date">Generated ${date}</div>
+  </div>
+  
+  ${reportContent}
+  
+  <div class="footer">
+    Generated by Fathom · Journey Intelligence Platform · v8.8.0
+  </div>
+  
+  <div class="no-print" style="margin-top: 30px; text-align: center;">
+    <button onclick="window.print()" style="background: #192B45; color: white; border: none; padding: 12px 24px; border-radius: 8px; font-size: 14px; cursor: pointer;">
+      🖨️ Print / Save as PDF
+    </button>
+  </div>
+</body>
+</html>`;
+      
+      const blob = new Blob([html], { type: 'text/html' });
+      const url = URL.createObjectURL(blob);
+      window.open(url, '_blank');
+    };
+
     // Funnel calculation helpers
     const calculateFunnelMetrics = (config) => {
       const { funnel, stages, personas } = config;
@@ -1595,17 +1934,38 @@
 
       return (
         <div style={{ padding: '20px 24px' }}>
-          {onClose && (
-            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '20px' }}>
-              <h3 style={{ margin: 0, fontSize: '18px', fontWeight: 600, display: 'flex', alignItems: 'center', gap: '8px' }}>
-                <span>🔻</span> Funnel Analysis Dashboard
-              </h3>
-              <div style={{ display: 'flex', gap: '24px', alignItems: 'center' }}>
-                <span style={{ fontFamily: "'Interstate', sans-serif", fontSize: '12px', color: '#556275' }}>{periodLabel}</span>
+          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '20px' }}>
+            <h3 style={{ margin: 0, fontSize: '18px', fontWeight: 600, display: 'flex', alignItems: 'center', gap: '8px' }}>
+              <span>🔻</span> Funnel Analysis Dashboard
+            </h3>
+            <div style={{ display: 'flex', gap: '12px', alignItems: 'center' }}>
+              <span style={{ fontFamily: "'Interstate', sans-serif", fontSize: '12px', color: '#556275' }}>{periodLabel}</span>
+              <button 
+                onClick={() => exportReport('funnel', { title: config?.title || 'Journey Map' }, {
+                  stageMetrics, initialVolume, finalVolume, totalDropOff, overallConversionRate, 
+                  totalStageInvestment, totalWastedCost, periodLabel
+                })}
+                style={{ 
+                  background: '#E1EEF2', 
+                  border: 'none', 
+                  padding: '6px 12px', 
+                  borderRadius: '6px', 
+                  fontSize: '13px', 
+                  cursor: 'pointer', 
+                  color: '#456A8A',
+                  display: 'flex',
+                  alignItems: 'center',
+                  gap: '6px',
+                  fontFamily: "'Interstate', sans-serif"
+                }}
+              >
+                📥 Export
+              </button>
+              {onClose && (
                 <button onClick={onClose} style={{ background: 'none', border: 'none', fontSize: '20px', cursor: 'pointer', color: '#8A95A5', padding: '0 4px' }}>×</button>
-              </div>
+              )}
             </div>
-          )}
+          </div>
           
           {/* Summary Cards */}
           <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(130px, 1fr))', gap: '12px', marginBottom: '24px' }}>
@@ -1829,7 +2189,7 @@
     }
 
     // Timeline Component
-    function Timeline({ stages, totalTime, formatTime, personas, onClose, showCosts = true }) {
+    function Timeline({ stages, totalTime, formatTime, personas, onClose, showCosts = true, config }) {
       let accumulated = 0;
       const totalCost = stages.reduce((acc, stage) => 
         acc + stage.steps.reduce((stepAcc, step) => stepAcc + calculateStepCost(step, personas), 0), 0
@@ -1850,7 +2210,7 @@
       // High friction steps (4 or 5)
       const highFrictionSteps = allSteps.filter(s => (s.frictionScore || 3) >= 4);
       
-      // Stage metrics
+      // Stage metrics for export
       const stageMetrics = stages.map((stage, i) => {
         const stageTime = stage.steps.reduce((acc, s) => acc + s.timeMinutes, 0);
         const avgFriction = stage.steps.length > 0 
@@ -1860,7 +2220,7 @@
           ...stage, 
           stageIndex: i,
           time: stageTime, 
-          avgFriction,
+          avgFriction: avgFriction.toFixed(1),
           stepCount: stage.steps.length
         };
       }).sort((a, b) => b.time - a.time);
@@ -1886,38 +2246,60 @@
         <div style={{
           padding: '20px 24px'
         }}>
-          {onClose && (
-            <div style={{ 
-              display: 'flex', 
-              justifyContent: 'space-between', 
+          <div style={{ 
+            display: 'flex', 
+            justifyContent: 'space-between', 
+            alignItems: 'center',
+            marginBottom: '20px'
+          }}>
+            <h3 style={{ 
+              margin: 0, 
+              fontSize: '18px', 
+              fontWeight: 600,
+              display: 'flex',
               alignItems: 'center',
-              marginBottom: '20px'
+              gap: '8px'
             }}>
-              <h3 style={{ 
-                margin: 0, 
-                fontSize: '18px', 
-                fontWeight: 600,
-                display: 'flex',
-                alignItems: 'center',
-                gap: '8px'
-              }}>
-                <span>📅</span> Timeline Dashboard
-              </h3>
-              <div style={{ display: 'flex', gap: '24px', alignItems: 'center' }}>
-                {showCosts && (
-                  <span style={{
-                    fontFamily: "'Interstate', sans-serif",
-                    fontSize: '13px',
-                    color: '#8B6914',
-                    fontWeight: 600
-                  }}>
-                    💰 {formatCurrency(totalCost)}
-                  </span>
-                )}
+              <span>📅</span> Timeline Dashboard
+            </h3>
+            <div style={{ display: 'flex', gap: '12px', alignItems: 'center' }}>
+              {showCosts && (
+                <span style={{
+                  fontFamily: "'Interstate', sans-serif",
+                  fontSize: '13px',
+                  color: '#8B6914',
+                  fontWeight: 600
+                }}>
+                  💰 {formatCurrency(totalCost)}
+                </span>
+              )}
+              <button 
+                onClick={() => exportReport('time', { title: config?.title || 'Journey Map' }, {
+                  totalTime, avgTimePerStep, highFrictionSteps: highFrictionSteps.length, totalPainPoints, 
+                  stageData: stageMetrics.map(s => ({ name: s.name, stepCount: s.stepCount, time: s.time, avgFriction: s.avgFriction })),
+                  formatTime
+                })}
+                style={{ 
+                  background: '#E1EEF2', 
+                  border: 'none', 
+                  padding: '6px 12px', 
+                  borderRadius: '6px', 
+                  fontSize: '13px', 
+                  cursor: 'pointer', 
+                  color: '#456A8A',
+                  display: 'flex',
+                  alignItems: 'center',
+                  gap: '6px',
+                  fontFamily: "'Interstate', sans-serif"
+                }}
+              >
+                📥 Export
+              </button>
+              {onClose && (
                 <button onClick={onClose} style={{ background: 'none', border: 'none', fontSize: '20px', cursor: 'pointer', color: '#8A95A5', padding: '0 4px' }}>×</button>
-              </div>
+              )}
             </div>
-          )}
+          </div>
           
           {/* Summary Cards */}
           <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(150px, 1fr))', gap: '16px', marginBottom: '24px' }}>
@@ -2496,7 +2878,7 @@
     }
 
     // Cost Analysis Panel
-    function CostAnalysisPanel({ stages, personas, formatTime, onClose }) {
+    function CostAnalysisPanel({ stages, personas, formatTime, onClose, config }) {
       const allSteps = stages.flatMap((stage, stageIndex) => 
         stage.steps.map(step => ({ ...step, stageName: stage.name, stageIndex }))
       );
@@ -2564,21 +2946,43 @@
         <div className="cost-analysis-panel" style={{
           padding: '20px 24px'
         }}>
-          {onClose && (
-            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '24px' }}>
-              <h3 style={{ 
-                margin: 0, 
-                fontSize: '18px', 
-                fontWeight: 600,
-                display: 'flex',
-                alignItems: 'center',
-                gap: '8px'
-              }}>
-                <span>💰</span> Cost Analysis Dashboard
-              </h3>
-              <button onClick={onClose} style={{ background: 'none', border: 'none', fontSize: '20px', cursor: 'pointer', color: '#8A95A5' }}>×</button>
+          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '24px' }}>
+            <h3 style={{ 
+              margin: 0, 
+              fontSize: '18px', 
+              fontWeight: 600,
+              display: 'flex',
+              alignItems: 'center',
+              gap: '8px'
+            }}>
+              <span>💰</span> Cost Analysis Dashboard
+            </h3>
+            <div style={{ display: 'flex', gap: '12px', alignItems: 'center' }}>
+              <button 
+                onClick={() => exportReport('cost', { title: config?.title || 'Journey Map' }, {
+                  totalCost, totalMinutes, stageMetrics, roleCosts, totalAutomationSavings, formatTime
+                })}
+                style={{ 
+                  background: '#E1EEF2', 
+                  border: 'none', 
+                  padding: '6px 12px', 
+                  borderRadius: '6px', 
+                  fontSize: '13px', 
+                  cursor: 'pointer', 
+                  color: '#456A8A',
+                  display: 'flex',
+                  alignItems: 'center',
+                  gap: '6px',
+                  fontFamily: "'Interstate', sans-serif"
+                }}
+              >
+                📥 Export
+              </button>
+              {onClose && (
+                <button onClick={onClose} style={{ background: 'none', border: 'none', fontSize: '20px', cursor: 'pointer', color: '#8A95A5' }}>×</button>
+              )}
             </div>
-          )}
+          </div>
           
           {/* Summary Cards */}
           <div className="cost-summary-cards" style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(180px, 1fr))', gap: '16px', marginBottom: '32px' }}>
@@ -7016,10 +7420,10 @@
                 {/* Dashboard Content */}
                 <div style={{ flex: 1, overflow: 'auto' }}>
                   {dashboardTab === 'time' && (
-                    <Timeline stages={config.stages} totalTime={totalTime} formatTime={formatTime} personas={config.personas} showCosts={showCosts} />
+                    <Timeline stages={config.stages} totalTime={totalTime} formatTime={formatTime} personas={config.personas} showCosts={showCosts} config={config} />
                   )}
                   {dashboardTab === 'costs' && showCosts && (
-                    <CostAnalysisPanel stages={config.stages} personas={config.personas} formatTime={formatTime} />
+                    <CostAnalysisPanel stages={config.stages} personas={config.personas} formatTime={formatTime} config={config} />
                   )}
                   {dashboardTab === 'funnel' && config.funnel?.enabled && (
                     <FunnelDashboard config={config} formatTime={formatTime} />
