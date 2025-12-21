@@ -84,30 +84,24 @@
       pointer-events: none;
       z-index: 0;
     }
-    .page-bg > header,
+    .page-bg > nav,
     .page-bg > main {
       position: relative;
       z-index: 1;
     }
     
     /* ============================================
-       HEADER
+       NAVIGATION
        ============================================ */
     
-    .header {
+    .nav {
       background: linear-gradient(135deg, var(--navy-700) 0%, var(--navy-900) 100%);
-      color: #FFF;
-      padding: 16px 32px;
-      display: flex;
-      justify-content: space-between;
-      align-items: center;
       position: sticky;
       top: 0;
-      z-index: 100;
+      z-index: 1000;
       overflow: hidden;
     }
-    
-    .header::before {
+    .nav::before {
       content: '';
       position: absolute;
       inset: 0;
@@ -115,44 +109,131 @@
       opacity: 1;
       pointer-events: none;
     }
-    
-    .header > * {
+    .nav-inner {
+      max-width: 1200px;
+      margin: 0 auto;
+      padding: 0 24px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      height: 64px;
       position: relative;
       z-index: 1;
     }
-    
-    .header-left {
+    .nav-left {
       display: flex;
       align-items: center;
-      gap: 20px;
+      gap: 32px;
     }
-    
-    .header-logo {
-      height: 28px;
+    .nav-logo {
+      height: 26px;
     }
-    
-    .header-title {
-      font-size: 18px;
-      font-weight: 600;
-      opacity: 0.9;
-    }
-    
-    .header-back {
+    .nav-links {
       display: flex;
       align-items: center;
-      gap: 8px;
+      gap: 4px;
+    }
+    .nav-link {
+      color: rgba(255,255,255,0.7);
+      text-decoration: none;
       padding: 8px 16px;
-      background: rgba(255,255,255,0.1);
-      border: 1px solid rgba(255,255,255,0.2);
       border-radius: 6px;
+      font-size: 14px;
+      font-weight: 500;
+      transition: all 0.15s;
+      cursor: pointer;
+      background: none;
+      border: none;
+      font-family: inherit;
+    }
+    .nav-link:hover {
       color: #FFF;
+      background: rgba(255,255,255,0.1);
+    }
+    .nav-link.active {
+      color: #FFF;
+      background: rgba(255,255,255,0.15);
+    }
+    .nav-dropdown {
+      position: relative;
+    }
+    .nav-dropdown-menu {
+      position: absolute;
+      top: 100%;
+      left: 0;
+      background: #FFF;
+      border-radius: 8px;
+      box-shadow: 0 4px 24px rgba(0,0,0,0.15);
+      min-width: 180px;
+      padding: 8px 0;
+      opacity: 0;
+      visibility: hidden;
+      transform: translateY(8px);
+      transition: all 0.2s;
+    }
+    .nav-dropdown:hover .nav-dropdown-menu {
+      opacity: 1;
+      visibility: visible;
+      transform: translateY(0);
+    }
+    .nav-dropdown-item {
+      display: block;
+      padding: 10px 16px;
+      color: var(--slate-700);
       text-decoration: none;
       font-size: 14px;
+      transition: background 0.15s;
+    }
+    .nav-dropdown-item:hover {
+      background: var(--slate-50);
+      color: var(--navy-700);
+    }
+    .nav-right {
+      display: flex;
+      align-items: center;
+      gap: 16px;
+    }
+    .nav-user {
+      color: rgba(255,255,255,0.8);
+      font-size: 14px;
+    }
+    .nav-signout {
+      color: rgba(255,255,255,0.6);
+      background: rgba(255,255,255,0.1);
+      border: 1px solid rgba(255,255,255,0.2);
+      padding: 6px 14px;
+      border-radius: 6px;
+      font-size: 13px;
+      cursor: pointer;
+      font-family: inherit;
       transition: all 0.15s;
     }
-    
-    .header-back:hover {
+    .nav-signout:hover {
       background: rgba(255,255,255,0.2);
+      color: #FFF;
+    }
+    @media (max-width: 768px) {
+      .nav-links { display: none; }
+      .nav-inner { padding: 0 16px; }
+    }
+    
+    .page-title {
+      font-size: 28px;
+      font-weight: 400;
+      color: var(--navy-700);
+      margin-bottom: 8px;
+    }
+    .page-subtitle {
+      font-size: 15px;
+      color: var(--slate-500);
+    }
+    .page-header-row {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 32px;
+      flex-wrap: wrap;
+      gap: 16px;
     }
     
     /* ============================================
@@ -799,10 +880,27 @@
       const [filterStage, setFilterStage] = useState('all');
       const [viewMode, setViewMode] = useState('responses'); // 'responses' or 'comparison'
       const [expandedCards, setExpandedCards] = useState(new Set());
+      const [user, setUser] = useState(null);
       
       // Get map ID from URL
       const urlParams = new URLSearchParams(window.location.search);
       const mapId = urlParams.get('map');
+      
+      // Load user
+      useEffect(() => {
+        const stored = localStorage.getItem('fathom-user');
+        if (stored) {
+          try {
+            setUser(JSON.parse(stored));
+          } catch (e) {}
+        }
+      }, []);
+      
+      const handleSignOut = () => {
+        localStorage.removeItem('fathom-user');
+        localStorage.removeItem('fathom-github-token');
+        window.location.href = 'index.html';
+      };
       
       // Load data
       useEffect(() => {
@@ -1088,15 +1186,47 @@
       // RENDER
       // ============================================
       
+      // Navigation component
+      const Nav = ({ title }) => (
+        <nav className="nav">
+          <div className="nav-inner">
+            <div className="nav-left">
+              <a href="index.html">
+                <img src="https://steveyoung74.github.io/journeymaps/logo_light.png" alt="FATHOM" className="nav-logo" />
+              </a>
+              {user && (
+                <div className="nav-links">
+                  <a href="index.html" className="nav-link">Dashboard</a>
+                  <div className="nav-dropdown">
+                    <span className="nav-link active">Surveys ▾</span>
+                    <div className="nav-dropdown-menu">
+                      <a href={`survey-admin.html${mapId ? `?map=${mapId}` : ''}`} className="nav-dropdown-item">Send Surveys</a>
+                      <a href={`responses.html${mapId ? `?map=${mapId}` : ''}`} className="nav-dropdown-item">View Responses</a>
+                    </div>
+                  </div>
+                  <a href="whats-new.html" className="nav-link">What's New</a>
+                  <a href="about.html" className="nav-link">About</a>
+                </div>
+              )}
+            </div>
+            <div className="nav-right">
+              {user ? (
+                <>
+                  <span className="nav-user">{user.name}</span>
+                  <button onClick={handleSignOut} className="nav-signout">Sign Out</button>
+                </>
+              ) : (
+                <a href="index.html" className="nav-link" style={{ color: '#FFF' }}>Sign In</a>
+              )}
+            </div>
+          </div>
+        </nav>
+      );
+      
       if (loading) {
         return (
           <div className="page-bg">
-            <header className="header">
-              <div className="header-left">
-                <img src="https://steveyoung74.github.io/journeymaps/logo_light.png" alt="FATHOM" className="header-logo" />
-                <div className="header-title">Loading...</div>
-              </div>
-            </header>
+            <Nav />
             <main className="main">
               <div className="loading">
                 <div className="loading-spinner"></div>
@@ -1110,13 +1240,7 @@
       if (error) {
         return (
           <div className="page-bg">
-            <header className="header">
-              <div className="header-left">
-                <img src="https://steveyoung74.github.io/journeymaps/logo_light.png" alt="FATHOM" className="header-logo" />
-                <div className="header-title">Error</div>
-              </div>
-              <a href="index.html" className="header-back">← Back to Dashboard</a>
-            </header>
+            <Nav />
             <main className="main">
               <div className="empty-state">
                 <div className="empty-icon">⚠️</div>
@@ -1131,20 +1255,20 @@
       
       return (
         <div className="page-bg">
-          <header className="header">
-            <div className="header-left">
-              <img src="https://steveyoung74.github.io/journeymaps/logo_light.png" alt="FATHOM" className="header-logo" />
-              <div className="header-title">{mapConfig?.meta?.title || 'Survey Responses'}</div>
-            </div>
-            <div style={{ display: 'flex', gap: '12px' }}>
-              <a href={`survey-admin.html?map=${mapId}`} className="header-back">
-                📤 Send Surveys
-              </a>
-              <a href="index.html" className="header-back">← Dashboard</a>
-            </div>
-          </header>
+          <Nav />
           
           <main className="main">
+            {/* Page Header */}
+            <div className="page-header-row">
+              <div>
+                <h1 className="page-title">{mapConfig?.meta?.title || 'Survey Responses'}</h1>
+                <p className="page-subtitle">View and analyse survey feedback from your team</p>
+              </div>
+              <a href={`survey-admin.html?map=${mapId}`} className="btn btn-primary">
+                📤 Send More Surveys
+              </a>
+            </div>
+            
             {/* Stats */}
             <div className="stats-grid">
               <div className="stat-card highlight">

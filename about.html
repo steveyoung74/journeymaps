@@ -1,0 +1,583 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>About | FATHOM</title>
+  <script src="https://unpkg.com/react@18/umd/react.production.min.js"></script>
+  <script src="https://unpkg.com/react-dom@18/umd/react-dom.production.min.js"></script>
+  <script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
+  <style>
+    /* Interstate Font Family */
+    @font-face {
+      font-family: 'Interstate';
+      src: url('https://steveyoung74.github.io/journeymaps/fonts/Interstate-light.ttf') format('truetype');
+      font-weight: 300;
+      font-style: normal;
+    }
+    @font-face {
+      font-family: 'Interstate';
+      src: url('https://steveyoung74.github.io/journeymaps/fonts/Interstate-regular.ttf') format('truetype');
+      font-weight: 400;
+      font-style: normal;
+    }
+    @font-face {
+      font-family: 'Interstate';
+      src: url('https://steveyoung74.github.io/journeymaps/fonts/Interstate-bold.ttf') format('truetype');
+      font-weight: 700;
+      font-style: normal;
+    }
+    
+    :root {
+      --navy-950: #0C1620;
+      --navy-900: #111E2E;
+      --navy-800: #15243A;
+      --navy-700: #192B45;
+      --navy-600: #243D5C;
+      --navy-500: #2F5070;
+      --navy-400: #456A8A;
+      --steel-700: #3A6070;
+      --steel-600: #4A7485;
+      --steel-500: #5B8A9A;
+      --steel-400: #74A0AE;
+      --steel-300: #96BCC7;
+      --steel-100: #E1EEF2;
+      --amber-600: #A67D1D;
+      --amber-500: #C4942A;
+      --amber-100: #FAF0D6;
+      --success: #2D8A6E;
+      --success-light: #D4EDE5;
+      --error: #B84A5A;
+      --slate-900: #1A2332;
+      --slate-700: #3D4A5C;
+      --slate-600: #556275;
+      --slate-500: #6E7B8C;
+      --slate-400: #8A95A5;
+      --slate-300: #A9B2BE;
+      --slate-200: #C8CED6;
+      --slate-100: #E4E7EB;
+      --slate-50: #F4F5F7;
+    }
+    
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    
+    body {
+      font-family: 'Interstate', -apple-system, BlinkMacSystemFont, sans-serif;
+      background: #FFF;
+      color: var(--slate-900);
+      line-height: 1.6;
+    }
+    
+    /* Navigation */
+    .nav {
+      background: linear-gradient(135deg, var(--navy-700) 0%, var(--navy-900) 100%);
+      position: sticky;
+      top: 0;
+      z-index: 1000;
+      overflow: hidden;
+    }
+    .nav::before {
+      content: '';
+      position: absolute;
+      inset: 0;
+      background: url('https://steveyoung74.github.io/journeymaps/topography-dark.svg') center/600px 600px repeat;
+      opacity: 1;
+      pointer-events: none;
+    }
+    .nav-inner {
+      max-width: 1200px;
+      margin: 0 auto;
+      padding: 0 24px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      height: 64px;
+      position: relative;
+      z-index: 1;
+    }
+    .nav-left {
+      display: flex;
+      align-items: center;
+      gap: 32px;
+    }
+    .nav-logo {
+      height: 26px;
+    }
+    .nav-links {
+      display: flex;
+      align-items: center;
+      gap: 4px;
+    }
+    .nav-link {
+      color: rgba(255,255,255,0.7);
+      text-decoration: none;
+      padding: 8px 16px;
+      border-radius: 6px;
+      font-size: 14px;
+      font-weight: 500;
+      transition: all 0.15s;
+    }
+    .nav-link:hover {
+      color: #FFF;
+      background: rgba(255,255,255,0.1);
+    }
+    .nav-link.active {
+      color: #FFF;
+      background: rgba(255,255,255,0.15);
+    }
+    .nav-dropdown {
+      position: relative;
+    }
+    .nav-dropdown-menu {
+      position: absolute;
+      top: 100%;
+      left: 0;
+      background: #FFF;
+      border-radius: 8px;
+      box-shadow: 0 4px 24px rgba(0,0,0,0.15);
+      min-width: 180px;
+      padding: 8px 0;
+      opacity: 0;
+      visibility: hidden;
+      transform: translateY(8px);
+      transition: all 0.2s;
+    }
+    .nav-dropdown:hover .nav-dropdown-menu {
+      opacity: 1;
+      visibility: visible;
+      transform: translateY(0);
+    }
+    .nav-dropdown-item {
+      display: block;
+      padding: 10px 16px;
+      color: var(--slate-700);
+      text-decoration: none;
+      font-size: 14px;
+      transition: background 0.15s;
+    }
+    .nav-dropdown-item:hover {
+      background: var(--slate-50);
+      color: var(--navy-700);
+    }
+    .nav-right {
+      display: flex;
+      align-items: center;
+      gap: 16px;
+    }
+    .nav-user {
+      color: rgba(255,255,255,0.8);
+      font-size: 14px;
+    }
+    .nav-signout {
+      color: rgba(255,255,255,0.6);
+      background: rgba(255,255,255,0.1);
+      border: 1px solid rgba(255,255,255,0.2);
+      padding: 6px 14px;
+      border-radius: 6px;
+      font-size: 13px;
+      cursor: pointer;
+      font-family: inherit;
+      transition: all 0.15s;
+    }
+    .nav-signout:hover {
+      background: rgba(255,255,255,0.2);
+      color: #FFF;
+    }
+    
+    /* Hero Section */
+    .hero {
+      background: linear-gradient(135deg, var(--navy-700) 0%, var(--navy-950) 100%);
+      color: #FFF;
+      padding: 80px 24px;
+      text-align: center;
+      position: relative;
+      overflow: hidden;
+    }
+    .hero::before {
+      content: '';
+      position: absolute;
+      inset: 0;
+      background: url('https://steveyoung74.github.io/journeymaps/topography-dark.svg') center/600px 600px repeat;
+      opacity: 1;
+      pointer-events: none;
+    }
+    .hero > * {
+      position: relative;
+      z-index: 1;
+    }
+    .hero h1 {
+      font-size: 48px;
+      font-weight: 300;
+      margin-bottom: 16px;
+    }
+    .hero p {
+      font-size: 20px;
+      opacity: 0.8;
+      max-width: 600px;
+      margin: 0 auto;
+    }
+    
+    /* Content Sections */
+    .section {
+      padding: 80px 24px;
+    }
+    .section-alt {
+      background: var(--slate-50);
+      position: relative;
+    }
+    .section-alt::before {
+      content: '';
+      position: absolute;
+      inset: 0;
+      background: url('https://steveyoung74.github.io/journeymaps/topography-light.svg') center/600px 600px repeat;
+      opacity: 1;
+      pointer-events: none;
+    }
+    .section-alt > * {
+      position: relative;
+      z-index: 1;
+    }
+    .container {
+      max-width: 900px;
+      margin: 0 auto;
+    }
+    .section h2 {
+      font-size: 32px;
+      font-weight: 400;
+      color: var(--navy-700);
+      margin-bottom: 24px;
+    }
+    .section p {
+      font-size: 17px;
+      color: var(--slate-600);
+      margin-bottom: 20px;
+      line-height: 1.8;
+    }
+    
+    /* Feature Grid */
+    .feature-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+      gap: 24px;
+      margin-top: 40px;
+    }
+    .feature-card {
+      background: #FFF;
+      border-radius: 12px;
+      padding: 28px;
+      box-shadow: 0 2px 12px rgba(0,0,0,0.06);
+    }
+    .feature-icon {
+      font-size: 32px;
+      margin-bottom: 16px;
+    }
+    .feature-card h3 {
+      font-size: 18px;
+      color: var(--navy-700);
+      margin-bottom: 8px;
+    }
+    .feature-card p {
+      font-size: 14px;
+      color: var(--slate-500);
+      margin-bottom: 0;
+    }
+    
+    /* Principles */
+    .principles {
+      display: grid;
+      gap: 20px;
+      margin-top: 32px;
+    }
+    .principle {
+      display: flex;
+      gap: 20px;
+      align-items: flex-start;
+    }
+    .principle-icon {
+      width: 48px;
+      height: 48px;
+      background: var(--steel-100);
+      border-radius: 12px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 24px;
+      flex-shrink: 0;
+    }
+    .principle h3 {
+      font-size: 18px;
+      color: var(--navy-700);
+      margin-bottom: 4px;
+    }
+    .principle p {
+      font-size: 15px;
+      color: var(--slate-500);
+      margin-bottom: 0;
+    }
+    
+    /* CTA */
+    .cta {
+      background: linear-gradient(135deg, var(--navy-700) 0%, var(--navy-900) 100%);
+      color: #FFF;
+      padding: 80px 24px;
+      text-align: center;
+      position: relative;
+      overflow: hidden;
+    }
+    .cta::before {
+      content: '';
+      position: absolute;
+      inset: 0;
+      background: url('https://steveyoung74.github.io/journeymaps/topography-dark.svg') center/600px 600px repeat;
+      opacity: 1;
+      pointer-events: none;
+    }
+    .cta > * {
+      position: relative;
+      z-index: 1;
+    }
+    .cta h2 {
+      font-size: 32px;
+      font-weight: 400;
+      margin-bottom: 16px;
+      color: #FFF;
+    }
+    .cta p {
+      font-size: 18px;
+      opacity: 0.8;
+      margin-bottom: 32px;
+      color: #FFF;
+    }
+    .btn {
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      padding: 14px 28px;
+      border-radius: 8px;
+      font-size: 15px;
+      font-weight: 600;
+      text-decoration: none;
+      transition: all 0.2s;
+      border: none;
+      cursor: pointer;
+      font-family: inherit;
+    }
+    .btn-light {
+      background: #FFF;
+      color: var(--navy-700);
+    }
+    .btn-light:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 4px 16px rgba(0,0,0,0.2);
+    }
+    
+    /* Footer */
+    .footer {
+      background: var(--navy-950);
+      color: rgba(255,255,255,0.6);
+      padding: 40px 24px;
+      text-align: center;
+      font-size: 14px;
+    }
+    
+    /* Responsive */
+    @media (max-width: 768px) {
+      .nav-links {
+        display: none;
+      }
+      .hero h1 {
+        font-size: 32px;
+      }
+      .section {
+        padding: 60px 24px;
+      }
+    }
+  </style>
+</head>
+<body>
+  <div id="root"></div>
+  
+  <script type="text/babel">
+    const { useState, useEffect } = React;
+    
+    function AboutPage() {
+      const [user, setUser] = useState(null);
+      
+      useEffect(() => {
+        const stored = localStorage.getItem('fathom-user');
+        if (stored) {
+          try {
+            setUser(JSON.parse(stored));
+          } catch (e) {}
+        }
+      }, []);
+      
+      const handleSignOut = () => {
+        localStorage.removeItem('fathom-user');
+        localStorage.removeItem('fathom-github-token');
+        window.location.href = 'index.html';
+      };
+      
+      const currentPath = window.location.pathname.split('/').pop() || 'index.html';
+      
+      return (
+        <>
+          {/* Navigation */}
+          <nav className="nav">
+            <div className="nav-inner">
+              <div className="nav-left">
+                <a href="index.html">
+                  <img src="https://steveyoung74.github.io/journeymaps/logo_light.png" alt="FATHOM" className="nav-logo" />
+                </a>
+                {user && (
+                  <div className="nav-links">
+                    <a href="index.html" className={`nav-link ${currentPath === 'index.html' ? 'active' : ''}`}>Dashboard</a>
+                    <div className="nav-dropdown">
+                      <span className="nav-link" style={{ cursor: 'pointer' }}>Surveys ▾</span>
+                      <div className="nav-dropdown-menu">
+                        <a href="survey-admin.html" className="nav-dropdown-item">Send Surveys</a>
+                        <a href="responses.html" className="nav-dropdown-item">View Responses</a>
+                      </div>
+                    </div>
+                    <a href="whats-new.html" className={`nav-link ${currentPath === 'whats-new.html' ? 'active' : ''}`}>What's New</a>
+                    <a href="about.html" className={`nav-link ${currentPath === 'about.html' ? 'active' : ''}`}>About</a>
+                  </div>
+                )}
+              </div>
+              <div className="nav-right">
+                {user ? (
+                  <>
+                    <span className="nav-user">{user.name}</span>
+                    <button onClick={handleSignOut} className="nav-signout">Sign Out</button>
+                  </>
+                ) : (
+                  <a href="index.html" className="nav-link" style={{ color: '#FFF' }}>Sign In</a>
+                )}
+              </div>
+            </div>
+          </nav>
+          
+          {/* Hero */}
+          <section className="hero">
+            <h1>Understand Deeply. Improve Decisively.</h1>
+            <p>Fathom is a journey intelligence platform that reveals the true cost and friction hidden in your operational processes.</p>
+          </section>
+          
+          {/* What is Fathom */}
+          <section className="section">
+            <div className="container">
+              <h2>What is Fathom?</h2>
+              <p>
+                Every organisation has processes — client onboarding, employee recruitment, claims handling, project delivery. 
+                But most don't truly understand what these processes cost, where time is wasted, or why people get frustrated.
+              </p>
+              <p>
+                Fathom is a journey mapping platform designed to quantify operational processes with precision. 
+                Track time and cost across multiple roles and touchpoints. Identify friction points. 
+                Calculate the true business cost — including employment overhead, workspace, and third-party services. 
+                See where improvement opportunities lie.
+              </p>
+              <p>
+                Unlike generic process mapping tools, Fathom was built from real operational experience in UK Financial Services. 
+                It speaks the language of business cases, ROI, and continuous improvement.
+              </p>
+            </div>
+          </section>
+          
+          {/* Features */}
+          <section className="section section-alt">
+            <div className="container">
+              <h2>Key Capabilities</h2>
+              <div className="feature-grid">
+                <div className="feature-card">
+                  <div className="feature-icon">🗺️</div>
+                  <h3>Journey Mapping</h3>
+                  <p>Map complex processes across stages, steps, and multiple personas with rich detail and context.</p>
+                </div>
+                <div className="feature-card">
+                  <div className="feature-icon">💰</div>
+                  <h3>True Cost Modelling</h3>
+                  <p>Calculate real costs including salary, employment burden, workspace overhead, and third-party expenses.</p>
+                </div>
+                <div className="feature-card">
+                  <div className="feature-icon">📊</div>
+                  <h3>Funnel Analysis</h3>
+                  <p>Track volume through your process, identify drop-offs, and calculate waste from incomplete journeys.</p>
+                </div>
+                <div className="feature-card">
+                  <div className="feature-icon">😰</div>
+                  <h3>Friction Scoring</h3>
+                  <p>Quantify pain points and friction at every step. Surface what's frustrating your team and clients.</p>
+                </div>
+                <div className="feature-card">
+                  <div className="feature-icon">📝</div>
+                  <h3>Survey Collection</h3>
+                  <p>Gather ground-truth data from the people who actually do the work. Compare estimates to reality.</p>
+                </div>
+                <div className="feature-card">
+                  <div className="feature-icon">🎯</div>
+                  <h3>Improvement Tracking</h3>
+                  <p>Identify automation opportunities and improvements. Build the business case for change.</p>
+                </div>
+              </div>
+            </div>
+          </section>
+          
+          {/* Principles */}
+          <section className="section">
+            <div className="container">
+              <h2>Our Principles</h2>
+              <div className="principles">
+                <div className="principle">
+                  <div className="principle-icon">📐</div>
+                  <div>
+                    <h3>Precision Over Estimation</h3>
+                    <p>Vague process maps don't drive change. Fathom captures the specifics — minutes, pounds, friction scores — that make business cases compelling.</p>
+                  </div>
+                </div>
+                <div className="principle">
+                  <div className="principle-icon">👥</div>
+                  <div>
+                    <h3>Multiple Perspectives</h3>
+                    <p>Every process involves multiple people. Fathom captures each persona's experience, time, and pain points — not just the happy path.</p>
+                  </div>
+                </div>
+                <div className="principle">
+                  <div className="principle-icon">🔍</div>
+                  <div>
+                    <h3>Ground Truth</h3>
+                    <p>Don't guess what happens. Survey the people who do the work. Compare boardroom assumptions to operational reality.</p>
+                  </div>
+                </div>
+                <div className="principle">
+                  <div className="principle-icon">💡</div>
+                  <div>
+                    <h3>Actionable Insights</h3>
+                    <p>Beautiful diagrams don't improve processes. Fathom surfaces specific opportunities with quantified impact and clear next steps.</p>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </section>
+          
+          {/* CTA */}
+          <section className="cta">
+            <h2>See What Your Journeys Really Cost</h2>
+            <p>Start mapping your first process today.</p>
+            <a href="index.html" className="btn btn-light">
+              {user ? 'Go to Dashboard' : 'Get Started'}
+            </a>
+          </section>
+          
+          {/* Footer */}
+          <footer className="footer">
+            <p>© 2024 Fathom. All rights reserved.</p>
+          </footer>
+        </>
+      );
+    }
+    
+    ReactDOM.createRoot(document.getElementById('root')).render(<AboutPage />);
+  </script>
+</body>
+</html>

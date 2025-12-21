@@ -303,10 +303,134 @@
       pointer-events: none;
       z-index: 0;
     }
-    .dashboard-bg > header,
+    .dashboard-bg > nav,
     .dashboard-bg > main {
       position: relative;
       z-index: 1;
+    }
+    
+    /* Navigation */
+    .nav {
+      background: linear-gradient(135deg, var(--navy-700) 0%, var(--navy-900) 100%);
+      position: sticky;
+      top: 0;
+      z-index: 1000;
+      overflow: hidden;
+    }
+    .nav::before {
+      content: '';
+      position: absolute;
+      inset: 0;
+      background: url('topography-dark.svg') center/600px 600px repeat;
+      opacity: 1;
+      pointer-events: none;
+    }
+    .nav-inner {
+      max-width: 1200px;
+      margin: 0 auto;
+      padding: 0 24px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      height: 64px;
+      position: relative;
+      z-index: 1;
+    }
+    .nav-left {
+      display: flex;
+      align-items: center;
+      gap: 32px;
+    }
+    .nav-logo {
+      height: 26px;
+    }
+    .nav-links {
+      display: flex;
+      align-items: center;
+      gap: 4px;
+    }
+    .nav-link {
+      color: rgba(255,255,255,0.7);
+      text-decoration: none;
+      padding: 8px 16px;
+      border-radius: 6px;
+      font-size: 14px;
+      font-weight: 500;
+      transition: all 0.15s;
+      cursor: pointer;
+      background: none;
+      border: none;
+      font-family: inherit;
+    }
+    .nav-link:hover {
+      color: #FFF;
+      background: rgba(255,255,255,0.1);
+    }
+    .nav-link.active {
+      color: #FFF;
+      background: rgba(255,255,255,0.15);
+    }
+    .nav-dropdown {
+      position: relative;
+    }
+    .nav-dropdown-menu {
+      position: absolute;
+      top: 100%;
+      left: 0;
+      background: #FFF;
+      border-radius: 8px;
+      box-shadow: 0 4px 24px rgba(0,0,0,0.15);
+      min-width: 180px;
+      padding: 8px 0;
+      opacity: 0;
+      visibility: hidden;
+      transform: translateY(8px);
+      transition: all 0.2s;
+    }
+    .nav-dropdown:hover .nav-dropdown-menu {
+      opacity: 1;
+      visibility: visible;
+      transform: translateY(0);
+    }
+    .nav-dropdown-item {
+      display: block;
+      padding: 10px 16px;
+      color: var(--slate-700);
+      text-decoration: none;
+      font-size: 14px;
+      transition: background 0.15s;
+    }
+    .nav-dropdown-item:hover {
+      background: var(--slate-50);
+      color: var(--navy-700);
+    }
+    .nav-right {
+      display: flex;
+      align-items: center;
+      gap: 16px;
+    }
+    .nav-user {
+      color: rgba(255,255,255,0.8);
+      font-size: 14px;
+    }
+    .nav-signout {
+      color: rgba(255,255,255,0.6);
+      background: rgba(255,255,255,0.1);
+      border: 1px solid rgba(255,255,255,0.2);
+      padding: 6px 14px;
+      border-radius: 6px;
+      font-size: 13px;
+      cursor: pointer;
+      font-family: inherit;
+      transition: all 0.15s;
+    }
+    .nav-signout:hover {
+      background: rgba(255,255,255,0.2);
+      color: #FFF;
+    }
+    @media (max-width: 768px) {
+      .nav-links { display: none; }
+      .nav-inner { padding: 0 16px; }
     }
     
     /* CTA section with topographic pattern */
@@ -2464,26 +2588,32 @@
 
       return (
         <div className="dashboard-bg">
-          {/* Header */}
-          <header style={{ 
-            background: 'var(--navy-700)', 
-            color: '#FFF', 
-            padding: '16px 40px',
-            display: 'flex',
-            justifyContent: 'space-between',
-            alignItems: 'center'
-          }}>
-            <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
-              <img src="logo_light.png" alt="FATHOM" style={{ height: '28px' }} />
-              <span style={{ fontSize: '11px', opacity: 0.4 }}>v{APP_VERSION}</span>
+          {/* Navigation */}
+          <nav className="nav">
+            <div className="nav-inner">
+              <div className="nav-left">
+                <a href="index.html">
+                  <img src="logo_light.png" alt="FATHOM" className="nav-logo" />
+                </a>
+                <div className="nav-links">
+                  <a href="index.html" className="nav-link active">Dashboard</a>
+                  <div className="nav-dropdown">
+                    <span className="nav-link">Surveys ▾</span>
+                    <div className="nav-dropdown-menu">
+                      <a href="survey-admin.html" className="nav-dropdown-item">Send Surveys</a>
+                      <a href="responses.html" className="nav-dropdown-item">View Responses</a>
+                    </div>
+                  </div>
+                  <a href="whats-new.html" className="nav-link">What's New</a>
+                  <a href="about.html" className="nav-link">About</a>
+                </div>
+              </div>
+              <div className="nav-right">
+                <span className="nav-user">{user.name}</span>
+                <button onClick={onLogout} className="nav-signout">Sign Out</button>
+              </div>
             </div>
-            <div style={{ display: 'flex', alignItems: 'center', gap: '20px' }}>
-              <span style={{ fontSize: '14px', opacity: 0.8 }}>{user.name}</span>
-              <button onClick={onLogout} className="btn btn-ghost" style={{ color: 'rgba(255,255,255,0.7)', padding: '8px 16px' }}>
-                Sign Out
-              </button>
-            </div>
-          </header>
+          </nav>
 
           {/* Main Content */}
           <main style={{ padding: '48px 40px', maxWidth: '1200px', margin: '0 auto' }}>

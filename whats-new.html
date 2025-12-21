@@ -1,0 +1,622 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>What's New | FATHOM</title>
+  <script src="https://unpkg.com/react@18/umd/react.production.min.js"></script>
+  <script src="https://unpkg.com/react-dom@18/umd/react-dom.production.min.js"></script>
+  <script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
+  <style>
+    /* Interstate Font Family */
+    @font-face {
+      font-family: 'Interstate';
+      src: url('https://steveyoung74.github.io/journeymaps/fonts/Interstate-light.ttf') format('truetype');
+      font-weight: 300;
+      font-style: normal;
+    }
+    @font-face {
+      font-family: 'Interstate';
+      src: url('https://steveyoung74.github.io/journeymaps/fonts/Interstate-regular.ttf') format('truetype');
+      font-weight: 400;
+      font-style: normal;
+    }
+    @font-face {
+      font-family: 'Interstate';
+      src: url('https://steveyoung74.github.io/journeymaps/fonts/Interstate-bold.ttf') format('truetype');
+      font-weight: 700;
+      font-style: normal;
+    }
+    
+    :root {
+      --navy-950: #0C1620;
+      --navy-900: #111E2E;
+      --navy-800: #15243A;
+      --navy-700: #192B45;
+      --navy-600: #243D5C;
+      --navy-500: #2F5070;
+      --steel-700: #3A6070;
+      --steel-600: #4A7485;
+      --steel-500: #5B8A9A;
+      --steel-400: #74A0AE;
+      --steel-300: #96BCC7;
+      --steel-100: #E1EEF2;
+      --amber-600: #A67D1D;
+      --amber-500: #C4942A;
+      --amber-100: #FAF0D6;
+      --success: #2D8A6E;
+      --success-light: #D4EDE5;
+      --error: #B84A5A;
+      --slate-900: #1A2332;
+      --slate-700: #3D4A5C;
+      --slate-600: #556275;
+      --slate-500: #6E7B8C;
+      --slate-400: #8A95A5;
+      --slate-300: #A9B2BE;
+      --slate-200: #C8CED6;
+      --slate-100: #E4E7EB;
+      --slate-50: #F4F5F7;
+    }
+    
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    
+    body {
+      font-family: 'Interstate', -apple-system, BlinkMacSystemFont, sans-serif;
+      background: var(--slate-50);
+      color: var(--slate-900);
+      line-height: 1.6;
+      min-height: 100vh;
+    }
+    
+    /* Page Background */
+    .page-bg {
+      min-height: 100vh;
+      position: relative;
+    }
+    .page-bg::before {
+      content: '';
+      position: absolute;
+      inset: 0;
+      background: url('https://steveyoung74.github.io/journeymaps/topography-light.svg') center/600px 600px repeat;
+      opacity: 1;
+      pointer-events: none;
+      z-index: 0;
+    }
+    .page-bg > * {
+      position: relative;
+      z-index: 1;
+    }
+    
+    /* Navigation */
+    .nav {
+      background: linear-gradient(135deg, var(--navy-700) 0%, var(--navy-900) 100%);
+      position: sticky;
+      top: 0;
+      z-index: 1000;
+      overflow: hidden;
+    }
+    .nav::before {
+      content: '';
+      position: absolute;
+      inset: 0;
+      background: url('https://steveyoung74.github.io/journeymaps/topography-dark.svg') center/600px 600px repeat;
+      opacity: 1;
+      pointer-events: none;
+    }
+    .nav-inner {
+      max-width: 1200px;
+      margin: 0 auto;
+      padding: 0 24px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      height: 64px;
+      position: relative;
+      z-index: 1;
+    }
+    .nav-left {
+      display: flex;
+      align-items: center;
+      gap: 32px;
+    }
+    .nav-logo {
+      height: 26px;
+    }
+    .nav-links {
+      display: flex;
+      align-items: center;
+      gap: 4px;
+    }
+    .nav-link {
+      color: rgba(255,255,255,0.7);
+      text-decoration: none;
+      padding: 8px 16px;
+      border-radius: 6px;
+      font-size: 14px;
+      font-weight: 500;
+      transition: all 0.15s;
+    }
+    .nav-link:hover {
+      color: #FFF;
+      background: rgba(255,255,255,0.1);
+    }
+    .nav-link.active {
+      color: #FFF;
+      background: rgba(255,255,255,0.15);
+    }
+    .nav-dropdown {
+      position: relative;
+    }
+    .nav-dropdown-menu {
+      position: absolute;
+      top: 100%;
+      left: 0;
+      background: #FFF;
+      border-radius: 8px;
+      box-shadow: 0 4px 24px rgba(0,0,0,0.15);
+      min-width: 180px;
+      padding: 8px 0;
+      opacity: 0;
+      visibility: hidden;
+      transform: translateY(8px);
+      transition: all 0.2s;
+    }
+    .nav-dropdown:hover .nav-dropdown-menu {
+      opacity: 1;
+      visibility: visible;
+      transform: translateY(0);
+    }
+    .nav-dropdown-item {
+      display: block;
+      padding: 10px 16px;
+      color: var(--slate-700);
+      text-decoration: none;
+      font-size: 14px;
+      transition: background 0.15s;
+    }
+    .nav-dropdown-item:hover {
+      background: var(--slate-50);
+      color: var(--navy-700);
+    }
+    .nav-right {
+      display: flex;
+      align-items: center;
+      gap: 16px;
+    }
+    .nav-user {
+      color: rgba(255,255,255,0.8);
+      font-size: 14px;
+    }
+    .nav-signout {
+      color: rgba(255,255,255,0.6);
+      background: rgba(255,255,255,0.1);
+      border: 1px solid rgba(255,255,255,0.2);
+      padding: 6px 14px;
+      border-radius: 6px;
+      font-size: 13px;
+      cursor: pointer;
+      font-family: inherit;
+      transition: all 0.15s;
+    }
+    .nav-signout:hover {
+      background: rgba(255,255,255,0.2);
+      color: #FFF;
+    }
+    
+    /* Main Content */
+    .main {
+      max-width: 800px;
+      margin: 0 auto;
+      padding: 48px 24px;
+    }
+    
+    .page-header {
+      margin-bottom: 48px;
+    }
+    .page-header h1 {
+      font-size: 36px;
+      font-weight: 400;
+      color: var(--navy-700);
+      margin-bottom: 8px;
+    }
+    .page-header p {
+      font-size: 17px;
+      color: var(--slate-500);
+    }
+    
+    /* Release Timeline */
+    .timeline {
+      display: flex;
+      flex-direction: column;
+      gap: 32px;
+    }
+    
+    .release {
+      background: #FFF;
+      border-radius: 16px;
+      padding: 32px;
+      box-shadow: 0 2px 12px rgba(0,0,0,0.06);
+    }
+    
+    .release-header {
+      display: flex;
+      align-items: center;
+      gap: 16px;
+      margin-bottom: 20px;
+      flex-wrap: wrap;
+    }
+    
+    .release-version {
+      font-size: 24px;
+      font-weight: 700;
+      color: var(--navy-700);
+    }
+    
+    .release-date {
+      font-size: 14px;
+      color: var(--slate-500);
+    }
+    
+    .release-badge {
+      padding: 4px 12px;
+      border-radius: 20px;
+      font-size: 12px;
+      font-weight: 600;
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+    }
+    
+    .release-badge.latest {
+      background: var(--success-light);
+      color: var(--success);
+    }
+    
+    .release-badge.beta {
+      background: var(--amber-100);
+      color: var(--amber-600);
+    }
+    
+    .release-title {
+      font-size: 18px;
+      color: var(--slate-700);
+      margin-bottom: 20px;
+      font-weight: 400;
+    }
+    
+    .release-section {
+      margin-bottom: 20px;
+    }
+    
+    .release-section:last-child {
+      margin-bottom: 0;
+    }
+    
+    .release-section h3 {
+      font-size: 13px;
+      font-weight: 600;
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+      color: var(--slate-500);
+      margin-bottom: 12px;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+    
+    .release-section h3 .icon {
+      font-size: 16px;
+    }
+    
+    .release-list {
+      list-style: none;
+      display: flex;
+      flex-direction: column;
+      gap: 8px;
+    }
+    
+    .release-list li {
+      font-size: 15px;
+      color: var(--slate-700);
+      padding-left: 20px;
+      position: relative;
+    }
+    
+    .release-list li::before {
+      content: '•';
+      position: absolute;
+      left: 0;
+      color: var(--steel-500);
+    }
+    
+    /* Coming Soon */
+    .roadmap {
+      background: linear-gradient(135deg, var(--navy-700) 0%, var(--navy-900) 100%);
+      border-radius: 16px;
+      padding: 32px;
+      color: #FFF;
+      position: relative;
+      overflow: hidden;
+    }
+    .roadmap::before {
+      content: '';
+      position: absolute;
+      inset: 0;
+      background: url('https://steveyoung74.github.io/journeymaps/topography-dark.svg') center/600px 600px repeat;
+      opacity: 0.5;
+      pointer-events: none;
+    }
+    .roadmap > * {
+      position: relative;
+      z-index: 1;
+    }
+    .roadmap h2 {
+      font-size: 24px;
+      font-weight: 600;
+      margin-bottom: 8px;
+    }
+    .roadmap p {
+      opacity: 0.8;
+      margin-bottom: 24px;
+    }
+    .roadmap-items {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+      gap: 16px;
+    }
+    .roadmap-item {
+      background: rgba(255,255,255,0.1);
+      border: 1px solid rgba(255,255,255,0.2);
+      border-radius: 8px;
+      padding: 16px;
+    }
+    .roadmap-item h3 {
+      font-size: 15px;
+      margin-bottom: 4px;
+    }
+    .roadmap-item p {
+      font-size: 13px;
+      opacity: 0.7;
+      margin-bottom: 0;
+    }
+    
+    /* Responsive */
+    @media (max-width: 768px) {
+      .nav-links {
+        display: none;
+      }
+      .release {
+        padding: 24px;
+      }
+    }
+  </style>
+</head>
+<body>
+  <div id="root"></div>
+  
+  <script type="text/babel">
+    const { useState, useEffect } = React;
+    
+    // Release notes data - easy to update
+    const RELEASES = [
+      {
+        version: '0.8.6',
+        date: 'December 2024',
+        badge: 'latest',
+        title: 'Survey Response Viewer & Product Navigation',
+        sections: [
+          {
+            type: 'new',
+            icon: '✨',
+            items: [
+              'Survey Response Viewer — see all submissions with filtering by role',
+              'Comparison View — compare your estimates vs actual survey responses',
+              'Consistent product navigation across all pages',
+              'About page with product information',
+              'What\'s New page (you\'re looking at it!)',
+              'Time variance highlighting in response viewer'
+            ]
+          },
+          {
+            type: 'improved',
+            icon: '🔧',
+            items: [
+              'Fathom branding applied consistently across survey pages',
+              'Logo and topography motif on all authenticated pages',
+              'Interstate font family loaded across all pages',
+              'Dashboard now shows Responses button on each map card'
+            ]
+          }
+        ]
+      },
+      {
+        version: '0.8.5',
+        date: 'December 2024',
+        title: 'Survey System & Template Library',
+        sections: [
+          {
+            type: 'new',
+            icon: '✨',
+            items: [
+              'RFI Survey system for collecting ground-truth data',
+              'Survey Link Generator for sending personalised surveys',
+              'Role-based survey filtering — each person sees only their steps',
+              'Friction scoring with emoji scale',
+              'Eight industry template journeys (Financial Services, HR, SaaS, Insurance, Legal, Property)',
+              'Template system with realistic stages, personas, and timing data'
+            ]
+          },
+          {
+            type: 'improved',
+            icon: '🔧',
+            items: [
+              'Mobile layout fixes for Cost Analysis dashboard',
+              'Improved survey form UX with progress indicator'
+            ]
+          }
+        ]
+      },
+      {
+        version: '0.8.4',
+        date: 'December 2024',
+        title: 'Cost Analysis & Funnel Analytics',
+        sections: [
+          {
+            type: 'new',
+            icon: '✨',
+            items: [
+              'Comprehensive Cost Analysis dashboard',
+              'True cost modelling with employment burden multipliers',
+              'Workspace overhead calculations',
+              'Third-party cost tracking per step',
+              'Funnel Analysis with cascading drop-off calculations',
+              'Good Cost vs Bad Cost breakdown',
+              'Stage-by-stage cost comparison'
+            ]
+          }
+        ]
+      },
+      {
+        version: '0.8.0',
+        date: 'November 2024',
+        title: 'Dashboard & Multi-Map Support',
+        sections: [
+          {
+            type: 'new',
+            icon: '✨',
+            items: [
+              'Dashboard for managing multiple journey maps',
+              'Map sharing with view/edit permissions',
+              'Favourite and lock maps',
+              'Grid and list view options',
+              'Map metrics preview on cards',
+              'GitHub-based storage with localStorage sync'
+            ]
+          }
+        ]
+      }
+    ];
+    
+    const ROADMAP = [
+      { title: 'Team Management', description: 'Invite team members, manage roles and permissions' },
+      { title: 'AI Synthesis', description: 'Auto-summarise survey responses with consistent tone' },
+      { title: 'PDF Export', description: 'Export journey maps as professional reports' },
+      { title: 'Version History', description: 'Track changes and compare versions' },
+      { title: 'API Access', description: 'Integrate Fathom with your existing tools' },
+      { title: 'Pricing & Plans', description: 'Free tier, Pro, and Enterprise options' }
+    ];
+    
+    function WhatsNewPage() {
+      const [user, setUser] = useState(null);
+      
+      useEffect(() => {
+        const stored = localStorage.getItem('fathom-user');
+        if (stored) {
+          try {
+            setUser(JSON.parse(stored));
+          } catch (e) {}
+        }
+      }, []);
+      
+      const handleSignOut = () => {
+        localStorage.removeItem('fathom-user');
+        localStorage.removeItem('fathom-github-token');
+        window.location.href = 'index.html';
+      };
+      
+      const currentPath = window.location.pathname.split('/').pop() || 'index.html';
+      
+      return (
+        <div className="page-bg">
+          {/* Navigation */}
+          <nav className="nav">
+            <div className="nav-inner">
+              <div className="nav-left">
+                <a href="index.html">
+                  <img src="https://steveyoung74.github.io/journeymaps/logo_light.png" alt="FATHOM" className="nav-logo" />
+                </a>
+                {user && (
+                  <div className="nav-links">
+                    <a href="index.html" className={`nav-link ${currentPath === 'index.html' ? 'active' : ''}`}>Dashboard</a>
+                    <div className="nav-dropdown">
+                      <span className="nav-link" style={{ cursor: 'pointer' }}>Surveys ▾</span>
+                      <div className="nav-dropdown-menu">
+                        <a href="survey-admin.html" className="nav-dropdown-item">Send Surveys</a>
+                        <a href="responses.html" className="nav-dropdown-item">View Responses</a>
+                      </div>
+                    </div>
+                    <a href="whats-new.html" className={`nav-link ${currentPath === 'whats-new.html' ? 'active' : ''}`}>What's New</a>
+                    <a href="about.html" className={`nav-link ${currentPath === 'about.html' ? 'active' : ''}`}>About</a>
+                  </div>
+                )}
+              </div>
+              <div className="nav-right">
+                {user ? (
+                  <>
+                    <span className="nav-user">{user.name}</span>
+                    <button onClick={handleSignOut} className="nav-signout">Sign Out</button>
+                  </>
+                ) : (
+                  <a href="index.html" className="nav-link" style={{ color: '#FFF' }}>Sign In</a>
+                )}
+              </div>
+            </div>
+          </nav>
+          
+          <main className="main">
+            <div className="page-header">
+              <h1>What's New</h1>
+              <p>Latest updates, features, and improvements to Fathom</p>
+            </div>
+            
+            {/* Roadmap */}
+            <div className="roadmap" style={{ marginBottom: '32px' }}>
+              <h2>🚀 Coming Soon</h2>
+              <p>Features we're working on next</p>
+              <div className="roadmap-items">
+                {ROADMAP.map((item, i) => (
+                  <div key={i} className="roadmap-item">
+                    <h3>{item.title}</h3>
+                    <p>{item.description}</p>
+                  </div>
+                ))}
+              </div>
+            </div>
+            
+            {/* Release Timeline */}
+            <div className="timeline">
+              {RELEASES.map((release, i) => (
+                <div key={release.version} className="release">
+                  <div className="release-header">
+                    <span className="release-version">v{release.version}</span>
+                    <span className="release-date">{release.date}</span>
+                    {release.badge && (
+                      <span className={`release-badge ${release.badge}`}>{release.badge}</span>
+                    )}
+                  </div>
+                  <div className="release-title">{release.title}</div>
+                  
+                  {release.sections.map((section, j) => (
+                    <div key={j} className="release-section">
+                      <h3>
+                        <span className="icon">{section.icon}</span>
+                        {section.type === 'new' ? 'New Features' : 'Improvements'}
+                      </h3>
+                      <ul className="release-list">
+                        {section.items.map((item, k) => (
+                          <li key={k}>{item}</li>
+                        ))}
+                      </ul>
+                    </div>
+                  ))}
+                </div>
+              ))}
+            </div>
+          </main>
+        </div>
+      );
+    }
+    
+    ReactDOM.createRoot(document.getElementById('root')).render(<WhatsNewPage />);
+  </script>
+</body>
+</html>
