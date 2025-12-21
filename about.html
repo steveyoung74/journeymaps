@@ -74,7 +74,6 @@
       position: sticky;
       top: 0;
       z-index: 1000;
-      overflow: hidden;
     }
     .nav::before {
       content: '';
@@ -83,6 +82,7 @@
       background: url('https://steveyoung74.github.io/journeymaps/topography-dark.svg') center/600px 600px repeat;
       opacity: 1;
       pointer-events: none;
+      z-index: 0;
     }
     .nav-inner {
       max-width: 1200px;
@@ -405,7 +405,7 @@
       const [user, setUser] = useState(null);
       
       useEffect(() => {
-        const stored = localStorage.getItem('fathom-user');
+        const stored = localStorage.getItem('fathom_user');
         if (stored) {
           try {
             setUser(JSON.parse(stored));
@@ -414,8 +414,8 @@
       }, []);
       
       const handleSignOut = () => {
-        localStorage.removeItem('fathom-user');
-        localStorage.removeItem('fathom-github-token');
+        localStorage.removeItem('fathom_user');
+        localStorage.removeItem('fathom_token');
         window.location.href = 'index.html';
       };
       

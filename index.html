@@ -315,7 +315,6 @@
       position: sticky;
       top: 0;
       z-index: 1000;
-      overflow: hidden;
     }
     .nav::before {
       content: '';
@@ -324,6 +323,7 @@
       background: url('topography-dark.svg') center/600px 600px repeat;
       opacity: 1;
       pointer-events: none;
+      z-index: 0;
     }
     .nav-inner {
       max-width: 1200px;
