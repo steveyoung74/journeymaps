@@ -617,7 +617,8 @@
         product: "FATHOM v8.6.0",
         lastUpdated: new Date().toISOString(),
         audience: "Internal Operations",
-        perspective: "client"
+        perspective: "client",
+        owner: ""
       },
       funnel: {
         enabled: true,
@@ -1512,27 +1513,35 @@
 
     // Export Report Function - generates printable HTML
     const exportReport = (reportType, config, data) => {
-      const { title } = config;
+      const journeyTitle = config.title || 'Journey Map';
+      const journeyOwner = config.owner || '';
       const date = new Date().toLocaleDateString('en-GB', { day: 'numeric', month: 'long', year: 'numeric' });
       
       let reportContent = '';
-      let reportTitle = '';
+      let reportSubtitle = '';
       
       if (reportType === 'cost') {
-        reportTitle = 'Cost Analysis Report';
-        const { totalCost, totalMinutes, stageMetrics, roleCosts, totalAutomationSavings, formatTime } = data;
+        reportSubtitle = 'Cost Analysis';
+        const { totalCost, totalMinutes, stageMetrics, roleCosts, totalAutomationSavings, formatTime, stepMetrics } = data;
+        
+        // Top 5 most expensive steps
+        const topExpensiveSteps = stepMetrics ? [...stepMetrics].sort((a, b) => b.cost - a.cost).slice(0, 5) : [];
+        // Top 5 highest cost/minute
+        const topCostPerMinute = stepMetrics ? [...stepMetrics].sort((a, b) => b.costPerMinute - a.costPerMinute).slice(0, 5) : [];
+        // Top improvement opportunities
+        const topImprovements = stepMetrics ? [...stepMetrics].filter(s => s.automationSavings > 0).sort((a, b) => b.automationSavings - a.automationSavings).slice(0, 8) : [];
         
         reportContent = `
           <div class="summary-grid">
-            <div class="summary-card">
+            <div class="summary-card highlight-amber">
               <div class="summary-value">${formatCurrency(totalCost)}</div>
-              <div class="summary-label">Total Process Cost</div>
+              <div class="summary-label">Total Journey Cost</div>
             </div>
             <div class="summary-card">
               <div class="summary-value">${formatTime(totalMinutes)}</div>
               <div class="summary-label">Total Time</div>
             </div>
-            <div class="summary-card">
+            <div class="summary-card highlight-green">
               <div class="summary-value">${formatCurrency(totalAutomationSavings)}</div>
               <div class="summary-label">Potential Savings</div>
             </div>
@@ -1542,55 +1551,142 @@
             </div>
           </div>
           
-          <h2>Cost by Stage</h2>
-          <table>
-            <thead>
-              <tr>
-                <th>Stage</th>
-                <th>Steps</th>
-                <th>Time</th>
-                <th>Cost</th>
-                <th>% of Total</th>
-              </tr>
-            </thead>
-            <tbody>
-              ${stageMetrics.map(s => `
-                <tr>
-                  <td>${s.name}</td>
-                  <td>${s.stepCount}</td>
-                  <td>${formatTime(s.minutes)}</td>
-                  <td>${formatCurrency(s.cost)}</td>
-                  <td>${totalCost > 0 ? ((s.cost / totalCost) * 100).toFixed(1) : 0}%</td>
-                </tr>
-              `).join('')}
-            </tbody>
-          </table>
+          <div class="two-column">
+            <div>
+              <h2>Cost by Stage</h2>
+              <table>
+                <thead>
+                  <tr>
+                    <th>Stage</th>
+                    <th class="num">Steps</th>
+                    <th class="num">Time</th>
+                    <th class="num">Cost</th>
+                    <th class="num">%</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  ${stageMetrics.map(s => `
+                    <tr>
+                      <td>${s.name}</td>
+                      <td class="num">${s.stepCount}</td>
+                      <td class="num">${formatTime(s.minutes)}</td>
+                      <td class="num">${formatCurrency(s.cost)}</td>
+                      <td class="num">${totalCost > 0 ? ((s.cost / totalCost) * 100).toFixed(1) : 0}%</td>
+                    </tr>
+                  `).join('')}
+                </tbody>
+              </table>
+            </div>
+            
+            <div>
+              <h2>Cost by Role</h2>
+              <table>
+                <thead>
+                  <tr>
+                    <th>Role</th>
+                    <th class="num">Time</th>
+                    <th class="num">Cost</th>
+                    <th class="num">%</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  ${roleCosts.map(r => `
+                    <tr>
+                      <td>${r.label || r.name || r.role || 'Unknown'}</td>
+                      <td class="num">${formatTime(r.totalMinutes)}</td>
+                      <td class="num">${formatCurrency(r.totalCost)}</td>
+                      <td class="num">${totalCost > 0 ? ((r.totalCost / totalCost) * 100).toFixed(1) : 0}%</td>
+                    </tr>
+                  `).join('')}
+                </tbody>
+              </table>
+            </div>
+          </div>
           
-          <h2>Cost by Role</h2>
-          <table>
+          ${topExpensiveSteps.length > 0 ? `
+          <div class="two-column">
+            <div>
+              <h2>🔥 Top 5 Most Expensive Steps</h2>
+              <table>
+                <thead>
+                  <tr>
+                    <th class="rank-col">#</th>
+                    <th>Step</th>
+                    <th class="num">Cost</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  ${topExpensiveSteps.map((s, i) => `
+                    <tr>
+                      <td class="rank">${i + 1}</td>
+                      <td>
+                        <strong>${s.name}</strong>
+                        <div class="meta">${s.stageName}</div>
+                      </td>
+                      <td class="num">${formatCurrency(s.cost)}</td>
+                    </tr>
+                  `).join('')}
+                </tbody>
+              </table>
+            </div>
+            
+            <div>
+              <h2>⚡ Highest Cost/Minute Steps</h2>
+              <table>
+                <thead>
+                  <tr>
+                    <th class="rank-col">#</th>
+                    <th>Step</th>
+                    <th class="num">Rate</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  ${topCostPerMinute.map((s, i) => `
+                    <tr>
+                      <td class="rank">${i + 1}</td>
+                      <td>
+                        <strong>${s.name}</strong>
+                        <div class="meta">${s.stageName} · ${formatTime(s.timeMinutes)}</div>
+                      </td>
+                      <td class="num">${formatCurrency(s.costPerMinute)}/min</td>
+                    </tr>
+                  `).join('')}
+                </tbody>
+              </table>
+            </div>
+          </div>
+          ` : ''}
+          
+          ${topImprovements.length > 0 ? `
+          <h2>🎯 Top Improvement Opportunities</h2>
+          <p class="section-intro">Steps with highest potential savings from process improvements</p>
+          <table class="improvements-table">
             <thead>
               <tr>
-                <th>Role</th>
-                <th>Time Invested</th>
-                <th>Total Cost</th>
-                <th>% of Total</th>
+                <th>Step</th>
+                <th>Stage</th>
+                <th class="num">Current Cost</th>
+                <th class="num">Opportunity</th>
+                <th class="num">Potential Savings</th>
               </tr>
             </thead>
             <tbody>
-              ${roleCosts.map(r => `
+              ${topImprovements.map(s => `
                 <tr>
-                  <td>${r.name}</td>
-                  <td>${formatTime(r.totalMinutes)}</td>
-                  <td>${formatCurrency(r.totalCost)}</td>
-                  <td>${totalCost > 0 ? ((r.totalCost / totalCost) * 100).toFixed(1) : 0}%</td>
+                  <td><strong>${s.name}</strong></td>
+                  <td>${s.stageName}</td>
+                  <td class="num">${formatCurrency(s.cost)}</td>
+                  <td class="num"><span class="badge badge-${s.automationOpportunity}">${s.automationOpportunity}</span></td>
+                  <td class="num text-green"><strong>${formatCurrency(s.automationSavings)}</strong></td>
                 </tr>
               `).join('')}
             </tbody>
           </table>
+          ` : ''}
         `;
       } else if (reportType === 'time') {
-        reportTitle = 'Timeline Analysis Report';
-        const { totalTime, avgTimePerStep, highFrictionSteps, totalPainPoints, stageData, formatTime } = data;
+        reportSubtitle = 'Timeline Analysis';
+        const { totalTime, avgTimePerStep, highFrictionSteps, totalPainPoints, stageData, formatTime, topTimeSteps, frictionSteps } = data;
         
         reportContent = `
           <div class="summary-grid">
@@ -1617,31 +1713,85 @@
             <thead>
               <tr>
                 <th>Stage</th>
-                <th>Steps</th>
-                <th>Time</th>
-                <th>% of Total</th>
-                <th>Friction</th>
+                <th class="num">Steps</th>
+                <th class="num">Time</th>
+                <th class="num">% of Total</th>
+                <th class="num">Avg Friction</th>
               </tr>
             </thead>
             <tbody>
               ${stageData.map(s => `
                 <tr>
                   <td>${s.name}</td>
-                  <td>${s.stepCount}</td>
-                  <td>${formatTime(s.time)}</td>
-                  <td>${totalTime > 0 ? ((s.time / totalTime) * 100).toFixed(1) : 0}%</td>
-                  <td>${s.avgFriction}</td>
+                  <td class="num">${s.stepCount}</td>
+                  <td class="num">${formatTime(s.time)}</td>
+                  <td class="num">${totalTime > 0 ? ((s.time / totalTime) * 100).toFixed(1) : 0}%</td>
+                  <td class="num">${s.avgFriction}/5</td>
                 </tr>
               `).join('')}
             </tbody>
           </table>
+          
+          ${topTimeSteps && topTimeSteps.length > 0 ? `
+          <div class="two-column">
+            <div>
+              <h2>⏱️ Longest Steps</h2>
+              <table>
+                <thead>
+                  <tr>
+                    <th class="rank-col">#</th>
+                    <th>Step</th>
+                    <th class="num">Time</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  ${topTimeSteps.map((s, i) => `
+                    <tr>
+                      <td class="rank">${i + 1}</td>
+                      <td>
+                        <strong>${s.name}</strong>
+                        <div class="meta">${s.stageName}</div>
+                      </td>
+                      <td class="num">${formatTime(s.timeMinutes)}</td>
+                    </tr>
+                  `).join('')}
+                </tbody>
+              </table>
+            </div>
+            
+            <div>
+              <h2>😰 Highest Friction Steps</h2>
+              <table>
+                <thead>
+                  <tr>
+                    <th class="rank-col">#</th>
+                    <th>Step</th>
+                    <th class="num">Score</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  ${frictionSteps && frictionSteps.map((s, i) => `
+                    <tr>
+                      <td class="rank">${i + 1}</td>
+                      <td>
+                        <strong>${s.name}</strong>
+                        <div class="meta">${s.stageName}</div>
+                      </td>
+                      <td class="num">${s.frictionScore || 3}/5</td>
+                    </tr>
+                  `).join('')}
+                </tbody>
+              </table>
+            </div>
+          </div>
+          ` : ''}
         `;
       } else if (reportType === 'funnel') {
-        reportTitle = 'Funnel Analysis Report';
-        const { stageMetrics, initialVolume, finalVolume, totalDropOff, overallConversionRate, totalStageInvestment, totalWastedCost, periodLabel } = data;
+        reportSubtitle = 'Funnel Analysis';
+        const { stageMetrics, initialVolume, finalVolume, totalDropOff, overallConversionRate, totalStageInvestment, totalWastedCost, periodLabel, worstStage, mostWasteful } = data;
         
         reportContent = `
-          <p class="period-label">Analysis Period: ${periodLabel}</p>
+          <p class="period-label">Analysis Period: <strong>${periodLabel}</strong></p>
           
           <div class="summary-grid">
             <div class="summary-card">
@@ -1677,33 +1827,87 @@
             </div>
           </div>
           
+          <h2>Volume Flow by Stage</h2>
+          <div class="funnel-bars">
+            ${stageMetrics.map(s => {
+              const widthPercent = initialVolume > 0 ? (s.exitVolume / initialVolume) * 100 : 0;
+              return `
+                <div class="funnel-row">
+                  <div class="funnel-label">${s.stageName}</div>
+                  <div class="funnel-bar-container">
+                    <div class="funnel-bar" style="width: ${widthPercent}%"></div>
+                    ${s.dropOff > 0 ? `<span class="funnel-dropoff">-${s.dropOff.toLocaleString()}</span>` : ''}
+                  </div>
+                  <div class="funnel-value">${s.exitVolume.toLocaleString()} (${Math.round(widthPercent)}%)</div>
+                </div>
+              `;
+            }).join('')}
+          </div>
+          
           <h2>Stage-by-Stage Breakdown</h2>
           <table>
             <thead>
               <tr>
                 <th>Stage</th>
-                <th>Entry</th>
-                <th>Exit</th>
-                <th>Drop-off</th>
-                <th>Rate</th>
-                <th>Good Cost</th>
-                <th>Bad Cost</th>
+                <th class="num">Entry</th>
+                <th class="num">Drop-off</th>
+                <th class="num">Exit</th>
+                <th class="num">Rate</th>
+                <th class="num">Cost/Client</th>
+                <th class="num">Good Cost</th>
+                <th class="num">Bad Cost</th>
               </tr>
             </thead>
             <tbody>
               ${stageMetrics.map(s => `
                 <tr>
-                  <td>${s.name}</td>
-                  <td>${s.entryVolume.toLocaleString()}</td>
-                  <td>${s.exitVolume.toLocaleString()}</td>
-                  <td class="text-red">${s.dropOff.toLocaleString()}</td>
-                  <td>${s.completionRate.toFixed(1)}%</td>
-                  <td class="text-green">${formatCurrency(s.stageCost)}</td>
-                  <td class="text-red">${formatCurrency(s.wastedCost)}</td>
+                  <td>${s.stageName}</td>
+                  <td class="num">${s.entryVolume.toLocaleString()}</td>
+                  <td class="num text-red">${s.dropOff > 0 ? '-' + s.dropOff.toLocaleString() : '—'}</td>
+                  <td class="num">${s.exitVolume.toLocaleString()}</td>
+                  <td class="num">${s.completionRate.toFixed(1)}%</td>
+                  <td class="num">${formatCurrency(s.stageCostPerClient)}</td>
+                  <td class="num text-green">${formatCurrency(s.stageInvestment)}</td>
+                  <td class="num text-red">${s.wastedCost > 0 ? formatCurrency(s.wastedCost) : '—'}</td>
                 </tr>
               `).join('')}
+              <tr class="total-row">
+                <td><strong>Total</strong></td>
+                <td class="num">${initialVolume.toLocaleString()}</td>
+                <td class="num text-red">-${totalDropOff.toLocaleString()}</td>
+                <td class="num">${finalVolume.toLocaleString()}</td>
+                <td class="num">${overallConversionRate.toFixed(1)}%</td>
+                <td class="num">${formatCurrency(stageMetrics.reduce((acc, s) => acc + s.stageCostPerClient, 0))}</td>
+                <td class="num text-green">${formatCurrency(totalStageInvestment)}</td>
+                <td class="num text-red">${formatCurrency(totalWastedCost)}</td>
+              </tr>
             </tbody>
           </table>
+          
+          ${worstStage || mostWasteful ? `
+          <div class="insights-grid">
+            ${worstStage ? `
+            <div class="insight-card insight-warning">
+              <div class="insight-icon">⚠️</div>
+              <div class="insight-content">
+                <div class="insight-title">Biggest Drop-off</div>
+                <div class="insight-value">${worstStage.stageName}</div>
+                <div class="insight-detail">${worstStage.dropOff.toLocaleString()} clients lost (${(100 - worstStage.completionRate).toFixed(0)}% drop-off rate)</div>
+              </div>
+            </div>
+            ` : ''}
+            ${mostWasteful ? `
+            <div class="insight-card insight-cost">
+              <div class="insight-icon">💸</div>
+              <div class="insight-content">
+                <div class="insight-title">Most Costly Drop-off</div>
+                <div class="insight-value">${mostWasteful.stageName}</div>
+                <div class="insight-detail">${formatCurrency(mostWasteful.wastedCost)} wasted on ${mostWasteful.dropOff.toLocaleString()} lost clients</div>
+              </div>
+            </div>
+            ` : ''}
+          </div>
+          ` : ''}
         `;
       }
       
@@ -1712,48 +1916,59 @@
 <html>
 <head>
   <meta charset="UTF-8">
-  <title>${reportTitle} - ${title}</title>
+  <title>${journeyTitle} - ${reportSubtitle}</title>
   <style>
-    @page { margin: 20mm; size: A4; }
+    @page { margin: 15mm; size: A4; }
     * { box-sizing: border-box; margin: 0; padding: 0; }
     body {
       font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
       color: #1F2937;
       line-height: 1.5;
       padding: 40px;
-      max-width: 900px;
+      max-width: 1000px;
       margin: 0 auto;
+      font-size: 13px;
     }
     .header {
       border-bottom: 3px solid #192B45;
-      padding-bottom: 20px;
-      margin-bottom: 30px;
+      padding-bottom: 16px;
+      margin-bottom: 24px;
     }
     .header h1 {
-      font-size: 28px;
+      font-size: 32px;
       font-weight: 600;
       color: #192B45;
       margin-bottom: 4px;
     }
-    .header .journey-name {
+    .header .subtitle {
       font-size: 18px;
       color: #64748B;
-      margin-bottom: 8px;
+      margin-bottom: 4px;
     }
     .header .date {
-      font-size: 13px;
+      font-size: 12px;
       color: #94A3B8;
+    }
+    .header .owner {
+      font-size: 13px;
+      color: #64748B;
+      margin-bottom: 4px;
     }
     .period-label {
       font-size: 14px;
       color: #64748B;
       margin-bottom: 20px;
     }
+    .section-intro {
+      font-size: 13px;
+      color: #64748B;
+      margin-bottom: 12px;
+    }
     .summary-grid {
       display: grid;
       grid-template-columns: repeat(4, 1fr);
-      gap: 16px;
-      margin-bottom: 32px;
+      gap: 12px;
+      margin-bottom: 24px;
     }
     .summary-grid.cols-3 {
       grid-template-columns: repeat(3, 1fr);
@@ -1762,40 +1977,46 @@
       background: #F8FAFC;
       border: 1px solid #E2E8F0;
       border-radius: 8px;
-      padding: 16px;
+      padding: 14px;
       text-align: center;
     }
     .summary-card.highlight-green { background: #D1FAE5; border-color: #A7F3D0; }
     .summary-card.highlight-red { background: #FEE2E2; border-color: #FECACA; }
     .summary-card.highlight-amber { background: #FEF3C7; border-color: #FDE68A; }
     .summary-value {
-      font-size: 24px;
+      font-size: 22px;
       font-weight: 700;
       color: #192B45;
     }
     .summary-label {
-      font-size: 11px;
+      font-size: 10px;
       color: #64748B;
       text-transform: uppercase;
       letter-spacing: 0.5px;
       margin-top: 4px;
     }
+    .two-column {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 24px;
+      margin-bottom: 24px;
+    }
     h2 {
-      font-size: 16px;
+      font-size: 14px;
       font-weight: 600;
       color: #192B45;
-      margin: 24px 0 12px;
-      padding-bottom: 8px;
+      margin: 20px 0 10px;
+      padding-bottom: 6px;
       border-bottom: 1px solid #E2E8F0;
     }
     table {
       width: 100%;
       border-collapse: collapse;
-      font-size: 13px;
-      margin-bottom: 24px;
+      font-size: 12px;
+      margin-bottom: 16px;
     }
     th, td {
-      padding: 10px 12px;
+      padding: 8px 10px;
       text-align: left;
       border-bottom: 1px solid #E2E8F0;
     }
@@ -1803,30 +2024,160 @@
       background: #F8FAFC;
       font-weight: 600;
       color: #475569;
-      font-size: 11px;
+      font-size: 10px;
       text-transform: uppercase;
       letter-spacing: 0.5px;
     }
+    .num { text-align: right; }
+    .rank-col { width: 30px; }
+    .rank { 
+      text-align: center;
+      font-weight: 600;
+      color: #64748B;
+    }
+    .meta {
+      font-size: 10px;
+      color: #94A3B8;
+      margin-top: 2px;
+    }
     .text-green { color: #059669; }
     .text-red { color: #DC2626; }
+    .badge {
+      display: inline-block;
+      padding: 2px 8px;
+      border-radius: 4px;
+      font-size: 10px;
+      font-weight: 600;
+      text-transform: uppercase;
+    }
+    .badge-high { background: #D1FAE5; color: #059669; }
+    .badge-medium { background: #FEF3C7; color: #B45309; }
+    .badge-low { background: #E2E8F0; color: #64748B; }
+    .funnel-bars {
+      margin-bottom: 24px;
+    }
+    .funnel-row {
+      display: flex;
+      align-items: center;
+      margin-bottom: 8px;
+    }
+    .funnel-label {
+      width: 180px;
+      font-size: 12px;
+      color: #475569;
+      text-align: right;
+      padding-right: 12px;
+      flex-shrink: 0;
+    }
+    .funnel-bar-container {
+      flex: 1;
+      height: 24px;
+      background: #F1F5F9;
+      border-radius: 4px;
+      position: relative;
+      overflow: visible;
+    }
+    .funnel-bar {
+      height: 100%;
+      background: linear-gradient(90deg, #456A8A 0%, #5A8AA8 100%);
+      border-radius: 4px;
+      min-width: 2px;
+    }
+    .funnel-dropoff {
+      position: absolute;
+      right: -50px;
+      top: 50%;
+      transform: translateY(-50%);
+      font-size: 10px;
+      color: #DC2626;
+      font-weight: 600;
+      background: #FEE2E2;
+      padding: 2px 6px;
+      border-radius: 4px;
+    }
+    .funnel-value {
+      width: 100px;
+      font-size: 12px;
+      color: #64748B;
+      text-align: right;
+      padding-left: 60px;
+      flex-shrink: 0;
+    }
+    .total-row {
+      background: #F8FAFC;
+      font-weight: 600;
+    }
+    .total-row td {
+      border-top: 2px solid #E2E8F0;
+    }
+    .insights-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 16px;
+      margin-top: 24px;
+    }
+    .insight-card {
+      display: flex;
+      gap: 12px;
+      padding: 16px;
+      border-radius: 8px;
+    }
+    .insight-warning {
+      background: #FEF3C7;
+    }
+    .insight-cost {
+      background: #FEE2E2;
+    }
+    .insight-icon {
+      font-size: 24px;
+    }
+    .insight-content {
+      flex: 1;
+    }
+    .insight-title {
+      font-size: 10px;
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+      color: #78716C;
+      margin-bottom: 4px;
+    }
+    .insight-value {
+      font-size: 16px;
+      font-weight: 600;
+      color: #1F2937;
+      margin-bottom: 4px;
+    }
+    .insight-detail {
+      font-size: 12px;
+      color: #78716C;
+    }
     .footer {
-      margin-top: 40px;
-      padding-top: 20px;
+      margin-top: 32px;
+      padding-top: 16px;
       border-top: 1px solid #E2E8F0;
-      font-size: 11px;
+      font-size: 10px;
       color: #94A3B8;
       text-align: center;
     }
     @media print {
       body { padding: 0; }
       .no-print { display: none; }
+      .two-column { break-inside: avoid; }
+      .funnel-bars { break-inside: avoid; }
+      .insights-grid { break-inside: avoid; }
+      .funnel-dropoff { 
+        position: static;
+        margin-left: 8px;
+        transform: none;
+      }
     }
   </style>
 </head>
 <body>
   <div class="header">
-    <h1>${reportTitle}</h1>
-    <div class="journey-name">${title}</div>
+    <h1>${journeyTitle}</h1>
+    <div class="subtitle">${reportSubtitle}</div>
+    ${journeyOwner ? `<div class="owner">Owner: ${journeyOwner}</div>` : ''}
     <div class="date">Generated ${date}</div>
   </div>
   
@@ -1836,7 +2187,7 @@
     Generated by Fathom · Journey Intelligence Platform · v8.8.0
   </div>
   
-  <div class="no-print" style="margin-top: 30px; text-align: center;">
+  <div class="no-print" style="margin-top: 24px; text-align: center;">
     <button onclick="window.print()" style="background: #192B45; color: white; border: none; padding: 12px 24px; border-radius: 8px; font-size: 14px; cursor: pointer;">
       🖨️ Print / Save as PDF
     </button>
@@ -1941,9 +2292,9 @@
             <div style={{ display: 'flex', gap: '12px', alignItems: 'center' }}>
               <span style={{ fontFamily: "'Interstate', sans-serif", fontSize: '12px', color: '#556275' }}>{periodLabel}</span>
               <button 
-                onClick={() => exportReport('funnel', { title: config?.title || 'Journey Map' }, {
+                onClick={() => exportReport('funnel', { title: config?.meta?.title || config?.title || 'Journey Map', owner: config?.meta?.owner }, {
                   stageMetrics, initialVolume, finalVolume, totalDropOff, overallConversionRate, 
-                  totalStageInvestment, totalWastedCost, periodLabel
+                  totalStageInvestment, totalWastedCost, periodLabel, worstStage, mostWasteful
                 })}
                 style={{ 
                   background: '#E1EEF2', 
@@ -2001,24 +2352,48 @@
 
           {/* Funnel Visualization */}
           <div style={{ marginBottom: '24px' }}>
-            <div style={{ fontSize: '11px', fontFamily: "'Interstate', sans-serif", color: '#556275', marginBottom: '8px', textTransform: 'uppercase', letterSpacing: '0.5px' }}>
+            <div style={{ fontSize: '11px', fontFamily: "'Interstate', sans-serif", color: '#556275', marginBottom: '12px', textTransform: 'uppercase', letterSpacing: '0.5px' }}>
               Volume Flow by Stage
             </div>
-            <div style={{ display: 'flex', flexDirection: 'column', gap: '4px' }}>
+            <div style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
               {stageMetrics.map((stage, i) => {
-                const widthPercent = initialVolume > 0 ? (stage.entryVolume / initialVolume) * 100 : 0;
-                const exitWidthPercent = initialVolume > 0 ? (stage.exitVolume / initialVolume) * 100 : 0;
+                const widthPercent = initialVolume > 0 ? (stage.exitVolume / initialVolume) * 100 : 0;
                 return (
                   <div key={stage.stageId} style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
-                    <div style={{ width: '140px', fontSize: '12px', fontFamily: "'Interstate', sans-serif", color: '#3D4A5C', textAlign: 'right' }}>{stage.stageName}</div>
-                    <div style={{ flex: 1, position: 'relative', height: '32px', background: '#F4F5F7', borderRadius: '4px' }}>
-                      <div style={{ position: 'absolute', left: 0, top: 0, height: '100%', width: `${widthPercent}%`, background: getStageColor(i, 'light'), borderRadius: '4px', transition: 'width 0.3s' }} />
-                      <div style={{ position: 'absolute', left: 0, top: 0, height: '100%', width: `${exitWidthPercent}%`, background: getStageColor(i), borderRadius: '4px', transition: 'width 0.3s' }} />
+                    <div style={{ width: '160px', fontSize: '12px', fontFamily: "'Interstate', sans-serif", color: '#3D4A5C', textAlign: 'right' }}>{stage.stageName}</div>
+                    <div style={{ flex: 1, position: 'relative', height: '28px', background: '#F4F5F7', borderRadius: '4px' }}>
+                      <div style={{ 
+                        position: 'absolute', 
+                        left: 0, 
+                        top: 0, 
+                        height: '100%', 
+                        width: `${widthPercent}%`, 
+                        background: getStageColor(i), 
+                        borderRadius: '4px', 
+                        transition: 'width 0.3s',
+                        minWidth: widthPercent > 0 ? '4px' : '0'
+                      }} />
                       {stage.dropOff > 0 && (
-                        <div style={{ position: 'absolute', left: `${exitWidthPercent}%`, top: '50%', transform: 'translateY(-50%)', background: '#B84A5A', color: '#FFF', padding: '2px 6px', borderRadius: '4px', fontSize: '10px', fontFamily: "'Interstate', sans-serif", fontWeight: 600, marginLeft: '4px' }}>-{stage.dropOff}</div>
+                        <div style={{ 
+                          position: 'absolute', 
+                          left: `${widthPercent}%`, 
+                          top: '50%', 
+                          transform: 'translateY(-50%)', 
+                          background: '#B84A5A', 
+                          color: '#FFF', 
+                          padding: '3px 8px', 
+                          borderRadius: '4px', 
+                          fontSize: '11px', 
+                          fontFamily: "'Interstate', sans-serif", 
+                          fontWeight: 600, 
+                          marginLeft: '8px',
+                          whiteSpace: 'nowrap'
+                        }}>-{stage.dropOff.toLocaleString()}</div>
                       )}
                     </div>
-                    <div style={{ width: '80px', fontSize: '12px', fontFamily: "'Interstate', sans-serif", color: '#556275' }}>{stage.exitVolume.toLocaleString()} ({stage.completionRate.toFixed(0)}%)</div>
+                    <div style={{ width: '90px', fontSize: '12px', fontFamily: "'Interstate', sans-serif", color: '#556275', textAlign: 'right' }}>
+                      {stage.exitVolume.toLocaleString()} <span style={{ color: '#8A95A5' }}>({widthPercent.toFixed(0)}%)</span>
+                    </div>
                   </div>
                 );
               })}
@@ -2274,10 +2649,12 @@
                 </span>
               )}
               <button 
-                onClick={() => exportReport('time', { title: config?.title || 'Journey Map' }, {
+                onClick={() => exportReport('time', { title: config?.meta?.title || config?.title || 'Journey Map', owner: config?.meta?.owner }, {
                   totalTime, avgTimePerStep, highFrictionSteps: highFrictionSteps.length, totalPainPoints, 
                   stageData: stageMetrics.map(s => ({ name: s.name, stepCount: s.stepCount, time: s.time, avgFriction: s.avgFriction })),
-                  formatTime
+                  formatTime,
+                  topTimeSteps: byTime.slice(0, 5),
+                  frictionSteps: byFriction.slice(0, 5)
                 })}
                 style={{ 
                   background: '#E1EEF2', 
@@ -2959,8 +3336,8 @@
             </h3>
             <div style={{ display: 'flex', gap: '12px', alignItems: 'center' }}>
               <button 
-                onClick={() => exportReport('cost', { title: config?.title || 'Journey Map' }, {
-                  totalCost, totalMinutes, stageMetrics, roleCosts, totalAutomationSavings, formatTime
+                onClick={() => exportReport('cost', { title: config?.meta?.title || config?.title || 'Journey Map', owner: config?.meta?.owner }, {
+                  totalCost, totalMinutes, stageMetrics, roleCosts, totalAutomationSavings, formatTime, stepMetrics
                 })}
                 style={{ 
                   background: '#E1EEF2', 
@@ -5307,23 +5684,44 @@
                 <div className="header-title-wrapper" style={{ minWidth: 0, flex: 1 }}>
                   <h1 style={{ margin: 0, fontSize: isMobile ? '16px' : '18px', fontWeight: 500, letterSpacing: '-0.3px', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>
                     {editMode ? (
-                      <input 
-                        type="text" 
-                        value={config.meta.title} 
-                        onChange={(e) => setConfig(prev => ({ ...prev, meta: { ...prev.meta, title: e.target.value } }))}
-                        style={{ 
-                          background: 'rgba(255,255,255,0.1)', 
-                          border: '1px solid rgba(255,255,255,0.3)', 
-                          borderRadius: '4px', 
-                          padding: '4px 8px', 
-                          fontSize: '18px', 
-                          fontWeight: 500, 
-                          letterSpacing: '-0.3px', 
-                          color: '#F4F5F7', 
-                          fontFamily: "'Interstate', sans-serif", 
-                          width: `${Math.max(200, Math.min(400, config.meta.title.length * 10 + 20))}px`
-                        }}
-                      />
+                      <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
+                        <input 
+                          type="text" 
+                          value={config.meta.title} 
+                          onChange={(e) => setConfig(prev => ({ ...prev, meta: { ...prev.meta, title: e.target.value } }))}
+                          placeholder="Journey Title"
+                          style={{ 
+                            background: 'rgba(255,255,255,0.1)', 
+                            border: '1px solid rgba(255,255,255,0.3)', 
+                            borderRadius: '4px', 
+                            padding: '4px 8px', 
+                            fontSize: '18px', 
+                            fontWeight: 500, 
+                            letterSpacing: '-0.3px', 
+                            color: '#F4F5F7', 
+                            fontFamily: "'Interstate', sans-serif", 
+                            width: `${Math.max(200, Math.min(400, config.meta.title.length * 10 + 20))}px`
+                          }}
+                        />
+                        <span style={{ fontSize: '12px', color: 'rgba(255,255,255,0.5)' }}>Owner:</span>
+                        <input 
+                          type="text" 
+                          value={config.meta.owner || ''} 
+                          onChange={(e) => setConfig(prev => ({ ...prev, meta: { ...prev.meta, owner: e.target.value } }))}
+                          placeholder="Name"
+                          style={{ 
+                            background: 'rgba(255,255,255,0.1)', 
+                            border: '1px solid rgba(255,255,255,0.3)', 
+                            borderRadius: '4px', 
+                            padding: '4px 8px', 
+                            fontSize: '14px', 
+                            fontWeight: 400, 
+                            color: '#F4F5F7', 
+                            fontFamily: "'Interstate', sans-serif", 
+                            width: '150px'
+                          }}
+                        />
+                      </div>
                     ) : config.meta.title}
                   </h1>
                 </div>
