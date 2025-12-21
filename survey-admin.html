@@ -282,6 +282,10 @@
       const [copiedIndex, setCopiedIndex] = useState(null);
       const [githubToken, setGithubToken] = useState(localStorage.getItem('fathom-github-token') || '');
       
+      // Get map ID from URL if present
+      const urlParams = new URLSearchParams(window.location.search);
+      const preselectedMapId = urlParams.get('map');
+      
       // Load maps index
       useEffect(() => {
         const loadMaps = async () => {
@@ -291,6 +295,12 @@
             if (!response.ok) throw new Error('Failed to load maps');
             const data = await response.json();
             setMaps(data.maps || []);
+            
+            // Pre-select map from URL parameter
+            if (preselectedMapId && data.maps?.some(m => m.id === preselectedMapId)) {
+              setSelectedMapId(preselectedMapId);
+            }
+            
             setLoading(false);
           } catch (err) {
             setError(err.message);
@@ -431,11 +441,28 @@ Your input is really valuable - thank you!`;
       if (loading) {
         return (
           <>
-            <header className="header">
+            <header className="header" style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
               <div className="header-content">
                 <div className="header-brand">FATHOM</div>
                 <div className="header-title">Survey Link Generator</div>
               </div>
+              <a 
+                href="index.html"
+                style={{
+                  display: 'flex',
+                  alignItems: 'center',
+                  gap: '6px',
+                  padding: '8px 16px',
+                  background: 'rgba(255,255,255,0.1)',
+                  border: '1px solid rgba(255,255,255,0.2)',
+                  borderRadius: '6px',
+                  color: '#FFF',
+                  textDecoration: 'none',
+                  fontSize: '13px'
+                }}
+              >
+                ← Dashboard
+              </a>
             </header>
             <main className="main">
               <div className="loading">Loading maps...</div>
@@ -446,10 +473,48 @@ Your input is really valuable - thank you!`;
       
       return (
         <>
-          <header className="header">
+          <header className="header" style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
             <div className="header-content">
               <div className="header-brand">FATHOM</div>
               <div className="header-title">Survey Link Generator</div>
+            </div>
+            <div style={{ display: 'flex', gap: '12px' }}>
+              {selectedMapId && (
+                <a 
+                  href={`responses.html?map=${selectedMapId}`}
+                  style={{
+                    display: 'flex',
+                    alignItems: 'center',
+                    gap: '6px',
+                    padding: '8px 16px',
+                    background: 'rgba(255,255,255,0.1)',
+                    border: '1px solid rgba(255,255,255,0.2)',
+                    borderRadius: '6px',
+                    color: '#FFF',
+                    textDecoration: 'none',
+                    fontSize: '13px'
+                  }}
+                >
+                  📊 View Responses
+                </a>
+              )}
+              <a 
+                href="index.html"
+                style={{
+                  display: 'flex',
+                  alignItems: 'center',
+                  gap: '6px',
+                  padding: '8px 16px',
+                  background: 'rgba(255,255,255,0.1)',
+                  border: '1px solid rgba(255,255,255,0.2)',
+                  borderRadius: '6px',
+                  color: '#FFF',
+                  textDecoration: 'none',
+                  fontSize: '13px'
+                }}
+              >
+                ← Dashboard
+              </a>
             </div>
           </header>
           

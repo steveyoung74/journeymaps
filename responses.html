@@ -1,0 +1,1420 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Survey Responses | FATHOM</title>
+  <script src="https://unpkg.com/react@18/umd/react.production.min.js"></script>
+  <script src="https://unpkg.com/react-dom@18/umd/react-dom.production.min.js"></script>
+  <script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
+  <style>
+    /* ============================================
+       FATHOM RESPONSE VIEWER - STYLES
+       ============================================ */
+    
+    @font-face {
+      font-family: 'Interstate';
+      src: url('https://steveyoung74.github.io/journeymaps/fonts/Interstate-regular.ttf') format('truetype');
+      font-weight: 400;
+      font-style: normal;
+    }
+    @font-face {
+      font-family: 'Interstate';
+      src: url('https://steveyoung74.github.io/journeymaps/fonts/Interstate-bold.ttf') format('truetype');
+      font-weight: 700;
+      font-style: normal;
+    }
+    
+    :root {
+      --navy-900: #111E2E;
+      --navy-700: #192B45;
+      --navy-600: #243D5C;
+      --navy-500: #2F5070;
+      --steel-600: #4A7485;
+      --steel-500: #5B8A9A;
+      --steel-400: #74A0AE;
+      --steel-300: #96BCC7;
+      --steel-100: #E1EEF2;
+      --amber-600: #A67D1D;
+      --amber-500: #C4942A;
+      --amber-400: #D4A84A;
+      --amber-100: #FAF0D6;
+      --success: #2D8A6E;
+      --success-light: #D4EDE5;
+      --error: #B84A5A;
+      --error-light: #F5E0E3;
+      --warning: #D97706;
+      --warning-light: #FEF3C7;
+      --slate-900: #1A2332;
+      --slate-700: #3D4A5C;
+      --slate-600: #556275;
+      --slate-500: #6E7B8C;
+      --slate-400: #8A95A5;
+      --slate-300: #A9B2BE;
+      --slate-200: #C8CED6;
+      --slate-100: #E4E7EB;
+      --slate-50: #F4F5F7;
+    }
+    
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    
+    body {
+      font-family: 'Interstate', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+      background: var(--slate-50);
+      color: var(--slate-900);
+      line-height: 1.6;
+      min-height: 100vh;
+    }
+    
+    /* ============================================
+       HEADER
+       ============================================ */
+    
+    .header {
+      background: var(--navy-700);
+      color: #FFF;
+      padding: 16px 32px;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      position: sticky;
+      top: 0;
+      z-index: 100;
+    }
+    
+    .header-left {
+      display: flex;
+      align-items: center;
+      gap: 20px;
+    }
+    
+    .header-brand {
+      font-size: 11px;
+      font-weight: 700;
+      letter-spacing: 2.5px;
+      text-transform: uppercase;
+      opacity: 0.6;
+    }
+    
+    .header-title {
+      font-size: 18px;
+      font-weight: 600;
+    }
+    
+    .header-back {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      padding: 8px 16px;
+      background: rgba(255,255,255,0.1);
+      border: 1px solid rgba(255,255,255,0.2);
+      border-radius: 6px;
+      color: #FFF;
+      text-decoration: none;
+      font-size: 14px;
+      transition: all 0.15s;
+    }
+    
+    .header-back:hover {
+      background: rgba(255,255,255,0.2);
+    }
+    
+    /* ============================================
+       MAIN LAYOUT
+       ============================================ */
+    
+    .main {
+      max-width: 1200px;
+      margin: 0 auto;
+      padding: 32px;
+    }
+    
+    /* ============================================
+       STATS CARDS
+       ============================================ */
+    
+    .stats-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+      gap: 20px;
+      margin-bottom: 32px;
+    }
+    
+    .stat-card {
+      background: #FFF;
+      border-radius: 12px;
+      padding: 24px;
+      box-shadow: 0 2px 8px rgba(0,0,0,0.06);
+    }
+    
+    .stat-label {
+      font-size: 13px;
+      color: var(--slate-500);
+      margin-bottom: 8px;
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+    }
+    
+    .stat-value {
+      font-size: 32px;
+      font-weight: 700;
+      color: var(--navy-700);
+    }
+    
+    .stat-sub {
+      font-size: 13px;
+      color: var(--slate-400);
+      margin-top: 4px;
+    }
+    
+    .stat-card.highlight {
+      background: var(--navy-700);
+      color: #FFF;
+    }
+    
+    .stat-card.highlight .stat-label {
+      color: rgba(255,255,255,0.7);
+    }
+    
+    .stat-card.highlight .stat-value {
+      color: #FFF;
+    }
+    
+    .stat-card.highlight .stat-sub {
+      color: rgba(255,255,255,0.6);
+    }
+    
+    /* ============================================
+       FILTERS
+       ============================================ */
+    
+    .filters-bar {
+      display: flex;
+      gap: 16px;
+      margin-bottom: 24px;
+      flex-wrap: wrap;
+      align-items: center;
+    }
+    
+    .filter-group {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+    
+    .filter-label {
+      font-size: 13px;
+      color: var(--slate-500);
+      font-weight: 500;
+    }
+    
+    .filter-select {
+      padding: 8px 12px;
+      border: 1px solid var(--slate-200);
+      border-radius: 6px;
+      font-size: 14px;
+      font-family: inherit;
+      background: #FFF;
+      color: var(--slate-700);
+      min-width: 160px;
+    }
+    
+    .filter-select:focus {
+      outline: none;
+      border-color: var(--steel-500);
+    }
+    
+    .view-toggle {
+      display: flex;
+      gap: 4px;
+      margin-left: auto;
+      border: 1px solid var(--slate-200);
+      border-radius: 6px;
+      padding: 2px;
+      background: #FFF;
+    }
+    
+    .view-btn {
+      padding: 6px 12px;
+      border: none;
+      background: transparent;
+      color: var(--slate-500);
+      cursor: pointer;
+      border-radius: 4px;
+      font-size: 13px;
+      font-family: inherit;
+      transition: all 0.15s;
+    }
+    
+    .view-btn.active {
+      background: var(--navy-700);
+      color: #FFF;
+    }
+    
+    /* ============================================
+       RESPONSE CARDS
+       ============================================ */
+    
+    .responses-list {
+      display: flex;
+      flex-direction: column;
+      gap: 16px;
+    }
+    
+    .response-card {
+      background: #FFF;
+      border-radius: 12px;
+      box-shadow: 0 2px 8px rgba(0,0,0,0.06);
+      overflow: hidden;
+    }
+    
+    .response-header {
+      padding: 20px 24px;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      cursor: pointer;
+      transition: background 0.15s;
+    }
+    
+    .response-header:hover {
+      background: var(--slate-50);
+    }
+    
+    .response-meta {
+      display: flex;
+      align-items: center;
+      gap: 16px;
+    }
+    
+    .response-avatar {
+      width: 44px;
+      height: 44px;
+      border-radius: 50%;
+      background: var(--steel-100);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-weight: 600;
+      color: var(--steel-600);
+      font-size: 16px;
+    }
+    
+    .response-info h3 {
+      font-size: 16px;
+      font-weight: 600;
+      color: var(--navy-700);
+      margin-bottom: 2px;
+    }
+    
+    .response-info p {
+      font-size: 13px;
+      color: var(--slate-500);
+    }
+    
+    .response-badges {
+      display: flex;
+      gap: 8px;
+      align-items: center;
+    }
+    
+    .badge {
+      padding: 4px 10px;
+      border-radius: 20px;
+      font-size: 12px;
+      font-weight: 500;
+    }
+    
+    .badge-role {
+      background: var(--steel-100);
+      color: var(--steel-600);
+    }
+    
+    .badge-steps {
+      background: var(--slate-100);
+      color: var(--slate-600);
+    }
+    
+    .badge-friction-high {
+      background: var(--error-light);
+      color: var(--error);
+    }
+    
+    .badge-friction-medium {
+      background: var(--warning-light);
+      color: var(--warning);
+    }
+    
+    .badge-friction-low {
+      background: var(--success-light);
+      color: var(--success);
+    }
+    
+    .expand-icon {
+      font-size: 18px;
+      color: var(--slate-400);
+      transition: transform 0.2s;
+    }
+    
+    .expand-icon.expanded {
+      transform: rotate(180deg);
+    }
+    
+    .response-body {
+      border-top: 1px solid var(--slate-100);
+      padding: 24px;
+      display: none;
+    }
+    
+    .response-body.expanded {
+      display: block;
+    }
+    
+    /* ============================================
+       STEP RESPONSES
+       ============================================ */
+    
+    .step-responses {
+      display: flex;
+      flex-direction: column;
+      gap: 16px;
+    }
+    
+    .step-response {
+      background: var(--slate-50);
+      border-radius: 8px;
+      padding: 16px 20px;
+    }
+    
+    .step-response-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: flex-start;
+      margin-bottom: 12px;
+    }
+    
+    .step-name {
+      font-weight: 600;
+      color: var(--navy-700);
+      margin-bottom: 2px;
+    }
+    
+    .step-stage {
+      font-size: 12px;
+      color: var(--slate-500);
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+    }
+    
+    .step-metrics {
+      display: flex;
+      gap: 16px;
+      align-items: center;
+    }
+    
+    .metric {
+      text-align: right;
+    }
+    
+    .metric-value {
+      font-size: 18px;
+      font-weight: 600;
+      color: var(--navy-700);
+    }
+    
+    .metric-label {
+      font-size: 11px;
+      color: var(--slate-500);
+      text-transform: uppercase;
+    }
+    
+    .metric-variance {
+      font-size: 12px;
+      padding: 2px 6px;
+      border-radius: 4px;
+      font-weight: 500;
+    }
+    
+    .variance-higher {
+      background: var(--error-light);
+      color: var(--error);
+    }
+    
+    .variance-lower {
+      background: var(--success-light);
+      color: var(--success);
+    }
+    
+    .variance-same {
+      background: var(--slate-100);
+      color: var(--slate-500);
+    }
+    
+    .friction-display {
+      display: flex;
+      align-items: center;
+      gap: 6px;
+    }
+    
+    .friction-emoji {
+      font-size: 20px;
+    }
+    
+    .step-content {
+      display: grid;
+      gap: 12px;
+    }
+    
+    .content-field {
+      display: grid;
+      grid-template-columns: 140px 1fr;
+      gap: 8px;
+      font-size: 14px;
+    }
+    
+    .content-field dt {
+      color: var(--slate-500);
+      font-weight: 500;
+    }
+    
+    .content-field dd {
+      color: var(--slate-700);
+    }
+    
+    /* ============================================
+       COMPARISON VIEW
+       ============================================ */
+    
+    .comparison-grid {
+      display: grid;
+      gap: 16px;
+    }
+    
+    .comparison-row {
+      background: #FFF;
+      border-radius: 12px;
+      padding: 20px 24px;
+      box-shadow: 0 2px 8px rgba(0,0,0,0.06);
+    }
+    
+    .comparison-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 16px;
+    }
+    
+    .comparison-step-name {
+      font-weight: 600;
+      color: var(--navy-700);
+    }
+    
+    .comparison-step-stage {
+      font-size: 12px;
+      color: var(--slate-500);
+    }
+    
+    .comparison-data {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+      gap: 20px;
+    }
+    
+    .comparison-column {
+      padding: 16px;
+      border-radius: 8px;
+    }
+    
+    .comparison-column.estimate {
+      background: var(--slate-50);
+    }
+    
+    .comparison-column.responses {
+      background: var(--steel-100);
+    }
+    
+    .comparison-column h4 {
+      font-size: 12px;
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+      color: var(--slate-500);
+      margin-bottom: 12px;
+    }
+    
+    .comparison-column.responses h4 {
+      color: var(--steel-600);
+    }
+    
+    .comparison-value {
+      font-size: 24px;
+      font-weight: 700;
+      color: var(--navy-700);
+      margin-bottom: 4px;
+    }
+    
+    .comparison-column.responses .comparison-value {
+      color: var(--steel-700);
+    }
+    
+    .comparison-detail {
+      font-size: 13px;
+      color: var(--slate-500);
+    }
+    
+    .response-quotes {
+      margin-top: 16px;
+      padding-top: 16px;
+      border-top: 1px solid var(--slate-200);
+    }
+    
+    .response-quotes h5 {
+      font-size: 12px;
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+      color: var(--slate-500);
+      margin-bottom: 12px;
+    }
+    
+    .quote {
+      background: var(--amber-100);
+      border-left: 3px solid var(--amber-500);
+      padding: 12px 16px;
+      margin-bottom: 8px;
+      border-radius: 0 6px 6px 0;
+      font-size: 14px;
+      color: var(--slate-700);
+    }
+    
+    .quote-author {
+      font-size: 12px;
+      color: var(--slate-500);
+      margin-top: 6px;
+    }
+    
+    /* ============================================
+       EMPTY STATES
+       ============================================ */
+    
+    .empty-state {
+      text-align: center;
+      padding: 80px 40px;
+      background: #FFF;
+      border-radius: 16px;
+      box-shadow: 0 2px 8px rgba(0,0,0,0.06);
+    }
+    
+    .empty-icon {
+      font-size: 48px;
+      margin-bottom: 16px;
+    }
+    
+    .empty-state h2 {
+      font-size: 20px;
+      color: var(--navy-700);
+      margin-bottom: 8px;
+    }
+    
+    .empty-state p {
+      color: var(--slate-500);
+      margin-bottom: 24px;
+    }
+    
+    .btn {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      gap: 8px;
+      padding: 12px 24px;
+      border-radius: 8px;
+      font-size: 14px;
+      font-weight: 600;
+      cursor: pointer;
+      transition: all 0.15s;
+      border: none;
+      font-family: inherit;
+      text-decoration: none;
+    }
+    
+    .btn-primary {
+      background: var(--navy-700);
+      color: #FFF;
+    }
+    
+    .btn-primary:hover {
+      background: var(--navy-600);
+    }
+    
+    .btn-secondary {
+      background: var(--slate-100);
+      color: var(--slate-700);
+    }
+    
+    .btn-secondary:hover {
+      background: var(--slate-200);
+    }
+    
+    /* ============================================
+       LOADING
+       ============================================ */
+    
+    .loading {
+      text-align: center;
+      padding: 80px 40px;
+    }
+    
+    .loading-spinner {
+      width: 40px;
+      height: 40px;
+      border: 3px solid var(--slate-200);
+      border-top-color: var(--steel-500);
+      border-radius: 50%;
+      animation: spin 0.8s linear infinite;
+      margin: 0 auto 16px;
+    }
+    
+    @keyframes spin {
+      to { transform: rotate(360deg); }
+    }
+    
+    /* ============================================
+       RESPONSIVE
+       ============================================ */
+    
+    @media (max-width: 768px) {
+      .main {
+        padding: 20px;
+      }
+      
+      .stats-grid {
+        grid-template-columns: repeat(2, 1fr);
+      }
+      
+      .filters-bar {
+        flex-direction: column;
+        align-items: stretch;
+      }
+      
+      .view-toggle {
+        margin-left: 0;
+      }
+      
+      .response-header {
+        flex-direction: column;
+        align-items: flex-start;
+        gap: 12px;
+      }
+      
+      .response-badges {
+        flex-wrap: wrap;
+      }
+      
+      .content-field {
+        grid-template-columns: 1fr;
+      }
+      
+      .comparison-data {
+        grid-template-columns: 1fr;
+      }
+    }
+  </style>
+</head>
+<body>
+  <div id="root"></div>
+  
+  <script type="text/babel">
+    const { useState, useEffect, useMemo } = React;
+    
+    // ============================================
+    // CONFIGURATION
+    // ============================================
+    
+    const GITHUB_CONFIG = {
+      owner: 'steveyoung74',
+      repo: 'journeymaps',
+      branch: 'main',
+      mapsPath: 'maps',
+      responsesPath: 'responses'
+    };
+    
+    const FRICTION_OPTIONS = [
+      { id: 'none', emoji: '😊', label: 'None', score: 0 },
+      { id: 'low', emoji: '🙂', label: 'Low', score: 1 },
+      { id: 'medium', emoji: '😐', label: 'Medium', score: 2 },
+      { id: 'high', emoji: '😣', label: 'High', score: 3 },
+      { id: 'severe', emoji: '😫', label: 'Severe', score: 4 }
+    ];
+    
+    const getRawUrl = (path) => 
+      `https://raw.githubusercontent.com/${GITHUB_CONFIG.owner}/${GITHUB_CONFIG.repo}/${GITHUB_CONFIG.branch}/${path}`;
+    
+    const getApiUrl = (path) =>
+      `https://api.github.com/repos/${GITHUB_CONFIG.owner}/${GITHUB_CONFIG.repo}/contents/${path}`;
+    
+    // ============================================
+    // RESPONSE VIEWER APP
+    // ============================================
+    
+    function ResponseViewer() {
+      const [loading, setLoading] = useState(true);
+      const [error, setError] = useState(null);
+      const [mapConfig, setMapConfig] = useState(null);
+      const [responses, setResponses] = useState([]);
+      const [filterRole, setFilterRole] = useState('all');
+      const [filterStage, setFilterStage] = useState('all');
+      const [viewMode, setViewMode] = useState('responses'); // 'responses' or 'comparison'
+      const [expandedCards, setExpandedCards] = useState(new Set());
+      
+      // Get map ID from URL
+      const urlParams = new URLSearchParams(window.location.search);
+      const mapId = urlParams.get('map');
+      
+      // Load data
+      useEffect(() => {
+        if (!mapId) {
+          setError('No map specified. Please access this page from the dashboard.');
+          setLoading(false);
+          return;
+        }
+        
+        loadData();
+      }, [mapId]);
+      
+      const loadData = async () => {
+        try {
+          // Load map configuration
+          const mapUrl = getRawUrl(`${GITHUB_CONFIG.mapsPath}/${mapId}.json`);
+          const mapRes = await fetch(mapUrl);
+          if (!mapRes.ok) throw new Error('Could not load journey map');
+          const mapData = await mapRes.json();
+          setMapConfig(mapData);
+          
+          // Load responses from GitHub
+          const githubResponses = await loadGitHubResponses();
+          
+          // Also check localStorage
+          const localResponses = JSON.parse(localStorage.getItem('fathom-survey-responses') || '[]')
+            .filter(r => r.mapId === mapId);
+          
+          // Merge and deduplicate
+          const allResponses = [...githubResponses];
+          localResponses.forEach(local => {
+            if (!allResponses.find(r => r.surveyId === local.surveyId)) {
+              allResponses.push(local);
+            }
+          });
+          
+          // Sort by submission date (newest first)
+          allResponses.sort((a, b) => new Date(b.submittedAt) - new Date(a.submittedAt));
+          
+          setResponses(allResponses);
+          setLoading(false);
+        } catch (err) {
+          console.error('Load error:', err);
+          setError(err.message);
+          setLoading(false);
+        }
+      };
+      
+      const loadGitHubResponses = async () => {
+        try {
+          // Try to list files in the responses/{mapId} directory
+          const dirUrl = getApiUrl(`${GITHUB_CONFIG.responsesPath}/${mapId}`);
+          const dirRes = await fetch(dirUrl);
+          
+          if (!dirRes.ok) {
+            console.log('No responses directory found');
+            return [];
+          }
+          
+          const files = await dirRes.json();
+          if (!Array.isArray(files)) return [];
+          
+          // Fetch each response file
+          const responsePromises = files
+            .filter(f => f.name.endsWith('.json'))
+            .map(async (file) => {
+              try {
+                const res = await fetch(getRawUrl(`${GITHUB_CONFIG.responsesPath}/${mapId}/${file.name}`));
+                if (res.ok) return await res.json();
+              } catch (e) {
+                console.warn('Failed to load response:', file.name);
+              }
+              return null;
+            });
+          
+          const results = await Promise.all(responsePromises);
+          return results.filter(r => r !== null);
+        } catch (err) {
+          console.warn('Failed to load GitHub responses:', err);
+          return [];
+        }
+      };
+      
+      // Get unique roles and stages from responses
+      const roles = useMemo(() => {
+        const roleMap = new Map();
+        responses.forEach(r => {
+          if (!roleMap.has(r.roleId)) {
+            roleMap.set(r.roleId, r.roleName);
+          }
+        });
+        return Array.from(roleMap.entries()).map(([id, name]) => ({ id, name }));
+      }, [responses]);
+      
+      const stages = useMemo(() => {
+        if (!mapConfig?.stages) return [];
+        return mapConfig.stages.map(s => ({ id: s.id, name: s.name }));
+      }, [mapConfig]);
+      
+      // Filter responses
+      const filteredResponses = useMemo(() => {
+        return responses.filter(r => {
+          if (filterRole !== 'all' && r.roleId !== filterRole) return false;
+          return true;
+        });
+      }, [responses, filterRole]);
+      
+      // Calculate stats
+      const stats = useMemo(() => {
+        const totalResponses = responses.length;
+        const responsesByRole = {};
+        let totalFrictionScore = 0;
+        let frictionCount = 0;
+        let totalTimeVariance = 0;
+        let timeVarianceCount = 0;
+        
+        responses.forEach(r => {
+          responsesByRole[r.roleId] = (responsesByRole[r.roleId] || 0) + 1;
+          
+          r.responses?.forEach(sr => {
+            const friction = FRICTION_OPTIONS.find(f => f.id === sr.friction);
+            if (friction) {
+              totalFrictionScore += friction.score;
+              frictionCount++;
+            }
+            
+            // Calculate time variance if we have map data
+            if (sr.timeEstimate && mapConfig) {
+              const step = mapConfig.stages
+                ?.flatMap(s => s.steps || [])
+                ?.find(s => s.id === sr.stepId);
+              
+              if (step?.time) {
+                totalTimeVariance += (parseInt(sr.timeEstimate) - step.time);
+                timeVarianceCount++;
+              }
+            }
+          });
+        });
+        
+        const avgFriction = frictionCount > 0 ? totalFrictionScore / frictionCount : 0;
+        const avgTimeVariance = timeVarianceCount > 0 ? totalTimeVariance / timeVarianceCount : 0;
+        
+        return {
+          totalResponses,
+          responsesByRole,
+          avgFriction,
+          avgTimeVariance,
+          frictionLabel: avgFriction < 1 ? 'Low' : avgFriction < 2 ? 'Medium' : 'High'
+        };
+      }, [responses, mapConfig]);
+      
+      // Build comparison data (step by step)
+      const comparisonData = useMemo(() => {
+        if (!mapConfig?.stages) return [];
+        
+        const data = [];
+        
+        mapConfig.stages.forEach(stage => {
+          if (filterStage !== 'all' && stage.id !== filterStage) return;
+          
+          stage.steps?.forEach(step => {
+            // Get all responses for this step
+            const stepResponses = [];
+            filteredResponses.forEach(r => {
+              const sr = r.responses?.find(sr => sr.stepId === step.id);
+              if (sr) {
+                stepResponses.push({
+                  ...sr,
+                  respondentName: r.respondent?.name || r.respondentName,
+                  roleName: r.roleName
+                });
+              }
+            });
+            
+            if (stepResponses.length === 0 && filterRole !== 'all') return;
+            
+            // Calculate aggregates
+            const times = stepResponses
+              .map(sr => parseInt(sr.timeEstimate))
+              .filter(t => !isNaN(t));
+            
+            const frictionScores = stepResponses
+              .map(sr => FRICTION_OPTIONS.find(f => f.id === sr.friction)?.score)
+              .filter(s => s !== undefined);
+            
+            const avgTime = times.length > 0 
+              ? times.reduce((a, b) => a + b, 0) / times.length 
+              : null;
+            
+            const avgFriction = frictionScores.length > 0
+              ? frictionScores.reduce((a, b) => a + b, 0) / frictionScores.length
+              : null;
+            
+            const painPoints = stepResponses
+              .filter(sr => sr.painPoints)
+              .map(sr => ({ text: sr.painPoints, author: sr.respondentName, role: sr.roleName }));
+            
+            const improvements = stepResponses
+              .filter(sr => sr.improvements)
+              .map(sr => ({ text: sr.improvements, author: sr.respondentName, role: sr.roleName }));
+            
+            data.push({
+              stepId: step.id,
+              stepName: step.name,
+              stageId: stage.id,
+              stageName: stage.name,
+              estimate: {
+                time: step.time,
+                friction: step.friction
+              },
+              responses: {
+                count: stepResponses.length,
+                avgTime,
+                minTime: times.length > 0 ? Math.min(...times) : null,
+                maxTime: times.length > 0 ? Math.max(...times) : null,
+                avgFriction,
+                painPoints,
+                improvements
+              }
+            });
+          });
+        });
+        
+        return data;
+      }, [mapConfig, filteredResponses, filterStage]);
+      
+      // Toggle card expansion
+      const toggleCard = (id) => {
+        setExpandedCards(prev => {
+          const next = new Set(prev);
+          if (next.has(id)) {
+            next.delete(id);
+          } else {
+            next.add(id);
+          }
+          return next;
+        });
+      };
+      
+      // Get initials from name
+      const getInitials = (name) => {
+        if (!name) return '?';
+        return name.split(' ').map(n => n[0]).join('').toUpperCase().slice(0, 2);
+      };
+      
+      // Format date
+      const formatDate = (dateStr) => {
+        const date = new Date(dateStr);
+        return date.toLocaleDateString('en-GB', { 
+          day: 'numeric', 
+          month: 'short', 
+          year: 'numeric',
+          hour: '2-digit',
+          minute: '2-digit'
+        });
+      };
+      
+      // Get friction badge class
+      const getFrictionBadgeClass = (frictionId) => {
+        const score = FRICTION_OPTIONS.find(f => f.id === frictionId)?.score || 0;
+        if (score >= 3) return 'badge-friction-high';
+        if (score >= 2) return 'badge-friction-medium';
+        return 'badge-friction-low';
+      };
+      
+      // Calculate overall friction for a response
+      const getResponseFriction = (response) => {
+        const scores = response.responses
+          ?.map(sr => FRICTION_OPTIONS.find(f => f.id === sr.friction)?.score)
+          ?.filter(s => s !== undefined) || [];
+        
+        if (scores.length === 0) return null;
+        
+        const avg = scores.reduce((a, b) => a + b, 0) / scores.length;
+        
+        if (avg >= 3) return { label: 'High Friction', class: 'badge-friction-high' };
+        if (avg >= 2) return { label: 'Medium Friction', class: 'badge-friction-medium' };
+        return { label: 'Low Friction', class: 'badge-friction-low' };
+      };
+      
+      // ============================================
+      // RENDER
+      // ============================================
+      
+      if (loading) {
+        return (
+          <>
+            <header className="header">
+              <div className="header-left">
+                <div className="header-brand">FATHOM</div>
+                <div className="header-title">Loading...</div>
+              </div>
+            </header>
+            <main className="main">
+              <div className="loading">
+                <div className="loading-spinner"></div>
+                <p>Loading survey responses...</p>
+              </div>
+            </main>
+          </>
+        );
+      }
+      
+      if (error) {
+        return (
+          <>
+            <header className="header">
+              <div className="header-left">
+                <div className="header-brand">FATHOM</div>
+                <div className="header-title">Error</div>
+              </div>
+              <a href="index.html" className="header-back">← Back to Dashboard</a>
+            </header>
+            <main className="main">
+              <div className="empty-state">
+                <div className="empty-icon">⚠️</div>
+                <h2>Unable to Load Responses</h2>
+                <p>{error}</p>
+                <a href="index.html" className="btn btn-primary">Go to Dashboard</a>
+              </div>
+            </main>
+          </>
+        );
+      }
+      
+      return (
+        <>
+          <header className="header">
+            <div className="header-left">
+              <div className="header-brand">FATHOM</div>
+              <div className="header-title">{mapConfig?.meta?.title || 'Survey Responses'}</div>
+            </div>
+            <div style={{ display: 'flex', gap: '12px' }}>
+              <a href={`survey-admin.html?map=${mapId}`} className="header-back">
+                📤 Send Surveys
+              </a>
+              <a href="index.html" className="header-back">← Dashboard</a>
+            </div>
+          </header>
+          
+          <main className="main">
+            {/* Stats */}
+            <div className="stats-grid">
+              <div className="stat-card highlight">
+                <div className="stat-label">Total Responses</div>
+                <div className="stat-value">{stats.totalResponses}</div>
+                <div className="stat-sub">{roles.length} role{roles.length !== 1 ? 's' : ''} represented</div>
+              </div>
+              
+              <div className="stat-card">
+                <div className="stat-label">Avg Time Variance</div>
+                <div className="stat-value" style={{ color: stats.avgTimeVariance > 0 ? 'var(--error)' : 'var(--success)' }}>
+                  {stats.avgTimeVariance > 0 ? '+' : ''}{Math.round(stats.avgTimeVariance)} min
+                </div>
+                <div className="stat-sub">{stats.avgTimeVariance > 0 ? 'Longer than estimated' : 'Shorter than estimated'}</div>
+              </div>
+              
+              <div className="stat-card">
+                <div className="stat-label">Avg Friction Level</div>
+                <div className="stat-value">{stats.frictionLabel}</div>
+                <div className="stat-sub">Score: {stats.avgFriction.toFixed(1)} / 4</div>
+              </div>
+              
+              <div className="stat-card">
+                <div className="stat-label">Response Rate</div>
+                <div className="stat-value">—</div>
+                <div className="stat-sub">Tracking not yet enabled</div>
+              </div>
+            </div>
+            
+            {responses.length === 0 ? (
+              <div className="empty-state">
+                <div className="empty-icon">📭</div>
+                <h2>No Responses Yet</h2>
+                <p>Survey responses will appear here once people complete them.</p>
+                <a href={`survey-admin.html?map=${mapId}`} className="btn btn-primary">
+                  📤 Send Survey Invitations
+                </a>
+              </div>
+            ) : (
+              <>
+                {/* Filters */}
+                <div className="filters-bar">
+                  <div className="filter-group">
+                    <span className="filter-label">Role:</span>
+                    <select 
+                      className="filter-select"
+                      value={filterRole}
+                      onChange={(e) => setFilterRole(e.target.value)}
+                    >
+                      <option value="all">All Roles</option>
+                      {roles.map(role => (
+                        <option key={role.id} value={role.id}>
+                          {role.name} ({stats.responsesByRole[role.id] || 0})
+                        </option>
+                      ))}
+                    </select>
+                  </div>
+                  
+                  {viewMode === 'comparison' && (
+                    <div className="filter-group">
+                      <span className="filter-label">Stage:</span>
+                      <select 
+                        className="filter-select"
+                        value={filterStage}
+                        onChange={(e) => setFilterStage(e.target.value)}
+                      >
+                        <option value="all">All Stages</option>
+                        {stages.map(stage => (
+                          <option key={stage.id} value={stage.id}>{stage.name}</option>
+                        ))}
+                      </select>
+                    </div>
+                  )}
+                  
+                  <div className="view-toggle">
+                    <button 
+                      className={`view-btn ${viewMode === 'responses' ? 'active' : ''}`}
+                      onClick={() => setViewMode('responses')}
+                    >
+                      By Person
+                    </button>
+                    <button 
+                      className={`view-btn ${viewMode === 'comparison' ? 'active' : ''}`}
+                      onClick={() => setViewMode('comparison')}
+                    >
+                      By Step
+                    </button>
+                  </div>
+                </div>
+                
+                {/* Responses View */}
+                {viewMode === 'responses' && (
+                  <div className="responses-list">
+                    {filteredResponses.map(response => {
+                      const isExpanded = expandedCards.has(response.surveyId);
+                      const friction = getResponseFriction(response);
+                      
+                      return (
+                        <div key={response.surveyId} className="response-card">
+                          <div 
+                            className="response-header"
+                            onClick={() => toggleCard(response.surveyId)}
+                          >
+                            <div className="response-meta">
+                              <div className="response-avatar">
+                                {getInitials(response.respondent?.name || response.respondentName)}
+                              </div>
+                              <div className="response-info">
+                                <h3>{response.respondent?.name || response.respondentName}</h3>
+                                <p>{formatDate(response.submittedAt)}</p>
+                              </div>
+                            </div>
+                            
+                            <div className="response-badges">
+                              <span className="badge badge-role">{response.roleName}</span>
+                              <span className="badge badge-steps">{response.responses?.length || 0} steps</span>
+                              {friction && (
+                                <span className={`badge ${friction.class}`}>{friction.label}</span>
+                              )}
+                              <span className={`expand-icon ${isExpanded ? 'expanded' : ''}`}>▼</span>
+                            </div>
+                          </div>
+                          
+                          <div className={`response-body ${isExpanded ? 'expanded' : ''}`}>
+                            <div className="step-responses">
+                              {response.responses?.map(sr => {
+                                const frictionOpt = FRICTION_OPTIONS.find(f => f.id === sr.friction);
+                                
+                                // Get original step data for comparison
+                                const originalStep = mapConfig?.stages
+                                  ?.flatMap(s => s.steps || [])
+                                  ?.find(s => s.id === sr.stepId);
+                                
+                                const timeVariance = sr.timeEstimate && originalStep?.time
+                                  ? parseInt(sr.timeEstimate) - originalStep.time
+                                  : null;
+                                
+                                return (
+                                  <div key={sr.stepId} className="step-response">
+                                    <div className="step-response-header">
+                                      <div>
+                                        <div className="step-name">{sr.stepName}</div>
+                                        <div className="step-stage">{sr.stageName}</div>
+                                      </div>
+                                      <div className="step-metrics">
+                                        {sr.timeEstimate && (
+                                          <div className="metric">
+                                            <div className="metric-value">{sr.timeEstimate} min</div>
+                                            <div className="metric-label">Time</div>
+                                            {timeVariance !== null && (
+                                              <div className={`metric-variance ${timeVariance > 0 ? 'variance-higher' : timeVariance < 0 ? 'variance-lower' : 'variance-same'}`}>
+                                                {timeVariance > 0 ? '+' : ''}{timeVariance} vs estimate
+                                              </div>
+                                            )}
+                                          </div>
+                                        )}
+                                        {frictionOpt && (
+                                          <div className="friction-display">
+                                            <span className="friction-emoji">{frictionOpt.emoji}</span>
+                                            <span>{frictionOpt.label}</span>
+                                          </div>
+                                        )}
+                                      </div>
+                                    </div>
+                                    
+                                    <div className="step-content">
+                                      {sr.description && (
+                                        <dl className="content-field">
+                                          <dt>What they do</dt>
+                                          <dd>{sr.description}</dd>
+                                        </dl>
+                                      )}
+                                      {sr.painPoints && (
+                                        <dl className="content-field">
+                                          <dt>Pain Points</dt>
+                                          <dd>{sr.painPoints}</dd>
+                                        </dl>
+                                      )}
+                                      {sr.regulatory && (
+                                        <dl className="content-field">
+                                          <dt>Regulatory</dt>
+                                          <dd>{sr.regulatory}</dd>
+                                        </dl>
+                                      )}
+                                      {sr.thirdPartyCosts && (
+                                        <dl className="content-field">
+                                          <dt>Third Party Costs</dt>
+                                          <dd>£{sr.thirdPartyCosts}</dd>
+                                        </dl>
+                                      )}
+                                      {sr.improvements && (
+                                        <dl className="content-field">
+                                          <dt>Improvement Ideas</dt>
+                                          <dd>{sr.improvements}</dd>
+                                        </dl>
+                                      )}
+                                    </div>
+                                  </div>
+                                );
+                              })}
+                            </div>
+                          </div>
+                        </div>
+                      );
+                    })}
+                  </div>
+                )}
+                
+                {/* Comparison View */}
+                {viewMode === 'comparison' && (
+                  <div className="comparison-grid">
+                    {comparisonData.map(item => (
+                      <div key={item.stepId} className="comparison-row">
+                        <div className="comparison-header">
+                          <div>
+                            <div className="comparison-step-name">{item.stepName}</div>
+                            <div className="comparison-step-stage">{item.stageName}</div>
+                          </div>
+                          <span className="badge badge-steps">{item.responses.count} response{item.responses.count !== 1 ? 's' : ''}</span>
+                        </div>
+                        
+                        <div className="comparison-data">
+                          <div className="comparison-column estimate">
+                            <h4>Your Estimate</h4>
+                            <div className="comparison-value">
+                              {item.estimate.time ? `${item.estimate.time} min` : '—'}
+                            </div>
+                            {item.estimate.friction && (
+                              <div className="comparison-detail">
+                                Friction: {item.estimate.friction}
+                              </div>
+                            )}
+                          </div>
+                          
+                          <div className="comparison-column responses">
+                            <h4>Survey Responses</h4>
+                            {item.responses.avgTime !== null ? (
+                              <>
+                                <div className="comparison-value">{Math.round(item.responses.avgTime)} min</div>
+                                <div className="comparison-detail">
+                                  Range: {item.responses.minTime}–{item.responses.maxTime} min
+                                </div>
+                                {item.estimate.time && (
+                                  <div className="comparison-detail" style={{ 
+                                    color: item.responses.avgTime > item.estimate.time ? 'var(--error)' : 'var(--success)',
+                                    fontWeight: 600
+                                  }}>
+                                    {item.responses.avgTime > item.estimate.time ? '+' : ''}
+                                    {Math.round(item.responses.avgTime - item.estimate.time)} min variance
+                                  </div>
+                                )}
+                              </>
+                            ) : (
+                              <div className="comparison-value" style={{ color: 'var(--slate-400)' }}>—</div>
+                            )}
+                            {item.responses.avgFriction !== null && (
+                              <div className="comparison-detail" style={{ marginTop: '8px' }}>
+                                Avg Friction: {FRICTION_OPTIONS.find(f => f.score === Math.round(item.responses.avgFriction))?.emoji || '😐'} 
+                                {' '}({item.responses.avgFriction.toFixed(1)}/4)
+                              </div>
+                            )}
+                          </div>
+                        </div>
+                        
+                        {(item.responses.painPoints.length > 0 || item.responses.improvements.length > 0) && (
+                          <div className="response-quotes">
+                            {item.responses.painPoints.length > 0 && (
+                              <>
+                                <h5>Pain Points Reported</h5>
+                                {item.responses.painPoints.map((pp, i) => (
+                                  <div key={i} className="quote">
+                                    {pp.text}
+                                    <div className="quote-author">— {pp.author} ({pp.role})</div>
+                                  </div>
+                                ))}
+                              </>
+                            )}
+                            
+                            {item.responses.improvements.length > 0 && (
+                              <>
+                                <h5 style={{ marginTop: '16px' }}>Improvement Ideas</h5>
+                                {item.responses.improvements.map((imp, i) => (
+                                  <div key={i} className="quote" style={{ background: 'var(--success-light)', borderColor: 'var(--success)' }}>
+                                    {imp.text}
+                                    <div className="quote-author">— {imp.author} ({imp.role})</div>
+                                  </div>
+                                ))}
+                              </>
+                            )}
+                          </div>
+                        )}
+                      </div>
+                    ))}
+                  </div>
+                )}
+              </>
+            )}
+          </main>
+        </>
+      );
+    }
+    
+    // ============================================
+    // RENDER
+    // ============================================
+    ReactDOM.createRoot(document.getElementById('root')).render(<ResponseViewer />);
+  </script>
+</body>
+</html>

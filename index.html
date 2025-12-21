@@ -2803,13 +2803,23 @@
                       
                       {/* Normal Mode Actions */}
                       {!manageMode && isOwner && (
-                        <button 
-                          onClick={(e) => { e.stopPropagation(); setShowShareModal(map.id); }}
-                          className="btn btn-ghost"
-                          style={{ padding: '6px 12px', color: 'var(--steel-500)', fontSize: '13px' }}
-                        >
-                          Share
-                        </button>
+                        <div style={{ display: 'flex', gap: '6px' }} onClick={e => e.stopPropagation()}>
+                          <button 
+                            onClick={() => window.location.href = `responses.html?map=${map.id}`}
+                            className="btn btn-ghost"
+                            style={{ padding: '6px 12px', color: 'var(--steel-500)', fontSize: '13px' }}
+                            title="View survey responses"
+                          >
+                            📊 Responses
+                          </button>
+                          <button 
+                            onClick={() => setShowShareModal(map.id)}
+                            className="btn btn-ghost"
+                            style={{ padding: '6px 12px', color: 'var(--steel-500)', fontSize: '13px' }}
+                          >
+                            Share
+                          </button>
+                        </div>
                       )}
                       
                       {/* Manage Mode Actions */}
@@ -3072,21 +3082,39 @@
                             </button>
                           </>
                         ) : isOwner ? (
-                          <button
-                            onClick={() => setShowShareModal(map.id)}
-                            style={{
-                              padding: '5px 10px',
-                              background: 'transparent',
-                              border: '1px solid var(--slate-200)',
-                              borderRadius: '4px',
-                              cursor: 'pointer',
-                              fontSize: '11px',
-                              color: 'var(--steel-500)',
-                              fontWeight: 500
-                            }}
-                          >
-                            Share
-                          </button>
+                          <>
+                            <button
+                              onClick={() => window.location.href = `responses.html?map=${map.id}`}
+                              title="Survey Responses"
+                              style={{
+                                padding: '5px 10px',
+                                background: 'transparent',
+                                border: '1px solid var(--slate-200)',
+                                borderRadius: '4px',
+                                cursor: 'pointer',
+                                fontSize: '11px',
+                                color: 'var(--steel-500)',
+                                fontWeight: 500
+                              }}
+                            >
+                              📊
+                            </button>
+                            <button
+                              onClick={() => setShowShareModal(map.id)}
+                              style={{
+                                padding: '5px 10px',
+                                background: 'transparent',
+                                border: '1px solid var(--slate-200)',
+                                borderRadius: '4px',
+                                cursor: 'pointer',
+                                fontSize: '11px',
+                                color: 'var(--steel-500)',
+                                fontWeight: 500
+                              }}
+                            >
+                              Share
+                            </button>
+                          </>
                         ) : null}
                       </div>
                     </div>
