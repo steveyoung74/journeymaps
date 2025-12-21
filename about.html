@@ -432,10 +432,33 @@
     /* Footer */
     .footer {
       background: var(--navy-950);
-      color: rgba(255,255,255,0.6);
-      padding: 40px 24px;
-      text-align: center;
-      font-size: 14px;
+      color: rgba(255,255,255,0.4);
+      padding: 32px 24px;
+    }
+    .footer-inner {
+      max-width: 900px;
+      margin: 0 auto;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      flex-wrap: wrap;
+      gap: 16px;
+    }
+    .footer-brand {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+    }
+    .footer-logo {
+      height: 20px;
+      opacity: 0.5;
+    }
+    .footer-version {
+      font-size: 11px;
+      opacity: 0.6;
+    }
+    .footer-copy {
+      font-size: 13px;
     }
     
     /* Responsive */
@@ -674,7 +697,13 @@
           
           {/* Footer */}
           <footer className="footer">
-            <p>© 2024 Fathom. All rights reserved.</p>
+            <div className="footer-inner">
+              <div className="footer-brand">
+                <img src="https://steveyoung74.github.io/journeymaps/logo_light.png" alt="Fathom" className="footer-logo" />
+                <span className="footer-version">v8.8.0</span>
+              </div>
+              <div className="footer-copy">© 2025 Fathom · Journey intelligence for modern operations</div>
+            </div>
           </footer>
         </>
       );

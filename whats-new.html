@@ -378,6 +378,39 @@
       margin-bottom: 0;
     }
     
+    /* Footer */
+    .footer {
+      background: var(--navy-950);
+      color: rgba(255,255,255,0.4);
+      padding: 32px 24px;
+      margin-top: 60px;
+    }
+    .footer-inner {
+      max-width: 900px;
+      margin: 0 auto;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      flex-wrap: wrap;
+      gap: 16px;
+    }
+    .footer-brand {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+    }
+    .footer-logo {
+      height: 20px;
+      opacity: 0.5;
+    }
+    .footer-version {
+      font-size: 11px;
+      opacity: 0.6;
+    }
+    .footer-copy {
+      font-size: 13px;
+    }
+    
     /* Responsive */
     @media (max-width: 768px) {
       .nav-links {
@@ -398,8 +431,8 @@
     // Release notes data - easy to update
     const RELEASES = [
       {
-        version: '0.8.6',
-        date: 'December 2024',
+        version: '8.8.0',
+        date: 'December 2025',
         badge: 'latest',
         title: 'Survey Response Viewer & Product Navigation',
         sections: [
@@ -410,7 +443,7 @@
               'Survey Response Viewer — see all submissions with filtering by role',
               'Comparison View — compare your estimates vs actual survey responses',
               'Consistent product navigation across all pages',
-              'About page with product information',
+              'About page with product information and founder bio',
               'What\'s New page (you\'re looking at it!)',
               'Time variance highlighting in response viewer'
             ]
@@ -428,8 +461,8 @@
         ]
       },
       {
-        version: '0.8.5',
-        date: 'December 2024',
+        version: '8.7.0',
+        date: 'December 2025',
         title: 'Survey System & Template Library',
         sections: [
           {
@@ -455,8 +488,8 @@
         ]
       },
       {
-        version: '0.8.4',
-        date: 'December 2024',
+        version: '8.6.0',
+        date: 'November 2025',
         title: 'Cost Analysis & Funnel Analytics',
         sections: [
           {
@@ -475,8 +508,8 @@
         ]
       },
       {
-        version: '0.8.0',
-        date: 'November 2024',
+        version: '8.5.0',
+        date: 'October 2025',
         title: 'Dashboard & Multi-Map Support',
         sections: [
           {
@@ -613,6 +646,16 @@
               ))}
             </div>
           </main>
+          
+          <footer className="footer">
+            <div className="footer-inner">
+              <div className="footer-brand">
+                <img src="https://steveyoung74.github.io/journeymaps/logo_light.png" alt="Fathom" className="footer-logo" />
+                <span className="footer-version">v8.8.0</span>
+              </div>
+              <div className="footer-copy">© 2025 Fathom · Journey intelligence for modern operations</div>
+            </div>
+          </footer>
         </div>
       );
     }
