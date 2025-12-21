@@ -8,7 +8,12 @@
       "ownerName": "Steve Young",
       "createdAt": "2024-01-01T00:00:00.000Z",
       "updatedAt": "2024-12-17T00:00:00.000Z",
-      "sharedWith": [],
+      "sharedWith": [
+        {
+          "email": "oliviayoung22@icloud.com",
+          "permission": "view"
+        }
+      ],
       "locked": true,
       "favourite": true
     },
