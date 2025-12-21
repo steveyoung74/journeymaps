@@ -74,6 +74,9 @@
       min-height: 100vh;
       background: var(--slate-50);
       position: relative;
+      min-height: 100vh;
+      display: flex;
+      flex-direction: column;
     }
     .page-bg::before {
       content: '';
@@ -85,6 +88,10 @@
       z-index: 0;
     }
     .page-bg > main {
+      position: relative;
+      flex: 1;
+    }
+    .page-bg > .footer {
       position: relative;
     }
     
@@ -918,7 +925,6 @@
       background: var(--navy-950);
       color: rgba(255,255,255,0.4);
       padding: 32px 24px;
-      margin-top: 60px;
     }
     .footer-inner {
       max-width: 1140px;

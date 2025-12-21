@@ -68,6 +68,16 @@
       line-height: 1.6;
     }
     
+    /* Page Container for sticky footer */
+    .page-container {
+      min-height: 100vh;
+      display: flex;
+      flex-direction: column;
+    }
+    .page-container > main {
+      flex: 1;
+    }
+    
     /* Navigation */
     .nav {
       background: linear-gradient(135deg, var(--navy-700) 0%, var(--navy-900) 100%);
@@ -502,7 +512,7 @@
       const currentPath = window.location.pathname.split('/').pop() || 'index.html';
       
       return (
-        <>
+        <div className="page-container">
           {/* Navigation */}
           <nav className="nav">
             <div className="nav-inner">
@@ -540,6 +550,7 @@
             </div>
           </nav>
           
+          <main>
           {/* Hero */}
           <section className="hero">
             <h1>Understand Deeply. Improve Decisively.</h1>
@@ -694,6 +705,7 @@
               {user ? 'Go to Dashboard' : 'Get Started'}
             </a>
           </section>
+          </main>
           
           {/* Footer */}
           <footer className="footer">
@@ -705,7 +717,7 @@
               <div className="footer-copy">© 2025 Fathom · Journey intelligence for modern operations</div>
             </div>
           </footer>
-        </>
+        </div>
       );
     }
     
