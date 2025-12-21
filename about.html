@@ -315,6 +315,64 @@
       margin-bottom: 0;
     }
     
+    /* Founder */
+    .founder {
+      display: flex;
+      gap: 40px;
+      align-items: flex-start;
+      margin-top: 32px;
+    }
+    .founder-image {
+      width: 140px;
+      height: 140px;
+      border-radius: 50%;
+      object-fit: cover;
+      flex-shrink: 0;
+      box-shadow: 0 4px 20px rgba(0,0,0,0.1);
+    }
+    .founder-content h3 {
+      font-size: 22px;
+      color: var(--navy-700);
+      margin-bottom: 4px;
+    }
+    .founder-title {
+      font-size: 14px;
+      color: var(--steel-600);
+      margin-bottom: 16px;
+    }
+    .founder-content p {
+      font-size: 15px;
+      color: var(--slate-600);
+      margin-bottom: 16px;
+      line-height: 1.8;
+    }
+    .founder-content p:last-of-type {
+      margin-bottom: 20px;
+    }
+    .linkedin-link {
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      color: #0A66C2;
+      text-decoration: none;
+      font-size: 14px;
+      font-weight: 500;
+    }
+    .linkedin-link:hover {
+      text-decoration: underline;
+    }
+    .linkedin-icon {
+      width: 20px;
+      height: 20px;
+    }
+    @media (max-width: 600px) {
+      .founder {
+        flex-direction: column;
+        align-items: center;
+        text-align: center;
+      }
+    }
+    
     /* CTA */
     .cta {
       background: linear-gradient(135deg, var(--navy-700) 0%, var(--navy-900) 100%);
@@ -557,6 +615,49 @@
                     <h3>Actionable Insights</h3>
                     <p>Beautiful diagrams don't improve processes. Fathom surfaces specific opportunities with quantified impact and clear next steps.</p>
                   </div>
+                </div>
+              </div>
+            </div>
+          </section>
+          
+          {/* Meet the Founder */}
+          <section className="section">
+            <div className="container">
+              <h2>Meet the Founder</h2>
+              <div className="founder">
+                <img src="steve-young.png" alt="Steve Young" className="founder-image" />
+                <div className="founder-content">
+                  <h3>Steve Young</h3>
+                  <div className="founder-title">Creator of Fathom</div>
+                  <p>
+                    With over two decades of experience in service design, product leadership, and digital transformation, 
+                    Steve has spent his career simplifying complexity through design.
+                  </p>
+                  <p>
+                    Currently leading Service Design at <strong>Evelyn Partners</strong>, one of the UK's largest wealth management firms, 
+                    Steve works alongside C-suite leadership to identify and deliver commercially impactful design solutions. 
+                    His career spans senior roles at <strong>JPMorgan Chase</strong>, where he led User Experience and Product Design 
+                    across Corporate and Investment Banking for EMEA and APAC, and a <strong>$30m VC-funded startup</strong> backed 
+                    by Accel Partners and Balderton Capital, where he served as Creative and Brand Director.
+                  </p>
+                  <p>
+                    A graduate of <strong>The Glasgow School of Art</strong>, Steve combines strategic thinking with hands-on 
+                    technical expertise — from his early days as a Flash developer (yes, he wrote the book — literally, 
+                    <em>Flash MX Components Most Wanted</em>) to leading enterprise-scale transformation programmes today.
+                  </p>
+                  <p>
+                    Fathom grew from a simple frustration: traditional process mapping tools don't speak the language of 
+                    business cases. After years of building journey maps in spreadsheets and slide decks to justify operational 
+                    improvements, Steve built the tool he wished existed — one that quantifies the true cost of processes and 
+                    makes the case for change impossible to ignore.
+                  </p>
+                  <p>Based in <strong>Glasgow, Scotland</strong>.</p>
+                  <a href="https://www.linkedin.com/in/steveyoung74/" target="_blank" rel="noopener noreferrer" className="linkedin-link">
+                    <svg className="linkedin-icon" viewBox="0 0 24 24" fill="currentColor">
+                      <path d="M20.447 20.452h-3.554v-5.569c0-1.328-.027-3.037-1.852-3.037-1.853 0-2.136 1.445-2.136 2.939v5.667H9.351V9h3.414v1.561h.046c.477-.9 1.637-1.85 3.37-1.85 3.601 0 4.267 2.37 4.267 5.455v6.286zM5.337 7.433c-1.144 0-2.063-.926-2.063-2.065 0-1.138.92-2.063 2.063-2.063 1.14 0 2.064.925 2.064 2.063 0 1.139-.925 2.065-2.064 2.065zm1.782 13.019H3.555V9h3.564v11.452zM22.225 0H1.771C.792 0 0 .774 0 1.729v20.542C0 23.227.792 24 1.771 24h20.451C23.2 24 24 23.227 24 22.271V1.729C24 .774 23.2 0 22.222 0h.003z"/>
+                    </svg>
+                    Connect on LinkedIn
+                  </a>
                 </div>
               </div>
             </div>
