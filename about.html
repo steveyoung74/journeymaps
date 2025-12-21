@@ -141,6 +141,7 @@
       visibility: hidden;
       transform: translateY(8px);
       transition: all 0.2s;
+      z-index: 1001;
     }
     .nav-dropdown:hover .nav-dropdown-menu {
       opacity: 1;
@@ -429,20 +430,22 @@
                 <a href="index.html">
                   <img src="https://steveyoung74.github.io/journeymaps/logo_light.png" alt="FATHOM" className="nav-logo" />
                 </a>
-                {user && (
-                  <div className="nav-links">
-                    <a href="index.html" className={`nav-link ${currentPath === 'index.html' ? 'active' : ''}`}>Dashboard</a>
-                    <div className="nav-dropdown">
-                      <span className="nav-link" style={{ cursor: 'pointer' }}>Surveys ▾</span>
-                      <div className="nav-dropdown-menu">
-                        <a href="survey-admin.html" className="nav-dropdown-item">Send Surveys</a>
-                        <a href="responses.html" className="nav-dropdown-item">View Responses</a>
+                <div className="nav-links">
+                  {user && (
+                    <>
+                      <a href="index.html" className={`nav-link ${currentPath === 'index.html' ? 'active' : ''}`}>Dashboard</a>
+                      <div className="nav-dropdown">
+                        <span className="nav-link" style={{ cursor: 'pointer' }}>Surveys ▾</span>
+                        <div className="nav-dropdown-menu">
+                          <a href="survey-admin.html" className="nav-dropdown-item">Send Surveys</a>
+                          <a href="responses.html" className="nav-dropdown-item">View Responses</a>
+                        </div>
                       </div>
-                    </div>
-                    <a href="whats-new.html" className={`nav-link ${currentPath === 'whats-new.html' ? 'active' : ''}`}>What's New</a>
-                    <a href="about.html" className={`nav-link ${currentPath === 'about.html' ? 'active' : ''}`}>About</a>
-                  </div>
-                )}
+                    </>
+                  )}
+                  <a href="whats-new.html" className={`nav-link ${currentPath === 'whats-new.html' ? 'active' : ''}`}>What's New</a>
+                  <a href="about.html" className={`nav-link ${currentPath === 'about.html' ? 'active' : ''}`}>About</a>
+                </div>
               </div>
               <div className="nav-right">
                 {user ? (
