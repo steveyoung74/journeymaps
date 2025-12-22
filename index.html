@@ -5305,15 +5305,13 @@
         );
       }
       
-      // If logged in, show dashboard
+      // If logged in, redirect to dashboard
       if (user) {
+        window.location.href = 'dashboard.html';
         return (
-          <Dashboard 
-            user={user} 
-            token={token} 
-            onLogout={handleLogout}
-            onUpdateToken={handleUpdateToken}
-          />
+          <div style={{ minHeight: '100vh', display: 'flex', alignItems: 'center', justifyContent: 'center', background: 'var(--navy-700)' }}>
+            <img src="logo_light.png" alt="FATHOM" style={{ height: '40px', opacity: 0.5 }} />
+          </div>
         );
       }
       

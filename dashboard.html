@@ -1,0 +1,1342 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=5.0, viewport-fit=cover">
+  <title>FATHOM - Dashboard</title>
+  <script src="https://unpkg.com/react@18/umd/react.production.min.js"></script>
+  <script src="https://unpkg.com/react-dom@18/umd/react-dom.production.min.js"></script>
+  <script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
+  <style>
+    /* Interstate Font Family */
+    @font-face {
+      font-family: 'Interstate';
+      src: url('https://steveyoung74.github.io/journeymaps/fonts/Interstate-light.ttf') format('truetype');
+      font-weight: 300;
+      font-style: normal;
+      font-display: swap;
+    }
+    @font-face {
+      font-family: 'Interstate';
+      src: url('https://steveyoung74.github.io/journeymaps/fonts/Interstate-regular.ttf') format('truetype');
+      font-weight: 400;
+      font-style: normal;
+      font-display: swap;
+    }
+    @font-face {
+      font-family: 'Interstate';
+      src: url('https://steveyoung74.github.io/journeymaps/fonts/Interstate-bold.ttf') format('truetype');
+      font-weight: 700;
+      font-style: normal;
+      font-display: swap;
+    }
+    
+    /* CSS Custom Properties */
+    :root {
+      --navy-950: #0C1620;
+      --navy-900: #111E2E;
+      --navy-800: #15243A;
+      --navy-700: #192B45;
+      --navy-600: #243D5C;
+      --navy-500: #2F5070;
+      --navy-400: #456A8A;
+      --navy-300: #6889A8;
+      --navy-200: #9BB1C7;
+      --navy-100: #C8D5E2;
+      --navy-50: #E9EEF4;
+      --steel-700: #3A6070;
+      --steel-600: #4A7485;
+      --steel-500: #5B8A9A;
+      --steel-400: #74A0AE;
+      --steel-300: #96BCC7;
+      --steel-100: #E1EEF2;
+      --amber-700: #8B6914;
+      --amber-600: #A67D1D;
+      --amber-500: #C4942A;
+      --amber-400: #D4A84A;
+      --amber-200: #E8D5A3;
+      --amber-100: #FAF0D6;
+      --success: #2D8A6E;
+      --success-light: #D4EDE5;
+      --error: #B84A5A;
+      --error-light: #F5E0E3;
+      --slate-900: #1A2332;
+      --slate-700: #3D4A5C;
+      --slate-600: #556275;
+      --slate-500: #6E7B8C;
+      --slate-400: #8A95A5;
+      --slate-300: #A9B2BE;
+      --slate-200: #C8CED6;
+      --slate-100: #E4E7EB;
+      --slate-50: #F4F5F7;
+    }
+    
+    /* Base Reset - Mobile First */
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    html, body {
+      width: 100%;
+      max-width: 100%;
+      overflow-x: hidden;
+    }
+    body { 
+      font-family: 'Interstate', -apple-system, BlinkMacSystemFont, sans-serif; 
+      background: var(--slate-50);
+      color: var(--slate-900);
+      line-height: 1.6;
+      min-height: 100vh;
+    }
+    
+    /* Buttons */
+    .btn { 
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      gap: 8px;
+      padding: 12px 20px; 
+      border-radius: 8px; 
+      font-size: 14px; 
+      font-weight: 500; 
+      cursor: pointer; 
+      transition: all 0.2s;
+      border: none;
+      font-family: inherit;
+      text-decoration: none;
+    }
+    .btn:disabled { opacity: 0.5; cursor: not-allowed; }
+    .btn-primary { background: var(--navy-700); color: #FFF; }
+    .btn-primary:hover:not(:disabled) { background: var(--navy-800); }
+    .btn-secondary { background: #FFF; color: var(--navy-700); border: 2px solid var(--navy-700); }
+    .btn-secondary:hover:not(:disabled) { background: var(--navy-50); }
+    .btn-ghost { background: transparent; color: var(--slate-600); }
+    .btn-ghost:hover:not(:disabled) { background: var(--slate-100); }
+    
+    /* Form Elements */
+    .input {
+      width: 100%;
+      padding: 12px 14px;
+      border: 1px solid var(--slate-200);
+      border-radius: 8px;
+      font-size: 15px;
+      font-family: inherit;
+      transition: border-color 0.15s, box-shadow 0.15s;
+    }
+    .input:focus { 
+      outline: none;
+      border-color: var(--steel-500); 
+      box-shadow: 0 0 0 3px rgba(91, 138, 154, 0.15);
+    }
+    .label {
+      display: block;
+      font-size: 14px;
+      font-weight: 500;
+      color: var(--slate-700);
+      margin-bottom: 6px;
+    }
+    
+    /* Cards */
+    .card {
+      background: #FFF;
+      border-radius: 12px;
+      box-shadow: 0 2px 12px rgba(25, 43, 69, 0.06);
+      border: 1px solid var(--slate-100);
+    }
+    
+    /* Badge */
+    .badge {
+      display: inline-flex;
+      align-items: center;
+      padding: 4px 10px;
+      border-radius: 16px;
+      font-size: 11px;
+      font-weight: 500;
+    }
+    .badge-owner { background: var(--steel-100); color: var(--navy-600); }
+    .badge-edit { background: var(--success-light); color: var(--success); }
+    .badge-view { background: var(--slate-100); color: var(--slate-600); }
+    
+    /* Utility */
+    .text-muted { color: var(--slate-500); }
+    .text-small { font-size: 13px; }
+    
+    /* Page Layout */
+    .page-container {
+      min-height: 100vh;
+      display: flex;
+      flex-direction: column;
+      width: 100%;
+      max-width: 100%;
+      overflow-x: hidden;
+    }
+    .page-container::before {
+      content: '';
+      position: fixed;
+      inset: 0;
+      background: url('https://steveyoung74.github.io/journeymaps/topography-light.svg') center/600px 600px repeat;
+      opacity: 1;
+      pointer-events: none;
+      z-index: -1;
+    }
+    
+    /* Navigation */
+    .nav {
+      background: linear-gradient(135deg, var(--navy-700) 0%, var(--navy-900) 100%);
+      position: sticky;
+      top: 0;
+      z-index: 100;
+      flex-shrink: 0;
+      width: 100%;
+    }
+    .nav::before {
+      content: '';
+      position: absolute;
+      inset: 0;
+      background: url('https://steveyoung74.github.io/journeymaps/topography-dark.svg') center/600px 600px repeat;
+      opacity: 1;
+      pointer-events: none;
+    }
+    .nav-inner {
+      max-width: 1200px;
+      margin: 0 auto;
+      padding: 0 16px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      height: 56px;
+      position: relative;
+      z-index: 1;
+    }
+    .nav-logo { height: 26px; }
+    .nav-left {
+      display: flex;
+      align-items: center;
+      gap: 24px;
+    }
+    .nav-links {
+      display: none;
+      align-items: center;
+      gap: 4px;
+    }
+    .nav-link {
+      color: rgba(255,255,255,0.7);
+      text-decoration: none;
+      padding: 6px 12px;
+      border-radius: 6px;
+      font-size: 13px;
+      font-weight: 500;
+      transition: all 0.15s;
+    }
+    .nav-link:hover { color: #FFF; background: rgba(255,255,255,0.1); }
+    .nav-link.active { color: #FFF; background: rgba(255,255,255,0.15); }
+    .nav-right {
+      display: none;
+      align-items: center;
+      gap: 12px;
+    }
+    .nav-user {
+      color: rgba(255,255,255,0.7);
+      font-size: 13px;
+    }
+    .nav-signout {
+      background: rgba(255,255,255,0.1);
+      border: 1px solid rgba(255,255,255,0.2);
+      color: rgba(255,255,255,0.9);
+      padding: 6px 12px;
+      border-radius: 6px;
+      font-size: 12px;
+      cursor: pointer;
+      font-family: inherit;
+    }
+    .nav-signout:hover { background: rgba(255,255,255,0.2); }
+    
+    /* Mobile hamburger */
+    .nav-mobile-toggle {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      background: none;
+      border: none;
+      color: #FFF;
+      font-size: 24px;
+      cursor: pointer;
+      padding: 8px;
+      line-height: 1;
+    }
+    
+    /* Mobile Menu Overlay */
+    .nav-mobile-menu {
+      display: none;
+      position: fixed;
+      inset: 0;
+      background: rgba(12, 22, 32, 0.98);
+      z-index: 1000;
+      flex-direction: column;
+      padding: 20px;
+    }
+    .nav-mobile-menu.open { display: flex; }
+    .nav-mobile-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 32px;
+    }
+    .nav-mobile-close {
+      background: none;
+      border: none;
+      color: #FFF;
+      font-size: 32px;
+      cursor: pointer;
+      padding: 4px 8px;
+      line-height: 1;
+    }
+    .nav-mobile-links {
+      display: flex;
+      flex-direction: column;
+      gap: 8px;
+    }
+    .nav-mobile-link {
+      color: rgba(255,255,255,0.8);
+      text-decoration: none;
+      padding: 14px 16px;
+      border-radius: 8px;
+      font-size: 16px;
+      font-weight: 500;
+    }
+    .nav-mobile-link:hover, .nav-mobile-link.active {
+      background: rgba(255,255,255,0.1);
+      color: #FFF;
+    }
+    .nav-mobile-divider {
+      height: 1px;
+      background: rgba(255,255,255,0.1);
+      margin: 12px 0;
+    }
+    .nav-mobile-user {
+      margin-top: auto;
+      padding-top: 20px;
+      border-top: 1px solid rgba(255,255,255,0.1);
+    }
+    .nav-mobile-user-name {
+      color: rgba(255,255,255,0.6);
+      font-size: 13px;
+      margin-bottom: 12px;
+    }
+    .nav-mobile-signout {
+      width: 100%;
+      padding: 12px;
+      background: rgba(255,255,255,0.1);
+      border: 1px solid rgba(255,255,255,0.2);
+      color: #FFF;
+      border-radius: 8px;
+      font-size: 14px;
+      cursor: pointer;
+      font-family: inherit;
+    }
+    
+    /* Main Content */
+    main {
+      flex: 1;
+      padding: 20px 16px;
+      width: 100%;
+      max-width: 100%;
+    }
+    .main-inner {
+      max-width: 1200px;
+      margin: 0 auto;
+      width: 100%;
+    }
+    
+    /* Dashboard Header */
+    .dash-header {
+      margin-bottom: 24px;
+    }
+    .dash-title {
+      font-size: 24px;
+      font-weight: 400;
+      color: var(--navy-700);
+      margin-bottom: 4px;
+    }
+    .dash-subtitle {
+      color: var(--slate-500);
+      font-size: 14px;
+    }
+    .dash-header-row {
+      display: flex;
+      flex-direction: column;
+      gap: 16px;
+      margin-bottom: 20px;
+    }
+    
+    /* Tabs */
+    .tabs {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 8px;
+      margin-bottom: 20px;
+      padding-bottom: 16px;
+      border-bottom: 1px solid var(--slate-200);
+    }
+    .tab-btn {
+      padding: 8px 16px;
+      background: transparent;
+      color: var(--slate-600);
+      border: none;
+      border-radius: 6px;
+      cursor: pointer;
+      font-family: inherit;
+      font-size: 14px;
+      font-weight: 500;
+      transition: all 0.15s;
+    }
+    .tab-btn:hover { background: var(--slate-100); }
+    .tab-btn.active {
+      background: var(--navy-700);
+      color: #FFF;
+    }
+    
+    /* Journey Cards Grid */
+    .cards-grid {
+      display: grid;
+      grid-template-columns: 1fr;
+      gap: 16px;
+    }
+    .journey-card {
+      padding: 20px;
+      cursor: pointer;
+      transition: all 0.2s;
+      position: relative;
+    }
+    .journey-card:hover {
+      box-shadow: 0 4px 20px rgba(25, 43, 69, 0.1);
+    }
+    .journey-card-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: flex-start;
+      margin-bottom: 8px;
+    }
+    .journey-card-title {
+      font-size: 16px;
+      font-weight: 600;
+      color: var(--navy-700);
+      line-height: 1.3;
+      padding-right: 40px;
+    }
+    .journey-card-icons {
+      display: flex;
+      gap: 4px;
+      font-size: 14px;
+      position: absolute;
+      top: 16px;
+      right: 16px;
+    }
+    .journey-card-desc {
+      color: var(--slate-500);
+      font-size: 13px;
+      margin-bottom: 12px;
+      line-height: 1.4;
+    }
+    .journey-card-metrics {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 6px;
+      padding: 10px 12px;
+      background: var(--slate-50);
+      border-radius: 8px;
+      margin-bottom: 12px;
+    }
+    .metric {
+      display: flex;
+      align-items: center;
+      gap: 4px;
+      font-size: 12px;
+    }
+    .metric-value { font-weight: 600; color: var(--navy-700); }
+    .metric-dot { color: var(--slate-300); }
+    .journey-card-footer {
+      display: flex;
+      flex-wrap: wrap;
+      justify-content: space-between;
+      align-items: center;
+      gap: 8px;
+    }
+    .journey-card-date {
+      color: var(--slate-400);
+      font-size: 12px;
+    }
+    .journey-card-actions {
+      display: flex;
+      gap: 4px;
+    }
+    .journey-card-actions .btn {
+      padding: 6px 10px;
+      font-size: 12px;
+    }
+    
+    /* Modal */
+    .modal-overlay {
+      position: fixed;
+      inset: 0;
+      background: rgba(12, 22, 32, 0.7);
+      backdrop-filter: blur(4px);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      z-index: 1000;
+      padding: 16px;
+    }
+    .modal {
+      background: #FFF;
+      border-radius: 16px;
+      width: 100%;
+      max-width: 420px;
+      max-height: 90vh;
+      overflow-y: auto;
+    }
+    .modal-content { padding: 24px; }
+    .modal-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 20px;
+    }
+    .modal-close {
+      background: none;
+      border: none;
+      font-size: 28px;
+      color: var(--slate-400);
+      cursor: pointer;
+      padding: 4px;
+      line-height: 1;
+    }
+    .modal-title {
+      font-size: 22px;
+      font-weight: 400;
+      color: var(--navy-700);
+      margin-bottom: 6px;
+    }
+    
+    /* Footer */
+    footer {
+      padding: 20px 16px;
+      text-align: center;
+      color: var(--slate-400);
+      font-size: 12px;
+      border-top: 1px solid var(--slate-200);
+      background: #FFF;
+    }
+    footer a { color: var(--steel-500); text-decoration: none; }
+    footer a:hover { text-decoration: underline; }
+    
+    /* Dropdown */
+    .dropdown {
+      position: relative;
+    }
+    .dropdown-menu {
+      position: absolute;
+      top: 100%;
+      left: 0;
+      background: #FFF;
+      border-radius: 8px;
+      box-shadow: 0 4px 20px rgba(0,0,0,0.15);
+      min-width: 160px;
+      padding: 6px 0;
+      opacity: 0;
+      visibility: hidden;
+      transform: translateY(8px);
+      transition: all 0.2s;
+      z-index: 50;
+    }
+    .dropdown:hover .dropdown-menu {
+      opacity: 1;
+      visibility: visible;
+      transform: translateY(4px);
+    }
+    .dropdown-item {
+      display: block;
+      padding: 10px 16px;
+      color: var(--slate-700);
+      text-decoration: none;
+      font-size: 14px;
+      transition: background 0.1s;
+    }
+    .dropdown-item:hover { background: var(--slate-50); }
+    
+    /* ============================================
+       TABLET AND UP (768px+)
+       ============================================ */
+    @media (min-width: 768px) {
+      .nav-inner {
+        padding: 0 24px;
+        height: 64px;
+      }
+      .nav-links { display: flex; }
+      .nav-right { display: flex; }
+      .nav-mobile-toggle { display: none; }
+      
+      main { padding: 32px 24px; }
+      
+      .dash-header-row {
+        flex-direction: row;
+        justify-content: space-between;
+        align-items: center;
+      }
+      .dash-title { font-size: 28px; }
+      
+      .cards-grid {
+        grid-template-columns: repeat(2, 1fr);
+        gap: 20px;
+      }
+      
+      .journey-card { padding: 24px; }
+      .journey-card-title { font-size: 17px; }
+    }
+    
+    /* ============================================
+       DESKTOP (1024px+)
+       ============================================ */
+    @media (min-width: 1024px) {
+      main { padding: 40px; }
+      
+      .dash-title { font-size: 32px; }
+      
+      .cards-grid {
+        grid-template-columns: repeat(3, 1fr);
+        gap: 24px;
+      }
+    }
+  </style>
+</head>
+<body>
+  <div id="root"></div>
+  
+  <script type="text/babel">
+    const { useState, useEffect } = React;
+    
+    // GitHub configuration
+    const GITHUB_CONFIG = {
+      owner: 'steveyoung74',
+      repo: 'journeymaps',
+      branch: 'main',
+      mapsPath: 'maps',
+      indexFile: 'maps/index.json'
+    };
+    
+    const getRawUrl = (path) => 
+      `https://raw.githubusercontent.com/${GITHUB_CONFIG.owner}/${GITHUB_CONFIG.repo}/${GITHUB_CONFIG.branch}/${path}`;
+    
+    const getApiUrl = (path) => 
+      `https://api.github.com/repos/${GITHUB_CONFIG.owner}/${GITHUB_CONFIG.repo}/contents/${path}`;
+    
+    async function fetchFromGitHub(path) {
+      const cacheBust = `${Date.now()}-${Math.random().toString(36).substr(2, 9)}`;
+      const url = getRawUrl(path) + '?t=' + cacheBust;
+      const response = await fetch(url);
+      if (!response.ok) {
+        if (response.status === 404) return null;
+        throw new Error(`GitHub fetch failed: ${response.status}`);
+      }
+      return response.json();
+    }
+    
+    async function saveToGitHub(path, content, token, message = 'Update from Fathom') {
+      const apiUrl = getApiUrl(path);
+      let sha = null;
+      
+      try {
+        const existingResponse = await fetch(apiUrl, {
+          headers: { 'Authorization': `token ${token}` }
+        });
+        if (existingResponse.ok) {
+          const existing = await existingResponse.json();
+          sha = existing.sha;
+        }
+      } catch (e) {}
+      
+      const body = {
+        message,
+        content: btoa(unescape(encodeURIComponent(JSON.stringify(content, null, 2)))),
+        branch: GITHUB_CONFIG.branch
+      };
+      if (sha) body.sha = sha;
+      
+      const response = await fetch(apiUrl, {
+        method: 'PUT',
+        headers: {
+          'Authorization': `token ${token}`,
+          'Content-Type': 'application/json'
+        },
+        body: JSON.stringify(body)
+      });
+      
+      if (!response.ok) {
+        const error = await response.json();
+        throw new Error(error.message || 'Failed to save');
+      }
+      
+      return response.json();
+    }
+    
+    async function deleteFromGitHub(path, token, message = 'Delete from Fathom') {
+      const apiUrl = getApiUrl(path);
+      const existingResponse = await fetch(apiUrl, {
+        headers: { 'Authorization': `token ${token}` }
+      });
+      if (!existingResponse.ok) throw new Error('File not found');
+      const existing = await existingResponse.json();
+      
+      const response = await fetch(apiUrl, {
+        method: 'DELETE',
+        headers: {
+          'Authorization': `token ${token}`,
+          'Content-Type': 'application/json'
+        },
+        body: JSON.stringify({
+          message,
+          sha: existing.sha,
+          branch: GITHUB_CONFIG.branch
+        })
+      });
+      
+      if (!response.ok) throw new Error('Failed to delete');
+      return true;
+    }
+    
+    // Utility functions
+    const formatTime = (minutes) => {
+      if (!minutes) return '0m';
+      const h = Math.floor(minutes / 60);
+      const m = Math.round(minutes % 60);
+      if (h === 0) return `${m}m`;
+      if (m === 0) return `${h}h`;
+      return `${h}h ${m}m`;
+    };
+    
+    const formatCurrency = (amount) => {
+      if (amount === null || amount === undefined) return '—';
+      return '£' + amount.toLocaleString('en-GB', { minimumFractionDigits: 0, maximumFractionDigits: 0 });
+    };
+    
+    const formatDate = (dateStr) => {
+      if (!dateStr) return '';
+      const date = new Date(dateStr);
+      return date.toLocaleDateString('en-GB', { day: '2-digit', month: '2-digit', year: 'numeric' });
+    };
+    
+    // ============================================
+    // LOGIN MODAL
+    // ============================================
+    function LoginModal({ onLogin }) {
+      const [name, setName] = useState('');
+      const [email, setEmail] = useState('');
+      const [token, setToken] = useState('');
+      const [error, setError] = useState('');
+      const [isLoading, setIsLoading] = useState(false);
+
+      const handleSubmit = async (e) => {
+        e.preventDefault();
+        if (!name.trim() || !email.trim()) {
+          setError('Please enter your name and email');
+          return;
+        }
+        if (!email.includes('@')) {
+          setError('Please enter a valid email');
+          return;
+        }
+        setIsLoading(true);
+        await onLogin({ name: name.trim(), email: email.trim().toLowerCase() }, token.trim());
+        setIsLoading(false);
+      };
+
+      return (
+        <div className="modal-overlay">
+          <div className="modal">
+            <div className="modal-content">
+              <div className="modal-header">
+                <img src="https://steveyoung74.github.io/journeymaps/logo_dark.png" alt="FATHOM" style={{ height: '28px' }} />
+              </div>
+              
+              <h2 className="modal-title">Welcome to Fathom</h2>
+              <p className="text-muted" style={{ marginBottom: '24px', fontSize: '14px' }}>Enter your details to access your journey maps</p>
+
+              {error && (
+                <div style={{ padding: '12px 14px', background: 'var(--error-light)', borderRadius: '8px', marginBottom: '16px', color: 'var(--error)', fontSize: '13px' }}>
+                  {error}
+                </div>
+              )}
+
+              <form onSubmit={handleSubmit}>
+                <div style={{ marginBottom: '16px' }}>
+                  <label className="label">Your Name</label>
+                  <input
+                    type="text"
+                    className="input"
+                    value={name}
+                    onChange={(e) => setName(e.target.value)}
+                    placeholder="Steve Young"
+                    autoFocus
+                  />
+                </div>
+
+                <div style={{ marginBottom: '16px' }}>
+                  <label className="label">Email Address</label>
+                  <input
+                    type="email"
+                    className="input"
+                    value={email}
+                    onChange={(e) => setEmail(e.target.value)}
+                    placeholder="steve@company.com"
+                  />
+                </div>
+
+                <div style={{ marginBottom: '24px' }}>
+                  <label className="label">GitHub Token <span style={{ fontWeight: 400, color: 'var(--slate-400)' }}>(optional)</span></label>
+                  <input
+                    type="password"
+                    className="input"
+                    value={token}
+                    onChange={(e) => setToken(e.target.value)}
+                    placeholder="ghp_xxxxxxxxxxxx"
+                  />
+                  <p className="text-muted text-small" style={{ marginTop: '6px' }}>
+                    Required to create and edit maps.
+                  </p>
+                </div>
+
+                <button type="submit" className="btn btn-primary" style={{ width: '100%', padding: '14px' }} disabled={isLoading}>
+                  {isLoading ? 'Signing in...' : 'Sign In'}
+                </button>
+              </form>
+            </div>
+          </div>
+        </div>
+      );
+    }
+    
+    // ============================================
+    // DASHBOARD
+    // ============================================
+    function Dashboard({ user, token, onLogout, onUpdateToken }) {
+      const [maps, setMaps] = useState([]);
+      const [mapConfigs, setMapConfigs] = useState({});
+      const [loading, setLoading] = useState(true);
+      const [error, setError] = useState('');
+      const [showCreateModal, setShowCreateModal] = useState(false);
+      const [showShareModal, setShowShareModal] = useState(null);
+      const [showTokenModal, setShowTokenModal] = useState(false);
+      const [activeTab, setActiveTab] = useState('my-maps');
+      const [showMobileMenu, setShowMobileMenu] = useState(false);
+
+      useEffect(() => {
+        window.scrollTo(0, 0);
+        fetchMaps();
+      }, []);
+
+      useEffect(() => {
+        if (maps.length > 0) fetchMapConfigs();
+      }, [maps]);
+
+      const fetchMaps = async () => {
+        setLoading(true);
+        try {
+          const index = await fetchFromGitHub(GITHUB_CONFIG.indexFile);
+          setMaps(index?.maps || []);
+        } catch (err) {
+          setError('Failed to load maps');
+        }
+        setLoading(false);
+      };
+
+      const fetchMapConfigs = async () => {
+        const configs = {};
+        for (const map of maps) {
+          try {
+            const config = await fetchFromGitHub(\`\${GITHUB_CONFIG.mapsPath}/\${map.id}.json\`);
+            if (config) configs[map.id] = config;
+          } catch (err) {}
+        }
+        setMapConfigs(configs);
+      };
+
+      const getMapMetrics = (mapId) => {
+        const config = mapConfigs[mapId];
+        if (!config?.stages) return null;
+        
+        const allSteps = config.stages.flatMap(s => s.steps || []);
+        const totalTime = allSteps.reduce((acc, s) => acc + (s.timeMinutes || s.duration || 0), 0);
+        const totalPainPoints = allSteps.reduce((acc, s) => acc + (s.painPoints?.length || 0), 0);
+        const highImprovements = allSteps.filter(s => s.automationOpportunity === 'high').length;
+        
+        const frictionMap = { none: 1, low: 2, medium: 3, high: 4, extreme: 5 };
+        const frictionValues = allSteps.map(s => s.frictionScore || frictionMap[s.friction]).filter(Boolean);
+        const avgFriction = frictionValues.length ? (frictionValues.reduce((a, b) => a + b, 0) / frictionValues.length).toFixed(1) : null;
+        
+        let totalCost = null;
+        if (config.personas?.length) {
+          totalCost = 0;
+          allSteps.forEach(step => {
+            const persona = config.personas.find(p => p.id === (step.owner || step.personaId));
+            if (persona?.salary) {
+              const hourlyRate = (persona.salary * (persona.burdenMultiplier || 1.4)) / (52 * 37.5);
+              totalCost += ((step.timeMinutes || step.duration || 0) / 60) * hourlyRate;
+            }
+          });
+        }
+        
+        return { totalTime, totalSteps: allSteps.length, stageCount: config.stages.length, totalPainPoints, highImprovements, avgFriction, totalCost };
+      };
+
+      const myMaps = maps.filter(m => m.owner === user.email).sort((a, b) => {
+        if (a.favourite !== b.favourite) return a.favourite ? -1 : 1;
+        return new Date(b.updatedAt) - new Date(a.updatedAt);
+      });
+      const sharedMaps = maps.filter(m => m.owner !== user.email && m.sharedWith?.some(s => s.email === user.email));
+      
+      const openMap = (mapId) => {
+        const map = maps.find(m => m.id === mapId);
+        window.location.href = \`editor.html?map=\${mapId}&title=\${encodeURIComponent(map?.title || 'Journey Map')}\`;
+      };
+
+      const displayMaps = activeTab === 'my-maps' ? myMaps : sharedMaps;
+
+      return (
+        <div className="page-container">
+          {/* Navigation */}
+          <nav className="nav">
+            <div className="nav-inner">
+              <div className="nav-left">
+                <a href="index.html">
+                  <img src="https://steveyoung74.github.io/journeymaps/logo_light.png" alt="FATHOM" className="nav-logo" />
+                </a>
+                <div className="nav-links">
+                  <a href="dashboard.html" className="nav-link active">Dashboard</a>
+                  <div className="dropdown">
+                    <span className="nav-link" style={{ cursor: 'pointer' }}>Surveys ▾</span>
+                    <div className="dropdown-menu">
+                      <a href="survey-admin.html" className="dropdown-item">Send Surveys</a>
+                      <a href="responses.html" className="dropdown-item">View Responses</a>
+                    </div>
+                  </div>
+                  <a href="whats-new.html" className="nav-link">What's New</a>
+                  <a href="about.html" className="nav-link">About</a>
+                </div>
+              </div>
+              <div className="nav-right">
+                <span className="nav-user">{user.name}</span>
+                <button onClick={onLogout} className="nav-signout">Sign Out</button>
+              </div>
+              <button className="nav-mobile-toggle" onClick={() => setShowMobileMenu(true)}>☰</button>
+            </div>
+          </nav>
+          
+          {/* Mobile Menu */}
+          <div className={\`nav-mobile-menu \${showMobileMenu ? 'open' : ''}\`}>
+            <div className="nav-mobile-header">
+              <img src="https://steveyoung74.github.io/journeymaps/logo_light.png" alt="FATHOM" style={{ height: '24px' }} />
+              <button className="nav-mobile-close" onClick={() => setShowMobileMenu(false)}>×</button>
+            </div>
+            <div className="nav-mobile-links">
+              <a href="dashboard.html" className="nav-mobile-link active">Dashboard</a>
+              <div className="nav-mobile-divider" />
+              <a href="survey-admin.html" className="nav-mobile-link">Send Surveys</a>
+              <a href="responses.html" className="nav-mobile-link">View Responses</a>
+              <div className="nav-mobile-divider" />
+              <a href="whats-new.html" className="nav-mobile-link">What's New</a>
+              <a href="about.html" className="nav-mobile-link">About</a>
+            </div>
+            <div className="nav-mobile-user">
+              <div className="nav-mobile-user-name">Signed in as {user.name}</div>
+              <button onClick={() => { setShowMobileMenu(false); onLogout(); }} className="nav-mobile-signout">Sign Out</button>
+            </div>
+          </div>
+
+          {/* Main Content */}
+          <main>
+            <div className="main-inner">
+              <div className="dash-header">
+                <div className="dash-header-row">
+                  <div>
+                    <h1 className="dash-title">Your Journey Maps</h1>
+                    <p className="dash-subtitle">Create, manage, and share operational journey maps</p>
+                  </div>
+                  <button onClick={() => token ? setShowCreateModal(true) : setShowTokenModal(true)} className="btn btn-primary">
+                    + New Map
+                  </button>
+                </div>
+              </div>
+
+              {/* Tabs */}
+              <div className="tabs">
+                <button className={\`tab-btn \${activeTab === 'my-maps' ? 'active' : ''}\`} onClick={() => setActiveTab('my-maps')}>
+                  My Maps ({myMaps.length})
+                </button>
+                <button className={\`tab-btn \${activeTab === 'shared' ? 'active' : ''}\`} onClick={() => setActiveTab('shared')}>
+                  Shared with Me ({sharedMaps.length})
+                </button>
+              </div>
+
+              {/* Content */}
+              {loading ? (
+                <div style={{ textAlign: 'center', padding: '60px 20px', color: 'var(--slate-500)' }}>Loading maps...</div>
+              ) : error ? (
+                <div style={{ textAlign: 'center', padding: '60px 20px', color: 'var(--error)' }}>{error}</div>
+              ) : displayMaps.length === 0 ? (
+                <div style={{ textAlign: 'center', padding: '60px 20px', color: 'var(--slate-500)' }}>
+                  {activeTab === 'my-maps' ? 'No maps yet. Create your first journey map!' : 'No maps shared with you yet.'}
+                </div>
+              ) : (
+                <div className="cards-grid">
+                  {displayMaps.map(map => {
+                    const metrics = getMapMetrics(map.id);
+                    return (
+                      <div key={map.id} className="card journey-card" onClick={() => openMap(map.id)}>
+                        <div className="journey-card-icons">
+                          {map.favourite && <span title="Favourite">⭐</span>}
+                          {map.locked && <span title="Locked">🔒</span>}
+                        </div>
+                        
+                        <h3 className="journey-card-title">{map.title}</h3>
+                        <p className="journey-card-desc">{map.description || 'No description'}</p>
+                        
+                        {metrics && (
+                          <div className="journey-card-metrics">
+                            <div className="metric" title="Total time">
+                              <span>⏱️</span>
+                              <span className="metric-value">{formatTime(metrics.totalTime)}</span>
+                            </div>
+                            <span className="metric-dot">·</span>
+                            <div className="metric" title="Stages / Steps">
+                              <span>📋</span>
+                              <span>{metrics.stageCount} / {metrics.totalSteps}</span>
+                            </div>
+                            {metrics.avgFriction && (
+                              <>
+                                <span className="metric-dot">·</span>
+                                <div className="metric" title="Avg friction">
+                                  <span>{metrics.avgFriction >= 4 ? '😰' : metrics.avgFriction >= 3 ? '😐' : '🙂'}</span>
+                                  <span>{metrics.avgFriction}/5</span>
+                                </div>
+                              </>
+                            )}
+                            {metrics.totalPainPoints > 0 && (
+                              <>
+                                <span className="metric-dot">·</span>
+                                <div className="metric" title="Pain points">
+                                  <span>⚠️</span>
+                                  <span style={{ color: 'var(--error)' }}>{metrics.totalPainPoints}</span>
+                                </div>
+                              </>
+                            )}
+                            {metrics.highImprovements > 0 && (
+                              <>
+                                <span className="metric-dot">·</span>
+                                <div className="metric" title="High improvement opps">
+                                  <span>🎯</span>
+                                  <span style={{ color: 'var(--success)' }}>{metrics.highImprovements}</span>
+                                </div>
+                              </>
+                            )}
+                            {metrics.totalCost !== null && (
+                              <>
+                                <span className="metric-dot">·</span>
+                                <div className="metric" title="Cost per journey">
+                                  <span>💷</span>
+                                  <span className="metric-value">{formatCurrency(metrics.totalCost)}</span>
+                                </div>
+                              </>
+                            )}
+                          </div>
+                        )}
+                        
+                        <div className="journey-card-footer">
+                          <span className="journey-card-date">
+                            Updated {formatDate(map.updatedAt)}
+                            {map.sharedWith?.length > 0 && <span> · 👥 {map.sharedWith.length}</span>}
+                          </span>
+                          {map.owner === user.email && (
+                            <div className="journey-card-actions" onClick={e => e.stopPropagation()}>
+                              <button onClick={() => window.location.href = \`responses.html?map=\${map.id}\`} className="btn btn-ghost">📊 Responses</button>
+                              <button onClick={() => setShowShareModal(map.id)} className="btn btn-ghost">Share</button>
+                            </div>
+                          )}
+                        </div>
+                      </div>
+                    );
+                  })}
+                </div>
+              )}
+            </div>
+          </main>
+
+          {/* Footer */}
+          <footer>
+            <p>FATHOM · See what your journeys really cost</p>
+            <p style={{ marginTop: '4px' }}>
+              <a href="about.html">About</a> · <a href="whats-new.html">What's New</a>
+            </p>
+          </footer>
+
+          {/* Token Modal */}
+          {showTokenModal && (
+            <div className="modal-overlay" onClick={() => setShowTokenModal(false)}>
+              <div className="modal" onClick={e => e.stopPropagation()}>
+                <div className="modal-content">
+                  <div className="modal-header">
+                    <h2 className="modal-title">GitHub Token Required</h2>
+                    <button className="modal-close" onClick={() => setShowTokenModal(false)}>×</button>
+                  </div>
+                  <p className="text-muted" style={{ marginBottom: '16px' }}>To create and edit maps, you need a GitHub token.</p>
+                  <TokenForm 
+                    onSave={(newToken) => { onUpdateToken(newToken); setShowTokenModal(false); setShowCreateModal(true); }}
+                    onCancel={() => setShowTokenModal(false)}
+                  />
+                </div>
+              </div>
+            </div>
+          )}
+
+          {/* Create Modal */}
+          {showCreateModal && (
+            <CreateMapModal 
+              user={user}
+              token={token}
+              maps={maps}
+              onClose={() => setShowCreateModal(false)}
+              onCreated={() => { setShowCreateModal(false); fetchMaps(); }}
+            />
+          )}
+
+          {/* Share Modal */}
+          {showShareModal && (
+            <ShareModal
+              mapId={showShareModal}
+              maps={maps}
+              token={token}
+              onClose={() => setShowShareModal(null)}
+              onUpdated={fetchMaps}
+            />
+          )}
+        </div>
+      );
+    }
+
+    // Token Form
+    function TokenForm({ onSave, onCancel }) {
+      const [token, setToken] = useState('');
+      return (
+        <div>
+          <div style={{ marginBottom: '16px' }}>
+            <label className="label">GitHub Personal Access Token</label>
+            <input type="password" className="input" value={token} onChange={e => setToken(e.target.value)} placeholder="ghp_xxxxxxxxxxxx" />
+            <p className="text-muted text-small" style={{ marginTop: '6px' }}>Create a token at github.com/settings/tokens with repo access.</p>
+          </div>
+          <div style={{ display: 'flex', gap: '8px' }}>
+            <button onClick={() => onSave(token)} className="btn btn-primary" disabled={!token.trim()}>Save Token</button>
+            <button onClick={onCancel} className="btn btn-secondary">Cancel</button>
+          </div>
+        </div>
+      );
+    }
+
+    // Create Map Modal (simplified)
+    function CreateMapModal({ user, token, maps, onClose, onCreated }) {
+      const [title, setTitle] = useState('');
+      const [description, setDescription] = useState('');
+      const [isCreating, setIsCreating] = useState(false);
+      const [error, setError] = useState('');
+
+      const handleCreate = async () => {
+        if (!title.trim()) { setError('Please enter a title'); return; }
+        setIsCreating(true);
+        setError('');
+        
+        try {
+          const mapId = 'map-' + Date.now();
+          const now = new Date().toISOString();
+          
+          const mapMetadata = {
+            id: mapId,
+            title: title.trim(),
+            description: description.trim(),
+            owner: user.email,
+            createdAt: now,
+            updatedAt: now,
+            sharedWith: []
+          };
+          
+          const mapConfig = {
+            meta: { title: title.trim(), version: '1.0' },
+            funnel: { enabled: true, initialVolume: 1000, periodLabel: 'per quarter' },
+            stages: [{ id: 'stage-1', name: 'Stage 1', dropOffCount: 0, steps: [] }],
+            personas: []
+          };
+          
+          // Save to GitHub
+          await saveToGitHub(GITHUB_CONFIG.indexFile, { maps: [...maps, mapMetadata] }, token, `Create: ${title}`);
+          await saveToGitHub(`${GITHUB_CONFIG.mapsPath}/${mapId}.json`, mapConfig, token, `Create config: ${title}`);
+          
+          onCreated();
+        } catch (err) {
+          setError(err.message || 'Failed to create map');
+        }
+        setIsCreating(false);
+      };
+
+      return (
+        <div className="modal-overlay" onClick={onClose}>
+          <div className="modal" onClick={e => e.stopPropagation()}>
+            <div className="modal-content">
+              <div className="modal-header">
+                <h2 className="modal-title">Create New Map</h2>
+                <button className="modal-close" onClick={onClose}>×</button>
+              </div>
+              
+              {error && <div style={{ padding: '10px 12px', background: 'var(--error-light)', borderRadius: '8px', marginBottom: '16px', color: 'var(--error)', fontSize: '13px' }}>{error}</div>}
+              
+              <div style={{ marginBottom: '16px' }}>
+                <label className="label">Map Title</label>
+                <input type="text" className="input" value={title} onChange={e => setTitle(e.target.value)} placeholder="Client Onboarding Journey" autoFocus />
+              </div>
+              
+              <div style={{ marginBottom: '20px' }}>
+                <label className="label">Description</label>
+                <textarea className="input" value={description} onChange={e => setDescription(e.target.value)} placeholder="Brief description..." rows={3} style={{ resize: 'vertical' }} />
+              </div>
+              
+              <div style={{ display: 'flex', gap: '8px' }}>
+                <button onClick={handleCreate} className="btn btn-primary" disabled={isCreating}>
+                  {isCreating ? 'Creating...' : 'Create Map'}
+                </button>
+                <button onClick={onClose} className="btn btn-secondary">Cancel</button>
+              </div>
+            </div>
+          </div>
+        </div>
+      );
+    }
+
+    // Share Modal (simplified)
+    function ShareModal({ mapId, maps, token, onClose, onUpdated }) {
+      const map = maps.find(m => m.id === mapId);
+      const [email, setEmail] = useState('');
+      const [permission, setPermission] = useState('view');
+      const [isSharing, setIsSharing] = useState(false);
+
+      const handleShare = async () => {
+        if (!email.trim() || !email.includes('@')) return;
+        setIsSharing(true);
+        
+        try {
+          const updatedMap = {
+            ...map,
+            sharedWith: [...(map.sharedWith || []), { email: email.trim().toLowerCase(), permission, sharedAt: new Date().toISOString() }]
+          };
+          const updatedMaps = maps.map(m => m.id === mapId ? updatedMap : m);
+          await saveToGitHub(GITHUB_CONFIG.indexFile, { maps: updatedMaps }, token, `Share ${map.title}`);
+          onUpdated();
+          setEmail('');
+        } catch (err) {}
+        setIsSharing(false);
+      };
+
+      const handleRemove = async (emailToRemove) => {
+        try {
+          const updatedMap = { ...map, sharedWith: map.sharedWith.filter(s => s.email !== emailToRemove) };
+          const updatedMaps = maps.map(m => m.id === mapId ? updatedMap : m);
+          await saveToGitHub(GITHUB_CONFIG.indexFile, { maps: updatedMaps }, token, `Unshare ${map.title}`);
+          onUpdated();
+        } catch (err) {}
+      };
+
+      return (
+        <div className="modal-overlay" onClick={onClose}>
+          <div className="modal" onClick={e => e.stopPropagation()}>
+            <div className="modal-content">
+              <div className="modal-header">
+                <h2 className="modal-title">Share "{map?.title}"</h2>
+                <button className="modal-close" onClick={onClose}>×</button>
+              </div>
+              
+              <div style={{ display: 'flex', gap: '8px', marginBottom: '16px' }}>
+                <input type="email" className="input" value={email} onChange={e => setEmail(e.target.value)} placeholder="colleague@company.com" style={{ flex: 1 }} />
+                <select className="input" value={permission} onChange={e => setPermission(e.target.value)} style={{ width: '100px' }}>
+                  <option value="view">View</option>
+                  <option value="edit">Edit</option>
+                </select>
+                <button onClick={handleShare} className="btn btn-primary" disabled={isSharing}>Share</button>
+              </div>
+              
+              {map?.sharedWith?.length > 0 && (
+                <div>
+                  <p className="label" style={{ marginBottom: '8px' }}>Shared with:</p>
+                  {map.sharedWith.map(s => (
+                    <div key={s.email} style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', padding: '8px 0', borderBottom: '1px solid var(--slate-100)' }}>
+                      <span style={{ fontSize: '14px' }}>{s.email} <span className="badge" style={{ marginLeft: '8px' }}>{s.permission}</span></span>
+                      <button onClick={() => handleRemove(s.email)} className="btn btn-ghost" style={{ padding: '4px 8px', fontSize: '12px', color: 'var(--error)' }}>Remove</button>
+                    </div>
+                  ))}
+                </div>
+              )}
+              
+              <button onClick={onClose} className="btn btn-secondary" style={{ width: '100%', marginTop: '16px' }}>Done</button>
+            </div>
+          </div>
+        </div>
+      );
+    }
+
+    // ============================================
+    // APP
+    // ============================================
+    function App() {
+      const [user, setUser] = useState(null);
+      const [token, setToken] = useState('');
+      const [isLoaded, setIsLoaded] = useState(false);
+      
+      useEffect(() => {
+        const savedUser = localStorage.getItem('fathom_user');
+        const savedToken = localStorage.getItem('fathom_token');
+        if (savedUser) {
+          setUser(JSON.parse(savedUser));
+          if (savedToken) setToken(savedToken);
+        }
+        setIsLoaded(true);
+      }, []);
+      
+      const handleLogin = (userData, userToken) => {
+        setUser(userData);
+        setToken(userToken || '');
+        localStorage.setItem('fathom_user', JSON.stringify(userData));
+        if (userToken) localStorage.setItem('fathom_token', userToken);
+      };
+      
+      const handleLogout = () => {
+        setUser(null);
+        setToken('');
+        localStorage.removeItem('fathom_user');
+        localStorage.removeItem('fathom_token');
+      };
+      
+      const handleUpdateToken = (newToken) => {
+        setToken(newToken);
+        localStorage.setItem('fathom_token', newToken);
+      };
+      
+      if (!isLoaded) {
+        return (
+          <div style={{ minHeight: '100vh', display: 'flex', alignItems: 'center', justifyContent: 'center', background: 'var(--navy-700)' }}>
+            <img src="https://steveyoung74.github.io/journeymaps/logo_light.png" alt="FATHOM" style={{ height: '32px', opacity: 0.5 }} />
+          </div>
+        );
+      }
+      
+      if (!user) {
+        return <LoginModal onLogin={handleLogin} />;
+      }
+      
+      return <Dashboard user={user} token={token} onLogout={handleLogout} onUpdateToken={handleUpdateToken} />;
+    }
+    
+    ReactDOM.createRoot(document.getElementById('root')).render(<App />);
+  </script>
+</body>
+</html>
