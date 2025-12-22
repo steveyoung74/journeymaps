@@ -593,6 +593,13 @@
       margin-top: 8px;
     }
     
+    /* Dashboard Main Content - base styles */
+    .dashboard-main {
+      padding: 48px 40px;
+      width: 100%;
+      box-sizing: border-box;
+    }
+    
     /* Responsive - Tablet */
     @media (max-width: 768px) {
       .section { padding: 60px 20px; }
@@ -611,9 +618,6 @@
       .nav-inner {
         padding: 0 16px !important;
         height: 56px !important;
-      }
-      .nav-logo {
-        height: 22px !important;
       }
       .nav-right {
         gap: 10px !important;
@@ -713,9 +717,6 @@
       .nav-inner {
         padding: 0 12px !important;
         height: 56px !important;
-      }
-      .nav-logo {
-        height: 20px !important;
       }
       .nav-right {
         gap: 8px !important;
@@ -2947,7 +2948,7 @@
           </div>
 
           {/* Main Content */}
-          <main className="dashboard-main" style={{ padding: '48px 40px', maxWidth: '1200px', margin: '0 auto' }}>
+          <main className="dashboard-main" style={{ maxWidth: '1200px', margin: '0 auto' }}>
             <div className="dashboard-title-section" style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '36px' }}>
               <div>
                 <h1 className="dashboard-title" style={{ fontSize: '32px', fontWeight: 400, marginBottom: '6px', color: 'var(--navy-700)' }}>Your Journey Maps</h1>
