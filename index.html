@@ -94,6 +94,12 @@
       overflow-x: hidden;
       width: 100%;
       max-width: 100vw;
+      position: relative;
+    }
+    /* Prevent text from causing horizontal overflow */
+    h1, h2, h3, h4, h5, h6, p, span, a, button {
+      word-wrap: break-word;
+      overflow-wrap: break-word;
     }
     
     /* Buttons */
@@ -304,6 +310,8 @@
       display: flex;
       flex-direction: column;
       overflow-x: hidden;
+      width: 100%;
+      max-width: 100vw;
     }
     .dashboard-bg::before {
       content: '';
@@ -314,12 +322,21 @@
       pointer-events: none;
       z-index: 0;
     }
+    .dashboard-bg > nav {
+      position: relative;
+      z-index: 10;
+      flex-shrink: 0;
+      min-height: 64px;
+      background: linear-gradient(135deg, var(--navy-700) 0%, var(--navy-900) 100%);
+    }
     .dashboard-bg > main {
       position: relative;
       flex: 1;
+      z-index: 1;
     }
     .dashboard-bg > footer {
       position: relative;
+      z-index: 1;
     }
     
     /* Navigation */
@@ -328,6 +345,11 @@
       position: sticky;
       top: 0;
       z-index: 9999;
+      flex-shrink: 0;
+      min-height: 64px;
+      width: 100%;
+      overflow: hidden;
+      touch-action: manipulation;
     }
     .nav::before {
       content: '';
@@ -580,9 +602,15 @@
       .stat-value { font-size: 36px; }
       .stats-bar { gap: 32px; }
       
-      /* Dashboard Navigation */
+      /* Dashboard Navigation - ensure visible on mobile */
+      .dashboard-bg > nav {
+        display: block !important;
+        visibility: visible !important;
+        min-height: 56px !important;
+      }
       .nav-inner {
         padding: 0 16px !important;
+        height: 56px !important;
       }
       .nav-logo {
         height: 22px !important;
@@ -601,6 +629,9 @@
       /* Dashboard Main Content */
       .dashboard-main {
         padding: 24px 16px !important;
+        width: 100% !important;
+        max-width: 100vw !important;
+        overflow-x: hidden !important;
       }
       
       /* Dashboard Title Section */
@@ -2491,6 +2522,11 @@
       const [manageMode, setManageMode] = useState(false);
       const [selectedMaps, setSelectedMaps] = useState(new Set());
       const [showMobileMenu, setShowMobileMenu] = useState(false);
+
+      // Scroll to top on mount to fix iOS viewport issues
+      useEffect(() => {
+        window.scrollTo(0, 0);
+      }, []);
 
       // Persist view mode
       useEffect(() => {

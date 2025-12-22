@@ -4510,6 +4510,11 @@
         return isMultiUserMode || !localStorage.getItem(STORAGE_KEY);
       });
       
+      // Scroll to top on mount to fix iOS/iPad viewport issues
+      React.useEffect(() => {
+        window.scrollTo(0, 0);
+      }, []);
+      
       // Load config - prioritize GitHub for multi-user mode maps
       React.useEffect(() => {
         const loadFromGitHub = async () => {
