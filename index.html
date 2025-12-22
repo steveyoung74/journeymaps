@@ -86,6 +86,8 @@
       background: #FFF; 
       color: var(--slate-900);
       line-height: 1.6;
+      margin: 0;
+      overflow-x: hidden;
     }
     
     /* Buttons */
@@ -295,6 +297,7 @@
       position: relative;
       display: flex;
       flex-direction: column;
+      overflow-x: hidden;
     }
     .dashboard-bg::before {
       content: '';
@@ -561,7 +564,7 @@
       margin-top: 8px;
     }
     
-    /* Responsive */
+    /* Responsive - Tablet */
     @media (max-width: 768px) {
       .section { padding: 60px 20px; }
       .hero-content h1 { font-size: 36px !important; }
@@ -569,6 +572,137 @@
       .nav-links { display: none !important; }
       .stat-value { font-size: 36px; }
       .stats-bar { gap: 32px; }
+      
+      /* Dashboard Navigation */
+      .nav-inner {
+        padding: 0 16px !important;
+      }
+      .nav-logo {
+        height: 22px !important;
+      }
+      .nav-right {
+        gap: 10px !important;
+      }
+      .nav-user {
+        font-size: 12px !important;
+      }
+      .nav-signout {
+        padding: 5px 10px !important;
+        font-size: 11px !important;
+      }
+      
+      /* Dashboard Main Content */
+      .dashboard-main {
+        padding: 24px 16px !important;
+      }
+      
+      /* Dashboard Title Section */
+      .dashboard-title-section {
+        flex-direction: column !important;
+        align-items: flex-start !important;
+        gap: 16px !important;
+      }
+      .dashboard-title {
+        font-size: 24px !important;
+      }
+      
+      /* Tabs and View Toggle */
+      .dashboard-tabs {
+        flex-direction: column !important;
+        align-items: stretch !important;
+        gap: 12px !important;
+      }
+      .dashboard-tab-buttons {
+        width: 100% !important;
+        justify-content: center !important;
+      }
+      .dashboard-tab-actions {
+        width: 100% !important;
+        justify-content: space-between !important;
+      }
+      
+      /* Journey Preview Cards on Landing */
+      .journey-preview-stages {
+        flex-direction: column !important;
+        gap: 8px !important;
+      }
+      .journey-preview-stage {
+        flex: none !important;
+        width: 100% !important;
+      }
+      
+      /* List View - force card view on mobile */
+      .list-view-container {
+        display: none !important;
+      }
+      .card-view-mobile-hint {
+        display: block !important;
+        text-align: center;
+        padding: 16px;
+        color: var(--slate-500);
+        font-size: 13px;
+      }
+      
+      /* Landing page showcase sections */
+      .showcase-flex {
+        flex-direction: column !important;
+        gap: 32px !important;
+      }
+      .showcase-content {
+        flex: none !important;
+        width: 100% !important;
+      }
+      .showcase-visual {
+        flex: none !important;
+        width: 100% !important;
+        order: 0 !important;
+      }
+    }
+    
+    /* Responsive - Mobile */
+    @media (max-width: 480px) {
+      .section { padding: 40px 16px; }
+      .hero-content h1 { font-size: 28px !important; }
+      .stat-value { font-size: 28px; }
+      .stats-bar { gap: 24px; }
+      
+      /* Navigation */
+      .nav-inner {
+        padding: 0 12px !important;
+        height: 56px !important;
+      }
+      .nav-logo {
+        height: 20px !important;
+      }
+      .nav-right {
+        gap: 8px !important;
+      }
+      .nav-user {
+        font-size: 11px !important;
+        max-width: 80px;
+        overflow: hidden;
+        text-overflow: ellipsis;
+        white-space: nowrap;
+      }
+      .nav-signout {
+        padding: 4px 8px !important;
+        font-size: 10px !important;
+      }
+      
+      /* Container */
+      .container {
+        padding: 0 16px !important;
+      }
+      
+      /* Dashboard */
+      .dashboard-title {
+        font-size: 22px !important;
+      }
+    }
+    
+    /* Hide mobile hint by default */
+    .card-view-mobile-hint {
+      display: none;
     }
   </style>
 </head>
@@ -1200,8 +1334,8 @@
           {/* Visual Journey Editor Showcase */}
           <section className="section section-alt">
             <div className="container">
-              <div style={{ display: 'flex', gap: '80px', alignItems: 'center', flexWrap: 'wrap' }}>
-                <div style={{ flex: '1 1 440px' }}>
+              <div className="showcase-flex" style={{ display: 'flex', gap: '80px', alignItems: 'center', flexWrap: 'wrap' }}>
+                <div className="showcase-content" style={{ flex: '1 1 440px' }}>
                   <div style={{ 
                     padding: '10px 18px', 
                     background: 'var(--steel-100)', 
@@ -1256,7 +1390,7 @@
                   </div>
                 </div>
                 
-                <div style={{ flex: '1 1 480px' }}>
+                <div className="showcase-visual" style={{ flex: '1 1 480px' }}>
                   <div style={{ 
                     background: 'linear-gradient(145deg, #FFF 0%, var(--slate-50) 100%)',
                     borderRadius: '20px',
@@ -1265,13 +1399,13 @@
                     border: '1px solid var(--slate-200)'
                   }}>
                     {/* Mini Stage Cards */}
-                    <div style={{ display: 'flex', gap: '12px', overflowX: 'auto' }}>
+                    <div className="journey-preview-stages" style={{ display: 'flex', gap: '12px', overflowX: 'auto' }}>
                       {[
                         { name: 'Discovery', time: '2h 15m', steps: ['Initial Call', 'Requirements', 'Proposal'] },
                         { name: 'Compliance', time: '4h 30m', steps: ['KYC Check', 'AML Verify', 'Risk Profile'], highlight: true },
                         { name: 'Onboarding', time: '1h 45m', steps: ['Account Setup', 'Welcome Pack'] }
                       ].map((stage, i) => (
-                        <div key={i} style={{ 
+                        <div key={i} className="journey-preview-stage" style={{ 
                           flex: '1 0 160px',
                           background: '#FFF',
                           borderRadius: '12px',
@@ -2243,6 +2377,18 @@
         localStorage.setItem('fathom-view-mode', viewMode);
       }, [viewMode]);
 
+      // Auto-switch to grid view on mobile
+      useEffect(() => {
+        const checkMobile = () => {
+          if (window.innerWidth <= 768 && viewMode === 'list') {
+            setViewMode('grid');
+          }
+        };
+        checkMobile();
+        window.addEventListener('resize', checkMobile);
+        return () => window.removeEventListener('resize', checkMobile);
+      }, [viewMode]);
+
       useEffect(() => {
         fetchMaps();
       }, []);
@@ -2620,10 +2766,10 @@
           </nav>
 
           {/* Main Content */}
-          <main style={{ padding: '48px 40px', maxWidth: '1200px', margin: '0 auto' }}>
-            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '36px' }}>
+          <main className="dashboard-main" style={{ padding: '48px 40px', maxWidth: '1200px', margin: '0 auto' }}>
+            <div className="dashboard-title-section" style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '36px' }}>
               <div>
-                <h1 style={{ fontSize: '32px', fontWeight: 400, marginBottom: '6px', color: 'var(--navy-700)' }}>Your Journey Maps</h1>
+                <h1 className="dashboard-title" style={{ fontSize: '32px', fontWeight: 400, marginBottom: '6px', color: 'var(--navy-700)' }}>Your Journey Maps</h1>
                 <p className="text-muted">Create, manage, and share operational journey maps</p>
               </div>
               <button 
@@ -2635,8 +2781,8 @@
             </div>
 
             {/* Tabs + View Toggle + Manage */}
-            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: manageMode ? '12px' : '28px', borderBottom: '1px solid var(--slate-200)', paddingBottom: '8px' }}>
-              <div style={{ display: 'flex', gap: '8px', alignItems: 'center' }}>
+            <div className="dashboard-tabs" style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: manageMode ? '12px' : '28px', borderBottom: '1px solid var(--slate-200)', paddingBottom: '8px' }}>
+              <div className="dashboard-tab-buttons" style={{ display: 'flex', gap: '8px', alignItems: 'center' }}>
                 <button 
                   onClick={() => setActiveTab('my-maps')}
                   style={{ 
@@ -2671,7 +2817,7 @@
                 </button>
               </div>
               
-              <div style={{ display: 'flex', gap: '12px', alignItems: 'center' }}>
+              <div className="dashboard-tab-actions" style={{ display: 'flex', gap: '12px', alignItems: 'center' }}>
                 {/* Manage Toggle - only for My Maps */}
                 {activeTab === 'my-maps' && token && (
                   <button
@@ -3030,7 +3176,7 @@
               </div>
             ) : (
               /* List View */
-              <div style={{ display: 'flex', flexDirection: 'column', gap: '8px', overflowX: 'auto' }}>
+              <div className="list-view-container" style={{ display: 'flex', flexDirection: 'column', gap: '8px', overflowX: 'auto' }}>
                 {/* List Header */}
                 <div style={{ 
                   display: 'grid', 
