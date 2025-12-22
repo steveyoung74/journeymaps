@@ -850,7 +850,7 @@
         const configs = {};
         for (const map of maps) {
           try {
-            const config = await fetchFromGitHub(\`\${GITHUB_CONFIG.mapsPath}/\${map.id}.json\`);
+            const config = await fetchFromGitHub(`${GITHUB_CONFIG.mapsPath}/${map.id}.json`);
             if (config) configs[map.id] = config;
           } catch (err) {}
         }
@@ -893,7 +893,7 @@
       
       const openMap = (mapId) => {
         const map = maps.find(m => m.id === mapId);
-        window.location.href = \`editor.html?map=\${mapId}&title=\${encodeURIComponent(map?.title || 'Journey Map')}\`;
+        window.location.href = `editor.html?map=${mapId}&title=${encodeURIComponent(map?.title || 'Journey Map')}`;
       };
 
       const displayMaps = activeTab === 'my-maps' ? myMaps : sharedMaps;
@@ -929,7 +929,7 @@
           </nav>
           
           {/* Mobile Menu */}
-          <div className={\`nav-mobile-menu \${showMobileMenu ? 'open' : ''}\`}>
+          <div className={`nav-mobile-menu ${showMobileMenu ? 'open' : ''}`}>
             <div className="nav-mobile-header">
               <img src="https://steveyoung74.github.io/journeymaps/logo_light.png" alt="FATHOM" style={{ height: '24px' }} />
               <button className="nav-mobile-close" onClick={() => setShowMobileMenu(false)}>×</button>
@@ -966,10 +966,10 @@
 
               {/* Tabs */}
               <div className="tabs">
-                <button className={\`tab-btn \${activeTab === 'my-maps' ? 'active' : ''}\`} onClick={() => setActiveTab('my-maps')}>
+                <button className={`tab-btn ${activeTab === 'my-maps' ? 'active' : ''}`} onClick={() => setActiveTab('my-maps')}>
                   My Maps ({myMaps.length})
                 </button>
-                <button className={\`tab-btn \${activeTab === 'shared' ? 'active' : ''}\`} onClick={() => setActiveTab('shared')}>
+                <button className={`tab-btn ${activeTab === 'shared' ? 'active' : ''}`} onClick={() => setActiveTab('shared')}>
                   Shared with Me ({sharedMaps.length})
                 </button>
               </div>
@@ -1054,7 +1054,7 @@
                           </span>
                           {map.owner === user.email && (
                             <div className="journey-card-actions" onClick={e => e.stopPropagation()}>
-                              <button onClick={() => window.location.href = \`responses.html?map=\${map.id}\`} className="btn btn-ghost">📊 Responses</button>
+                              <button onClick={() => window.location.href = `responses.html?map=${map.id}`} className="btn btn-ghost">📊 Responses</button>
                               <button onClick={() => setShowShareModal(map.id)} className="btn btn-ghost">Share</button>
                             </div>
                           )}
