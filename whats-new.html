@@ -2,7 +2,7 @@
 <html lang="en">
 <head>
   <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=5.0, viewport-fit=cover">
   <title>What's New | FATHOM</title>
   <script src="https://unpkg.com/react@18/umd/react.production.min.js"></script>
   <script src="https://unpkg.com/react-dom@18/umd/react-dom.production.min.js"></script>
@@ -59,13 +59,19 @@
     }
     
     * { box-sizing: border-box; margin: 0; padding: 0; }
-    
+    html {
+      overflow-x: hidden;
+      width: 100%;
+    }
     body {
       font-family: 'Interstate', -apple-system, BlinkMacSystemFont, sans-serif;
       background: var(--slate-50);
       color: var(--slate-900);
       line-height: 1.6;
       min-height: 100vh;
+      overflow-x: hidden;
+      width: 100%;
+      max-width: 100vw;
     }
     
     /* Page Background */
@@ -366,7 +372,7 @@
     }
     .roadmap-items {
       display: grid;
-      grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+      grid-template-columns: repeat(auto-fit, minmax(min(200px, 100%), 1fr));
       gap: 16px;
     }
     .roadmap-item {
