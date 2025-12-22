@@ -117,6 +117,7 @@
       justify-content: space-between;
       height: 64px;
       position: relative;
+      z-index: 1;
     }
     .nav-left {
       display: flex;
@@ -425,7 +426,9 @@
         display: none !important;
       }
       .nav-mobile-toggle {
-        display: block;
+        display: flex !important;
+        align-items: center;
+        justify-content: center;
       }
       .release {
         padding: 24px;
@@ -440,8 +443,10 @@
       color: #FFF;
       font-size: 24px;
       cursor: pointer;
-      padding: 4px 8px;
+      padding: 8px 12px;
       line-height: 1;
+      position: relative;
+      z-index: 10;
     }
     .nav-mobile-menu {
       display: none;
