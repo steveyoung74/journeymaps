@@ -476,12 +476,112 @@
       .nav-links {
         display: none;
       }
+      .nav-right {
+        display: none !important;
+      }
+      .nav-mobile-toggle {
+        display: block;
+      }
       .hero h1 {
         font-size: 32px;
       }
       .section {
         padding: 60px 24px;
       }
+    }
+    
+    /* Mobile Menu */
+    .nav-mobile-toggle {
+      display: none;
+      background: none;
+      border: none;
+      color: #FFF;
+      font-size: 24px;
+      cursor: pointer;
+      padding: 4px 8px;
+      line-height: 1;
+    }
+    .nav-mobile-menu {
+      display: none;
+      position: fixed;
+      top: 0;
+      left: 0;
+      right: 0;
+      bottom: 0;
+      background: rgba(12, 22, 32, 0.95);
+      z-index: 10000;
+      flex-direction: column;
+      padding: 20px;
+    }
+    .nav-mobile-menu.open {
+      display: flex;
+    }
+    .nav-mobile-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 32px;
+    }
+    .nav-mobile-close {
+      background: none;
+      border: none;
+      color: #FFF;
+      font-size: 28px;
+      cursor: pointer;
+      padding: 4px 8px;
+    }
+    .nav-mobile-links {
+      display: flex;
+      flex-direction: column;
+      gap: 8px;
+    }
+    .nav-mobile-link {
+      color: rgba(255,255,255,0.8);
+      text-decoration: none;
+      padding: 16px 20px;
+      border-radius: 8px;
+      font-size: 16px;
+      font-weight: 500;
+      transition: all 0.15s;
+    }
+    .nav-mobile-link:hover, .nav-mobile-link:active {
+      background: rgba(255,255,255,0.1);
+      color: #FFF;
+    }
+    .nav-mobile-link.active {
+      background: rgba(255,255,255,0.15);
+      color: #FFF;
+    }
+    .nav-mobile-divider {
+      height: 1px;
+      background: rgba(255,255,255,0.1);
+      margin: 16px 0;
+    }
+    .nav-mobile-user {
+      margin-top: auto;
+      padding: 20px;
+      border-top: 1px solid rgba(255,255,255,0.1);
+    }
+    .nav-mobile-user-name {
+      color: rgba(255,255,255,0.6);
+      font-size: 13px;
+      margin-bottom: 12px;
+    }
+    .nav-mobile-signout {
+      color: rgba(255,255,255,0.7);
+      background: rgba(255,255,255,0.1);
+      border: 1px solid rgba(255,255,255,0.2);
+      padding: 12px 20px;
+      border-radius: 8px;
+      font-size: 14px;
+      cursor: pointer;
+      font-family: inherit;
+      width: 100%;
+      transition: all 0.15s;
+    }
+    .nav-mobile-signout:hover {
+      background: rgba(255,255,255,0.2);
+      color: #FFF;
     }
   </style>
 </head>
@@ -493,6 +593,7 @@
     
     function AboutPage() {
       const [user, setUser] = useState(null);
+      const [showMobileMenu, setShowMobileMenu] = useState(false);
       
       useEffect(() => {
         const stored = localStorage.getItem('fathom_user');
@@ -547,8 +648,43 @@
                   <a href="index.html" className="nav-link" style={{ color: '#FFF' }}>Sign In</a>
                 )}
               </div>
+              {/* Mobile hamburger */}
+              <button className="nav-mobile-toggle" onClick={() => setShowMobileMenu(true)}>
+                ☰
+              </button>
             </div>
           </nav>
+          
+          {/* Mobile Menu Overlay */}
+          <div className={`nav-mobile-menu ${showMobileMenu ? 'open' : ''}`}>
+            <div className="nav-mobile-header">
+              <img src="https://steveyoung74.github.io/journeymaps/logo_light.png" alt="FATHOM" style={{ height: '24px' }} />
+              <button className="nav-mobile-close" onClick={() => setShowMobileMenu(false)}>×</button>
+            </div>
+            <div className="nav-mobile-links">
+              {user && (
+                <>
+                  <a href="index.html" className={`nav-mobile-link ${currentPath === 'index.html' ? 'active' : ''}`}>Dashboard</a>
+                  <div className="nav-mobile-divider" />
+                  <a href="survey-admin.html" className="nav-mobile-link">Send Surveys</a>
+                  <a href="responses.html" className="nav-mobile-link">View Responses</a>
+                  <div className="nav-mobile-divider" />
+                </>
+              )}
+              <a href="whats-new.html" className={`nav-mobile-link ${currentPath === 'whats-new.html' ? 'active' : ''}`}>What's New</a>
+              <a href="about.html" className={`nav-mobile-link ${currentPath === 'about.html' ? 'active' : ''}`}>About</a>
+            </div>
+            <div className="nav-mobile-user">
+              {user ? (
+                <>
+                  <div className="nav-mobile-user-name">Signed in as {user.name}</div>
+                  <button onClick={() => { setShowMobileMenu(false); handleSignOut(); }} className="nav-mobile-signout">Sign Out</button>
+                </>
+              ) : (
+                <a href="index.html" className="nav-mobile-signout" style={{ display: 'block', textAlign: 'center', textDecoration: 'none' }}>Sign In</a>
+              )}
+            </div>
+          </div>
           
           <main>
           {/* Hero */}
