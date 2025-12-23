@@ -513,87 +513,120 @@
       position: relative;
       z-index: 10;
     }
+    /* Mobile Menu - Threads-style Side Sliding */
+    .nav-mobile-backdrop {
+      position: fixed;
+      inset: 0;
+      background: rgba(0, 0, 0, 0.5);
+      z-index: 9999;
+      opacity: 0;
+      visibility: hidden;
+      transition: opacity 0.3s ease, visibility 0.3s ease;
+    }
+    .nav-mobile-backdrop.open {
+      opacity: 1;
+      visibility: visible;
+    }
     .nav-mobile-menu {
-      display: none;
       position: fixed;
       top: 0;
-      left: 0;
       right: 0;
       bottom: 0;
-      background: rgba(12, 22, 32, 0.95);
+      width: 280px;
+      max-width: 85vw;
+      background: var(--navy-800);
       z-index: 10000;
+      display: flex;
       flex-direction: column;
-      padding: 20px;
+      transform: translateX(100%);
+      transition: transform 0.3s ease;
+      box-shadow: -4px 0 24px rgba(0, 0, 0, 0.3);
     }
     .nav-mobile-menu.open {
-      display: flex;
+      transform: translateX(0);
     }
     .nav-mobile-header {
       display: flex;
-      justify-content: space-between;
-      align-items: center;
-      margin-bottom: 32px;
+      justify-content: flex-end;
+      padding: 16px 20px;
+      border-bottom: 1px solid rgba(255,255,255,0.1);
     }
     .nav-mobile-close {
-      background: none;
+      background: rgba(255,255,255,0.1);
       border: none;
       color: #FFF;
-      font-size: 28px;
+      font-size: 20px;
       cursor: pointer;
-      padding: 4px 8px;
+      padding: 8px 12px;
+      line-height: 1;
+      border-radius: 20px;
+      transition: background 0.15s;
+    }
+    .nav-mobile-close:hover {
+      background: rgba(255,255,255,0.2);
     }
     .nav-mobile-links {
       display: flex;
       flex-direction: column;
       gap: 8px;
+      padding: 20px;
+      flex: 1;
+      overflow-y: auto;
     }
     .nav-mobile-link {
-      color: rgba(255,255,255,0.8);
+      color: rgba(255,255,255,0.9);
       text-decoration: none;
-      padding: 16px 20px;
-      border-radius: 8px;
-      font-size: 16px;
+      padding: 14px 20px;
+      border-radius: 24px;
+      font-size: 15px;
       font-weight: 500;
+      background: rgba(255,255,255,0.05);
       transition: all 0.15s;
+      text-align: center;
     }
-    .nav-mobile-link:hover, .nav-mobile-link:active {
-      background: rgba(255,255,255,0.1);
-      color: #FFF;
-    }
-    .nav-mobile-link.active {
+    .nav-mobile-link:hover {
       background: rgba(255,255,255,0.15);
       color: #FFF;
     }
-    .nav-mobile-divider {
-      height: 1px;
-      background: rgba(255,255,255,0.1);
-      margin: 16px 0;
+    .nav-mobile-link.active {
+      background: rgba(255,255,255,0.2);
+      color: #FFF;
+    }
+    .nav-mobile-section-label {
+      color: rgba(255,255,255,0.4);
+      font-size: 11px;
+      font-weight: 600;
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+      padding: 16px 20px 8px;
     }
     .nav-mobile-user {
-      margin-top: auto;
       padding: 20px;
       border-top: 1px solid rgba(255,255,255,0.1);
+      background: rgba(0,0,0,0.2);
     }
     .nav-mobile-user-name {
       color: rgba(255,255,255,0.6);
       font-size: 13px;
       margin-bottom: 12px;
+      text-align: center;
     }
     .nav-mobile-signout {
-      color: rgba(255,255,255,0.7);
-      background: rgba(255,255,255,0.1);
-      border: 1px solid rgba(255,255,255,0.2);
-      padding: 12px 20px;
-      border-radius: 8px;
+      width: 100%;
+      padding: 12px;
+      background: transparent;
+      border: 1px solid rgba(255,255,255,0.3);
+      color: rgba(255,255,255,0.9);
+      border-radius: 24px;
       font-size: 14px;
+      font-weight: 500;
       cursor: pointer;
       font-family: inherit;
-      width: 100%;
       transition: all 0.15s;
     }
     .nav-mobile-signout:hover {
-      background: rgba(255,255,255,0.2);
-      color: #FFF;
+      background: rgba(255,255,255,0.1);
+      border-color: rgba(255,255,255,0.4);
     }
   </style>
 </head>
@@ -667,20 +700,20 @@
             </div>
           </nav>
           
-          {/* Mobile Menu Overlay */}
+          {/* Mobile Menu - Threads-style */}
+          <div className={`nav-mobile-backdrop ${showMobileMenu ? 'open' : ''}`} onClick={() => setShowMobileMenu(false)} />
           <div className={`nav-mobile-menu ${showMobileMenu ? 'open' : ''}`}>
             <div className="nav-mobile-header">
-              <img src="https://steveyoung74.github.io/journeymaps/logo_light.png" alt="FATHOM" style={{ height: '24px' }} />
-              <button className="nav-mobile-close" onClick={() => setShowMobileMenu(false)}>×</button>
+              <button className="nav-mobile-close" onClick={() => setShowMobileMenu(false)}>✕</button>
             </div>
             <div className="nav-mobile-links">
               {user && (
                 <>
                   <a href="dashboard.html" className={`nav-mobile-link ${currentPath === 'dashboard.html' ? 'active' : ''}`}>Dashboard</a>
-                  <div className="nav-mobile-divider" />
+                  <div className="nav-mobile-section-label">Surveys</div>
                   <a href="survey-admin.html" className="nav-mobile-link">Send Surveys</a>
                   <a href="responses.html" className="nav-mobile-link">View Responses</a>
-                  <div className="nav-mobile-divider" />
+                  <div className="nav-mobile-section-label">Info</div>
                 </>
               )}
               <a href="whats-new.html" className={`nav-mobile-link ${currentPath === 'whats-new.html' ? 'active' : ''}`}>What's New</a>
