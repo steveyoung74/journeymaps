@@ -896,6 +896,321 @@
         return { totalTime, totalSteps: allSteps.length, stageCount: config.stages.length, totalPainPoints, highImprovements, avgFriction, totalCost };
       };
 
+      // Calculate hourly rate from annual salary
+      const calculateHourlyRate = (salary, burdenMultiplier = 1.4) => {
+        return (salary * burdenMultiplier) / (52 * 37.5);
+      };
+
+      // Calculate step cost
+      const calculateStepCost = (step, personas) => {
+        if (!personas || !step.roleInvolvement) return 0;
+        return Object.entries(step.roleInvolvement).reduce((total, [personaId, inv]) => {
+          const persona = personas.find(p => p.id === personaId);
+          if (!persona || !persona.salary) return total;
+          const hourlyRate = calculateHourlyRate(persona.salary || persona.annualSalary, persona.burdenMultiplier);
+          return total + (inv.timeMinutes / 60) * hourlyRate * (inv.headcount || 1);
+        }, 0);
+      };
+
+      // Generate comprehensive report
+      const generateReport = (mapId) => {
+        const config = mapConfigs[mapId];
+        const map = maps.find(m => m.id === mapId);
+        if (!config) {
+          alert('Report data not loaded yet. Please try again.');
+          return;
+        }
+
+        const printWindow = window.open('', '_blank');
+        if (!printWindow) {
+          alert('Please allow popups to generate the report');
+          return;
+        }
+
+        const allSteps = config.stages.flatMap((stage, si) => 
+          stage.steps.map((step, sti) => ({ ...step, stageName: stage.name, stageIndex: si, stepIndex: sti }))
+        );
+
+        // Calculate totals
+        const totalTime = allSteps.reduce((acc, s) => acc + (s.timeMinutes || 0), 0);
+        const totalPainPoints = allSteps.reduce((acc, s) => acc + (s.painPoints?.length || 0), 0);
+        const highAutomationCount = allSteps.filter(s => s.automationOpportunity === 'high').length;
+        const frictionMap = { none: 1, low: 2, medium: 3, high: 4, extreme: 5 };
+        const frictionValues = allSteps.map(s => s.frictionScore || frictionMap[s.friction]).filter(Boolean);
+        const avgFriction = frictionValues.length ? (frictionValues.reduce((a, b) => a + b, 0) / frictionValues.length).toFixed(1) : 'N/A';
+
+        // Calculate costs
+        let totalCost = 0;
+        const hasCostData = config.personas?.some(p => p.salary || p.annualSalary);
+        if (hasCostData) {
+          allSteps.forEach(step => {
+            totalCost += calculateStepCost(step, config.personas);
+          });
+        }
+
+        // Calculate potential savings
+        const potentialSavings = allSteps.reduce((acc, s) => {
+          const cost = calculateStepCost(s, config.personas);
+          if (s.automationOpportunity === 'high') return acc + cost * 0.7;
+          if (s.automationOpportunity === 'medium') return acc + cost * 0.4;
+          if (s.automationOpportunity === 'low') return acc + cost * 0.1;
+          return acc;
+        }, 0);
+
+        // Stage metrics
+        const stageMetrics = config.stages.map(stage => {
+          const stageSteps = stage.steps || [];
+          const stageTime = stageSteps.reduce((acc, s) => acc + (s.timeMinutes || 0), 0);
+          const stageCost = stageSteps.reduce((acc, s) => acc + calculateStepCost(s, config.personas), 0);
+          const stagePainPoints = stageSteps.reduce((acc, s) => acc + (s.painPoints?.length || 0), 0);
+          const stageFrictionValues = stageSteps.map(s => s.frictionScore || frictionMap[s.friction]).filter(Boolean);
+          const avgStageFriction = stageFrictionValues.length ? (stageFrictionValues.reduce((a, b) => a + b, 0) / stageFrictionValues.length).toFixed(1) : 'N/A';
+          return { name: stage.name, stepCount: stageSteps.length, time: stageTime, cost: stageCost, painPoints: stagePainPoints, avgFriction: avgStageFriction, dropOffCount: stage.dropOffCount || 0 };
+        });
+
+        // Role costs
+        const roleCosts = (config.personas || []).filter(p => !p.isExternal && (p.salary || p.annualSalary)).map(persona => {
+          let roleTime = 0;
+          let roleCost = 0;
+          allSteps.forEach(step => {
+            const inv = step.roleInvolvement?.[persona.id];
+            if (inv) {
+              roleTime += inv.timeMinutes || 0;
+              const hourlyRate = calculateHourlyRate(persona.salary || persona.annualSalary, persona.burdenMultiplier);
+              roleCost += (inv.timeMinutes / 60) * hourlyRate * (inv.headcount || 1);
+            }
+          });
+          return { label: persona.label || persona.name, color: persona.color, totalMinutes: roleTime, totalCost: roleCost };
+        }).filter(r => r.totalCost > 0).sort((a, b) => b.totalCost - a.totalCost);
+
+        // Funnel metrics
+        const funnel = config.funnel || { enabled: false, initialVolume: 1000 };
+        let funnelMetrics = [];
+        if (funnel.enabled) {
+          let currentVolume = funnel.initialVolume || 1000;
+          funnelMetrics = config.stages.map((stage, i) => {
+            const entryVolume = currentVolume;
+            const dropOff = stage.dropOffCount || 0;
+            const exitVolume = Math.max(0, entryVolume - dropOff);
+            const stageCost = stageMetrics[i]?.cost || 0;
+            const completionRate = entryVolume > 0 ? (exitVolume / entryVolume) * 100 : 100;
+            const wastedCost = dropOff > 0 ? (stageCost / entryVolume) * dropOff : 0;
+            currentVolume = exitVolume;
+            return { stageName: stage.name, entryVolume, dropOff, exitVolume, completionRate, stageCost, wastedCost };
+          });
+        }
+        const totalDropOff = funnelMetrics.reduce((acc, s) => acc + s.dropOff, 0);
+        const finalVolume = funnelMetrics.length ? funnelMetrics[funnelMetrics.length - 1].exitVolume : funnel.initialVolume;
+        const overallConversionRate = funnel.initialVolume > 0 ? (finalVolume / funnel.initialVolume) * 100 : 100;
+        const totalWastedCost = funnelMetrics.reduce((acc, s) => acc + s.wastedCost, 0);
+
+        // Top expensive steps
+        const topExpensiveSteps = allSteps.map(s => ({ ...s, cost: calculateStepCost(s, config.personas) })).sort((a, b) => b.cost - a.cost).slice(0, 5);
+        // Top improvement opportunities
+        const topImprovements = allSteps.filter(s => s.automationOpportunity === 'high' || s.automationOpportunity === 'medium').map(s => {
+          const cost = calculateStepCost(s, config.personas);
+          const savings = s.automationOpportunity === 'high' ? cost * 0.7 : cost * 0.4;
+          return { ...s, cost, savings };
+        }).sort((a, b) => b.savings - a.savings).slice(0, 8);
+
+        const date = new Date().toLocaleDateString('en-GB', { day: 'numeric', month: 'long', year: 'numeric' });
+
+        const html = `<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="UTF-8">
+  <title>${config.meta?.title || map?.title || 'Journey Map'} - Complete Report</title>
+  <style>
+    @page { margin: 15mm; size: A4; }
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif; color: #1F2937; line-height: 1.5; padding: 32px 40px; max-width: 1000px; margin: 0 auto; font-size: 12px; }
+    .header { background: #192B45; color: #FFF; padding: 24px 28px; border-radius: 8px; margin-bottom: 24px; display: flex; justify-content: space-between; align-items: center; }
+    .header h1 { font-size: 24px; font-weight: 600; margin-bottom: 4px; }
+    .header .subtitle { font-size: 14px; opacity: 0.8; }
+    .header .meta { text-align: right; font-size: 11px; opacity: 0.7; }
+    .section { margin-bottom: 28px; page-break-inside: avoid; }
+    .section-title { font-size: 16px; font-weight: 600; color: #192B45; margin-bottom: 12px; padding-bottom: 6px; border-bottom: 2px solid #2D8A6E; }
+    .summary-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 12px; margin-bottom: 20px; }
+    .summary-grid.cols-3 { grid-template-columns: repeat(3, 1fr); }
+    .summary-card { background: #F8FAFC; border: 1px solid #E2E8F0; border-radius: 8px; padding: 14px; text-align: center; }
+    .summary-card.highlight-green { background: #D1FAE5; border-color: #A7F3D0; }
+    .summary-card.highlight-red { background: #FEE2E2; border-color: #FECACA; }
+    .summary-card.highlight-amber { background: #FEF3C7; border-color: #FDE68A; }
+    .summary-value { font-size: 20px; font-weight: 700; color: #192B45; }
+    .summary-label { font-size: 9px; color: #64748B; text-transform: uppercase; letter-spacing: 0.5px; margin-top: 4px; }
+    table { width: 100%; border-collapse: collapse; font-size: 11px; margin-bottom: 16px; }
+    th, td { padding: 8px 10px; text-align: left; border-bottom: 1px solid #E2E8F0; }
+    th { background: #F8FAFC; font-weight: 600; color: #475569; font-size: 9px; text-transform: uppercase; }
+    .num { text-align: right; }
+    .text-green { color: #059669; }
+    .text-red { color: #DC2626; }
+    .text-amber { color: #D97706; }
+    .two-column { display: grid; grid-template-columns: 1fr 1fr; gap: 20px; }
+    .stage-header { background: #2D8A6E; color: #FFF; padding: 10px 14px; border-radius: 6px 6px 0 0; display: flex; justify-content: space-between; font-size: 12px; }
+    .badge { display: inline-block; padding: 2px 8px; border-radius: 10px; font-size: 10px; font-weight: 500; }
+    .badge-high { background: #D1FAE5; color: #059669; }
+    .badge-medium { background: #FEF3C7; color: #D97706; }
+    .badge-low { background: #E2E8F0; color: #64748B; }
+    .funnel-bar-container { background: #E2E8F0; height: 20px; border-radius: 4px; overflow: hidden; margin: 4px 0; }
+    .funnel-bar { background: linear-gradient(90deg, #2D8A6E, #3BA882); height: 100%; }
+    .footer { margin-top: 32px; padding-top: 16px; border-top: 1px solid #C8CED6; font-size: 10px; color: #8A95A5; text-align: center; }
+    @media print { .page-break { page-break-before: always; } }
+  </style>
+</head>
+<body>
+  <div class="header">
+    <div>
+      <h1>${config.meta?.title || map?.title || 'Journey Map'}</h1>
+      <div class="subtitle">Complete Journey Analysis Report</div>
+    </div>
+    <div class="meta">Generated: ${date}<br/>Version: ${config.meta?.version || '1.0'}</div>
+  </div>
+
+  <!-- Executive Summary -->
+  <div class="section">
+    <div class="section-title">📊 Executive Summary</div>
+    <div class="summary-grid">
+      <div class="summary-card"><div class="summary-value">${config.stages.length}</div><div class="summary-label">Stages</div></div>
+      <div class="summary-card"><div class="summary-value">${allSteps.length}</div><div class="summary-label">Steps</div></div>
+      <div class="summary-card"><div class="summary-value">${formatTime(totalTime)}</div><div class="summary-label">Total Time</div></div>
+      <div class="summary-card highlight-amber"><div class="summary-value">${hasCostData ? formatCurrency(totalCost) : 'N/A'}</div><div class="summary-label">Total Cost</div></div>
+    </div>
+    <div class="summary-grid">
+      <div class="summary-card highlight-red"><div class="summary-value">${totalPainPoints}</div><div class="summary-label">Pain Points</div></div>
+      <div class="summary-card"><div class="summary-value">${avgFriction}/5</div><div class="summary-label">Avg Friction</div></div>
+      <div class="summary-card"><div class="summary-value">${highAutomationCount}</div><div class="summary-label">High Improvement Opps</div></div>
+      <div class="summary-card highlight-green"><div class="summary-value">${hasCostData ? formatCurrency(potentialSavings) : 'N/A'}</div><div class="summary-label">Potential Savings</div></div>
+    </div>
+  </div>
+
+  <!-- Timeline Analysis -->
+  <div class="section">
+    <div class="section-title">⏱️ Timeline Analysis</div>
+    <table>
+      <thead><tr><th>Stage</th><th class="num">Steps</th><th class="num">Time</th><th class="num">% of Total</th><th class="num">Avg Friction</th><th class="num">Pain Points</th></tr></thead>
+      <tbody>
+        ${stageMetrics.map(s => `<tr><td>${s.name}</td><td class="num">${s.stepCount}</td><td class="num">${formatTime(s.time)}</td><td class="num">${totalTime > 0 ? ((s.time / totalTime) * 100).toFixed(1) : 0}%</td><td class="num">${s.avgFriction}/5</td><td class="num">${s.painPoints}</td></tr>`).join('')}
+        <tr style="font-weight:600;background:#F8FAFC"><td>Total</td><td class="num">${allSteps.length}</td><td class="num">${formatTime(totalTime)}</td><td class="num">100%</td><td class="num">${avgFriction}/5</td><td class="num">${totalPainPoints}</td></tr>
+      </tbody>
+    </table>
+  </div>
+
+  ${hasCostData ? `
+  <!-- Cost Analysis -->
+  <div class="section">
+    <div class="section-title">💰 Cost Analysis</div>
+    <div class="two-column">
+      <div>
+        <h4 style="font-size:12px;margin-bottom:8px;color:#475569">Cost by Stage</h4>
+        <table>
+          <thead><tr><th>Stage</th><th class="num">Time</th><th class="num">Cost</th><th class="num">%</th></tr></thead>
+          <tbody>
+            ${stageMetrics.map(s => `<tr><td>${s.name}</td><td class="num">${formatTime(s.time)}</td><td class="num">${formatCurrency(s.cost)}</td><td class="num">${totalCost > 0 ? ((s.cost / totalCost) * 100).toFixed(1) : 0}%</td></tr>`).join('')}
+          </tbody>
+        </table>
+      </div>
+      <div>
+        <h4 style="font-size:12px;margin-bottom:8px;color:#475569">Cost by Role</h4>
+        <table>
+          <thead><tr><th>Role</th><th class="num">Time</th><th class="num">Cost</th><th class="num">%</th></tr></thead>
+          <tbody>
+            ${roleCosts.map(r => `<tr><td>${r.label}</td><td class="num">${formatTime(r.totalMinutes)}</td><td class="num">${formatCurrency(r.totalCost)}</td><td class="num">${totalCost > 0 ? ((r.totalCost / totalCost) * 100).toFixed(1) : 0}%</td></tr>`).join('')}
+          </tbody>
+        </table>
+      </div>
+    </div>
+    ${topExpensiveSteps.length > 0 ? `
+    <h4 style="font-size:12px;margin:16px 0 8px;color:#475569">🔥 Top 5 Most Expensive Steps</h4>
+    <table>
+      <thead><tr><th>#</th><th>Step</th><th>Stage</th><th class="num">Cost</th></tr></thead>
+      <tbody>${topExpensiveSteps.map((s, i) => `<tr><td>${i + 1}</td><td>${s.name}</td><td>${s.stageName}</td><td class="num">${formatCurrency(s.cost)}</td></tr>`).join('')}</tbody>
+    </table>
+    ` : ''}
+  </div>
+  ` : ''}
+
+  ${topImprovements.length > 0 && hasCostData ? `
+  <!-- Improvement Opportunities -->
+  <div class="section">
+    <div class="section-title">🎯 Top Improvement Opportunities</div>
+    <table>
+      <thead><tr><th>Step</th><th>Stage</th><th class="num">Current Cost</th><th class="num">Opportunity</th><th class="num">Potential Savings</th></tr></thead>
+      <tbody>
+        ${topImprovements.map(s => `<tr><td>${s.name}</td><td>${s.stageName}</td><td class="num">${formatCurrency(s.cost)}</td><td class="num"><span class="badge badge-${s.automationOpportunity}">${s.automationOpportunity}</span></td><td class="num text-green">${formatCurrency(s.savings)}</td></tr>`).join('')}
+      </tbody>
+    </table>
+  </div>
+  ` : ''}
+
+  ${funnel.enabled && funnelMetrics.length > 0 ? `
+  <!-- Funnel Analysis -->
+  <div class="section page-break">
+    <div class="section-title">🔻 Funnel Analysis</div>
+    <div class="summary-grid cols-3">
+      <div class="summary-card"><div class="summary-value">${(funnel.initialVolume || 1000).toLocaleString()}</div><div class="summary-label">Initial Volume${funnel.periodLabel ? ' (' + funnel.periodLabel + ')' : ''}</div></div>
+      <div class="summary-card highlight-green"><div class="summary-value">${finalVolume.toLocaleString()}</div><div class="summary-label">Completed (${overallConversionRate.toFixed(1)}%)</div></div>
+      <div class="summary-card highlight-red"><div class="summary-value">${totalDropOff.toLocaleString()}</div><div class="summary-label">Total Drop-off</div></div>
+    </div>
+    ${hasCostData ? `
+    <div class="summary-grid cols-3">
+      <div class="summary-card"><div class="summary-value">${formatCurrency(totalCost / (funnel.initialVolume || 1))}</div><div class="summary-label">Cost per Entry</div></div>
+      <div class="summary-card highlight-green"><div class="summary-value">${formatCurrency(totalCost - totalWastedCost)}</div><div class="summary-label">Productive Spend</div></div>
+      <div class="summary-card highlight-red"><div class="summary-value">${formatCurrency(totalWastedCost)}</div><div class="summary-label">Wasted on Drop-offs</div></div>
+    </div>
+    ` : ''}
+    <table>
+      <thead><tr><th>Stage</th><th class="num">Entry</th><th class="num">Drop-off</th><th class="num">Exit</th><th class="num">Rate</th>${hasCostData ? '<th class="num">Wasted Cost</th>' : ''}</tr></thead>
+      <tbody>
+        ${funnelMetrics.map(s => `<tr><td>${s.stageName}</td><td class="num">${s.entryVolume.toLocaleString()}</td><td class="num text-red">${s.dropOff > 0 ? '-' + s.dropOff.toLocaleString() : '—'}</td><td class="num">${s.exitVolume.toLocaleString()}</td><td class="num">${s.completionRate.toFixed(1)}%</td>${hasCostData ? '<td class="num text-red">' + (s.wastedCost > 0 ? formatCurrency(s.wastedCost) : '—') + '</td>' : ''}</tr>`).join('')}
+      </tbody>
+    </table>
+  </div>
+  ` : ''}
+
+  <!-- Detailed Stage Breakdown -->
+  <div class="section page-break">
+    <div class="section-title">📋 Detailed Stage Breakdown</div>
+    ${config.stages.map((stage, si) => {
+      const stageSteps = stage.steps || [];
+      const stageTime = stageSteps.reduce((acc, s) => acc + (s.timeMinutes || 0), 0);
+      const stageCost = stageSteps.reduce((acc, s) => acc + calculateStepCost(s, config.personas), 0);
+      return `
+      <div style="margin-bottom:16px;">
+        <div class="stage-header"><span>${stage.name}</span><span>${stageSteps.length} steps · ${formatTime(stageTime)}${hasCostData ? ' · ' + formatCurrency(stageCost) : ''}</span></div>
+        <table>
+          <thead><tr><th style="width:40px">#</th><th>Step</th><th style="width:70px" class="num">Time</th>${hasCostData ? '<th style="width:80px" class="num">Cost</th>' : ''}<th>Pain Points</th><th style="width:80px" class="num">Improvement</th></tr></thead>
+          <tbody>
+            ${stageSteps.map((step, sti) => {
+              const stepCost = calculateStepCost(step, config.personas);
+              const owner = config.personas?.find(p => p.id === step.owner);
+              return `<tr>
+                <td>${si + 1}.${sti + 1}</td>
+                <td><strong>${step.name}</strong><div style="font-size:10px;color:#64748B">${owner?.label || ''}${step.clientTouchpoint ? ' · 👤 Client' : ''}</div></td>
+                <td class="num">${formatTime(step.timeMinutes || 0)}</td>
+                ${hasCostData ? '<td class="num">' + formatCurrency(stepCost) + '</td>' : ''}
+                <td style="font-size:10px;color:#DC2626">${(step.painPoints || []).map(p => '⚠ ' + p).join('<br/>') || '—'}</td>
+                <td class="num"><span class="badge badge-${step.automationOpportunity || 'none'}">${step.automationOpportunity || 'none'}</span></td>
+              </tr>`;
+            }).join('')}
+          </tbody>
+        </table>
+      </div>`;
+    }).join('')}
+  </div>
+
+  <div class="footer">
+    <p>Generated by FATHOM · ${date}</p>
+    <p style="margin-top:4px">💡 Use Print → Save as PDF to save this report</p>
+  </div>
+
+  <script>window.onload = function() { window.print(); }</script>
+</body>
+</html>`;
+
+        printWindow.document.write(html);
+        printWindow.document.close();
+      };
+
       const myMaps = maps.filter(m => m.owner === user.email).sort((a, b) => {
         if (a.favourite !== b.favourite) return a.favourite ? -1 : 1;
         return new Date(b.updatedAt) - new Date(a.updatedAt);
@@ -1065,6 +1380,7 @@
                           </span>
                           {map.owner === user.email && (
                             <div className="journey-card-actions" onClick={e => e.stopPropagation()}>
+                              <button onClick={() => generateReport(map.id)} className="btn btn-ghost">📄 Report</button>
                               <button onClick={() => window.location.href = `responses.html?map=${map.id}`} className="btn btn-ghost">📊 Responses</button>
                               <button onClick={() => setShowShareModal(map.id)} className="btn btn-ghost">Share</button>
                             </div>

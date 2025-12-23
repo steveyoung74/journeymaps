@@ -4597,7 +4597,6 @@
       const [dashboardTab, setDashboardTab] = useState('time'); // 'time', 'costs', 'funnel'
       const [highlightOpportunities, setHighlightOpportunities] = useState(false);
       const [viewMode, setViewMode] = useState('stages'); // 'steps' or 'stages';
-      const [showExportMenu, setShowExportMenu] = useState(false);
       const [showSettingsMenu, setShowSettingsMenu] = useState(false);
       const [showStructurePanel, setShowStructurePanel] = useState(false);
       const [showGitHubSettings, setShowGitHubSettings] = useState(false);
@@ -4904,14 +4903,13 @@
       // Close menus when clicking outside
       useEffect(() => {
         const handleClickOutside = () => {
-          setShowExportMenu(false);
           setShowSettingsMenu(false);
         };
-        if (showExportMenu || showSettingsMenu) {
+        if (showSettingsMenu) {
           document.addEventListener('click', handleClickOutside);
           return () => document.removeEventListener('click', handleClickOutside);
         }
-      }, [showExportMenu, showSettingsMenu]);
+      }, [showSettingsMenu]);
 
       const totalTime = useMemo(() => 
         config.stages.reduce((acc, stage) => 
@@ -5863,35 +5861,12 @@
                   </>
                 ) : (
                   <>
-                    {/* Export Dropdown */}
-                    <div style={{ position: 'relative' }}>
-                      <button onClick={(e) => { e.stopPropagation(); setShowExportMenu(!showExportMenu); setShowSettingsMenu(false); }} style={{ padding: '6px 10px', background: showExportMenu ? '#556275' : 'transparent', color: '#F4F5F7', border: '1px solid rgba(255,255,255,0.4)', borderRadius: '4px', cursor: 'pointer', fontFamily: "'Interstate', sans-serif", fontSize: '11px', display: 'flex', alignItems: 'center', gap: '4px' }}>
-                        📤 <span style={{ fontSize: '8px' }}>▼</span>
-                      </button>
-                      {showExportMenu && (
-                        <div onClick={(e) => e.stopPropagation()} style={{ position: 'absolute', top: '100%', right: 0, marginTop: '4px', background: '#FFF', borderRadius: '8px', boxShadow: '0 4px 20px rgba(0,0,0,0.2)', overflow: 'hidden', zIndex: 9999, minWidth: '180px' }}>
-                          <button onClick={() => { generatePDF('summary'); setShowExportMenu(false); }} style={{ display: 'flex', alignItems: 'center', gap: '10px', width: '100%', padding: '10px 14px', border: 'none', background: '#FFF', cursor: 'pointer', textAlign: 'left', fontFamily: "'Interstate', sans-serif", fontSize: '13px', color: '#3D4A5C', borderBottom: '1px solid #EEE' }} onMouseOver={(e) => e.currentTarget.style.background = '#F4F5F7'} onMouseOut={(e) => e.currentTarget.style.background = '#FFF'}>
-                            <span>📋</span> Summary Report
-                          </button>
-                          <button onClick={() => { generatePDF('detailed'); setShowExportMenu(false); }} style={{ display: 'flex', alignItems: 'center', gap: '10px', width: '100%', padding: '10px 14px', border: 'none', background: '#FFF', cursor: 'pointer', textAlign: 'left', fontFamily: "'Interstate', sans-serif", fontSize: '13px', color: '#3D4A5C', borderBottom: showCosts ? '1px solid #EEE' : 'none' }} onMouseOver={(e) => e.currentTarget.style.background = '#F4F5F7'} onMouseOut={(e) => e.currentTarget.style.background = '#FFF'}>
-                            <span>📄</span> Detailed Report
-                          </button>
-                          {showCosts && (
-                            <button onClick={() => { generatePDF('cost-analysis'); setShowExportMenu(false); }} style={{ display: 'flex', alignItems: 'center', gap: '10px', width: '100%', padding: '10px 14px', border: 'none', background: '#FFF', cursor: 'pointer', textAlign: 'left', fontFamily: "'Interstate', sans-serif", fontSize: '13px', color: '#3D4A5C' }} onMouseOver={(e) => e.currentTarget.style.background = '#F4F5F7'} onMouseOut={(e) => e.currentTarget.style.background = '#FFF'}>
-                              <span>💰</span> Cost Analysis
-                            </button>
-                          )}
-                        </div>
-                      )}
-                    </div>
-
                     {/* Settings Dropdown */}
                     <div style={{ position: 'relative' }}>
                       <button onClick={(e) => { 
                         e.stopPropagation(); 
                         if (isSettingsUnlocked) {
-                          setShowSettingsMenu(!showSettingsMenu); 
-                          setShowExportMenu(false);
+                          setShowSettingsMenu(!showSettingsMenu);
                         } else {
                           setShowPasswordPrompt(true);
                         }
@@ -6078,37 +6053,14 @@
                   📊
                 </button>
                 
-                {/* Export & Settings - pushed to right */}
+                {/* Settings - pushed to right */}
                 <div style={{ display: 'flex', gap: '6px', alignItems: 'center', marginLeft: 'auto' }}>
-                  {/* Export Dropdown */}
-                  <div style={{ position: 'relative' }}>
-                    <button onClick={(e) => { e.stopPropagation(); setShowExportMenu(!showExportMenu); setShowSettingsMenu(false); }} style={{ padding: '7px 10px', background: showExportMenu ? '#556275' : 'transparent', color: '#F4F5F7', border: '1px solid rgba(255,255,255,0.35)', borderRadius: '5px', cursor: 'pointer', fontFamily: "'Interstate', sans-serif", fontSize: '11px', display: 'flex', alignItems: 'center', gap: '4px' }}>
-                      📤 <span style={{ fontSize: '8px' }}>▼</span>
-                    </button>
-                    {showExportMenu && (
-                      <div onClick={(e) => e.stopPropagation()} style={{ position: 'absolute', top: '100%', right: 0, marginTop: '4px', background: '#FFF', borderRadius: '8px', boxShadow: '0 4px 20px rgba(0,0,0,0.2)', overflow: 'hidden', zIndex: 9999, minWidth: '180px' }}>
-                        <button onClick={() => { generatePDF('summary'); setShowExportMenu(false); }} style={{ display: 'flex', alignItems: 'center', gap: '10px', width: '100%', padding: '10px 14px', border: 'none', background: '#FFF', cursor: 'pointer', textAlign: 'left', fontFamily: "'Interstate', sans-serif", fontSize: '13px', color: '#3D4A5C', borderBottom: '1px solid #EEE' }} onMouseOver={(e) => e.currentTarget.style.background = '#F4F5F7'} onMouseOut={(e) => e.currentTarget.style.background = '#FFF'}>
-                          <span>📋</span> Summary Report
-                        </button>
-                        <button onClick={() => { generatePDF('detailed'); setShowExportMenu(false); }} style={{ display: 'flex', alignItems: 'center', gap: '10px', width: '100%', padding: '10px 14px', border: 'none', background: '#FFF', cursor: 'pointer', textAlign: 'left', fontFamily: "'Interstate', sans-serif", fontSize: '13px', color: '#3D4A5C', borderBottom: showCosts ? '1px solid #EEE' : 'none' }} onMouseOver={(e) => e.currentTarget.style.background = '#F4F5F7'} onMouseOut={(e) => e.currentTarget.style.background = '#FFF'}>
-                          <span>📄</span> Detailed Report
-                        </button>
-                        {showCosts && (
-                          <button onClick={() => { generatePDF('cost-analysis'); setShowExportMenu(false); }} style={{ display: 'flex', alignItems: 'center', gap: '10px', width: '100%', padding: '10px 14px', border: 'none', background: '#FFF', cursor: 'pointer', textAlign: 'left', fontFamily: "'Interstate', sans-serif", fontSize: '13px', color: '#3D4A5C' }} onMouseOver={(e) => e.currentTarget.style.background = '#F4F5F7'} onMouseOut={(e) => e.currentTarget.style.background = '#FFF'}>
-                            <span>💰</span> Cost Analysis
-                          </button>
-                        )}
-                      </div>
-                    )}
-                  </div>
-                  
                   {/* Settings Dropdown */}
                   <div style={{ position: 'relative' }}>
                     <button onClick={(e) => { 
                       e.stopPropagation(); 
                       if (isSettingsUnlocked) {
-                        setShowSettingsMenu(!showSettingsMenu); 
-                        setShowExportMenu(false);
+                        setShowSettingsMenu(!showSettingsMenu);
                       } else {
                         setShowPasswordPrompt(true);
                       }
