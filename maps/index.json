@@ -25,43 +25,6 @@
       "createdAt": "2025-12-20T13:16:10.404Z",
       "updatedAt": "2025-12-20T13:16:10.404Z",
       "sharedWith": []
-    },
-    {
-      "id": "mjec18e4e7x3b",
-      "title": "Customer Onboarding Journey",
-      "description": "Enterprise software implementation and activation journey",
-      "owner": "steveyoung74@gmail.com",
-      "createdAt": "2025-12-20T13:26:53.884Z",
-      "updatedAt": "2025-12-20T13:26:53.884Z",
-      "sharedWith": []
-    },
-    {
-      "id": "mjec1flet231r",
-      "title": "Insurance Claim Journey",
-      "description": "End-to-end claim processing from first notice to settlement",
-      "owner": "steveyoung74@gmail.com",
-      "createdAt": "2025-12-20T13:27:03.218Z",
-      "updatedAt": "2025-12-20T13:27:03.218Z",
-      "sharedWith": []
-    },
-    {
-      "id": "mjec1o5xkdp0b",
-      "title": "Property Purchase Journey",
-      "description": "Residential property purchase from offer to completion",
-      "owner": "steveyoung74@gmail.com",
-      "createdAt": "2025-12-20T13:27:14.325Z",
-      "updatedAt": "2025-12-20T13:27:14.325Z",
-      "sharedWith": []
-    },
-    {
-      "id": "mjfobp33pq6d9",
-      "title": "Customer Onboarding Journey",
-      "description": "Enterprise software implementation and activation journey",
-      "owner": "steveyoung74@gmail.com",
-      "createdAt": "2025-12-21T11:58:43.647Z",
-      "updatedAt": "2025-12-21T11:58:43.647Z",
-      "sharedWith": [],
-      "favourite": false
     }
   ]
 }
