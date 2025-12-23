@@ -1,0 +1,152 @@
+{
+  "meta": {
+    "title": "Patient Referral Journey",
+    "version": "1.0",
+    "template": "patient_referral"
+  },
+  "funnel": {
+    "enabled": true,
+    "initialVolume": 100,
+    "periodLabel": "per month"
+  },
+  "personas": [
+    {
+      "id": "patient",
+      "label": "Patient",
+      "salary": 0,
+      "isExternal": true,
+      "color": "#2D8A6E"
+    },
+    {
+      "id": "gp",
+      "label": "GP",
+      "salary": 0,
+      "isExternal": true,
+      "color": "#2D8A6E"
+    },
+    {
+      "id": "consultant",
+      "label": "Consultant",
+      "salary": 100000,
+      "isExternal": false,
+      "color": "#5B8A9A"
+    },
+    {
+      "id": "admin",
+      "label": "Admin",
+      "salary": 26000,
+      "isExternal": false,
+      "color": "#5B8A9A"
+    }
+  ],
+  "stages": [
+    {
+      "id": "stage-1",
+      "name": "Referral",
+      "dropOffCount": 0,
+      "steps": [
+        {
+          "id": "s1-1",
+          "name": "GP Consultation",
+          "owner": "gp",
+          "timeMinutes": 30,
+          "frictionLevel": 2,
+          "painPoints": [],
+          "automationOpportunity": "none",
+          "notes": ""
+        },
+        {
+          "id": "s1-2",
+          "name": "Referral Submission",
+          "owner": "gp",
+          "timeMinutes": 15,
+          "frictionLevel": 2,
+          "painPoints": [],
+          "automationOpportunity": "none",
+          "notes": ""
+        }
+      ]
+    },
+    {
+      "id": "stage-2",
+      "name": "Triage",
+      "dropOffCount": 0,
+      "steps": [
+        {
+          "id": "s2-1",
+          "name": "Referral Review",
+          "owner": "consultant",
+          "timeMinutes": 20,
+          "frictionLevel": 2,
+          "painPoints": [],
+          "automationOpportunity": "none",
+          "notes": ""
+        },
+        {
+          "id": "s2-2",
+          "name": "Priority Assignment",
+          "owner": "admin",
+          "timeMinutes": 10,
+          "frictionLevel": 2,
+          "painPoints": [],
+          "automationOpportunity": "none",
+          "notes": ""
+        }
+      ]
+    },
+    {
+      "id": "stage-3",
+      "name": "Scheduling",
+      "dropOffCount": 0,
+      "steps": [
+        {
+          "id": "s3-1",
+          "name": "Appointment Booking",
+          "owner": "admin",
+          "timeMinutes": 15,
+          "frictionLevel": 3,
+          "painPoints": [],
+          "automationOpportunity": "none",
+          "notes": ""
+        },
+        {
+          "id": "s3-2",
+          "name": "Patient Notification",
+          "owner": "admin",
+          "timeMinutes": 10,
+          "frictionLevel": 2,
+          "painPoints": [],
+          "automationOpportunity": "none",
+          "notes": ""
+        }
+      ]
+    },
+    {
+      "id": "stage-4",
+      "name": "Consultation",
+      "dropOffCount": 0,
+      "steps": [
+        {
+          "id": "s4-1",
+          "name": "Specialist Appointment",
+          "owner": "consultant",
+          "timeMinutes": 45,
+          "frictionLevel": 2,
+          "painPoints": [],
+          "automationOpportunity": "none",
+          "notes": ""
+        },
+        {
+          "id": "s4-2",
+          "name": "Treatment Plan",
+          "owner": "consultant",
+          "timeMinutes": 30,
+          "frictionLevel": 2,
+          "painPoints": [],
+          "automationOpportunity": "none",
+          "notes": ""
+        }
+      ]
+    }
+  ]
+}
