@@ -1107,6 +1107,21 @@
     const getApiUrl = (path) =>
       `https://api.github.com/repos/${GITHUB_CONFIG.owner}/${GITHUB_CONFIG.repo}/contents/${path}`;
     
+    // Fetch from GitHub API (no caching issues)
+    async function fetchFromGitHub(path) {
+      const url = `${getApiUrl(path)}?ref=${GITHUB_CONFIG.branch}&t=${Date.now()}`;
+      const response = await fetch(url, {
+        headers: { 'Accept': 'application/vnd.github.v3+json' }
+      });
+      if (!response.ok) {
+        if (response.status === 404) return null;
+        throw new Error(`GitHub API error: ${response.status}`);
+      }
+      const data = await response.json();
+      const content = atob(data.content);
+      return JSON.parse(content);
+    }
+    
     // ============================================
     // RESPONSE VIEWER APP
     // ============================================
@@ -1165,11 +1180,8 @@
       // Load maps index with response counts
       const loadMapsWithCounts = async () => {
         try {
-          const url = `https://raw.githubusercontent.com/${GITHUB_CONFIG.owner}/${GITHUB_CONFIG.repo}/${GITHUB_CONFIG.branch}/maps/index.json?t=${Date.now()}`;
-          const response = await fetch(url);
-          if (!response.ok) throw new Error('Failed to load maps');
-          const data = await response.json();
-          const mapsList = data.maps || [];
+          const data = await fetchFromGitHub(GITHUB_CONFIG.indexFile);
+          const mapsList = data?.maps || [];
           setMaps(mapsList);
           
           // Check response counts for each map
@@ -1224,11 +1236,9 @@
         setLoading(true);
         setError(null);
         try {
-          // Load map configuration
-          const mapUrl = getRawUrl(`${GITHUB_CONFIG.mapsPath}/${mapId}.json`);
-          const mapRes = await fetch(mapUrl);
-          if (!mapRes.ok) throw new Error('Could not load journey map');
-          const mapData = await mapRes.json();
+          // Load map configuration using API (no cache issues)
+          const mapData = await fetchFromGitHub(`${GITHUB_CONFIG.mapsPath}/${mapId}.json`);
+          if (!mapData) throw new Error('Could not load journey map');
           setMapConfig(mapData);
           
           // Load responses from GitHub

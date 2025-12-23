@@ -569,8 +569,25 @@
     const GITHUB_CONFIG = {
       owner: 'steveyoung74',
       repo: 'journeymaps',
-      branch: 'main'
+      branch: 'main',
+      indexFile: 'maps/index.json',
+      mapsPath: 'maps'
     };
+    
+    // Fetch from GitHub API (no caching issues)
+    async function fetchFromGitHub(path) {
+      const url = `https://api.github.com/repos/${GITHUB_CONFIG.owner}/${GITHUB_CONFIG.repo}/contents/${path}?ref=${GITHUB_CONFIG.branch}&t=${Date.now()}`;
+      const response = await fetch(url, {
+        headers: { 'Accept': 'application/vnd.github.v3+json' }
+      });
+      if (!response.ok) {
+        if (response.status === 404) return null;
+        throw new Error(`GitHub API error: ${response.status}`);
+      }
+      const data = await response.json();
+      const content = atob(data.content);
+      return JSON.parse(content);
+    }
     
     const BASE_SURVEY_URL = 'https://steveyoung74.github.io/journeymaps/survey.html';
     
@@ -611,14 +628,11 @@
       useEffect(() => {
         const loadMaps = async () => {
           try {
-            const url = `https://raw.githubusercontent.com/${GITHUB_CONFIG.owner}/${GITHUB_CONFIG.repo}/${GITHUB_CONFIG.branch}/maps/index.json?t=${Date.now()}`;
-            const response = await fetch(url);
-            if (!response.ok) throw new Error('Failed to load maps');
-            const data = await response.json();
-            setMaps(data.maps || []);
+            const data = await fetchFromGitHub(GITHUB_CONFIG.indexFile);
+            setMaps(data?.maps || []);
             
             // Pre-select map from URL parameter
-            if (preselectedMapId && data.maps?.some(m => m.id === preselectedMapId)) {
+            if (preselectedMapId && data?.maps?.some(m => m.id === preselectedMapId)) {
               setSelectedMapId(preselectedMapId);
             }
             
@@ -641,10 +655,8 @@
         
         const loadMapConfig = async () => {
           try {
-            const url = `https://raw.githubusercontent.com/${GITHUB_CONFIG.owner}/${GITHUB_CONFIG.repo}/${GITHUB_CONFIG.branch}/maps/${selectedMapId}.json?t=${Date.now()}`;
-            const response = await fetch(url);
-            if (!response.ok) throw new Error('Failed to load map');
-            const config = await response.json();
+            const config = await fetchFromGitHub(`${GITHUB_CONFIG.mapsPath}/${selectedMapId}.json`);
+            if (!config) throw new Error('Map not found');
             setMapConfig(config);
             
             // Count steps per persona
