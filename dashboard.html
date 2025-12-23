@@ -1612,19 +1612,139 @@
       );
     }
 
-    // Create Map Modal (simplified)
+    // ============================================
+    // JOURNEY TEMPLATES
+    // ============================================
+    const JOURNEY_TEMPLATES = [
+      {
+        id: 'blank',
+        name: 'Blank Canvas',
+        description: 'Start from scratch with an empty journey map',
+        icon: '📄',
+        industry: 'Any',
+        stageCount: 1,
+        config: {
+          title: 'New Journey Map',
+          currency: '£',
+          stages: [
+            { id: 'stage-1', name: 'Stage 1', steps: [{ id: 'step-1-1', name: 'First Step', time: 30, personaId: null, friction: 'none', notes: '' }] }
+          ],
+          personas: [
+            { id: 'customer', name: 'Customer', salary: 0, isExternal: true },
+            { id: 'staff', name: 'Staff Member', salary: 35000, isExternal: false }
+          ],
+          funnelConfig: { enabled: false, startVolume: 100, stages: {} }
+        }
+      },
+      {
+        id: 'financial_client_onboarding',
+        name: 'Client Onboarding',
+        description: 'Wealth management with KYC & compliance',
+        icon: '🏦',
+        industry: 'Financial Services',
+        stageCount: 6,
+        config: {
+          title: 'Client Onboarding Journey',
+          currency: '£',
+          stages: [
+            { id: 'stage-discovery', name: 'Discovery & Qualification', steps: [
+              { id: 'step-1-1', name: 'Initial Enquiry Received', time: 15, personaId: 'administrator', friction: 'none', notes: 'Via web form, phone, or referral' },
+              { id: 'step-1-2', name: 'Qualification Call', time: 45, personaId: 'advisor', friction: 'low', notes: 'Assess fit and requirements' },
+              { id: 'step-1-3', name: 'Send Welcome Pack', time: 20, personaId: 'administrator', friction: 'none', notes: '' },
+              { id: 'step-1-4', name: 'Schedule Discovery Meeting', time: 15, personaId: 'administrator', friction: 'none', notes: '' }
+            ]},
+            { id: 'stage-kyc', name: 'KYC & Compliance', steps: [
+              { id: 'step-2-1', name: 'Collect ID Documents', time: 30, personaId: 'client', friction: 'medium', notes: 'Passport, proof of address' },
+              { id: 'step-2-2', name: 'Verify Identity (AML Check)', time: 45, personaId: 'compliance', friction: 'low', notes: '' },
+              { id: 'step-2-3', name: 'Source of Wealth Declaration', time: 60, personaId: 'client', friction: 'high', notes: 'Often requires chasing' },
+              { id: 'step-2-4', name: 'Compliance Review & Sign-off', time: 30, personaId: 'compliance', friction: 'medium', notes: '' },
+              { id: 'step-2-5', name: 'Risk Profiling Questionnaire', time: 25, personaId: 'client', friction: 'low', notes: '' }
+            ]},
+            { id: 'stage-factfind', name: 'Fact Find & Analysis', steps: [
+              { id: 'step-3-1', name: 'Discovery Meeting', time: 90, personaId: 'advisor', friction: 'none', notes: '' },
+              { id: 'step-3-2', name: 'Gather Financial Information', time: 120, personaId: 'client', friction: 'high', notes: '' },
+              { id: 'step-3-3', name: 'Input Data to Planning System', time: 60, personaId: 'paraplanner', friction: 'medium', notes: '' },
+              { id: 'step-3-4', name: 'Cash Flow Modelling', time: 120, personaId: 'paraplanner', friction: 'low', notes: '' },
+              { id: 'step-3-5', name: 'Research & Provider Selection', time: 180, personaId: 'paraplanner', friction: 'medium', notes: '' }
+            ]},
+            { id: 'stage-advice', name: 'Advice & Recommendation', steps: [
+              { id: 'step-4-1', name: 'Draft Suitability Report', time: 240, personaId: 'paraplanner', friction: 'medium', notes: '' },
+              { id: 'step-4-2', name: 'Advisor Review', time: 60, personaId: 'advisor', friction: 'low', notes: '' },
+              { id: 'step-4-3', name: 'Compliance Review', time: 45, personaId: 'compliance', friction: 'medium', notes: '' },
+              { id: 'step-4-4', name: 'Recommendation Meeting', time: 90, personaId: 'advisor', friction: 'none', notes: '' }
+            ]},
+            { id: 'stage-implementation', name: 'Implementation', steps: [
+              { id: 'step-5-1', name: 'Prepare Application Forms', time: 45, personaId: 'administrator', friction: 'medium', notes: '' },
+              { id: 'step-5-2', name: 'Client Signatures', time: 30, personaId: 'client', friction: 'medium', notes: '' },
+              { id: 'step-5-3', name: 'Submit Applications', time: 30, personaId: 'administrator', friction: 'low', notes: '' },
+              { id: 'step-5-4', name: 'Chase Providers', time: 60, personaId: 'administrator', friction: 'high', notes: '' }
+            ]},
+            { id: 'stage-handover', name: 'Handover & Review', steps: [
+              { id: 'step-6-1', name: 'Welcome to Service Call', time: 30, personaId: 'advisor', friction: 'none', notes: '' },
+              { id: 'step-6-2', name: 'Portal Setup', time: 20, personaId: 'administrator', friction: 'low', notes: '' },
+              { id: 'step-6-3', name: 'Schedule Annual Review', time: 10, personaId: 'administrator', friction: 'none', notes: '' }
+            ]}
+          ],
+          personas: [
+            { id: 'client', name: 'Client', salary: 0, isExternal: true },
+            { id: 'advisor', name: 'Financial Advisor', salary: 75000, isExternal: false },
+            { id: 'paraplanner', name: 'Paraplanner', salary: 45000, isExternal: false },
+            { id: 'administrator', name: 'Administrator', salary: 28000, isExternal: false },
+            { id: 'compliance', name: 'Compliance Officer', salary: 55000, isExternal: false }
+          ],
+          funnelConfig: { enabled: true, startVolume: 100, stages: { 'stage-discovery': { dropOff: 25 }, 'stage-kyc': { dropOff: 10 }, 'stage-factfind': { dropOff: 5 }, 'stage-advice': { dropOff: 10 }, 'stage-implementation': { dropOff: 5 }, 'stage-handover': { dropOff: 0 } }}
+        }
+      },
+      { id: 'mortgage_application', name: 'Mortgage Application', description: 'Enquiry to completion, 30-60 day cycle', icon: '🏠', industry: 'Financial Services', stageCount: 5, config: { title: 'Mortgage Application Journey', currency: '£', stages: [{ id: 'stage-1', name: 'Initial Enquiry', steps: [{ id: 's1-1', name: 'Customer Enquiry', time: 15, personaId: 'customer', friction: 'none', notes: '' }, { id: 's1-2', name: 'Initial Assessment', time: 30, personaId: 'advisor', friction: 'low', notes: '' }]}, { id: 'stage-2', name: 'Application', steps: [{ id: 's2-1', name: 'Full Application', time: 60, personaId: 'customer', friction: 'medium', notes: '' }, { id: 's2-2', name: 'Document Collection', time: 90, personaId: 'admin', friction: 'high', notes: '' }]}, { id: 'stage-3', name: 'Underwriting', steps: [{ id: 's3-1', name: 'Credit Check', time: 30, personaId: 'underwriter', friction: 'low', notes: '' }, { id: 's3-2', name: 'Valuation', time: 120, personaId: 'valuer', friction: 'medium', notes: '' }]}, { id: 'stage-4', name: 'Offer', steps: [{ id: 's4-1', name: 'Mortgage Offer', time: 45, personaId: 'underwriter', friction: 'low', notes: '' }, { id: 's4-2', name: 'Customer Acceptance', time: 30, personaId: 'customer', friction: 'low', notes: '' }]}, { id: 'stage-5', name: 'Completion', steps: [{ id: 's5-1', name: 'Legal Completion', time: 60, personaId: 'solicitor', friction: 'medium', notes: '' }, { id: 's5-2', name: 'Funds Transfer', time: 30, personaId: 'admin', friction: 'low', notes: '' }]}], personas: [{ id: 'customer', name: 'Customer', salary: 0, isExternal: true }, { id: 'advisor', name: 'Mortgage Advisor', salary: 45000, isExternal: false }, { id: 'admin', name: 'Administrator', salary: 28000, isExternal: false }, { id: 'underwriter', name: 'Underwriter', salary: 42000, isExternal: false }, { id: 'valuer', name: 'Valuer', salary: 0, isExternal: true }, { id: 'solicitor', name: 'Solicitor', salary: 0, isExternal: true }], funnelConfig: { enabled: true, startVolume: 100, stages: {} }}},
+      { id: 'insurance_claim', name: 'Insurance Claim', description: 'FNOL to settlement with fraud checks', icon: '🛡️', industry: 'Financial Services', stageCount: 5, config: { title: 'Insurance Claim Journey', currency: '£', stages: [{ id: 'stage-1', name: 'FNOL', steps: [{ id: 's1-1', name: 'First Notice of Loss', time: 20, personaId: 'customer', friction: 'medium', notes: '' }, { id: 's1-2', name: 'Claim Registration', time: 15, personaId: 'handler', friction: 'low', notes: '' }]}, { id: 'stage-2', name: 'Assessment', steps: [{ id: 's2-1', name: 'Document Review', time: 45, personaId: 'handler', friction: 'low', notes: '' }, { id: 's2-2', name: 'Fraud Screening', time: 30, personaId: 'fraud', friction: 'low', notes: '' }]}, { id: 'stage-3', name: 'Investigation', steps: [{ id: 's3-1', name: 'Loss Adjuster Visit', time: 120, personaId: 'adjuster', friction: 'medium', notes: '' }, { id: 's3-2', name: 'Report Compilation', time: 90, personaId: 'adjuster', friction: 'low', notes: '' }]}, { id: 'stage-4', name: 'Decision', steps: [{ id: 's4-1', name: 'Claim Decision', time: 30, personaId: 'handler', friction: 'low', notes: '' }, { id: 's4-2', name: 'Customer Notification', time: 15, personaId: 'handler', friction: 'low', notes: '' }]}, { id: 'stage-5', name: 'Settlement', steps: [{ id: 's5-1', name: 'Payment Processing', time: 30, personaId: 'finance', friction: 'low', notes: '' }, { id: 's5-2', name: 'Claim Closure', time: 15, personaId: 'handler', friction: 'none', notes: '' }]}], personas: [{ id: 'customer', name: 'Policyholder', salary: 0, isExternal: true }, { id: 'handler', name: 'Claims Handler', salary: 32000, isExternal: false }, { id: 'fraud', name: 'Fraud Analyst', salary: 38000, isExternal: false }, { id: 'adjuster', name: 'Loss Adjuster', salary: 0, isExternal: true }, { id: 'finance', name: 'Finance', salary: 35000, isExternal: false }], funnelConfig: { enabled: true, startVolume: 100, stages: {} }}},
+      { id: 'bank_account', name: 'Bank Account Opening', description: 'Personal or business with AML screening', icon: '💳', industry: 'Financial Services', stageCount: 4, config: { title: 'Bank Account Opening Journey', currency: '£', stages: [{ id: 'stage-1', name: 'Application', steps: [{ id: 's1-1', name: 'Online Application', time: 20, personaId: 'customer', friction: 'low', notes: '' }, { id: 's1-2', name: 'ID Verification', time: 15, personaId: 'customer', friction: 'medium', notes: '' }]}, { id: 'stage-2', name: 'KYC', steps: [{ id: 's2-1', name: 'AML Screening', time: 30, personaId: 'compliance', friction: 'low', notes: '' }, { id: 's2-2', name: 'Risk Assessment', time: 20, personaId: 'compliance', friction: 'low', notes: '' }]}, { id: 'stage-3', name: 'Account Setup', steps: [{ id: 's3-1', name: 'Account Creation', time: 15, personaId: 'ops', friction: 'none', notes: '' }, { id: 's3-2', name: 'Card Issuance', time: 10, personaId: 'ops', friction: 'none', notes: '' }]}, { id: 'stage-4', name: 'Activation', steps: [{ id: 's4-1', name: 'Welcome Pack', time: 10, personaId: 'ops', friction: 'none', notes: '' }, { id: 's4-2', name: 'First Login', time: 15, personaId: 'customer', friction: 'low', notes: '' }]}], personas: [{ id: 'customer', name: 'Customer', salary: 0, isExternal: true }, { id: 'compliance', name: 'Compliance', salary: 40000, isExternal: false }, { id: 'ops', name: 'Operations', salary: 28000, isExternal: false }], funnelConfig: { enabled: true, startVolume: 100, stages: {} }}},
+      { id: 'personal_loan', name: 'Personal Loan', description: 'Application to disbursement', icon: '💷', industry: 'Financial Services', stageCount: 4, config: { title: 'Personal Loan Journey', currency: '£', stages: [{ id: 'stage-1', name: 'Application', steps: [{ id: 's1-1', name: 'Loan Application', time: 20, personaId: 'customer', friction: 'low', notes: '' }, { id: 's1-2', name: 'Income Verification', time: 30, personaId: 'customer', friction: 'medium', notes: '' }]}, { id: 'stage-2', name: 'Assessment', steps: [{ id: 's2-1', name: 'Credit Check', time: 15, personaId: 'underwriter', friction: 'low', notes: '' }, { id: 's2-2', name: 'Affordability Check', time: 30, personaId: 'underwriter', friction: 'low', notes: '' }]}, { id: 'stage-3', name: 'Decision', steps: [{ id: 's3-1', name: 'Loan Decision', time: 20, personaId: 'underwriter', friction: 'low', notes: '' }, { id: 's3-2', name: 'Offer Letter', time: 15, personaId: 'ops', friction: 'none', notes: '' }]}, { id: 'stage-4', name: 'Disbursement', steps: [{ id: 's4-1', name: 'Agreement Signing', time: 15, personaId: 'customer', friction: 'low', notes: '' }, { id: 's4-2', name: 'Funds Transfer', time: 30, personaId: 'ops', friction: 'none', notes: '' }]}], personas: [{ id: 'customer', name: 'Customer', salary: 0, isExternal: true }, { id: 'underwriter', name: 'Underwriter', salary: 38000, isExternal: false }, { id: 'ops', name: 'Operations', salary: 28000, isExternal: false }], funnelConfig: { enabled: true, startVolume: 100, stages: {} }}},
+      { id: 'patient_registration', name: 'Patient Registration & Admission', description: 'Front door, insurance verification, consent', icon: '🏥', industry: 'Healthcare', stageCount: 4, config: { title: 'Patient Registration Journey', currency: '£', stages: [{ id: 'stage-1', name: 'Registration', steps: [{ id: 's1-1', name: 'Patient Arrival', time: 10, personaId: 'patient', friction: 'low', notes: '' }, { id: 's1-2', name: 'Demographics Collection', time: 15, personaId: 'receptionist', friction: 'low', notes: '' }]}, { id: 'stage-2', name: 'Verification', steps: [{ id: 's2-1', name: 'Insurance Verification', time: 20, personaId: 'admin', friction: 'medium', notes: '' }, { id: 's2-2', name: 'ID Check', time: 10, personaId: 'receptionist', friction: 'low', notes: '' }]}, { id: 'stage-3', name: 'Consent', steps: [{ id: 's3-1', name: 'Consent Forms', time: 15, personaId: 'patient', friction: 'medium', notes: '' }, { id: 's3-2', name: 'GDPR Acknowledgement', time: 5, personaId: 'patient', friction: 'low', notes: '' }]}, { id: 'stage-4', name: 'Admission', steps: [{ id: 's4-1', name: 'Triage', time: 20, personaId: 'nurse', friction: 'low', notes: '' }, { id: 's4-2', name: 'Ward Allocation', time: 15, personaId: 'admin', friction: 'low', notes: '' }]}], personas: [{ id: 'patient', name: 'Patient', salary: 0, isExternal: true }, { id: 'receptionist', name: 'Receptionist', salary: 24000, isExternal: false }, { id: 'admin', name: 'Admin', salary: 28000, isExternal: false }, { id: 'nurse', name: 'Nurse', salary: 35000, isExternal: false }], funnelConfig: { enabled: true, startVolume: 100, stages: {} }}},
+      { id: 'patient_referral', name: 'Patient Referral', description: 'NHS/private pathway tracking', icon: '📋', industry: 'Healthcare', stageCount: 4, config: { title: 'Patient Referral Journey', currency: '£', stages: [{ id: 'stage-1', name: 'Referral', steps: [{ id: 's1-1', name: 'GP Consultation', time: 30, personaId: 'gp', friction: 'low', notes: '' }, { id: 's1-2', name: 'Referral Submission', time: 15, personaId: 'gp', friction: 'low', notes: '' }]}, { id: 'stage-2', name: 'Triage', steps: [{ id: 's2-1', name: 'Referral Review', time: 20, personaId: 'consultant', friction: 'low', notes: '' }, { id: 's2-2', name: 'Priority Assignment', time: 10, personaId: 'admin', friction: 'low', notes: '' }]}, { id: 'stage-3', name: 'Scheduling', steps: [{ id: 's3-1', name: 'Appointment Booking', time: 15, personaId: 'admin', friction: 'medium', notes: '' }, { id: 's3-2', name: 'Patient Notification', time: 10, personaId: 'admin', friction: 'low', notes: '' }]}, { id: 'stage-4', name: 'Consultation', steps: [{ id: 's4-1', name: 'Specialist Appointment', time: 45, personaId: 'consultant', friction: 'low', notes: '' }, { id: 's4-2', name: 'Treatment Plan', time: 30, personaId: 'consultant', friction: 'low', notes: '' }]}], personas: [{ id: 'patient', name: 'Patient', salary: 0, isExternal: true }, { id: 'gp', name: 'GP', salary: 0, isExternal: true }, { id: 'consultant', name: 'Consultant', salary: 100000, isExternal: false }, { id: 'admin', name: 'Admin', salary: 26000, isExternal: false }], funnelConfig: { enabled: true, startVolume: 100, stages: {} }}},
+      { id: 'employee_onboarding', name: 'Employee Onboarding', description: 'Offer acceptance to full productivity', icon: '👋', industry: 'HR / People Operations', stageCount: 6, config: { title: 'Employee Onboarding Journey', currency: '£', stages: [{ id: 'stage-1', name: 'Pre-boarding', steps: [{ id: 's1-1', name: 'Send Offer Letter', time: 30, personaId: 'hr', friction: 'none', notes: '' }, { id: 's1-2', name: 'Contract Signed', time: 15, personaId: 'new-hire', friction: 'low', notes: '' }, { id: 's1-3', name: 'Right to Work Check', time: 30, personaId: 'hr', friction: 'medium', notes: '' }]}, { id: 'stage-2', name: 'IT Setup', steps: [{ id: 's2-1', name: 'Create Accounts', time: 45, personaId: 'it', friction: 'low', notes: '' }, { id: 's2-2', name: 'Provision Equipment', time: 60, personaId: 'it', friction: 'medium', notes: '' }]}, { id: 'stage-3', name: 'First Day', steps: [{ id: 's3-1', name: 'Welcome & Tour', time: 45, personaId: 'hr', friction: 'none', notes: '' }, { id: 's3-2', name: 'IT Handover', time: 30, personaId: 'it', friction: 'low', notes: '' }, { id: 's3-3', name: 'Team Introductions', time: 30, personaId: 'manager', friction: 'none', notes: '' }]}, { id: 'stage-4', name: 'First Week', steps: [{ id: 's4-1', name: 'Company Induction', time: 120, personaId: 'hr', friction: 'low', notes: '' }, { id: 's4-2', name: 'Role Training', time: 180, personaId: 'manager', friction: 'low', notes: '' }]}, { id: 'stage-5', name: 'First Month', steps: [{ id: 's5-1', name: 'Compliance Training', time: 240, personaId: 'new-hire', friction: 'medium', notes: '' }, { id: 's5-2', name: '30-Day Review', time: 45, personaId: 'manager', friction: 'low', notes: '' }]}, { id: 'stage-6', name: 'Probation', steps: [{ id: 's6-1', name: '90-Day Review', time: 60, personaId: 'manager', friction: 'low', notes: '' }, { id: 's6-2', name: 'Probation Sign-off', time: 30, personaId: 'hr', friction: 'low', notes: '' }]}], personas: [{ id: 'new-hire', name: 'New Hire', salary: 40000, isExternal: false }, { id: 'manager', name: 'Manager', salary: 65000, isExternal: false }, { id: 'hr', name: 'HR', salary: 32000, isExternal: false }, { id: 'it', name: 'IT', salary: 35000, isExternal: false }], funnelConfig: { enabled: true, startVolume: 50, stages: {} }}},
+      { id: 'recruitment', name: 'Recruitment & Hiring', description: 'Requisition to offer acceptance', icon: '🎯', industry: 'HR / People Operations', stageCount: 5, config: { title: 'Recruitment Journey', currency: '£', stages: [{ id: 'stage-1', name: 'Requisition', steps: [{ id: 's1-1', name: 'Hiring Need', time: 30, personaId: 'manager', friction: 'none', notes: '' }, { id: 's1-2', name: 'Job Description', time: 60, personaId: 'recruiter', friction: 'low', notes: '' }]}, { id: 'stage-2', name: 'Sourcing', steps: [{ id: 's2-1', name: 'Post to Job Boards', time: 30, personaId: 'recruiter', friction: 'none', notes: '' }, { id: 's2-2', name: 'Direct Sourcing', time: 180, personaId: 'recruiter', friction: 'medium', notes: '' }]}, { id: 'stage-3', name: 'Screening', steps: [{ id: 's3-1', name: 'CV Review', time: 120, personaId: 'recruiter', friction: 'medium', notes: '' }, { id: 's3-2', name: 'Phone Screens', time: 180, personaId: 'recruiter', friction: 'low', notes: '' }]}, { id: 'stage-4', name: 'Interviews', steps: [{ id: 's4-1', name: 'First Round', time: 60, personaId: 'manager', friction: 'low', notes: '' }, { id: 's4-2', name: 'Final Round', time: 90, personaId: 'manager', friction: 'low', notes: '' }]}, { id: 'stage-5', name: 'Offer', steps: [{ id: 's5-1', name: 'References', time: 60, personaId: 'recruiter', friction: 'medium', notes: '' }, { id: 's5-2', name: 'Offer & Negotiation', time: 45, personaId: 'recruiter', friction: 'medium', notes: '' }]}], personas: [{ id: 'candidate', name: 'Candidate', salary: 0, isExternal: true }, { id: 'manager', name: 'Hiring Manager', salary: 65000, isExternal: false }, { id: 'recruiter', name: 'Recruiter', salary: 38000, isExternal: false }], funnelConfig: { enabled: true, startVolume: 150, stages: {} }}},
+      { id: 'employee_offboarding', name: 'Employee Offboarding', description: 'Knowledge transfer, access revocation, exit', icon: '👋', industry: 'HR / People Operations', stageCount: 4, config: { title: 'Employee Offboarding Journey', currency: '£', stages: [{ id: 'stage-1', name: 'Resignation', steps: [{ id: 's1-1', name: 'Resignation Received', time: 15, personaId: 'manager', friction: 'none', notes: '' }, { id: 's1-2', name: 'HR Notification', time: 10, personaId: 'hr', friction: 'none', notes: '' }]}, { id: 'stage-2', name: 'Knowledge Transfer', steps: [{ id: 's2-1', name: 'Documentation', time: 120, personaId: 'leaver', friction: 'medium', notes: '' }, { id: 's2-2', name: 'Handover Meetings', time: 90, personaId: 'leaver', friction: 'low', notes: '' }]}, { id: 'stage-3', name: 'Access Revocation', steps: [{ id: 's3-1', name: 'System Access Removal', time: 30, personaId: 'it', friction: 'low', notes: '' }, { id: 's3-2', name: 'Equipment Return', time: 30, personaId: 'leaver', friction: 'low', notes: '' }]}, { id: 'stage-4', name: 'Exit', steps: [{ id: 's4-1', name: 'Exit Interview', time: 45, personaId: 'hr', friction: 'low', notes: '' }, { id: 's4-2', name: 'Final Payroll', time: 30, personaId: 'hr', friction: 'low', notes: '' }]}], personas: [{ id: 'leaver', name: 'Departing Employee', salary: 45000, isExternal: false }, { id: 'manager', name: 'Manager', salary: 60000, isExternal: false }, { id: 'hr', name: 'HR', salary: 32000, isExternal: false }, { id: 'it', name: 'IT', salary: 35000, isExternal: false }], funnelConfig: { enabled: false, startVolume: 100, stages: {} }}},
+      { id: 'property_purchase', name: 'Property Purchase', description: 'Conveyancing from offer to completion', icon: '🏡', industry: 'Property & Real Estate', stageCount: 5, config: { title: 'Property Purchase Journey', currency: '£', stages: [{ id: 'stage-1', name: 'Offer', steps: [{ id: 's1-1', name: 'Offer Accepted', time: 15, personaId: 'buyer', friction: 'none', notes: '' }, { id: 's1-2', name: 'Instruct Solicitor', time: 30, personaId: 'buyer', friction: 'low', notes: '' }]}, { id: 'stage-2', name: 'Searches', steps: [{ id: 's2-1', name: 'Local Authority Search', time: 60, personaId: 'solicitor', friction: 'low', notes: '' }, { id: 's2-2', name: 'Environmental Search', time: 45, personaId: 'solicitor', friction: 'low', notes: '' }]}, { id: 'stage-3', name: 'Survey', steps: [{ id: 's3-1', name: 'Survey Booked', time: 30, personaId: 'buyer', friction: 'low', notes: '' }, { id: 's3-2', name: 'Survey Report', time: 120, personaId: 'surveyor', friction: 'medium', notes: '' }]}, { id: 'stage-4', name: 'Exchange', steps: [{ id: 's4-1', name: 'Contract Review', time: 60, personaId: 'solicitor', friction: 'medium', notes: '' }, { id: 's4-2', name: 'Exchange of Contracts', time: 30, personaId: 'solicitor', friction: 'low', notes: '' }]}, { id: 'stage-5', name: 'Completion', steps: [{ id: 's5-1', name: 'Final Checks', time: 30, personaId: 'solicitor', friction: 'low', notes: '' }, { id: 's5-2', name: 'Key Handover', time: 30, personaId: 'agent', friction: 'none', notes: '' }]}], personas: [{ id: 'buyer', name: 'Buyer', salary: 0, isExternal: true }, { id: 'solicitor', name: 'Solicitor', salary: 0, isExternal: true }, { id: 'surveyor', name: 'Surveyor', salary: 0, isExternal: true }, { id: 'agent', name: 'Estate Agent', salary: 0, isExternal: true }], funnelConfig: { enabled: true, startVolume: 100, stages: {} }}},
+      { id: 'tenant_move_in', name: 'Tenant Move-In', description: 'References, contracts, key handover', icon: '🔑', industry: 'Property & Real Estate', stageCount: 4, config: { title: 'Tenant Move-In Journey', currency: '£', stages: [{ id: 'stage-1', name: 'Application', steps: [{ id: 's1-1', name: 'Viewing', time: 30, personaId: 'tenant', friction: 'low', notes: '' }, { id: 's1-2', name: 'Application Form', time: 20, personaId: 'tenant', friction: 'low', notes: '' }]}, { id: 'stage-2', name: 'Referencing', steps: [{ id: 's2-1', name: 'Credit Check', time: 30, personaId: 'agent', friction: 'low', notes: '' }, { id: 's2-2', name: 'Employer Reference', time: 60, personaId: 'agent', friction: 'medium', notes: '' }]}, { id: 'stage-3', name: 'Contract', steps: [{ id: 's3-1', name: 'AST Preparation', time: 30, personaId: 'agent', friction: 'low', notes: '' }, { id: 's3-2', name: 'Contract Signing', time: 30, personaId: 'tenant', friction: 'low', notes: '' }]}, { id: 'stage-4', name: 'Move-In', steps: [{ id: 's4-1', name: 'Inventory Check', time: 60, personaId: 'agent', friction: 'low', notes: '' }, { id: 's4-2', name: 'Key Handover', time: 30, personaId: 'agent', friction: 'none', notes: '' }]}], personas: [{ id: 'tenant', name: 'Tenant', salary: 0, isExternal: true }, { id: 'agent', name: 'Letting Agent', salary: 28000, isExternal: false }, { id: 'landlord', name: 'Landlord', salary: 0, isExternal: true }], funnelConfig: { enabled: true, startVolume: 100, stages: {} }}},
+      { id: 'legal_client_intake', name: 'Client Intake (Law Firm)', description: 'Conflict checks, engagement letters, AML/KYC', icon: '⚖️', industry: 'Legal & Professional Services', stageCount: 4, config: { title: 'Legal Client Intake Journey', currency: '£', stages: [{ id: 'stage-1', name: 'Enquiry', steps: [{ id: 's1-1', name: 'Initial Contact', time: 15, personaId: 'client', friction: 'none', notes: '' }, { id: 's1-2', name: 'Matter Assessment', time: 30, personaId: 'partner', friction: 'low', notes: '' }]}, { id: 'stage-2', name: 'Conflict Check', steps: [{ id: 's2-1', name: 'Conflict Search', time: 20, personaId: 'admin', friction: 'low', notes: '' }, { id: 's2-2', name: 'Partner Sign-off', time: 15, personaId: 'partner', friction: 'low', notes: '' }]}, { id: 'stage-3', name: 'KYC/AML', steps: [{ id: 's3-1', name: 'ID Collection', time: 30, personaId: 'client', friction: 'medium', notes: '' }, { id: 's3-2', name: 'AML Check', time: 30, personaId: 'compliance', friction: 'low', notes: '' }]}, { id: 'stage-4', name: 'Engagement', steps: [{ id: 's4-1', name: 'Engagement Letter', time: 30, personaId: 'admin', friction: 'low', notes: '' }, { id: 's4-2', name: 'Retainer Receipt', time: 15, personaId: 'admin', friction: 'low', notes: '' }]}], personas: [{ id: 'client', name: 'Client', salary: 0, isExternal: true }, { id: 'partner', name: 'Partner', salary: 150000, isExternal: false }, { id: 'admin', name: 'Admin', salary: 28000, isExternal: false }, { id: 'compliance', name: 'Compliance', salary: 45000, isExternal: false }], funnelConfig: { enabled: true, startVolume: 100, stages: {} }}},
+      { id: 'contract_lifecycle', name: 'Contract Lifecycle', description: 'Request, negotiation, approval, execution', icon: '📝', industry: 'Legal & Professional Services', stageCount: 5, config: { title: 'Contract Lifecycle Journey', currency: '£', stages: [{ id: 'stage-1', name: 'Request', steps: [{ id: 's1-1', name: 'Contract Request', time: 15, personaId: 'requestor', friction: 'low', notes: '' }, { id: 's1-2', name: 'Requirements Gathering', time: 30, personaId: 'legal', friction: 'low', notes: '' }]}, { id: 'stage-2', name: 'Drafting', steps: [{ id: 's2-1', name: 'Draft Contract', time: 120, personaId: 'legal', friction: 'medium', notes: '' }, { id: 's2-2', name: 'Internal Review', time: 60, personaId: 'legal', friction: 'low', notes: '' }]}, { id: 'stage-3', name: 'Negotiation', steps: [{ id: 's3-1', name: 'Send to Counterparty', time: 15, personaId: 'legal', friction: 'none', notes: '' }, { id: 's3-2', name: 'Redline Review', time: 90, personaId: 'legal', friction: 'medium', notes: '' }]}, { id: 'stage-4', name: 'Approval', steps: [{ id: 's4-1', name: 'Finance Review', time: 30, personaId: 'finance', friction: 'low', notes: '' }, { id: 's4-2', name: 'Final Approval', time: 30, personaId: 'approver', friction: 'low', notes: '' }]}, { id: 'stage-5', name: 'Execution', steps: [{ id: 's5-1', name: 'Signature', time: 30, personaId: 'approver', friction: 'low', notes: '' }, { id: 's5-2', name: 'Archival', time: 15, personaId: 'legal', friction: 'none', notes: '' }]}], personas: [{ id: 'requestor', name: 'Requestor', salary: 50000, isExternal: false }, { id: 'legal', name: 'Legal Counsel', salary: 85000, isExternal: false }, { id: 'finance', name: 'Finance', salary: 55000, isExternal: false }, { id: 'approver', name: 'Approver', salary: 75000, isExternal: false }], funnelConfig: { enabled: false, startVolume: 100, stages: {} }}},
+      { id: 'saas_onboarding', name: 'Customer Onboarding (SaaS)', description: 'Implementation to go-live', icon: '🚀', industry: 'B2B / SaaS', stageCount: 5, config: { title: 'Customer Onboarding Journey', currency: '£', stages: [{ id: 'stage-1', name: 'Handoff', steps: [{ id: 's1-1', name: 'Sales Handoff', time: 30, personaId: 'sales', friction: 'low', notes: '' }, { id: 's1-2', name: 'Kickoff Call', time: 60, personaId: 'csm', friction: 'none', notes: '' }]}, { id: 'stage-2', name: 'Setup', steps: [{ id: 's2-1', name: 'Account Configuration', time: 120, personaId: 'csm', friction: 'medium', notes: '' }, { id: 's2-2', name: 'Integration Setup', time: 180, personaId: 'tech', friction: 'high', notes: '' }]}, { id: 'stage-3', name: 'Training', steps: [{ id: 's3-1', name: 'Admin Training', time: 90, personaId: 'csm', friction: 'low', notes: '' }, { id: 's3-2', name: 'User Training', time: 120, personaId: 'csm', friction: 'low', notes: '' }]}, { id: 'stage-4', name: 'Go-Live', steps: [{ id: 's4-1', name: 'UAT', time: 60, personaId: 'customer', friction: 'medium', notes: '' }, { id: 's4-2', name: 'Production Launch', time: 30, personaId: 'tech', friction: 'low', notes: '' }]}, { id: 'stage-5', name: 'Success', steps: [{ id: 's5-1', name: '30-Day Check-in', time: 30, personaId: 'csm', friction: 'none', notes: '' }, { id: 's5-2', name: 'Success Review', time: 45, personaId: 'csm', friction: 'none', notes: '' }]}], personas: [{ id: 'customer', name: 'Customer', salary: 0, isExternal: true }, { id: 'sales', name: 'Sales Rep', salary: 55000, isExternal: false }, { id: 'csm', name: 'CSM', salary: 45000, isExternal: false }, { id: 'tech', name: 'Implementation', salary: 50000, isExternal: false }], funnelConfig: { enabled: true, startVolume: 100, stages: {} }}},
+      { id: 'vendor_onboarding', name: 'Vendor/Supplier Onboarding', description: 'Due diligence, contracting, setup', icon: '🤝', industry: 'B2B / SaaS', stageCount: 4, config: { title: 'Vendor Onboarding Journey', currency: '£', stages: [{ id: 'stage-1', name: 'Request', steps: [{ id: 's1-1', name: 'Vendor Request', time: 20, personaId: 'requestor', friction: 'low', notes: '' }, { id: 's1-2', name: 'Initial Assessment', time: 30, personaId: 'procurement', friction: 'low', notes: '' }]}, { id: 'stage-2', name: 'Due Diligence', steps: [{ id: 's2-1', name: 'Risk Assessment', time: 60, personaId: 'risk', friction: 'medium', notes: '' }, { id: 's2-2', name: 'Security Review', time: 90, personaId: 'security', friction: 'medium', notes: '' }]}, { id: 'stage-3', name: 'Contracting', steps: [{ id: 's3-1', name: 'Contract Negotiation', time: 120, personaId: 'legal', friction: 'medium', notes: '' }, { id: 's3-2', name: 'Contract Execution', time: 30, personaId: 'legal', friction: 'low', notes: '' }]}, { id: 'stage-4', name: 'Setup', steps: [{ id: 's4-1', name: 'System Setup', time: 60, personaId: 'procurement', friction: 'low', notes: '' }, { id: 's4-2', name: 'Payment Setup', time: 30, personaId: 'finance', friction: 'low', notes: '' }]}], personas: [{ id: 'vendor', name: 'Vendor', salary: 0, isExternal: true }, { id: 'requestor', name: 'Requestor', salary: 50000, isExternal: false }, { id: 'procurement', name: 'Procurement', salary: 45000, isExternal: false }, { id: 'legal', name: 'Legal', salary: 70000, isExternal: false }, { id: 'risk', name: 'Risk', salary: 55000, isExternal: false }, { id: 'security', name: 'Security', salary: 60000, isExternal: false }, { id: 'finance', name: 'Finance', salary: 50000, isExternal: false }], funnelConfig: { enabled: true, startVolume: 100, stages: {} }}},
+      { id: 'enterprise_sales', name: 'Enterprise Sales Cycle', description: 'Lead to closed deal with procurement', icon: '📊', industry: 'B2B / SaaS', stageCount: 6, config: { title: 'Enterprise Sales Journey', currency: '£', stages: [{ id: 'stage-1', name: 'Lead', steps: [{ id: 's1-1', name: 'Lead Qualification', time: 30, personaId: 'sdr', friction: 'low', notes: '' }, { id: 's1-2', name: 'Discovery Call', time: 45, personaId: 'ae', friction: 'low', notes: '' }]}, { id: 'stage-2', name: 'Demo', steps: [{ id: 's2-1', name: 'Product Demo', time: 60, personaId: 'ae', friction: 'low', notes: '' }, { id: 's2-2', name: 'Technical Demo', time: 90, personaId: 'se', friction: 'low', notes: '' }]}, { id: 'stage-3', name: 'Evaluation', steps: [{ id: 's3-1', name: 'POC Setup', time: 120, personaId: 'se', friction: 'medium', notes: '' }, { id: 's3-2', name: 'POC Review', time: 60, personaId: 'ae', friction: 'low', notes: '' }]}, { id: 'stage-4', name: 'Proposal', steps: [{ id: 's4-1', name: 'Proposal Creation', time: 90, personaId: 'ae', friction: 'medium', notes: '' }, { id: 's4-2', name: 'Pricing Negotiation', time: 60, personaId: 'ae', friction: 'medium', notes: '' }]}, { id: 'stage-5', name: 'Procurement', steps: [{ id: 's5-1', name: 'Security Review', time: 180, personaId: 'se', friction: 'high', notes: '' }, { id: 's5-2', name: 'Legal Review', time: 120, personaId: 'ae', friction: 'high', notes: '' }]}, { id: 'stage-6', name: 'Close', steps: [{ id: 's6-1', name: 'Contract Signature', time: 30, personaId: 'ae', friction: 'low', notes: '' }, { id: 's6-2', name: 'Handoff to CS', time: 30, personaId: 'ae', friction: 'none', notes: '' }]}], personas: [{ id: 'prospect', name: 'Prospect', salary: 0, isExternal: true }, { id: 'sdr', name: 'SDR', salary: 35000, isExternal: false }, { id: 'ae', name: 'Account Executive', salary: 65000, isExternal: false }, { id: 'se', name: 'Solutions Engineer', salary: 70000, isExternal: false }], funnelConfig: { enabled: true, startVolume: 100, stages: {} }}},
+      { id: 'grant_application', name: 'Grant Application & Award', description: 'Eligibility, assessment, disbursement', icon: '💰', industry: 'Public Sector / Government', stageCount: 5, config: { title: 'Grant Application Journey', currency: '£', stages: [{ id: 'stage-1', name: 'Application', steps: [{ id: 's1-1', name: 'Eligibility Check', time: 30, personaId: 'applicant', friction: 'low', notes: '' }, { id: 's1-2', name: 'Application Submission', time: 90, personaId: 'applicant', friction: 'high', notes: '' }]}, { id: 'stage-2', name: 'Review', steps: [{ id: 's2-1', name: 'Initial Review', time: 60, personaId: 'officer', friction: 'low', notes: '' }, { id: 's2-2', name: 'Due Diligence', time: 120, personaId: 'officer', friction: 'medium', notes: '' }]}, { id: 'stage-3', name: 'Assessment', steps: [{ id: 's3-1', name: 'Panel Review', time: 90, personaId: 'panel', friction: 'low', notes: '' }, { id: 's3-2', name: 'Decision', time: 30, personaId: 'panel', friction: 'low', notes: '' }]}, { id: 'stage-4', name: 'Award', steps: [{ id: 's4-1', name: 'Grant Agreement', time: 45, personaId: 'officer', friction: 'low', notes: '' }, { id: 's4-2', name: 'Agreement Signing', time: 30, personaId: 'applicant', friction: 'low', notes: '' }]}, { id: 'stage-5', name: 'Disbursement', steps: [{ id: 's5-1', name: 'Bank Details Verification', time: 20, personaId: 'finance', friction: 'low', notes: '' }, { id: 's5-2', name: 'Payment', time: 30, personaId: 'finance', friction: 'low', notes: '' }]}], personas: [{ id: 'applicant', name: 'Applicant', salary: 0, isExternal: true }, { id: 'officer', name: 'Grants Officer', salary: 38000, isExternal: false }, { id: 'panel', name: 'Assessment Panel', salary: 55000, isExternal: false }, { id: 'finance', name: 'Finance', salary: 35000, isExternal: false }], funnelConfig: { enabled: true, startVolume: 100, stages: {} }}},
+      { id: 'permit_license', name: 'Permit/License Application', description: 'Submission to issuance with appeals', icon: '🏛️', industry: 'Public Sector / Government', stageCount: 4, config: { title: 'Permit Application Journey', currency: '£', stages: [{ id: 'stage-1', name: 'Application', steps: [{ id: 's1-1', name: 'Form Submission', time: 45, personaId: 'applicant', friction: 'medium', notes: '' }, { id: 's1-2', name: 'Document Upload', time: 30, personaId: 'applicant', friction: 'medium', notes: '' }]}, { id: 'stage-2', name: 'Review', steps: [{ id: 's2-1', name: 'Completeness Check', time: 30, personaId: 'officer', friction: 'low', notes: '' }, { id: 's2-2', name: 'Technical Review', time: 90, personaId: 'specialist', friction: 'medium', notes: '' }]}, { id: 'stage-3', name: 'Decision', steps: [{ id: 's3-1', name: 'Assessment', time: 60, personaId: 'officer', friction: 'low', notes: '' }, { id: 's3-2', name: 'Decision Notice', time: 30, personaId: 'officer', friction: 'low', notes: '' }]}, { id: 'stage-4', name: 'Issuance', steps: [{ id: 's4-1', name: 'Fee Payment', time: 15, personaId: 'applicant', friction: 'low', notes: '' }, { id: 's4-2', name: 'Permit Issuance', time: 20, personaId: 'officer', friction: 'none', notes: '' }]}], personas: [{ id: 'applicant', name: 'Applicant', salary: 0, isExternal: true }, { id: 'officer', name: 'Licensing Officer', salary: 32000, isExternal: false }, { id: 'specialist', name: 'Technical Specialist', salary: 42000, isExternal: false }], funnelConfig: { enabled: true, startVolume: 100, stages: {} }}},
+      { id: 'complaint_handling', name: 'Complaint Handling', description: 'Receipt to resolution and learning', icon: '📣', industry: 'Operations / Service', stageCount: 4, config: { title: 'Complaint Handling Journey', currency: '£', stages: [{ id: 'stage-1', name: 'Receipt', steps: [{ id: 's1-1', name: 'Complaint Received', time: 15, personaId: 'customer', friction: 'medium', notes: '' }, { id: 's1-2', name: 'Acknowledgement', time: 10, personaId: 'agent', friction: 'none', notes: '' }]}, { id: 'stage-2', name: 'Investigation', steps: [{ id: 's2-1', name: 'Gather Information', time: 45, personaId: 'agent', friction: 'low', notes: '' }, { id: 's2-2', name: 'Root Cause Analysis', time: 60, personaId: 'manager', friction: 'medium', notes: '' }]}, { id: 'stage-3', name: 'Resolution', steps: [{ id: 's3-1', name: 'Resolution Proposal', time: 30, personaId: 'manager', friction: 'low', notes: '' }, { id: 's3-2', name: 'Customer Communication', time: 20, personaId: 'agent', friction: 'low', notes: '' }]}, { id: 'stage-4', name: 'Closure', steps: [{ id: 's4-1', name: 'Confirmation', time: 15, personaId: 'customer', friction: 'low', notes: '' }, { id: 's4-2', name: 'Learning & Improvement', time: 30, personaId: 'manager', friction: 'none', notes: '' }]}], personas: [{ id: 'customer', name: 'Customer', salary: 0, isExternal: true }, { id: 'agent', name: 'Service Agent', salary: 26000, isExternal: false }, { id: 'manager', name: 'Manager', salary: 42000, isExternal: false }], funnelConfig: { enabled: false, startVolume: 100, stages: {} }}},
+      { id: 'product_return', name: 'Product Return & Refund', description: 'E-commerce returns processing', icon: '📦', industry: 'Operations / Service', stageCount: 4, config: { title: 'Product Return Journey', currency: '£', stages: [{ id: 'stage-1', name: 'Request', steps: [{ id: 's1-1', name: 'Return Request', time: 10, personaId: 'customer', friction: 'low', notes: '' }, { id: 's1-2', name: 'RMA Issued', time: 10, personaId: 'agent', friction: 'none', notes: '' }]}, { id: 'stage-2', name: 'Return', steps: [{ id: 's2-1', name: 'Ship Return', time: 30, personaId: 'customer', friction: 'medium', notes: '' }, { id: 's2-2', name: 'Receive Return', time: 20, personaId: 'warehouse', friction: 'low', notes: '' }]}, { id: 'stage-3', name: 'Inspection', steps: [{ id: 's3-1', name: 'Quality Check', time: 15, personaId: 'warehouse', friction: 'low', notes: '' }, { id: 's3-2', name: 'Decision', time: 10, personaId: 'warehouse', friction: 'low', notes: '' }]}, { id: 'stage-4', name: 'Refund', steps: [{ id: 's4-1', name: 'Process Refund', time: 15, personaId: 'finance', friction: 'low', notes: '' }, { id: 's4-2', name: 'Confirmation', time: 5, personaId: 'agent', friction: 'none', notes: '' }]}], personas: [{ id: 'customer', name: 'Customer', salary: 0, isExternal: true }, { id: 'agent', name: 'Service Agent', salary: 24000, isExternal: false }, { id: 'warehouse', name: 'Warehouse', salary: 26000, isExternal: false }, { id: 'finance', name: 'Finance', salary: 32000, isExternal: false }], funnelConfig: { enabled: true, startVolume: 100, stages: {} }}},
+      { id: 'it_incident', name: 'IT Incident Management', description: 'Detection to resolution and PIR', icon: '🔧', industry: 'Operations / Service', stageCount: 5, config: { title: 'IT Incident Journey', currency: '£', stages: [{ id: 'stage-1', name: 'Detection', steps: [{ id: 's1-1', name: 'Incident Detected', time: 5, personaId: 'monitoring', friction: 'none', notes: '' }, { id: 's1-2', name: 'Ticket Created', time: 5, personaId: 'l1', friction: 'none', notes: '' }]}, { id: 'stage-2', name: 'Triage', steps: [{ id: 's2-1', name: 'Initial Assessment', time: 15, personaId: 'l1', friction: 'low', notes: '' }, { id: 's2-2', name: 'Priority Assignment', time: 10, personaId: 'l1', friction: 'low', notes: '' }]}, { id: 'stage-3', name: 'Resolution', steps: [{ id: 's3-1', name: 'Investigation', time: 45, personaId: 'l2', friction: 'medium', notes: '' }, { id: 's3-2', name: 'Fix Applied', time: 30, personaId: 'l2', friction: 'low', notes: '' }]}, { id: 'stage-4', name: 'Verification', steps: [{ id: 's4-1', name: 'Testing', time: 20, personaId: 'l2', friction: 'low', notes: '' }, { id: 's4-2', name: 'User Confirmation', time: 15, personaId: 'user', friction: 'low', notes: '' }]}, { id: 'stage-5', name: 'Closure', steps: [{ id: 's5-1', name: 'Documentation', time: 15, personaId: 'l2', friction: 'low', notes: '' }, { id: 's5-2', name: 'PIR (if major)', time: 60, personaId: 'manager', friction: 'medium', notes: '' }]}], personas: [{ id: 'user', name: 'User', salary: 0, isExternal: true }, { id: 'monitoring', name: 'Monitoring', salary: 0, isExternal: false }, { id: 'l1', name: 'L1 Support', salary: 28000, isExternal: false }, { id: 'l2', name: 'L2 Support', salary: 38000, isExternal: false }, { id: 'manager', name: 'IT Manager', salary: 55000, isExternal: false }], funnelConfig: { enabled: false, startVolume: 100, stages: {} }}}
+    ];
+
+    // Create Map Modal with Templates
     function CreateMapModal({ user, token, maps, onClose, onCreated }) {
+      const [step, setStep] = useState(1);
+      const [selectedTemplate, setSelectedTemplate] = useState(null);
       const [title, setTitle] = useState('');
       const [description, setDescription] = useState('');
       const [isCreating, setIsCreating] = useState(false);
       const [error, setError] = useState('');
-
+      
+      const handleSelectTemplate = (template) => {
+        setSelectedTemplate(template);
+        setTitle(template.config.title);
+        setDescription(template.description);
+        setStep(2);
+      };
+      
+      const handleBack = () => {
+        setStep(1);
+      };
+      
       const handleCreate = async () => {
-        if (!title.trim()) { setError('Please enter a title'); return; }
+        if (!title.trim() || !selectedTemplate) return;
         setIsCreating(true);
         setError('');
         
         try {
+          const templateConfig = JSON.parse(JSON.stringify(selectedTemplate.config));
           const mapId = 'map-' + Date.now();
           const now = new Date().toISOString();
           
@@ -1639,13 +1759,40 @@
           };
           
           const mapConfig = {
-            meta: { title: title.trim(), version: '1.0' },
-            funnel: { enabled: true, initialVolume: 1000, periodLabel: 'per quarter' },
-            stages: [{ id: 'stage-1', name: 'Stage 1', dropOffCount: 0, steps: [] }],
-            personas: []
+            meta: { 
+              title: title.trim(), 
+              version: '1.0',
+              template: selectedTemplate.id
+            },
+            funnel: { 
+              enabled: templateConfig.funnelConfig?.enabled || false, 
+              initialVolume: templateConfig.funnelConfig?.startVolume || 100,
+              periodLabel: 'per month'
+            },
+            personas: templateConfig.personas.map(p => ({
+              id: p.id,
+              label: p.name,
+              salary: p.salary,
+              isExternal: p.isExternal,
+              color: p.isExternal ? '#2D8A6E' : '#5B8A9A'
+            })),
+            stages: templateConfig.stages.map(stage => ({
+              id: stage.id,
+              name: stage.name,
+              dropOffCount: templateConfig.funnelConfig?.stages?.[stage.id]?.dropOff || 0,
+              steps: stage.steps.map(step => ({
+                id: step.id,
+                name: step.name,
+                owner: step.personaId,
+                timeMinutes: step.time,
+                frictionLevel: step.friction === 'high' ? 4 : step.friction === 'medium' ? 3 : step.friction === 'low' ? 2 : 1,
+                painPoints: [],
+                automationOpportunity: 'none',
+                notes: step.notes || ''
+              }))
+            }))
           };
           
-          // Save to GitHub
           await saveToGitHub(GITHUB_CONFIG.indexFile, { maps: [...maps, mapMetadata] }, token, `Create: ${title}`);
           await saveToGitHub(`${GITHUB_CONFIG.mapsPath}/${mapId}.json`, mapConfig, token, `Create config: ${title}`);
           
@@ -1655,34 +1802,159 @@
         }
         setIsCreating(false);
       };
+      
+      // Group templates by industry
+      const templatesByIndustry = JOURNEY_TEMPLATES.reduce((acc, t) => {
+        if (!acc[t.industry]) acc[t.industry] = [];
+        acc[t.industry].push(t);
+        return acc;
+      }, {});
 
       return (
         <div className="modal-overlay" onClick={onClose}>
-          <div className="modal" onClick={e => e.stopPropagation()}>
-            <div className="modal-content">
-              <div className="modal-header">
-                <h2 className="modal-title">Create New Map</h2>
-                <button className="modal-close" onClick={onClose}>×</button>
+          <div className="modal" onClick={e => e.stopPropagation()} style={{ maxWidth: step === 1 ? '520px' : '480px', width: '95%' }}>
+            <div className="modal-content" style={{ padding: '32px' }}>
+              {/* Header */}
+              <div style={{ display: 'flex', alignItems: 'center', gap: '16px', marginBottom: '24px' }}>
+                {step === 2 && (
+                  <button onClick={handleBack} style={{ background: 'none', border: 'none', cursor: 'pointer', fontSize: '18px', color: 'var(--slate-400)', padding: '4px' }}>
+                    ←
+                  </button>
+                )}
+                <h2 className="modal-title" style={{ margin: 0 }}>
+                  {step === 1 ? 'Choose a Template' : 'Customise Your Map'}
+                </h2>
+                <button className="modal-close" onClick={onClose} style={{ marginLeft: 'auto' }}>×</button>
               </div>
               
               {error && <div style={{ padding: '10px 12px', background: 'var(--error-light)', borderRadius: '8px', marginBottom: '16px', color: 'var(--error)', fontSize: '13px' }}>{error}</div>}
               
-              <div style={{ marginBottom: '16px' }}>
-                <label className="label">Map Title</label>
-                <input type="text" className="input" value={title} onChange={e => setTitle(e.target.value)} placeholder="Client Onboarding Journey" autoFocus />
-              </div>
-              
-              <div style={{ marginBottom: '20px' }}>
-                <label className="label">Description</label>
-                <textarea className="input" value={description} onChange={e => setDescription(e.target.value)} placeholder="Brief description..." rows={3} style={{ resize: 'vertical' }} />
-              </div>
-              
-              <div style={{ display: 'flex', gap: '8px' }}>
-                <button onClick={handleCreate} className="btn btn-primary" disabled={isCreating}>
-                  {isCreating ? 'Creating...' : 'Create Map'}
-                </button>
-                <button onClick={onClose} className="btn btn-secondary">Cancel</button>
-              </div>
+              {step === 1 ? (
+                <>
+                  <p style={{ color: 'var(--slate-500)', marginBottom: '20px', fontSize: '14px' }}>
+                    Start with a pre-built template or create from scratch.
+                  </p>
+                  
+                  {/* Blank Canvas */}
+                  <button
+                    onClick={() => handleSelectTemplate(JOURNEY_TEMPLATES.find(t => t.id === 'blank'))}
+                    style={{
+                      display: 'flex',
+                      alignItems: 'center',
+                      gap: '16px',
+                      width: '100%',
+                      padding: '14px 18px',
+                      background: 'var(--slate-50)',
+                      border: '2px dashed var(--slate-300)',
+                      borderRadius: '10px',
+                      cursor: 'pointer',
+                      textAlign: 'left',
+                      marginBottom: '20px',
+                      transition: 'all 0.15s',
+                      fontFamily: 'inherit'
+                    }}
+                    onMouseOver={(e) => { e.currentTarget.style.borderColor = 'var(--steel-400)'; e.currentTarget.style.background = 'var(--steel-100)'; }}
+                    onMouseOut={(e) => { e.currentTarget.style.borderColor = 'var(--slate-300)'; e.currentTarget.style.background = 'var(--slate-50)'; }}
+                  >
+                    <div style={{ fontSize: '24px' }}>📄</div>
+                    <div style={{ flex: 1 }}>
+                      <div style={{ fontWeight: 600, color: 'var(--navy-700)', fontSize: '14px' }}>Blank Canvas</div>
+                      <div style={{ fontSize: '12px', color: 'var(--slate-500)' }}>Start from scratch</div>
+                    </div>
+                    <div style={{ color: 'var(--slate-400)', fontSize: '16px' }}>→</div>
+                  </button>
+                  
+                  {/* Template List */}
+                  <div style={{ maxHeight: '380px', overflowY: 'auto', marginRight: '-8px', paddingRight: '8px' }}>
+                    {Object.entries(templatesByIndustry).filter(([industry]) => industry !== 'Any').map(([industry, templates]) => (
+                      <div key={industry} style={{ marginBottom: '16px' }}>
+                        <h3 style={{ fontSize: '10px', fontWeight: 600, color: 'var(--slate-400)', textTransform: 'uppercase', letterSpacing: '1px', marginBottom: '6px', paddingLeft: '4px' }}>
+                          {industry}
+                        </h3>
+                        <div style={{ display: 'flex', flexDirection: 'column', gap: '2px' }}>
+                          {templates.map(template => (
+                            <button
+                              key={template.id}
+                              onClick={() => handleSelectTemplate(template)}
+                              style={{
+                                display: 'flex',
+                                alignItems: 'center',
+                                gap: '10px',
+                                width: '100%',
+                                padding: '10px 12px',
+                                background: '#FFF',
+                                border: '1px solid transparent',
+                                borderRadius: '6px',
+                                cursor: 'pointer',
+                                textAlign: 'left',
+                                transition: 'all 0.1s',
+                                fontFamily: 'inherit'
+                              }}
+                              onMouseOver={(e) => { e.currentTarget.style.background = 'var(--slate-50)'; e.currentTarget.style.borderColor = 'var(--slate-200)'; }}
+                              onMouseOut={(e) => { e.currentTarget.style.background = '#FFF'; e.currentTarget.style.borderColor = 'transparent'; }}
+                            >
+                              <div style={{ fontSize: '18px', width: '24px', textAlign: 'center' }}>{template.icon}</div>
+                              <div style={{ flex: 1, minWidth: 0 }}>
+                                <div style={{ fontWeight: 500, color: 'var(--navy-700)', fontSize: '13px' }}>{template.name}</div>
+                              </div>
+                              <div style={{ fontSize: '11px', color: 'var(--slate-400)', whiteSpace: 'nowrap' }}>
+                                {template.stageCount} stages
+                              </div>
+                              <div style={{ color: 'var(--slate-300)', fontSize: '12px' }}>›</div>
+                            </button>
+                          ))}
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+                </>
+              ) : (
+                <>
+                  {/* Selected Template Preview */}
+                  <div style={{ display: 'flex', alignItems: 'center', gap: '14px', padding: '14px', background: 'var(--slate-50)', borderRadius: '10px', marginBottom: '20px' }}>
+                    <div style={{ fontSize: '32px' }}>{selectedTemplate.icon}</div>
+                    <div>
+                      <div style={{ fontWeight: 600, color: 'var(--navy-700)', marginBottom: '2px', fontSize: '14px' }}>{selectedTemplate.name}</div>
+                      <div style={{ fontSize: '12px', color: 'var(--slate-500)' }}>
+                        {selectedTemplate.id === 'blank' ? 'Empty template' : `${selectedTemplate.stageCount} stages • ${selectedTemplate.config.personas.length} roles`}
+                      </div>
+                    </div>
+                  </div>
+                  
+                  <div style={{ marginBottom: '16px' }}>
+                    <label className="label">Map Title</label>
+                    <input
+                      type="text"
+                      className="input"
+                      value={title}
+                      onChange={(e) => setTitle(e.target.value)}
+                      placeholder="e.g., Client Onboarding Journey"
+                      autoFocus
+                    />
+                  </div>
+                  
+                  <div style={{ marginBottom: '24px' }}>
+                    <label className="label">Description <span style={{ fontWeight: 400, color: 'var(--slate-400)' }}>(optional)</span></label>
+                    <textarea
+                      className="input"
+                      value={description}
+                      onChange={(e) => setDescription(e.target.value)}
+                      placeholder="Brief description of this journey map"
+                      rows={3}
+                      style={{ resize: 'vertical' }}
+                    />
+                  </div>
+                  
+                  <div style={{ display: 'flex', gap: '10px' }}>
+                    <button onClick={onClose} className="btn btn-secondary" style={{ flex: 1 }}>
+                      Cancel
+                    </button>
+                    <button onClick={handleCreate} className="btn btn-primary" style={{ flex: 1 }} disabled={!title.trim() || isCreating}>
+                      {isCreating ? 'Creating...' : 'Create Map'}
+                    </button>
+                  </div>
+                </>
+              )}
             </div>
           </div>
         </div>
