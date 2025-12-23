@@ -164,9 +164,6 @@
       min-height: 100vh;
       display: flex;
       flex-direction: column;
-      width: 100%;
-      max-width: 100%;
-      overflow-x: hidden;
     }
     .page-container::before {
       content: '';
@@ -184,8 +181,6 @@
       position: sticky;
       top: 0;
       z-index: 100;
-      flex-shrink: 0;
-      width: 100%;
     }
     .nav::before {
       content: '';
@@ -194,6 +189,7 @@
       background: url('https://steveyoung74.github.io/journeymaps/topography-dark.svg') center/600px 600px repeat;
       opacity: 1;
       pointer-events: none;
+      z-index: 0;
     }
     .nav-inner {
       max-width: 1200px;
@@ -337,14 +333,11 @@
     /* Main Content */
     main {
       flex: 1;
-      padding: 20px 16px;
-      width: 100%;
-      max-width: 100%;
+      padding: 32px 24px;
     }
     .main-inner {
       max-width: 1200px;
       margin: 0 auto;
-      width: 100%;
     }
     
     /* Dashboard Header */
@@ -518,16 +511,36 @@
     }
     
     /* Footer */
-    footer {
-      padding: 20px 16px;
-      text-align: center;
-      color: var(--slate-400);
-      font-size: 12px;
-      border-top: 1px solid var(--slate-200);
-      background: #FFF;
+    .footer {
+      background: var(--navy-950);
+      color: rgba(255,255,255,0.4);
+      padding: 32px 24px;
     }
-    footer a { color: var(--steel-500); text-decoration: none; }
-    footer a:hover { text-decoration: underline; }
+    .footer-inner {
+      max-width: 1200px;
+      margin: 0 auto;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      flex-wrap: wrap;
+      gap: 16px;
+    }
+    .footer-brand {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+    }
+    .footer-logo {
+      height: 20px;
+      opacity: 0.5;
+    }
+    .footer-version {
+      font-size: 11px;
+      opacity: 0.6;
+    }
+    .footer-copy {
+      font-size: 13px;
+    }
     
     /* Dropdown */
     .dropdown {
@@ -1066,11 +1079,14 @@
           </main>
 
           {/* Footer */}
-          <footer>
-            <p>FATHOM · See what your journeys really cost</p>
-            <p style={{ marginTop: '4px' }}>
-              <a href="about.html">About</a> · <a href="whats-new.html">What's New</a>
-            </p>
+          <footer className="footer">
+            <div className="footer-inner">
+              <div className="footer-brand">
+                <img src="https://steveyoung74.github.io/journeymaps/logo_light.png" alt="Fathom" className="footer-logo" />
+                <span className="footer-version">v8.8.0</span>
+              </div>
+              <div className="footer-copy">© 2025 Fathom · Journey intelligence for modern operations</div>
+            </div>
           </footer>
 
           {/* Token Modal */}
