@@ -836,6 +836,8 @@
       const [showTokenModal, setShowTokenModal] = useState(false);
       const [activeTab, setActiveTab] = useState('my-maps');
       const [showMobileMenu, setShowMobileMenu] = useState(false);
+      const [manageMode, setManageMode] = useState(false);
+      const [selectedMaps, setSelectedMaps] = useState(new Set());
 
       useEffect(() => {
         window.scrollTo(0, 0);
@@ -1152,8 +1154,80 @@
       const sharedMaps = maps.filter(m => m.owner !== user.email && m.sharedWith?.some(s => s.email === user.email));
       
       const openMap = (mapId) => {
+        if (manageMode) return; // Don't open in manage mode
         const map = maps.find(m => m.id === mapId);
-        window.location.href = `editor.html?map=${mapId}&title=${encodeURIComponent(map?.title || 'Journey Map')}`;
+        const title = mapConfigs[mapId]?.meta?.title || map?.title || 'Journey Map';
+        window.location.href = `editor.html?map=${mapId}&title=${encodeURIComponent(title)}`;
+      };
+
+      // Manage mode functions
+      const toggleSelectMap = (mapId) => {
+        const newSelected = new Set(selectedMaps);
+        if (newSelected.has(mapId)) {
+          newSelected.delete(mapId);
+        } else {
+          newSelected.add(mapId);
+        }
+        setSelectedMaps(newSelected);
+      };
+
+      const toggleFavourite = async (mapId) => {
+        const map = maps.find(m => m.id === mapId);
+        if (!map) return;
+        try {
+          const updatedMap = { ...map, favourite: !map.favourite };
+          const updatedMaps = maps.map(m => m.id === mapId ? updatedMap : m);
+          await saveToGitHub(GITHUB_CONFIG.indexFile, { maps: updatedMaps }, token, `Toggle favourite: ${map.title}`);
+          setMaps(updatedMaps);
+        } catch (err) {
+          console.error('Failed to toggle favourite:', err);
+        }
+      };
+
+      const toggleLock = async (mapId) => {
+        const map = maps.find(m => m.id === mapId);
+        if (!map) return;
+        try {
+          const updatedMap = { ...map, locked: !map.locked };
+          const updatedMaps = maps.map(m => m.id === mapId ? updatedMap : m);
+          await saveToGitHub(GITHUB_CONFIG.indexFile, { maps: updatedMaps }, token, `Toggle lock: ${map.title}`);
+          setMaps(updatedMaps);
+        } catch (err) {
+          console.error('Failed to toggle lock:', err);
+        }
+      };
+
+      const deleteSelectedMaps = async () => {
+        if (selectedMaps.size === 0) return;
+        if (!confirm(`Delete ${selectedMaps.size} map(s)? This cannot be undone.`)) return;
+        
+        try {
+          const mapsToDelete = [...selectedMaps];
+          const updatedMaps = maps.filter(m => !selectedMaps.has(m.id));
+          
+          // Delete each map's config file
+          for (const mapId of mapsToDelete) {
+            try {
+              await deleteFromGitHub(`${GITHUB_CONFIG.mapsPath}/${mapId}.json`, token, `Delete map config: ${mapId}`);
+            } catch (err) {
+              console.warn(`Failed to delete config for ${mapId}:`, err);
+            }
+          }
+          
+          // Update index
+          await saveToGitHub(GITHUB_CONFIG.indexFile, { maps: updatedMaps }, token, `Delete ${mapsToDelete.length} map(s)`);
+          setMaps(updatedMaps);
+          setSelectedMaps(new Set());
+          setManageMode(false);
+        } catch (err) {
+          console.error('Failed to delete maps:', err);
+          alert('Failed to delete maps. Please try again.');
+        }
+      };
+
+      const exitManageMode = () => {
+        setManageMode(false);
+        setSelectedMaps(new Set());
       };
 
       const displayMaps = activeTab === 'my-maps' ? myMaps : sharedMaps;
@@ -1225,14 +1299,50 @@
               </div>
 
               {/* Tabs */}
-              <div className="tabs">
-                <button className={`tab-btn ${activeTab === 'my-maps' ? 'active' : ''}`} onClick={() => setActiveTab('my-maps')}>
-                  My Maps ({myMaps.length})
-                </button>
-                <button className={`tab-btn ${activeTab === 'shared' ? 'active' : ''}`} onClick={() => setActiveTab('shared')}>
-                  Shared with Me ({sharedMaps.length})
-                </button>
+              <div className="tabs" style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                <div style={{ display: 'flex', gap: '8px' }}>
+                  <button className={`tab-btn ${activeTab === 'my-maps' ? 'active' : ''}`} onClick={() => { setActiveTab('my-maps'); exitManageMode(); }}>
+                    My Maps ({myMaps.length})
+                  </button>
+                  <button className={`tab-btn ${activeTab === 'shared' ? 'active' : ''}`} onClick={() => { setActiveTab('shared'); exitManageMode(); }}>
+                    Shared with Me ({sharedMaps.length})
+                  </button>
+                </div>
+                {activeTab === 'my-maps' && token && !manageMode && (
+                  <button onClick={() => setManageMode(true)} className="btn btn-ghost" style={{ fontSize: '13px' }}>
+                    ⚙️ Manage
+                  </button>
+                )}
+                {manageMode && (
+                  <button onClick={exitManageMode} className="btn btn-ghost" style={{ fontSize: '13px' }}>
+                    ✕ Done
+                  </button>
+                )}
               </div>
+
+              {/* Manage Mode Bar */}
+              {manageMode && (
+                <div style={{ 
+                  background: 'var(--slate-100)', 
+                  padding: '12px 16px', 
+                  borderRadius: '8px', 
+                  marginBottom: '20px',
+                  display: 'flex',
+                  justifyContent: 'space-between',
+                  alignItems: 'center'
+                }}>
+                  <span style={{ fontSize: '14px', color: 'var(--slate-600)' }}>
+                    {selectedMaps.size} selected
+                  </span>
+                  <div style={{ display: 'flex', gap: '8px' }}>
+                    {selectedMaps.size > 0 && (
+                      <button onClick={deleteSelectedMaps} className="btn" style={{ background: 'var(--error)', color: '#FFF', fontSize: '13px', padding: '8px 16px' }}>
+                        🗑️ Delete Selected
+                      </button>
+                    )}
+                  </div>
+                </div>
+              )}
 
               {/* Content */}
               {loading ? (
@@ -1247,15 +1357,47 @@
                 <div className="cards-grid">
                   {displayMaps.map(map => {
                     const metrics = getMapMetrics(map.id);
+                    const isOwner = map.owner === user.email;
+                    const isSelected = selectedMaps.has(map.id);
                     return (
-                      <div key={map.id} className="card journey-card" onClick={() => openMap(map.id)}>
+                      <div 
+                        key={map.id} 
+                        className="card journey-card" 
+                        onClick={() => manageMode && isOwner ? toggleSelectMap(map.id) : openMap(map.id)}
+                        style={{ 
+                          cursor: manageMode ? (isOwner ? 'pointer' : 'not-allowed') : 'pointer',
+                          border: isSelected ? '2px solid var(--amber-500)' : '1px solid var(--slate-200)',
+                          opacity: manageMode && !isOwner ? 0.5 : 1
+                        }}
+                      >
+                        {/* Manage mode checkbox */}
+                        {manageMode && isOwner && (
+                          <div style={{ 
+                            position: 'absolute', 
+                            top: '12px', 
+                            left: '12px',
+                            width: '20px',
+                            height: '20px',
+                            borderRadius: '4px',
+                            border: isSelected ? 'none' : '2px solid var(--slate-300)',
+                            background: isSelected ? 'var(--amber-500)' : '#FFF',
+                            display: 'flex',
+                            alignItems: 'center',
+                            justifyContent: 'center',
+                            color: '#FFF',
+                            fontSize: '14px'
+                          }}>
+                            {isSelected && '✓'}
+                          </div>
+                        )}
+                        
                         <div className="journey-card-icons">
                           {map.favourite && <span title="Favourite">⭐</span>}
                           {map.locked && <span title="Locked">🔒</span>}
                         </div>
                         
-                        <h3 className="journey-card-title">{map.title}</h3>
-                        <p className="journey-card-desc">{map.description || 'No description'}</p>
+                        <h3 className="journey-card-title">{mapConfigs[map.id]?.meta?.title || map.title}</h3>
+                        <p className="journey-card-desc">{mapConfigs[map.id]?.meta?.description || map.description || 'No description'}</p>
                         
                         {metrics && (
                           <div className="journey-card-metrics">
@@ -1312,11 +1454,33 @@
                             Updated {formatDate(map.updatedAt)}
                             {map.sharedWith?.length > 0 && <span> · 👥 {map.sharedWith.length}</span>}
                           </span>
-                          {map.owner === user.email && (
+                          
+                          {/* Normal mode actions */}
+                          {!manageMode && isOwner && (
                             <div className="journey-card-actions" onClick={e => e.stopPropagation()}>
                               <button onClick={() => generateReport(map.id)} className="btn btn-ghost">📄 Report</button>
                               <button onClick={() => window.location.href = `responses.html?map=${map.id}`} className="btn btn-ghost">📊 Responses</button>
                               <button onClick={() => setShowShareModal(map.id)} className="btn btn-ghost">Share</button>
+                            </div>
+                          )}
+                          
+                          {/* Manage mode actions */}
+                          {manageMode && isOwner && (
+                            <div className="journey-card-actions" onClick={e => e.stopPropagation()}>
+                              <button 
+                                onClick={() => toggleFavourite(map.id)} 
+                                className="btn btn-ghost"
+                                title={map.favourite ? 'Remove favourite' : 'Add favourite'}
+                              >
+                                {map.favourite ? '⭐' : '☆'}
+                              </button>
+                              <button 
+                                onClick={() => toggleLock(map.id)} 
+                                className="btn btn-ghost"
+                                title={map.locked ? 'Unlock' : 'Lock'}
+                              >
+                                {map.locked ? '🔓' : '🔒'}
+                              </button>
                             </div>
                           )}
                         </div>
@@ -1374,6 +1538,7 @@
             <ShareModal
               mapId={showShareModal}
               maps={maps}
+              mapConfigs={mapConfigs}
               token={token}
               onClose={() => setShowShareModal(null)}
               onUpdated={fetchMaps}
@@ -1479,8 +1644,9 @@
     }
 
     // Share Modal (simplified)
-    function ShareModal({ mapId, maps, token, onClose, onUpdated }) {
+    function ShareModal({ mapId, maps, mapConfigs, token, onClose, onUpdated }) {
       const map = maps.find(m => m.id === mapId);
+      const displayTitle = mapConfigs?.[mapId]?.meta?.title || map?.title || 'Journey Map';
       const [email, setEmail] = useState('');
       const [permission, setPermission] = useState('view');
       const [isSharing, setIsSharing] = useState(false);
@@ -1495,7 +1661,7 @@
             sharedWith: [...(map.sharedWith || []), { email: email.trim().toLowerCase(), permission, sharedAt: new Date().toISOString() }]
           };
           const updatedMaps = maps.map(m => m.id === mapId ? updatedMap : m);
-          await saveToGitHub(GITHUB_CONFIG.indexFile, { maps: updatedMaps }, token, `Share ${map.title}`);
+          await saveToGitHub(GITHUB_CONFIG.indexFile, { maps: updatedMaps }, token, `Share ${displayTitle}`);
           onUpdated();
           setEmail('');
         } catch (err) {}
@@ -1506,7 +1672,7 @@
         try {
           const updatedMap = { ...map, sharedWith: map.sharedWith.filter(s => s.email !== emailToRemove) };
           const updatedMaps = maps.map(m => m.id === mapId ? updatedMap : m);
-          await saveToGitHub(GITHUB_CONFIG.indexFile, { maps: updatedMaps }, token, `Unshare ${map.title}`);
+          await saveToGitHub(GITHUB_CONFIG.indexFile, { maps: updatedMaps }, token, `Unshare ${displayTitle}`);
           onUpdated();
         } catch (err) {}
       };
@@ -1516,7 +1682,7 @@
           <div className="modal" onClick={e => e.stopPropagation()}>
             <div className="modal-content">
               <div className="modal-header">
-                <h2 className="modal-title">Share "{map?.title}"</h2>
+                <h2 className="modal-title">Share "{displayTitle}"</h2>
                 <button className="modal-close" onClick={onClose}>×</button>
               </div>
               
