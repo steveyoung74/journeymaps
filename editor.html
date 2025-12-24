@@ -4604,19 +4604,12 @@
       const [isMobile, setIsMobile] = useState(() => window.innerWidth < 768);
       const [isCompact, setIsCompact] = useState(() => window.innerWidth < 1024 && window.innerWidth >= 768);
       const [showCosts, setShowCosts] = useState(true);
-      const [isAppUnlocked, setIsAppUnlocked] = useState(() => {
-        return sessionStorage.getItem('journeymap-app-unlocked') === 'true';
-      });
-      const [appPasswordInput, setAppPasswordInput] = useState('');
-      const [appPasswordError, setAppPasswordError] = useState(false);
       const [passwords, setPasswords] = useState(null);
-      const [passwordsLoading, setPasswordsLoading] = useState(true);
-      const [passwordsError, setPasswordsError] = useState(null);
       const [isSettingsUnlocked, setIsSettingsUnlocked] = useState(() => {
         return localStorage.getItem('journeymap-settings-unlocked') === 'true';
       });
       
-      // Fetch passwords from GitHub on mount
+      // Fetch passwords from GitHub on mount (for settings protection only)
       React.useEffect(() => {
         const fetchPasswords = async () => {
           try {
@@ -4624,16 +4617,12 @@
             const _0x = 'u92cq5yckJ3b3N3chB3LnlmZu92YvcmbpRmch9mYu92LulWYt9ycwFWb5VmbyV3bq9CN3cmb19WelZXZ0N3Lt92YuQnblRnbvNmclNXdiVHa0l2ZucXYy9yL6MHc0RHa';
             const _l = atob(_0x.split('').reverse().join(''));
             const response = await fetch(_l);
-            if (!response.ok) {
-              throw new Error('Could not load configuration');
+            if (response.ok) {
+              const data = await response.json();
+              setPasswords(data);
             }
-            const data = await response.json();
-            setPasswords(data);
-            setPasswordsLoading(false);
           } catch (error) {
             console.error('Failed to load configuration:', error);
-            setPasswordsError(error.message);
-            setPasswordsLoading(false);
           }
         };
         fetchPasswords();
@@ -5470,20 +5459,8 @@
         }));
       }, []);
 
-      // App unlock handler
-      const handleAppUnlock = (e) => {
-        e.preventDefault();
-        if (passwords && appPasswordInput === passwords.app) {
-          sessionStorage.setItem('journeymap-app-unlocked', 'true');
-          setIsAppUnlocked(true);
-          setAppPasswordError(false);
-        } else {
-          setAppPasswordError(true);
-        }
-      };
-
-      // Loading screen while fetching passwords or config
-      if (passwordsLoading || configLoading) {
+      // Loading screen while fetching config
+      if (configLoading) {
         return (
           <div className="dark-bg" style={{
             minHeight: '100vh',
@@ -5496,138 +5473,8 @@
             <div style={{ textAlign: 'center', color: '#FFF' }}>
               <div style={{ fontSize: '24px', marginBottom: '16px' }}>Loading...</div>
               <div style={{ fontSize: '14px', opacity: 0.7, fontFamily: "'Interstate', sans-serif" }}>
-                {configLoading ? 'Loading journey...' : 'Initializing...'}
+                Loading journey...
               </div>
-            </div>
-          </div>
-        );
-      }
-
-      // Error screen if passwords failed to load
-      if (passwordsError) {
-        return (
-          <div className="dark-bg" style={{
-            minHeight: '100vh',
-            display: 'flex',
-            alignItems: 'center',
-            justifyContent: 'center',
-            background: 'linear-gradient(135deg, #0C1620 0%, #192B45 100%)',
-            fontFamily: "'Interstate', sans-serif"
-          }}>
-            <div style={{
-              background: '#FFF',
-              borderRadius: '16px',
-              padding: '48px',
-              boxShadow: '0 20px 60px rgba(0,0,0,0.3)',
-              maxWidth: '400px',
-              width: '90%',
-              textAlign: 'center'
-            }}>
-              <div style={{ fontSize: '48px', marginBottom: '16px' }}>⚠️</div>
-              <h1 style={{ margin: '0 0 8px', fontSize: '20px', fontWeight: 600, color: '#B84A5A' }}>
-                Configuration Error
-              </h1>
-              <p style={{ margin: '0 0 24px', fontSize: '14px', color: '#556275', fontFamily: "'Interstate', sans-serif" }}>
-                Could not load application configuration.<br/>
-                Please contact the administrator.
-              </p>
-              <button
-                onClick={() => window.location.reload()}
-                style={{
-                  padding: '12px 24px',
-                  fontSize: '14px',
-                  color: '#FFF',
-                  background: '#192B45',
-                  border: 'none',
-                  borderRadius: '8px',
-                  cursor: 'pointer',
-                  fontFamily: "'Interstate', sans-serif"
-                }}
-              >
-                Retry
-              </button>
-            </div>
-          </div>
-        );
-      }
-
-      // Login screen
-      if (!isAppUnlocked) {
-        return (
-          <div className="dark-bg" style={{
-            minHeight: '100vh',
-            display: 'flex',
-            alignItems: 'center',
-            justifyContent: 'center',
-            background: 'linear-gradient(135deg, #0C1620 0%, #192B45 100%)',
-            fontFamily: "'Interstate', sans-serif"
-          }}>
-            <div style={{
-              background: '#FFF',
-              borderRadius: '16px',
-              padding: '48px',
-              boxShadow: '0 20px 60px rgba(0,0,0,0.3)',
-              maxWidth: '400px',
-              width: '90%',
-              textAlign: 'center'
-            }}>
-              <img src="logo_dark.png" alt="FATHOM" style={{ height: '40px', width: 'auto', marginBottom: '16px' }} />
-              <p style={{ 
-                margin: '0 0 32px', 
-                fontSize: '14px', 
-                color: '#556275',
-                fontFamily: "'Interstate', sans-serif"
-              }}>
-                Enter password to continue
-              </p>
-              
-              <form onSubmit={handleAppUnlock}>
-                <input
-                  type="password"
-                  value={appPasswordInput}
-                  onChange={(e) => { setAppPasswordInput(e.target.value); setAppPasswordError(false); }}
-                  placeholder="Password"
-                  autoFocus
-                  style={{
-                    width: '100%',
-                    padding: '14px 16px',
-                    fontSize: '16px',
-                    border: appPasswordError ? '2px solid #B84A5A' : '1px solid #C8CED6',
-                    borderRadius: '8px',
-                    marginBottom: '16px',
-                    fontFamily: "'Interstate', sans-serif",
-                    boxSizing: 'border-box',
-                    outline: 'none'
-                  }}
-                />
-                {appPasswordError && (
-                  <p style={{ 
-                    margin: '-8px 0 16px', 
-                    fontSize: '13px', 
-                    color: '#B84A5A',
-                    fontFamily: "'Interstate', sans-serif"
-                  }}>
-                    Incorrect password
-                  </p>
-                )}
-                <button
-                  type="submit"
-                  style={{
-                    width: '100%',
-                    padding: '14px 24px',
-                    fontSize: '14px',
-                    fontWeight: 600,
-                    color: '#FFF',
-                    background: '#192B45',
-                    border: 'none',
-                    borderRadius: '8px',
-                    cursor: 'pointer',
-                    fontFamily: "'Interstate', sans-serif"
-                  }}
-                >
-                  Enter
-                </button>
-              </form>
             </div>
           </div>
         );
