@@ -33,7 +33,8 @@
       "owner": "steveyoung74@gmail.com",
       "createdAt": "2026-01-02T19:24:31.531Z",
       "updatedAt": "2026-01-02T19:24:31.531Z",
-      "sharedWith": []
+      "sharedWith": [],
+      "locked": true
     }
   ]
 }
