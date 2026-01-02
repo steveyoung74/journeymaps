@@ -4,11 +4,14 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=5.0, viewport-fit=cover">
   <title>FATHOM - Create Your Journey</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Open+Sans:wght@400;500;600;700&display=swap" rel="stylesheet">
   <script src="https://unpkg.com/react@18/umd/react.production.min.js"></script>
   <script src="https://unpkg.com/react-dom@18/umd/react-dom.production.min.js"></script>
   <script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
   <style>
-    /* Interstate Font Family */
+    /* Interstate Font Family - Brand/Display Font */
     @font-face {
       font-family: 'Interstate';
       src: url('https://steveyoung74.github.io/journeymaps/fonts/Interstate-light.ttf') format('truetype');
@@ -40,6 +43,10 @@
     
     /* CSS Custom Properties */
     :root {
+      /* Font Families */
+      --font-display: 'Interstate', -apple-system, BlinkMacSystemFont, sans-serif;
+      --font-body: 'Open Sans', -apple-system, BlinkMacSystemFont, sans-serif;
+      
       --navy-950: #0C1620;
       --navy-900: #111E2E;
       --navy-800: #15243A;
@@ -86,11 +93,16 @@
       overflow-x: hidden;
     }
     body { 
-      font-family: 'Interstate', -apple-system, BlinkMacSystemFont, sans-serif; 
+      font-family: var(--font-body); 
       background: var(--slate-50);
       color: var(--slate-900);
       line-height: 1.6;
       min-height: 100vh;
+    }
+    
+    /* Typography - Display font for headings */
+    h1, h2, h3, h4, h5, h6 {
+      font-family: var(--font-display);
     }
     
     /* Topographic Background Pattern */
