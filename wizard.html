@@ -522,13 +522,7 @@
   <nav class="nav">
     <div class="nav-inner">
       <a href="dashboard.html" class="logo">
-        <svg class="logo-icon" viewBox="0 0 40 40" fill="none">
-          <path d="M4 10 Q12 8 20 10 T36 10" stroke="#5B8A9A" stroke-width="2.5" fill="none" opacity="0.5"/>
-          <path d="M4 17 Q14 14 20 17 T36 17" stroke="#74A0AE" stroke-width="2.5" fill="none" opacity="0.65"/>
-          <path d="M4 24 Q10 27 20 24 T36 24" stroke="#96BCC7" stroke-width="2.5" fill="none" opacity="0.8"/>
-          <path d="M4 31 Q16 28 20 31 T36 31" stroke="#BDD6DE" stroke-width="2.5" fill="none" opacity="0.9"/>
-        </svg>
-        <span class="logo-text">FATHOM</span>
+        <img src="https://steveyoung74.github.io/journeymaps/logo_light.png" alt="FATHOM" style="height: 26px;" />
       </a>
       <a href="dashboard.html" class="nav-link">← Back to Dashboard</a>
     </div>
@@ -902,7 +896,7 @@ CONTEXT:
 - Industry: ${INDUSTRIES[industry]?.label || 'General'}
 - Journey Type: ${journeyType || 'Process'}
 - Complexity: ${complexity} (${COMPLEXITY_OPTIONS.find(c => c.value === complexity)?.stages})
-- Roles involved: ${roles.map(r => \`\${r.name}\${r.isExternal ? ' (external)' : ''}\`).join(', ')}
+- Roles involved: ${roles.map(r => r.name + (r.isExternal ? ' (external)' : '')).join(', ')}
 ${knownStages ? `- Key stages mentioned: ${knownStages}` : ''}
 
 Generate a JSON object with this EXACT structure (no markdown, no code blocks, just pure JSON):
@@ -976,8 +970,8 @@ IMPORTANT RULES:
               
               // Parse the JSON response
               let jsonText = content.text.trim();
-              if (jsonText.startsWith('\`\`\`')) {
-                jsonText = jsonText.replace(/^\`\`\`json?\n?/, '').replace(/\n?\`\`\`$/, '');
+              if (jsonText.startsWith('`')) {
+                jsonText = jsonText.replace(/^```json?\n?/, '').replace(/\n?```$/, '');
               }
               journeyConfig = JSON.parse(jsonText);
             }
