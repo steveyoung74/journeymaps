@@ -1461,8 +1461,11 @@
     
     // Calculate fully-loaded hourly rate including burden and workspace
     const calculateFullyLoadedRate = (persona) => {
-      if (!persona || persona.isExternal || !persona.annualSalary) return 0;
-      const baseHourly = persona.annualSalary / WORKING_HOURS_PER_YEAR;
+      if (!persona || persona.isExternal) return 0;
+      // Support both annualSalary (new format) and salary (legacy/template format)
+      const salary = persona.annualSalary || persona.salary || 0;
+      if (salary === 0) return 0;
+      const baseHourly = salary / WORKING_HOURS_PER_YEAR;
       const burdenMultiplier = persona.burdenMultiplier || 1.0;
       const workspaceHourly = persona.workspaceHourlyCost || 0;
       return (baseHourly * burdenMultiplier) + workspaceHourly;
@@ -1471,17 +1474,26 @@
     const calculateStepCost = (step, personas) => {
       let totalCost = 0;
       
-      // Labour costs (with burden and workspace)
-      if (step.roleInvolvement) {
+      // NEW FORMAT: Labour costs using roleInvolvement (with burden and workspace)
+      if (step.roleInvolvement && Object.keys(step.roleInvolvement).length > 0) {
         Object.entries(step.roleInvolvement).forEach(([roleId, involvement]) => {
           const persona = personas.find(p => p.id === roleId);
-          if (persona && !persona.isExternal && persona.annualSalary > 0) {
+          if (persona && !persona.isExternal && (persona.annualSalary > 0 || persona.salary > 0)) {
             const fullyLoadedRate = calculateFullyLoadedRate(persona);
             const hours = (involvement.timeMinutes || 0) / 60;
             const headcount = involvement.headcount || 1;
             totalCost += fullyLoadedRate * hours * headcount;
           }
         });
+      } 
+      // LEGACY FORMAT: Single owner with timeMinutes
+      else if (step.owner && step.timeMinutes > 0) {
+        const persona = personas.find(p => p.id === step.owner);
+        if (persona && !persona.isExternal && (persona.annualSalary > 0 || persona.salary > 0)) {
+          const fullyLoadedRate = calculateFullyLoadedRate(persona);
+          const hours = step.timeMinutes / 60;
+          totalCost += fullyLoadedRate * hours;
+        }
       }
       
       // Additional costs (third-party services, materials, etc.)
@@ -1496,18 +1508,30 @@
     
     // Calculate labour cost only (excluding additional costs)
     const calculateStepLabourCost = (step, personas) => {
-      if (!step.roleInvolvement) return 0;
-      
       let totalCost = 0;
-      Object.entries(step.roleInvolvement).forEach(([roleId, involvement]) => {
-        const persona = personas.find(p => p.id === roleId);
-        if (persona && !persona.isExternal && persona.annualSalary > 0) {
+      
+      // NEW FORMAT: roleInvolvement
+      if (step.roleInvolvement && Object.keys(step.roleInvolvement).length > 0) {
+        Object.entries(step.roleInvolvement).forEach(([roleId, involvement]) => {
+          const persona = personas.find(p => p.id === roleId);
+          if (persona && !persona.isExternal && (persona.annualSalary > 0 || persona.salary > 0)) {
+            const fullyLoadedRate = calculateFullyLoadedRate(persona);
+            const hours = (involvement.timeMinutes || 0) / 60;
+            const headcount = involvement.headcount || 1;
+            totalCost += fullyLoadedRate * hours * headcount;
+          }
+        });
+      }
+      // LEGACY FORMAT: Single owner with timeMinutes
+      else if (step.owner && step.timeMinutes > 0) {
+        const persona = personas.find(p => p.id === step.owner);
+        if (persona && !persona.isExternal && (persona.annualSalary > 0 || persona.salary > 0)) {
           const fullyLoadedRate = calculateFullyLoadedRate(persona);
-          const hours = (involvement.timeMinutes || 0) / 60;
-          const headcount = involvement.headcount || 1;
-          totalCost += fullyLoadedRate * hours * headcount;
+          const hours = step.timeMinutes / 60;
+          totalCost += fullyLoadedRate * hours;
         }
-      });
+      }
+      
       return totalCost;
     };
     
@@ -1707,6 +1731,43 @@
             </tbody>
           </table>
           ` : ''}
+          
+          <h2>📋 Detailed Stage Breakdown</h2>
+          ${data.stageBreakdown ? data.stageBreakdown.map(stage => `
+            <div class="stage-section">
+              <div class="stage-header-bar">
+                <span class="stage-title">${stage.name}</span>
+                <span class="stage-meta">${stage.steps.length} steps · ${formatTime(stage.totalTime)} · ${formatCurrency(stage.totalCost)}</span>
+              </div>
+              <table class="stage-table">
+                <thead>
+                  <tr>
+                    <th style="width:40px">#</th>
+                    <th style="width:200px">Step</th>
+                    <th style="width:70px" class="num">Time</th>
+                    <th style="width:70px" class="num">Cost</th>
+                    <th>Pain Points</th>
+                    <th style="width:90px" class="num">Improvement</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  ${stage.steps.map((step, idx) => `
+                    <tr>
+                      <td>${stage.index}.${idx + 1}</td>
+                      <td>
+                        <strong>${step.name}</strong>
+                        ${step.owners ? `<div class="meta">${step.owners}</div>` : ''}
+                      </td>
+                      <td class="num">${formatTime(step.timeMinutes)}</td>
+                      <td class="num">${formatCurrency(step.cost)}</td>
+                      <td>${step.painPoints && step.painPoints.length > 0 ? step.painPoints.map(pp => `<div class="pain-point">⚠ ${pp}</div>`).join('') : '—'}</td>
+                      <td class="num"><span class="badge badge-${step.automationOpportunity || 'none'}">${step.automationOpportunity || 'none'}</span></td>
+                    </tr>
+                  `).join('')}
+                </tbody>
+              </table>
+            </div>
+          `).join('') : ''}
         `;
       } else if (reportType === 'time') {
         reportSubtitle = 'Timeline Analysis';
@@ -2077,6 +2138,22 @@
     .badge-high { background: #D1FAE5; color: #059669; }
     .badge-medium { background: #FEF3C7; color: #B45309; }
     .badge-low { background: #E2E8F0; color: #64748B; }
+    .badge-none { background: #F1F5F9; color: #94A3B8; }
+    .stage-section { margin-bottom: 24px; page-break-inside: avoid; }
+    .stage-header-bar {
+      background: #2D8A6E;
+      color: #FFF;
+      padding: 10px 16px;
+      border-radius: 8px 8px 0 0;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+    .stage-title { font-weight: 600; font-size: 13px; }
+    .stage-meta { font-size: 11px; opacity: 0.85; }
+    .stage-table { border-radius: 0 0 8px 8px; overflow: hidden; }
+    .stage-table th { background: #F1F5F9; }
+    .pain-point { font-size: 11px; color: #B84A5A; margin-bottom: 2px; }
     .funnel-bars {
       margin-bottom: 24px;
     }
@@ -3330,18 +3407,63 @@
       
       // Role cost breakdown
       const roleCosts = personas.filter(p => !p.isExternal).map(persona => {
-        const totalRoleCost = allSteps.reduce((acc, step) => {
-          const involvement = step.roleInvolvement?.[persona.id];
-          if (!involvement) return acc;
-          const hourlyRate = calculateHourlyRate(persona.annualSalary || 0);
-          return acc + (involvement.timeMinutes / 60) * hourlyRate * (involvement.headcount || 1);
-        }, 0);
-        const totalRoleMinutes = allSteps.reduce((acc, step) => {
-          const involvement = step.roleInvolvement?.[persona.id];
-          return acc + (involvement?.timeMinutes || 0) * (involvement?.headcount || 1);
-        }, 0);
+        let totalRoleCost = 0;
+        let totalRoleMinutes = 0;
+        
+        allSteps.forEach(step => {
+          // NEW FORMAT: roleInvolvement
+          if (step.roleInvolvement && step.roleInvolvement[persona.id]) {
+            const involvement = step.roleInvolvement[persona.id];
+            const fullyLoadedRate = calculateFullyLoadedRate(persona);
+            const hours = (involvement.timeMinutes || 0) / 60;
+            const headcount = involvement.headcount || 1;
+            totalRoleCost += fullyLoadedRate * hours * headcount;
+            totalRoleMinutes += (involvement.timeMinutes || 0) * headcount;
+          }
+          // LEGACY FORMAT: Single owner
+          else if (step.owner === persona.id && step.timeMinutes > 0) {
+            const fullyLoadedRate = calculateFullyLoadedRate(persona);
+            const hours = step.timeMinutes / 60;
+            totalRoleCost += fullyLoadedRate * hours;
+            totalRoleMinutes += step.timeMinutes;
+          }
+        });
+        
         return { ...persona, totalCost: totalRoleCost, totalMinutes: totalRoleMinutes };
       }).filter(role => role.totalMinutes > 0).sort((a, b) => b.totalCost - a.totalCost);
+
+      // Build stage breakdown for export
+      const stageBreakdown = stages.map((stage, i) => {
+        const stageSteps = stage.steps.map(step => {
+          // Get owner labels for legacy format
+          let owners = '';
+          if (step.roleInvolvement && Object.keys(step.roleInvolvement).length > 0) {
+            owners = Object.entries(step.roleInvolvement)
+              .map(([roleId, inv]) => {
+                const persona = personas.find(p => p.id === roleId);
+                return persona?.label || roleId;
+              })
+              .join(' · ');
+          } else if (step.owner) {
+            const persona = personas.find(p => p.id === step.owner);
+            owners = persona?.label || '';
+          }
+          
+          return {
+            ...step,
+            cost: calculateStepCost(step, personas),
+            owners
+          };
+        });
+        
+        return {
+          name: stage.name,
+          index: i + 1,
+          steps: stageSteps,
+          totalTime: stageSteps.reduce((acc, s) => acc + s.timeMinutes, 0),
+          totalCost: stageSteps.reduce((acc, s) => acc + s.cost, 0)
+        };
+      });
 
       return (
         <div className="cost-analysis-panel" style={{
@@ -3361,7 +3483,7 @@
             <div style={{ display: 'flex', gap: '12px', alignItems: 'center' }}>
               <button 
                 onClick={() => exportReport('cost', { title: config?.meta?.title || config?.title || 'Journey Map', owner: config?.meta?.owner }, {
-                  totalCost, totalMinutes, stageMetrics, roleCosts, totalAutomationSavings, formatTime, stepMetrics
+                  totalCost, totalMinutes, stageMetrics, roleCosts, totalAutomationSavings, formatTime, stepMetrics, stageBreakdown
                 })}
                 style={{ 
                   background: '#E1EEF2', 
@@ -5277,17 +5399,30 @@
         }, 0);
 
         const roleCosts = config.personas.filter(p => !p.isExternal).map(persona => {
-          const roleCost = allSteps.reduce((acc, step) => {
-            const inv = step.roleInvolvement?.[persona.id];
-            if (!inv) return acc;
-            return acc + (inv.timeMinutes / 60) * calculateHourlyRate(persona.annualSalary) * (inv.headcount || 1);
-          }, 0);
-          const roleTimeTotal = allSteps.reduce((acc, step) => {
-            const inv = step.roleInvolvement?.[persona.id];
-            return acc + (inv?.timeMinutes || 0);
-          }, 0);
+          let roleCost = 0;
+          let roleTimeTotal = 0;
+          
+          allSteps.forEach(step => {
+            // NEW FORMAT: roleInvolvement
+            if (step.roleInvolvement && step.roleInvolvement[persona.id]) {
+              const inv = step.roleInvolvement[persona.id];
+              const fullyLoadedRate = calculateFullyLoadedRate(persona);
+              const hours = (inv.timeMinutes || 0) / 60;
+              const headcount = inv.headcount || 1;
+              roleCost += fullyLoadedRate * hours * headcount;
+              roleTimeTotal += (inv.timeMinutes || 0) * headcount;
+            }
+            // LEGACY FORMAT: Single owner
+            else if (step.owner === persona.id && step.timeMinutes > 0) {
+              const fullyLoadedRate = calculateFullyLoadedRate(persona);
+              const hours = step.timeMinutes / 60;
+              roleCost += fullyLoadedRate * hours;
+              roleTimeTotal += step.timeMinutes;
+            }
+          });
+          
           return { ...persona, totalCost: roleCost, totalTime: roleTimeTotal };
-        }).sort((a, b) => b.totalCost - a.totalCost);
+        }).filter(r => r.totalTime > 0).sort((a, b) => b.totalCost - a.totalCost);
 
         const styles = `
           * { box-sizing: border-box; margin: 0; padding: 0; }
@@ -5358,11 +5493,11 @@
             html += '<div class="stage"><div class="stage-header"><div class="stage-name">' + stage.name + '</div>';
             html += '<div class="stage-stats">' + stage.steps.length + ' steps · ' + formatTime(stageTime) + ' · ' + formatCurrency(stageCost) + '</div></div>';
             
-            html += '<table><thead><tr><th style="width:50px">#</th><th>Step</th><th style="width:70px">Time</th><th style="width:80px">Cost</th>';
+            html += '<table><thead><tr><th style="width:40px">#</th><th style="width:180px">Step</th><th style="width:70px">Time</th><th style="width:70px">Cost</th>';
             if (reportType === 'detailed') {
-              html += '<th>Pain Points</th><th>Reg Requirements</th>';
+              html += '<th style="width:35%">Pain Points</th><th style="width:20%">Improvement</th>';
             } else {
-              html += '<th style="width:90px">Improvement</th>';
+              html += '<th style="width:35%">Pain Points</th><th style="width:90px">Improvement</th>';
             }
             html += '</tr></thead><tbody>';
             
@@ -5374,8 +5509,10 @@
               html += '<td class="time">' + formatTime(step.timeMinutes) + '</td>';
               html += '<td class="cost">' + formatCurrency(stepCost) + '</td>';
               
+              // Pain Points column for all report types
+              html += '<td>' + (step.painPoints.length > 0 ? step.painPoints.map(pp => '<div class="pain-point">⚠ ' + pp + '</div>').join('') : '—') + '</td>';
+              
               if (reportType === 'detailed') {
-                html += '<td>' + (step.painPoints.length > 0 ? step.painPoints.map(pp => '<div class="pain-point">⚠ ' + pp + '</div>').join('') : '—') + '</td>';
                 html += '<td>' + ((step.regulatoryRequirements || []).length > 0 ? step.regulatoryRequirements.map(rr => '<div class="reg-req">📋 ' + rr + '</div>').join('') : '—') + '</td>';
               } else {
                 const autoClass = step.automationOpportunity === 'high' ? 'auto-high' : step.automationOpportunity === 'medium' ? 'auto-medium' : step.automationOpportunity === 'low' ? 'auto-low' : '';
