@@ -724,6 +724,7 @@
       const [newRoleName, setNewRoleName] = useState('');
       const [newRoleType, setNewRoleType] = useState('internal');
       const [knownStages, setKnownStages] = useState('');
+      const [apiKey, setApiKey] = useState('');
       
       // User context
       const [user, setUser] = useState(null);
@@ -733,7 +734,12 @@
       // Load user and maps on mount
       useEffect(() => {
         const storedUser = localStorage.getItem('fathom_user');
-        const storedToken = localStorage.getItem('fathom_github_token');
+        const storedToken = localStorage.getItem('fathom_token');
+        const storedApiKey = localStorage.getItem('fathom_anthropic_key');
+        
+        if (storedApiKey) {
+          setApiKey(storedApiKey);
+        }
         
         if (storedUser) {
           setUser(JSON.parse(storedUser));
@@ -880,9 +886,6 @@
         
         setIsGenerating(true);
         setError('');
-        
-        // Check for API key
-        const apiKey = localStorage.getItem('fathom_anthropic_key');
         
         let journeyConfig;
         
@@ -1311,10 +1314,12 @@ IMPORTANT RULES:
                     <input
                       type="password"
                       placeholder="sk-ant-api03-..."
-                      value={localStorage.getItem('fathom_anthropic_key') || ''}
+                      value={apiKey}
                       onChange={(e) => {
-                        if (e.target.value) {
-                          localStorage.setItem('fathom_anthropic_key', e.target.value);
+                        const newKey = e.target.value;
+                        setApiKey(newKey);
+                        if (newKey) {
+                          localStorage.setItem('fathom_anthropic_key', newKey);
                         } else {
                           localStorage.removeItem('fathom_anthropic_key');
                         }
