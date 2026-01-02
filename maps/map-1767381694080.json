@@ -1,0 +1,272 @@
+{
+  "meta": {
+    "title": "Our procurement process for onboarding 3rd party software in...",
+    "version": "1.0",
+    "template": "ai-generated",
+    "product": "FATHOM Wizard",
+    "lastUpdated": "2026-01-02T19:21:34.080Z"
+  },
+  "funnel": {
+    "enabled": false,
+    "initialVolume": 100,
+    "periodLabel": "per month"
+  },
+  "personas": [
+    {
+      "id": "owner",
+      "label": "Owner",
+      "annualSalary": 35000,
+      "isExternal": false,
+      "burdenMultiplier": 1.3,
+      "workspaceHourlyCost": 6,
+      "color": "#5B8A9A"
+    },
+    {
+      "id": "procurement",
+      "label": "Procurement",
+      "annualSalary": 35000,
+      "isExternal": false,
+      "burdenMultiplier": 1.3,
+      "workspaceHourlyCost": 6,
+      "color": "#5B8A9A"
+    },
+    {
+      "id": "product-manager",
+      "label": "Product Manager",
+      "annualSalary": 35000,
+      "isExternal": false,
+      "burdenMultiplier": 1.3,
+      "workspaceHourlyCost": 6,
+      "color": "#5B8A9A"
+    },
+    {
+      "id": "info.-security",
+      "label": "Info. Security",
+      "annualSalary": 35000,
+      "isExternal": false,
+      "burdenMultiplier": 1.3,
+      "workspaceHourlyCost": 6,
+      "color": "#5B8A9A"
+    },
+    {
+      "id": "architecture-committee",
+      "label": "Architecture Committee",
+      "annualSalary": 35000,
+      "isExternal": false,
+      "burdenMultiplier": 1.3,
+      "workspaceHourlyCost": 6,
+      "color": "#5B8A9A"
+    },
+    {
+      "id": "vendor",
+      "label": "Vendor",
+      "annualSalary": 0,
+      "isExternal": true,
+      "burdenMultiplier": 1,
+      "workspaceHourlyCost": 6,
+      "color": "#2D8A6E"
+    }
+  ],
+  "stages": [
+    {
+      "id": "stage-1",
+      "name": "Request",
+      "dropOffCount": 0,
+      "steps": [
+        {
+          "id": "step-1-1",
+          "name": "Step 1",
+          "description": "",
+          "owner": "vendor",
+          "timeMinutes": 15,
+          "frictionLevel": 1,
+          "painPoints": [],
+          "automationOpportunity": "none",
+          "notes": ""
+        },
+        {
+          "id": "step-1-2",
+          "name": "Step 2",
+          "description": "",
+          "owner": "procurement",
+          "timeMinutes": 45,
+          "frictionLevel": 1,
+          "painPoints": [],
+          "automationOpportunity": "none",
+          "notes": ""
+        },
+        {
+          "id": "step-1-3",
+          "name": "Step 3",
+          "description": "",
+          "owner": "product-manager",
+          "timeMinutes": 60,
+          "frictionLevel": 3,
+          "painPoints": [],
+          "automationOpportunity": "none",
+          "notes": ""
+        }
+      ]
+    },
+    {
+      "id": "stage-2",
+      "name": "Sourcing",
+      "dropOffCount": 0,
+      "steps": [
+        {
+          "id": "step-2-1",
+          "name": "Step 1",
+          "description": "",
+          "owner": "vendor",
+          "timeMinutes": 45,
+          "frictionLevel": 1,
+          "painPoints": [],
+          "automationOpportunity": "none",
+          "notes": ""
+        },
+        {
+          "id": "step-2-2",
+          "name": "Step 2",
+          "description": "",
+          "owner": "procurement",
+          "timeMinutes": 30,
+          "frictionLevel": 2,
+          "painPoints": [],
+          "automationOpportunity": "none",
+          "notes": ""
+        },
+        {
+          "id": "step-2-3",
+          "name": "Step 3",
+          "description": "",
+          "owner": "product-manager",
+          "timeMinutes": 45,
+          "frictionLevel": 1,
+          "painPoints": [],
+          "automationOpportunity": "none",
+          "notes": ""
+        }
+      ]
+    },
+    {
+      "id": "stage-3",
+      "name": "Evaluation",
+      "dropOffCount": 0,
+      "steps": [
+        {
+          "id": "step-3-1",
+          "name": "Step 1",
+          "description": "",
+          "owner": "vendor",
+          "timeMinutes": 60,
+          "frictionLevel": 1,
+          "painPoints": [],
+          "automationOpportunity": "none",
+          "notes": ""
+        },
+        {
+          "id": "step-3-2",
+          "name": "Step 2",
+          "description": "",
+          "owner": "procurement",
+          "timeMinutes": 90,
+          "frictionLevel": 3,
+          "painPoints": [],
+          "automationOpportunity": "none",
+          "notes": ""
+        },
+        {
+          "id": "step-3-3",
+          "name": "Step 3",
+          "description": "",
+          "owner": "product-manager",
+          "timeMinutes": 90,
+          "frictionLevel": 1,
+          "painPoints": [],
+          "automationOpportunity": "none",
+          "notes": ""
+        }
+      ]
+    },
+    {
+      "id": "stage-4",
+      "name": "Contracting",
+      "dropOffCount": 0,
+      "steps": [
+        {
+          "id": "step-4-1",
+          "name": "Step 1",
+          "description": "",
+          "owner": "vendor",
+          "timeMinutes": 60,
+          "frictionLevel": 1,
+          "painPoints": [],
+          "automationOpportunity": "none",
+          "notes": ""
+        },
+        {
+          "id": "step-4-2",
+          "name": "Step 2",
+          "description": "",
+          "owner": "procurement",
+          "timeMinutes": 90,
+          "frictionLevel": 2,
+          "painPoints": [],
+          "automationOpportunity": "none",
+          "notes": ""
+        },
+        {
+          "id": "step-4-3",
+          "name": "Step 3",
+          "description": "",
+          "owner": "product-manager",
+          "timeMinutes": 90,
+          "frictionLevel": 1,
+          "painPoints": [],
+          "automationOpportunity": "none",
+          "notes": ""
+        }
+      ]
+    },
+    {
+      "id": "stage-5",
+      "name": "Onboarding",
+      "dropOffCount": 0,
+      "steps": [
+        {
+          "id": "step-5-1",
+          "name": "Step 1",
+          "description": "",
+          "owner": "vendor",
+          "timeMinutes": 30,
+          "frictionLevel": 1,
+          "painPoints": [],
+          "automationOpportunity": "none",
+          "notes": ""
+        },
+        {
+          "id": "step-5-2",
+          "name": "Step 2",
+          "description": "",
+          "owner": "procurement",
+          "timeMinutes": 15,
+          "frictionLevel": 2,
+          "painPoints": [],
+          "automationOpportunity": "none",
+          "notes": ""
+        },
+        {
+          "id": "step-5-3",
+          "name": "Step 3",
+          "description": "",
+          "owner": "product-manager",
+          "timeMinutes": 30,
+          "frictionLevel": 2,
+          "painPoints": [],
+          "automationOpportunity": "none",
+          "notes": ""
+        }
+      ]
+    }
+  ]
+}
