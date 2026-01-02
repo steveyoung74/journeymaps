@@ -1731,26 +1731,368 @@
     ];
 
     // Create Map Modal with Templates
+    // ============================================
+    // AI WIZARD CONFIGURATION
+    // ============================================
+    const WIZARD_INDUSTRIES = {
+      'financial-services': {
+        label: 'Financial Services',
+        roles: [
+          { name: 'Client', salary: 0, isExternal: true },
+          { name: 'Financial Adviser', salary: 75000, isExternal: false },
+          { name: 'Paraplanner', salary: 45000, isExternal: false },
+          { name: 'Administrator', salary: 28000, isExternal: false },
+          { name: 'Compliance Officer', salary: 55000, isExternal: false }
+        ]
+      },
+      'accounting': {
+        label: 'Accounting & Professional Services',
+        roles: [
+          { name: 'Client', salary: 0, isExternal: true },
+          { name: 'Partner', salary: 150000, isExternal: false },
+          { name: 'Senior Accountant', salary: 55000, isExternal: false },
+          { name: 'Administrator', salary: 26000, isExternal: false }
+        ]
+      },
+      'legal': {
+        label: 'Legal Services',
+        roles: [
+          { name: 'Client', salary: 0, isExternal: true },
+          { name: 'Partner', salary: 180000, isExternal: false },
+          { name: 'Associate', salary: 65000, isExternal: false },
+          { name: 'Paralegal', salary: 32000, isExternal: false }
+        ]
+      },
+      'healthcare': {
+        label: 'Healthcare',
+        roles: [
+          { name: 'Patient', salary: 0, isExternal: true },
+          { name: 'Consultant', salary: 120000, isExternal: false },
+          { name: 'Nurse', salary: 38000, isExternal: false },
+          { name: 'Administrator', salary: 26000, isExternal: false }
+        ]
+      },
+      'hr': {
+        label: 'HR / People Operations',
+        roles: [
+          { name: 'Employee', salary: 0, isExternal: true },
+          { name: 'Candidate', salary: 0, isExternal: true },
+          { name: 'HR Manager', salary: 55000, isExternal: false },
+          { name: 'HR Administrator', salary: 28000, isExternal: false }
+        ]
+      },
+      'property': {
+        label: 'Property & Real Estate',
+        roles: [
+          { name: 'Buyer', salary: 0, isExternal: true },
+          { name: 'Agent', salary: 35000, isExternal: false },
+          { name: 'Solicitor', salary: 55000, isExternal: false }
+        ]
+      },
+      'saas': {
+        label: 'B2B / SaaS',
+        roles: [
+          { name: 'Customer', salary: 0, isExternal: true },
+          { name: 'Account Executive', salary: 65000, isExternal: false },
+          { name: 'Customer Success', salary: 45000, isExternal: false }
+        ]
+      },
+      'other': {
+        label: 'Other',
+        roles: [
+          { name: 'Customer', salary: 0, isExternal: true },
+          { name: 'Manager', salary: 50000, isExternal: false },
+          { name: 'Staff', salary: 32000, isExternal: false }
+        ]
+      }
+    };
+    
+    const WIZARD_JOURNEY_TYPES = [
+      'Client Onboarding', 'Employee Onboarding', 'Service Delivery', 'Sales Process',
+      'Support / Case Management', 'Application Processing', 'Complaint Handling', 'Procurement', 'Other'
+    ];
+    
+    const WIZARD_COMPLEXITY = [
+      { value: 'simple', label: 'Simple', stages: '3-4 stages' },
+      { value: 'medium', label: 'Medium', stages: '5-6 stages' },
+      { value: 'complex', label: 'Complex', stages: '7+ stages' }
+    ];
+
     function CreateMapModal({ user, token, maps, onClose, onCreated }) {
-      const [step, setStep] = useState(1);
+      // Modal mode: 'select', 'wizard', 'customize', 'generating'
+      const [mode, setMode] = useState('select');
+      const [wizardStep, setWizardStep] = useState(1);
+      
+      // Template mode state
       const [selectedTemplate, setSelectedTemplate] = useState(null);
       const [title, setTitle] = useState('');
+      const [templateDescription, setTemplateDescription] = useState('');
+      
+      // Wizard state
       const [description, setDescription] = useState('');
+      const [industry, setIndustry] = useState('');
+      const [journeyType, setJourneyType] = useState('');
+      const [complexity, setComplexity] = useState('medium');
+      const [roles, setRoles] = useState([]);
+      const [knownStages, setKnownStages] = useState('');
+      const [apiKey, setApiKey] = useState('');
+      const [newRoleName, setNewRoleName] = useState('');
+      const [newRoleExternal, setNewRoleExternal] = useState(false);
+      
+      // Shared state
       const [isCreating, setIsCreating] = useState(false);
       const [error, setError] = useState('');
+      
+      // Load saved API key
+      useEffect(() => {
+        const savedKey = localStorage.getItem('fathom_anthropic_key');
+        if (savedKey) setApiKey(savedKey);
+      }, []);
+      
+      // When industry changes, suggest roles
+      useEffect(() => {
+        if (industry && WIZARD_INDUSTRIES[industry]) {
+          const suggested = WIZARD_INDUSTRIES[industry].roles.slice(0, 3);
+          setRoles(suggested.map(r => ({
+            id: r.name.toLowerCase().replace(/\s+/g, '-'),
+            name: r.name,
+            salary: r.salary,
+            isExternal: r.isExternal
+          })));
+        }
+      }, [industry]);
       
       const handleSelectTemplate = (template) => {
         setSelectedTemplate(template);
         setTitle(template.config.title);
-        setDescription(template.description);
-        setStep(2);
+        setTemplateDescription(template.description);
+        setMode('customize');
+      };
+      
+      const handleStartWizard = () => {
+        setMode('wizard');
+        setWizardStep(1);
       };
       
       const handleBack = () => {
-        setStep(1);
+        if (mode === 'customize') {
+          setMode('select');
+          setSelectedTemplate(null);
+        } else if (mode === 'wizard') {
+          if (wizardStep > 1) {
+            setWizardStep(wizardStep - 1);
+          } else {
+            setMode('select');
+          }
+        }
       };
       
-      const handleCreate = async () => {
+      const addRole = (name, salary, isExternal) => {
+        if (!name.trim()) return;
+        if (roles.find(r => r.name.toLowerCase() === name.toLowerCase())) return;
+        setRoles([...roles, {
+          id: name.toLowerCase().replace(/\s+/g, '-'),
+          name: name.trim(),
+          salary: isExternal ? 0 : salary,
+          isExternal
+        }]);
+      };
+      
+      const removeRole = (index) => {
+        setRoles(roles.filter((_, i) => i !== index));
+      };
+      
+      const addSuggestedRole = (suggestion) => {
+        addRole(suggestion.name, suggestion.salary, suggestion.isExternal);
+      };
+      
+      const handleAddCustomRole = () => {
+        if (!newRoleName.trim()) return;
+        addRole(newRoleName, newRoleExternal ? 0 : 35000, newRoleExternal);
+        setNewRoleName('');
+      };
+      
+      // Fallback generator (no AI required)
+      const generateFallbackJourney = () => {
+        let stageNames = [];
+        if (knownStages.trim()) {
+          stageNames = knownStages.split(/[,\n]+/).map(s => s.trim()).filter(Boolean);
+        } else {
+          const defaults = {
+            'Client Onboarding': ['Initial Contact', 'Discovery', 'Documentation', 'Setup', 'Handover'],
+            'Employee Onboarding': ['Offer', 'Pre-boarding', 'Day One', 'Training', 'Integration'],
+            'Service Delivery': ['Request', 'Planning', 'Execution', 'Review', 'Delivery'],
+            'Sales Process': ['Lead', 'Qualification', 'Proposal', 'Negotiation', 'Close'],
+            'Support / Case Management': ['Intake', 'Triage', 'Investigation', 'Resolution', 'Follow-up'],
+            'Application Processing': ['Submission', 'Validation', 'Assessment', 'Decision', 'Notification']
+          };
+          stageNames = defaults[journeyType] || ['Initiation', 'Planning', 'Execution', 'Review', 'Completion'];
+        }
+        
+        const targetStages = complexity === 'simple' ? 3 : complexity === 'complex' ? 7 : 5;
+        while (stageNames.length < targetStages) stageNames.push(`Stage ${stageNames.length + 1}`);
+        stageNames = stageNames.slice(0, targetStages + 1);
+        
+        const externalRoles = roles.filter(r => r.isExternal);
+        const internalRoles = roles.filter(r => !r.isExternal);
+        const primaryExternal = externalRoles[0] || { id: 'customer', name: 'Customer', salary: 0, isExternal: true };
+        const primaryInternal = internalRoles[0] || { id: 'staff', name: 'Staff', salary: 35000, isExternal: false };
+        
+        const stages = stageNames.map((stageName, si) => {
+          const stepsPerStage = complexity === 'simple' ? 2 : complexity === 'complex' ? 4 : 3;
+          const steps = [];
+          for (let i = 0; i < stepsPerStage; i++) {
+            let owner = i === 0 && externalRoles.length > 0 ? primaryExternal : 
+                        internalRoles.length > 0 ? internalRoles[i % internalRoles.length] : primaryInternal;
+            steps.push({
+              id: `step-${si + 1}-${i + 1}`,
+              name: `Step ${i + 1}`,
+              description: '',
+              owner: owner.id,
+              timeMinutes: [15, 30, 45, 60, 90][Math.floor(Math.random() * 5)],
+              frictionLevel: i === 0 ? 1 : [1, 2, 2, 3][Math.floor(Math.random() * 4)],
+              notes: ''
+            });
+          }
+          return { id: `stage-${si + 1}`, name: stageName, steps };
+        });
+        
+        const personas = (roles.length > 0 ? roles : [primaryExternal, primaryInternal]).map(r => ({
+          id: r.id,
+          label: r.name,
+          annualSalary: r.salary,
+          isExternal: r.isExternal,
+          burdenMultiplier: r.isExternal ? 1 : 1.3,
+          workspaceHourlyCost: r.isExternal ? 0 : 6,
+          color: r.isExternal ? '#2D8A6E' : '#5B8A9A'
+        }));
+        
+        const journeyTitle = description.length > 60 ? description.slice(0, 60).trim() + '...' : description || `${journeyType || 'Process'} Journey`;
+        return { title: journeyTitle, stages, personas };
+      };
+      
+      // Generate with AI or fallback
+      const handleGenerate = async () => {
+        if (!token) {
+          setError('GitHub token required. Please set up your token in settings.');
+          return;
+        }
+        if (roles.length < 2) {
+          setError('Please add at least 2 roles.');
+          return;
+        }
+        
+        setMode('generating');
+        setError('');
+        
+        let journeyConfig;
+        
+        // Try AI generation if API key provided
+        if (apiKey) {
+          localStorage.setItem('fathom_anthropic_key', apiKey);
+          try {
+            const prompt = `You are an expert in operational process design. Generate a detailed journey map for:
+
+CONTEXT:
+- Description: ${description}
+- Industry: ${WIZARD_INDUSTRIES[industry]?.label || 'General'}
+- Journey Type: ${journeyType || 'Process'}
+- Complexity: ${complexity} (${WIZARD_COMPLEXITY.find(c => c.value === complexity)?.stages})
+- Roles: ${roles.map(r => r.name + (r.isExternal ? ' (external)' : '')).join(', ')}
+${knownStages ? `- Key stages: ${knownStages}` : ''}
+
+Generate a JSON object with this EXACT structure (no markdown, just JSON):
+{
+  "title": "Journey title",
+  "stages": [{ "id": "stage-1", "name": "Stage Name", "steps": [{ "id": "step-1-1", "name": "Step name", "description": "What happens", "owner": "role-id", "timeMinutes": 30, "frictionLevel": 1, "notes": "" }] }],
+  "personas": [{ "id": "role-id", "label": "Role Name", "annualSalary": 45000, "isExternal": false, "burdenMultiplier": 1.3, "workspaceHourlyCost": 6 }]
+}
+
+RULES:
+1. Use roles: ${JSON.stringify(roles.map(r => ({ id: r.id, name: r.name, salary: r.salary, isExternal: r.isExternal })))}
+2. frictionLevel: 1=none, 2=low, 3=medium, 4=high
+3. Create ${complexity === 'simple' ? '3-4' : complexity === 'medium' ? '5-6' : '7-8'} stages with 2-5 steps each
+4. External roles: salary 0, isExternal true. Internal: burdenMultiplier 1.3, workspaceHourlyCost 6
+5. Return ONLY valid JSON`;
+
+            const response = await fetch('https://api.anthropic.com/v1/messages', {
+              method: 'POST',
+              headers: {
+                'Content-Type': 'application/json',
+                'x-api-key': apiKey,
+                'anthropic-version': '2023-06-01',
+                'anthropic-dangerous-direct-browser-access': 'true'
+              },
+              body: JSON.stringify({
+                model: 'claude-sonnet-4-20250514',
+                max_tokens: 4000,
+                messages: [{ role: 'user', content: prompt }]
+              })
+            });
+            
+            if (response.ok) {
+              const data = await response.json();
+              let jsonText = data.content[0].text.trim();
+              if (jsonText.startsWith('`')) {
+                jsonText = jsonText.replace(/^```json?\n?/, '').replace(/\n?```$/, '');
+              }
+              journeyConfig = JSON.parse(jsonText);
+            } else {
+              journeyConfig = generateFallbackJourney();
+            }
+          } catch (e) {
+            console.warn('AI error, using fallback:', e);
+            journeyConfig = generateFallbackJourney();
+          }
+        } else {
+          journeyConfig = generateFallbackJourney();
+        }
+        
+        // Save to GitHub
+        try {
+          const mapId = 'map-' + Date.now();
+          const now = new Date().toISOString();
+          
+          const mapMetadata = {
+            id: mapId,
+            title: journeyConfig.title || description.slice(0, 50),
+            description: description,
+            owner: user.email,
+            createdAt: now,
+            updatedAt: now,
+            sharedWith: []
+          };
+          
+          const mapConfig = {
+            meta: { title: journeyConfig.title, version: '1.0', template: 'ai-generated' },
+            funnel: { enabled: false, initialVolume: 100, periodLabel: 'per month' },
+            personas: journeyConfig.personas.map(p => ({
+              id: p.id, label: p.label, annualSalary: p.annualSalary || p.salary || 0,
+              isExternal: p.isExternal || false, burdenMultiplier: p.burdenMultiplier || 1.3,
+              workspaceHourlyCost: p.workspaceHourlyCost || 6, color: p.isExternal ? '#2D8A6E' : '#5B8A9A'
+            })),
+            stages: journeyConfig.stages.map(stage => ({
+              id: stage.id, name: stage.name, dropOffCount: 0,
+              steps: stage.steps.map(step => ({
+                id: step.id, name: step.name, description: step.description || '', owner: step.owner,
+                timeMinutes: step.timeMinutes || 30, frictionLevel: step.frictionLevel || 1,
+                painPoints: [], automationOpportunity: 'none', notes: step.notes || ''
+              }))
+            }))
+          };
+          
+          await saveToGitHub(GITHUB_CONFIG.indexFile, { maps: [...maps, mapMetadata] }, token, `Create: ${journeyConfig.title}`);
+          await saveToGitHub(`${GITHUB_CONFIG.mapsPath}/${mapId}.json`, mapConfig, token, `Config: ${journeyConfig.title}`);
+          
+          onCreated();
+        } catch (err) {
+          setError(err.message || 'Failed to create map');
+          setMode('wizard');
+          setWizardStep(3);
+        }
+      };
+      
+      const handleCreateTemplate = async () => {
         if (!title.trim() || !selectedTemplate) return;
         setIsCreating(true);
         setError('');
@@ -1761,53 +2103,26 @@
           const now = new Date().toISOString();
           
           const mapMetadata = {
-            id: mapId,
-            title: title.trim(),
-            description: description.trim(),
-            owner: user.email,
-            createdAt: now,
-            updatedAt: now,
-            sharedWith: []
+            id: mapId, title: title.trim(), description: templateDescription.trim(),
+            owner: user.email, createdAt: now, updatedAt: now, sharedWith: []
           };
           
           const mapConfig = {
-            meta: { 
-              title: title.trim(), 
-              version: '1.0',
-              template: selectedTemplate.id
-            },
-            funnel: { 
-              enabled: templateConfig.funnelConfig?.enabled || false, 
-              initialVolume: templateConfig.funnelConfig?.startVolume || 100,
-              periodLabel: 'per month'
-            },
-            personas: templateConfig.personas.map(p => ({
-              id: p.id,
-              label: p.name,
-              salary: p.salary,
-              isExternal: p.isExternal,
-              color: p.isExternal ? '#2D8A6E' : '#5B8A9A'
-            })),
+            meta: { title: title.trim(), version: '1.0', template: selectedTemplate.id },
+            funnel: { enabled: templateConfig.funnelConfig?.enabled || false, initialVolume: templateConfig.funnelConfig?.startVolume || 100, periodLabel: 'per month' },
+            personas: templateConfig.personas.map(p => ({ id: p.id, label: p.name, salary: p.salary, isExternal: p.isExternal, color: p.isExternal ? '#2D8A6E' : '#5B8A9A' })),
             stages: templateConfig.stages.map(stage => ({
-              id: stage.id,
-              name: stage.name,
-              dropOffCount: templateConfig.funnelConfig?.stages?.[stage.id]?.dropOff || 0,
+              id: stage.id, name: stage.name, dropOffCount: templateConfig.funnelConfig?.stages?.[stage.id]?.dropOff || 0,
               steps: stage.steps.map(step => ({
-                id: step.id,
-                name: step.name,
-                owner: step.personaId,
-                timeMinutes: step.time,
+                id: step.id, name: step.name, owner: step.personaId, timeMinutes: step.time,
                 frictionLevel: step.friction === 'high' ? 4 : step.friction === 'medium' ? 3 : step.friction === 'low' ? 2 : 1,
-                painPoints: [],
-                automationOpportunity: 'none',
-                notes: step.notes || ''
+                painPoints: [], automationOpportunity: 'none', notes: step.notes || ''
               }))
             }))
           };
           
           await saveToGitHub(GITHUB_CONFIG.indexFile, { maps: [...maps, mapMetadata] }, token, `Create: ${title}`);
           await saveToGitHub(`${GITHUB_CONFIG.mapsPath}/${mapId}.json`, mapConfig, token, `Create config: ${title}`);
-          
           onCreated();
         } catch (err) {
           setError(err.message || 'Failed to create map');
@@ -1821,50 +2136,73 @@
         acc[t.industry].push(t);
         return acc;
       }, {});
+      
+      // Get suggested roles not yet added
+      const suggestedRoles = industry && WIZARD_INDUSTRIES[industry] 
+        ? WIZARD_INDUSTRIES[industry].roles.filter(sr => !roles.find(r => r.name === sr.name)).slice(0, 4)
+        : [];
+
+      // Modal title based on mode
+      const getTitle = () => {
+        if (mode === 'select') return 'Choose a Template';
+        if (mode === 'customize') return 'Customise Your Map';
+        if (mode === 'generating') return 'Creating Your Journey';
+        if (mode === 'wizard') {
+          if (wizardStep === 1) return 'Describe Your Process';
+          if (wizardStep === 2) return 'Context & Roles';
+          if (wizardStep === 3) return 'Final Details';
+        }
+        return 'Create Map';
+      };
 
       return (
         <div className="modal-overlay" onClick={onClose}>
-          <div className="modal" onClick={e => e.stopPropagation()} style={{ maxWidth: step === 1 ? '520px' : '480px', width: '95%' }}>
+          <div className="modal" onClick={e => e.stopPropagation()} style={{ maxWidth: mode === 'generating' ? '400px' : '520px', width: '95%' }}>
             <div className="modal-content" style={{ padding: '32px' }}>
               {/* Header */}
-              <div style={{ display: 'flex', alignItems: 'center', gap: '16px', marginBottom: '24px' }}>
-                {step === 2 && (
-                  <button onClick={handleBack} style={{ background: 'none', border: 'none', cursor: 'pointer', fontSize: '18px', color: 'var(--slate-400)', padding: '4px' }}>
-                    ←
-                  </button>
+              <div style={{ display: 'flex', alignItems: 'center', gap: '12px', marginBottom: '24px' }}>
+                {(mode === 'customize' || mode === 'wizard') && (
+                  <button onClick={handleBack} style={{ background: 'none', border: 'none', cursor: 'pointer', fontSize: '18px', color: 'var(--slate-400)', padding: '4px' }}>←</button>
                 )}
-                <h2 className="modal-title" style={{ margin: 0 }}>
-                  {step === 1 ? 'Choose a Template' : 'Customise Your Map'}
-                </h2>
-                <button className="modal-close" onClick={onClose} style={{ marginLeft: 'auto' }}>×</button>
+                <h2 className="modal-title" style={{ margin: 0, fontFamily: 'var(--font-display)' }}>{getTitle()}</h2>
+                {mode === 'wizard' && (
+                  <div style={{ marginLeft: 'auto', display: 'flex', gap: '6px', marginRight: '40px' }}>
+                    {[1,2,3].map(s => (
+                      <div key={s} style={{ width: s === wizardStep ? '24px' : '8px', height: '8px', borderRadius: '4px', background: s < wizardStep ? 'var(--success)' : s === wizardStep ? 'var(--navy-700)' : 'var(--slate-200)', transition: 'all 0.2s' }} />
+                    ))}
+                  </div>
+                )}
+                <button className="modal-close" onClick={onClose} style={{ marginLeft: mode === 'wizard' ? '0' : 'auto' }}>×</button>
               </div>
               
               {error && <div style={{ padding: '10px 12px', background: 'var(--error-light)', borderRadius: '8px', marginBottom: '16px', color: 'var(--error)', fontSize: '13px' }}>{error}</div>}
               
-              {step === 1 ? (
+              {/* GENERATING STATE */}
+              {mode === 'generating' && (
+                <div style={{ textAlign: 'center', padding: '40px 20px' }}>
+                  <div style={{ width: '60px', height: '60px', margin: '0 auto 20px', borderRadius: '50%', background: 'var(--navy-700)', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+                    <div style={{ width: '24px', height: '24px', border: '3px solid rgba(255,255,255,0.3)', borderTopColor: '#FFF', borderRadius: '50%', animation: 'spin 1s linear infinite' }} />
+                  </div>
+                  <p style={{ color: 'var(--slate-600)', fontSize: '14px' }}>Building your journey map...</p>
+                  <style>{`@keyframes spin { to { transform: rotate(360deg); } }`}</style>
+                </div>
+              )}
+              
+              {/* SELECT MODE */}
+              {mode === 'select' && (
                 <>
                   <p style={{ color: 'var(--slate-500)', marginBottom: '20px', fontSize: '14px' }}>
                     Let AI build your journey, choose a template, or start from scratch.
                   </p>
                   
-                  {/* AI Generate - Hero Option */}
-                  <a
-                    href="wizard.html"
+                  {/* AI Generate Button */}
+                  <button
+                    onClick={handleStartWizard}
                     style={{
-                      display: 'flex',
-                      alignItems: 'center',
-                      gap: '16px',
-                      width: '100%',
-                      padding: '18px 20px',
-                      background: 'linear-gradient(135deg, var(--navy-700), var(--navy-800))',
-                      border: 'none',
-                      borderRadius: '12px',
-                      cursor: 'pointer',
-                      textAlign: 'left',
-                      marginBottom: '12px',
-                      textDecoration: 'none',
-                      transition: 'all 0.2s',
-                      fontFamily: 'inherit'
+                      display: 'flex', alignItems: 'center', gap: '16px', width: '100%', padding: '18px 20px',
+                      background: 'linear-gradient(135deg, var(--navy-700), var(--navy-800))', border: 'none',
+                      borderRadius: '12px', cursor: 'pointer', textAlign: 'left', marginBottom: '12px',
+                      transition: 'all 0.2s', fontFamily: 'inherit'
                     }}
                     onMouseOver={(e) => { e.currentTarget.style.transform = 'translateY(-1px)'; e.currentTarget.style.boxShadow = '0 4px 12px rgba(25,43,69,0.3)'; }}
                     onMouseOut={(e) => { e.currentTarget.style.transform = 'translateY(0)'; e.currentTarget.style.boxShadow = 'none'; }}
@@ -1875,25 +2213,15 @@
                       <div style={{ fontSize: '12px', color: 'rgba(255,255,255,0.7)' }}>Describe your process and let AI build your journey</div>
                     </div>
                     <div style={{ color: 'rgba(255,255,255,0.7)', fontSize: '16px' }}>→</div>
-                  </a>
+                  </button>
                   
                   {/* Blank Canvas */}
                   <button
                     onClick={() => handleSelectTemplate(JOURNEY_TEMPLATES.find(t => t.id === 'blank'))}
                     style={{
-                      display: 'flex',
-                      alignItems: 'center',
-                      gap: '16px',
-                      width: '100%',
-                      padding: '14px 18px',
-                      background: 'var(--slate-50)',
-                      border: '2px dashed var(--slate-300)',
-                      borderRadius: '10px',
-                      cursor: 'pointer',
-                      textAlign: 'left',
-                      marginBottom: '20px',
-                      transition: 'all 0.15s',
-                      fontFamily: 'inherit'
+                      display: 'flex', alignItems: 'center', gap: '16px', width: '100%', padding: '14px 18px',
+                      background: 'var(--slate-50)', border: '2px dashed var(--slate-300)', borderRadius: '10px',
+                      cursor: 'pointer', textAlign: 'left', marginBottom: '20px', transition: 'all 0.15s', fontFamily: 'inherit'
                     }}
                     onMouseOver={(e) => { e.currentTarget.style.borderColor = 'var(--steel-400)'; e.currentTarget.style.background = 'var(--steel-100)'; }}
                     onMouseOut={(e) => { e.currentTarget.style.borderColor = 'var(--slate-300)'; e.currentTarget.style.background = 'var(--slate-50)'; }}
@@ -1907,41 +2235,20 @@
                   </button>
                   
                   {/* Template List */}
-                  <div style={{ maxHeight: '380px', overflowY: 'auto', marginRight: '-8px', paddingRight: '8px' }}>
-                    {Object.entries(templatesByIndustry).filter(([industry]) => industry !== 'Any').map(([industry, templates]) => (
-                      <div key={industry} style={{ marginBottom: '16px' }}>
-                        <h3 style={{ fontSize: '10px', fontWeight: 600, color: 'var(--slate-400)', textTransform: 'uppercase', letterSpacing: '1px', marginBottom: '6px', paddingLeft: '4px' }}>
-                          {industry}
-                        </h3>
+                  <div style={{ maxHeight: '340px', overflowY: 'auto', marginRight: '-8px', paddingRight: '8px' }}>
+                    {Object.entries(templatesByIndustry).filter(([ind]) => ind !== 'Any').map(([ind, templates]) => (
+                      <div key={ind} style={{ marginBottom: '16px' }}>
+                        <h3 style={{ fontSize: '10px', fontWeight: 600, color: 'var(--slate-400)', textTransform: 'uppercase', letterSpacing: '1px', marginBottom: '6px', paddingLeft: '4px' }}>{ind}</h3>
                         <div style={{ display: 'flex', flexDirection: 'column', gap: '2px' }}>
                           {templates.map(template => (
-                            <button
-                              key={template.id}
-                              onClick={() => handleSelectTemplate(template)}
-                              style={{
-                                display: 'flex',
-                                alignItems: 'center',
-                                gap: '10px',
-                                width: '100%',
-                                padding: '10px 12px',
-                                background: '#FFF',
-                                border: '1px solid transparent',
-                                borderRadius: '6px',
-                                cursor: 'pointer',
-                                textAlign: 'left',
-                                transition: 'all 0.1s',
-                                fontFamily: 'inherit'
-                              }}
+                            <button key={template.id} onClick={() => handleSelectTemplate(template)}
+                              style={{ display: 'flex', alignItems: 'center', gap: '10px', width: '100%', padding: '10px 12px', background: '#FFF', border: '1px solid transparent', borderRadius: '6px', cursor: 'pointer', textAlign: 'left', transition: 'all 0.1s', fontFamily: 'inherit' }}
                               onMouseOver={(e) => { e.currentTarget.style.background = 'var(--slate-50)'; e.currentTarget.style.borderColor = 'var(--slate-200)'; }}
                               onMouseOut={(e) => { e.currentTarget.style.background = '#FFF'; e.currentTarget.style.borderColor = 'transparent'; }}
                             >
                               <div style={{ fontSize: '18px', width: '24px', textAlign: 'center' }}>{template.icon}</div>
-                              <div style={{ flex: 1, minWidth: 0 }}>
-                                <div style={{ fontWeight: 500, color: 'var(--navy-700)', fontSize: '13px' }}>{template.name}</div>
-                              </div>
-                              <div style={{ fontSize: '11px', color: 'var(--slate-400)', whiteSpace: 'nowrap' }}>
-                                {template.stageCount} stages
-                              </div>
+                              <div style={{ flex: 1 }}><div style={{ fontWeight: 500, color: 'var(--navy-700)', fontSize: '13px' }}>{template.name}</div></div>
+                              <div style={{ fontSize: '11px', color: 'var(--slate-400)' }}>{template.stageCount} stages</div>
                               <div style={{ color: 'var(--slate-300)', fontSize: '12px' }}>›</div>
                             </button>
                           ))}
@@ -1950,9 +2257,157 @@
                     ))}
                   </div>
                 </>
-              ) : (
+              )}
+              
+              {/* WIZARD STEP 1: Description */}
+              {mode === 'wizard' && wizardStep === 1 && (
                 <>
-                  {/* Selected Template Preview */}
+                  <p style={{ color: 'var(--slate-500)', marginBottom: '20px', fontSize: '14px' }}>
+                    Describe the process or journey you want to map. Be specific about what it involves.
+                  </p>
+                  <textarea
+                    value={description}
+                    onChange={(e) => setDescription(e.target.value)}
+                    placeholder="e.g., Client onboarding for a wealth management firm, from initial enquiry through KYC checks, fact-finding, advice preparation, and implementation..."
+                    rows={5}
+                    style={{ width: '100%', padding: '14px', fontSize: '14px', border: '1px solid var(--slate-200)', borderRadius: '10px', resize: 'vertical', fontFamily: 'var(--font-body)', lineHeight: '1.5' }}
+                    autoFocus
+                  />
+                  <p style={{ fontSize: '12px', color: 'var(--slate-400)', marginTop: '8px' }}>The more detail you provide, the better the generated journey will be.</p>
+                  
+                  <div style={{ display: 'flex', gap: '10px', marginTop: '24px' }}>
+                    <button onClick={handleBack} className="btn btn-secondary" style={{ flex: 1 }}>Cancel</button>
+                    <button onClick={() => setWizardStep(2)} className="btn btn-primary" style={{ flex: 1 }} disabled={description.trim().length < 10}>Continue</button>
+                  </div>
+                </>
+              )}
+              
+              {/* WIZARD STEP 2: Context & Roles */}
+              {mode === 'wizard' && wizardStep === 2 && (
+                <>
+                  <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '12px', marginBottom: '16px' }}>
+                    <div>
+                      <label className="label">Industry</label>
+                      <select value={industry} onChange={(e) => setIndustry(e.target.value)} className="input" style={{ width: '100%' }}>
+                        <option value="">Select...</option>
+                        {Object.entries(WIZARD_INDUSTRIES).map(([key, val]) => (
+                          <option key={key} value={key}>{val.label}</option>
+                        ))}
+                      </select>
+                    </div>
+                    <div>
+                      <label className="label">Journey Type</label>
+                      <select value={journeyType} onChange={(e) => setJourneyType(e.target.value)} className="input" style={{ width: '100%' }}>
+                        <option value="">Select...</option>
+                        {WIZARD_JOURNEY_TYPES.map(jt => <option key={jt} value={jt}>{jt}</option>)}
+                      </select>
+                    </div>
+                  </div>
+                  
+                  <div style={{ marginBottom: '20px' }}>
+                    <label className="label">Complexity</label>
+                    <div style={{ display: 'flex', gap: '8px' }}>
+                      {WIZARD_COMPLEXITY.map(c => (
+                        <button key={c.value} onClick={() => setComplexity(c.value)}
+                          style={{
+                            flex: 1, padding: '10px', borderRadius: '8px', border: complexity === c.value ? '2px solid var(--navy-600)' : '1px solid var(--slate-200)',
+                            background: complexity === c.value ? 'var(--navy-50)' : '#FFF', cursor: 'pointer', fontFamily: 'inherit', transition: 'all 0.15s'
+                          }}>
+                          <div style={{ fontWeight: 600, fontSize: '13px', color: 'var(--navy-700)' }}>{c.label}</div>
+                          <div style={{ fontSize: '11px', color: 'var(--slate-400)' }}>{c.stages}</div>
+                        </button>
+                      ))}
+                    </div>
+                  </div>
+                  
+                  <div style={{ marginBottom: '16px' }}>
+                    <label className="label">Roles Involved <span style={{ fontWeight: 400, color: 'var(--slate-400)' }}>({roles.length} added)</span></label>
+                    <div style={{ display: 'flex', flexWrap: 'wrap', gap: '6px', minHeight: '36px', padding: '8px', background: 'var(--slate-50)', borderRadius: '8px', marginBottom: '8px' }}>
+                      {roles.map((role, i) => (
+                        <span key={i} style={{ display: 'inline-flex', alignItems: 'center', gap: '6px', padding: '4px 10px', borderRadius: '16px', fontSize: '12px', background: role.isExternal ? 'var(--success-light)' : 'var(--steel-100)', color: role.isExternal ? 'var(--success)' : 'var(--steel-700)' }}>
+                          {role.name}
+                          {!role.isExternal && <span style={{ opacity: 0.6 }}>£{Math.round(role.salary/1000)}k</span>}
+                          <button onClick={() => removeRole(i)} style={{ background: 'none', border: 'none', cursor: 'pointer', fontSize: '14px', opacity: 0.5, padding: 0 }}>×</button>
+                        </span>
+                      ))}
+                      {roles.length === 0 && <span style={{ color: 'var(--slate-400)', fontSize: '12px' }}>Select an industry to get suggested roles</span>}
+                    </div>
+                    
+                    {suggestedRoles.length > 0 && (
+                      <div style={{ display: 'flex', flexWrap: 'wrap', gap: '6px', marginBottom: '12px' }}>
+                        {suggestedRoles.map((sr, i) => (
+                          <button key={i} onClick={() => addSuggestedRole(sr)}
+                            style={{ padding: '4px 10px', borderRadius: '16px', border: '1px dashed var(--slate-300)', background: '#FFF', fontSize: '12px', color: 'var(--slate-500)', cursor: 'pointer', fontFamily: 'inherit' }}>
+                            + {sr.name}
+                          </button>
+                        ))}
+                      </div>
+                    )}
+                    
+                    <div style={{ display: 'flex', gap: '8px' }}>
+                      <input type="text" value={newRoleName} onChange={(e) => setNewRoleName(e.target.value)} placeholder="Add custom role..." className="input" style={{ flex: 1 }} onKeyDown={(e) => e.key === 'Enter' && handleAddCustomRole()} />
+                      <label style={{ display: 'flex', alignItems: 'center', gap: '6px', fontSize: '12px', color: 'var(--slate-500)', whiteSpace: 'nowrap' }}>
+                        <input type="checkbox" checked={newRoleExternal} onChange={(e) => setNewRoleExternal(e.target.checked)} /> External
+                      </label>
+                      <button onClick={handleAddCustomRole} className="btn btn-secondary" style={{ padding: '8px 12px' }}>Add</button>
+                    </div>
+                  </div>
+                  
+                  <div style={{ display: 'flex', gap: '10px', marginTop: '24px' }}>
+                    <button onClick={handleBack} className="btn btn-secondary" style={{ flex: 1 }}>Back</button>
+                    <button onClick={() => setWizardStep(3)} className="btn btn-primary" style={{ flex: 1 }} disabled={roles.length < 2}>Continue</button>
+                  </div>
+                </>
+              )}
+              
+              {/* WIZARD STEP 3: Final Details */}
+              {mode === 'wizard' && wizardStep === 3 && (
+                <>
+                  <div style={{ marginBottom: '20px' }}>
+                    <label className="label">Key stages you know about <span style={{ fontWeight: 400, color: 'var(--slate-400)' }}>(optional)</span></label>
+                    <textarea
+                      value={knownStages}
+                      onChange={(e) => setKnownStages(e.target.value)}
+                      placeholder="e.g., Discovery, KYC, Fact-find, Advice, Implementation"
+                      rows={2}
+                      className="input"
+                      style={{ resize: 'vertical' }}
+                    />
+                    <p style={{ fontSize: '11px', color: 'var(--slate-400)', marginTop: '4px' }}>Leave blank to auto-generate based on journey type.</p>
+                  </div>
+                  
+                  <div style={{ padding: '16px', background: 'linear-gradient(135deg, var(--navy-50), var(--steel-100))', borderRadius: '12px', border: '1px solid var(--navy-100)', marginBottom: '20px' }}>
+                    <div style={{ display: 'flex', alignItems: 'flex-start', gap: '12px' }}>
+                      <span style={{ fontSize: '20px' }}>✨</span>
+                      <div style={{ flex: 1 }}>
+                        <div style={{ fontWeight: 600, color: 'var(--navy-700)', marginBottom: '4px', fontSize: '14px' }}>AI-Enhanced Generation</div>
+                        <div style={{ fontSize: '12px', color: 'var(--slate-600)', marginBottom: '10px' }}>Add your Anthropic API key for intelligent step descriptions and time estimates.</div>
+                        <input
+                          type="password"
+                          placeholder="sk-ant-api03-..."
+                          value={apiKey}
+                          onChange={(e) => setApiKey(e.target.value)}
+                          style={{ width: '100%', padding: '10px 12px', fontSize: '13px', fontFamily: 'monospace', borderRadius: '6px', border: '1px solid var(--slate-200)' }}
+                        />
+                        <div style={{ fontSize: '11px', color: 'var(--slate-400)', marginTop: '6px' }}>
+                          Optional. Without a key, we'll generate a smart template structure. <a href="https://console.anthropic.com/settings/keys" target="_blank" style={{ color: 'var(--steel-600)' }}>Get an API key →</a>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                  
+                  <div style={{ display: 'flex', gap: '10px' }}>
+                    <button onClick={handleBack} className="btn btn-secondary" style={{ flex: 1 }}>Back</button>
+                    <button onClick={handleGenerate} className="btn btn-primary" style={{ flex: 1, background: 'linear-gradient(135deg, var(--amber-500), var(--amber-600))' }}>
+                      ✨ Generate Journey
+                    </button>
+                  </div>
+                </>
+              )}
+              
+              {/* CUSTOMIZE MODE (for templates) */}
+              {mode === 'customize' && selectedTemplate && (
+                <>
                   <div style={{ display: 'flex', alignItems: 'center', gap: '14px', padding: '14px', background: 'var(--slate-50)', borderRadius: '10px', marginBottom: '20px' }}>
                     <div style={{ fontSize: '32px' }}>{selectedTemplate.icon}</div>
                     <div>
@@ -1965,33 +2420,17 @@
                   
                   <div style={{ marginBottom: '16px' }}>
                     <label className="label">Map Title</label>
-                    <input
-                      type="text"
-                      className="input"
-                      value={title}
-                      onChange={(e) => setTitle(e.target.value)}
-                      placeholder="e.g., Client Onboarding Journey"
-                      autoFocus
-                    />
+                    <input type="text" className="input" value={title} onChange={(e) => setTitle(e.target.value)} placeholder="e.g., Client Onboarding Journey" autoFocus />
                   </div>
                   
                   <div style={{ marginBottom: '24px' }}>
                     <label className="label">Description <span style={{ fontWeight: 400, color: 'var(--slate-400)' }}>(optional)</span></label>
-                    <textarea
-                      className="input"
-                      value={description}
-                      onChange={(e) => setDescription(e.target.value)}
-                      placeholder="Brief description of this journey map"
-                      rows={3}
-                      style={{ resize: 'vertical' }}
-                    />
+                    <textarea className="input" value={templateDescription} onChange={(e) => setTemplateDescription(e.target.value)} placeholder="Brief description of this journey map" rows={3} style={{ resize: 'vertical' }} />
                   </div>
                   
                   <div style={{ display: 'flex', gap: '10px' }}>
-                    <button onClick={onClose} className="btn btn-secondary" style={{ flex: 1 }}>
-                      Cancel
-                    </button>
-                    <button onClick={handleCreate} className="btn btn-primary" style={{ flex: 1 }} disabled={!title.trim() || isCreating}>
+                    <button onClick={onClose} className="btn btn-secondary" style={{ flex: 1 }}>Cancel</button>
+                    <button onClick={handleCreateTemplate} className="btn btn-primary" style={{ flex: 1 }} disabled={!title.trim() || isCreating}>
                       {isCreating ? 'Creating...' : 'Create Map'}
                     </button>
                   </div>
