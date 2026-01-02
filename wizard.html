@@ -1,0 +1,1360 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=5.0, viewport-fit=cover">
+  <title>FATHOM - Create Your Journey</title>
+  <script src="https://unpkg.com/react@18/umd/react.production.min.js"></script>
+  <script src="https://unpkg.com/react-dom@18/umd/react-dom.production.min.js"></script>
+  <script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
+  <style>
+    /* Interstate Font Family */
+    @font-face {
+      font-family: 'Interstate';
+      src: url('https://steveyoung74.github.io/journeymaps/fonts/Interstate-light.ttf') format('truetype');
+      font-weight: 300;
+      font-style: normal;
+      font-display: swap;
+    }
+    @font-face {
+      font-family: 'Interstate';
+      src: url('https://steveyoung74.github.io/journeymaps/fonts/Interstate-regular.ttf') format('truetype');
+      font-weight: 400;
+      font-style: normal;
+      font-display: swap;
+    }
+    @font-face {
+      font-family: 'Interstate';
+      src: url('https://steveyoung74.github.io/journeymaps/fonts/Interstate-bold.ttf') format('truetype');
+      font-weight: 700;
+      font-style: normal;
+      font-display: swap;
+    }
+    @font-face {
+      font-family: 'Interstate Condensed';
+      src: url('https://steveyoung74.github.io/journeymaps/fonts/Interstate-boldcondensed.ttf') format('truetype');
+      font-weight: 700;
+      font-style: normal;
+      font-display: swap;
+    }
+    
+    /* CSS Custom Properties */
+    :root {
+      --navy-950: #0C1620;
+      --navy-900: #111E2E;
+      --navy-800: #15243A;
+      --navy-700: #192B45;
+      --navy-600: #243D5C;
+      --navy-500: #2F5070;
+      --navy-400: #456A8A;
+      --navy-300: #6889A8;
+      --navy-200: #9BB1C7;
+      --navy-100: #C8D5E2;
+      --navy-50: #E9EEF4;
+      --steel-700: #3A6070;
+      --steel-600: #4A7485;
+      --steel-500: #5B8A9A;
+      --steel-400: #74A0AE;
+      --steel-300: #96BCC7;
+      --steel-100: #E1EEF2;
+      --amber-700: #8B6914;
+      --amber-600: #A67D1D;
+      --amber-500: #C4942A;
+      --amber-400: #D4A84A;
+      --amber-200: #E8D5A3;
+      --amber-100: #FAF0D6;
+      --success: #2D8A6E;
+      --success-light: #D4EDE5;
+      --error: #B84A5A;
+      --error-light: #F5E0E3;
+      --slate-900: #1A2332;
+      --slate-700: #3D4A5C;
+      --slate-600: #556275;
+      --slate-500: #6E7B8C;
+      --slate-400: #8A95A5;
+      --slate-300: #A9B2BE;
+      --slate-200: #C8CED6;
+      --slate-100: #E4E7EB;
+      --slate-50: #F4F5F7;
+    }
+    
+    /* Base Reset */
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    html, body {
+      width: 100%;
+      max-width: 100%;
+      overflow-x: hidden;
+    }
+    body { 
+      font-family: 'Interstate', -apple-system, BlinkMacSystemFont, sans-serif; 
+      background: var(--slate-50);
+      color: var(--slate-900);
+      line-height: 1.6;
+      min-height: 100vh;
+    }
+    
+    /* Topographic Background Pattern */
+    .topo-bg {
+      position: fixed;
+      top: 0;
+      left: 0;
+      right: 0;
+      bottom: 0;
+      opacity: 0.03;
+      pointer-events: none;
+      z-index: 0;
+      background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 400 400'%3E%3Cpath fill='none' stroke='%23192B45' stroke-width='1' d='M0 50 Q100 30 200 50 T400 50 M0 100 Q100 80 200 100 T400 100 M0 150 Q100 170 200 150 T400 150 M0 200 Q100 180 200 200 T400 200 M0 250 Q100 270 200 250 T400 250 M0 300 Q100 280 200 300 T400 300 M0 350 Q100 370 200 350 T400 350'/%3E%3C/svg%3E");
+      background-size: 200px 200px;
+    }
+    
+    /* Navigation */
+    .nav {
+      background: var(--navy-700);
+      padding: 16px 24px;
+      position: relative;
+      z-index: 100;
+    }
+    .nav-inner {
+      max-width: 1200px;
+      margin: 0 auto;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+    }
+    .logo {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      text-decoration: none;
+      color: #FFF;
+    }
+    .logo-icon {
+      width: 26px;
+      height: 26px;
+    }
+    .logo-text {
+      font-family: 'Interstate Condensed', sans-serif;
+      font-size: 22px;
+      font-weight: 700;
+      letter-spacing: 2px;
+    }
+    .nav-link {
+      color: rgba(255,255,255,0.8);
+      text-decoration: none;
+      font-size: 14px;
+      transition: color 0.2s;
+    }
+    .nav-link:hover {
+      color: #FFF;
+    }
+    
+    /* Main Container */
+    .main {
+      max-width: 720px;
+      margin: 0 auto;
+      padding: 48px 24px;
+      position: relative;
+      z-index: 1;
+    }
+    
+    /* Progress Indicator */
+    .progress {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 8px;
+      margin-bottom: 48px;
+    }
+    .progress-step {
+      width: 10px;
+      height: 10px;
+      border-radius: 50%;
+      background: var(--slate-200);
+      transition: all 0.3s ease;
+    }
+    .progress-step.active {
+      background: var(--navy-700);
+      width: 32px;
+      border-radius: 5px;
+    }
+    .progress-step.completed {
+      background: var(--success);
+    }
+    
+    /* Card */
+    .card {
+      background: #FFF;
+      border-radius: 16px;
+      box-shadow: 0 1px 3px rgba(0,0,0,0.08), 0 4px 12px rgba(0,0,0,0.04);
+      padding: 40px;
+      margin-bottom: 24px;
+    }
+    
+    /* Typography */
+    .step-label {
+      font-size: 12px;
+      font-weight: 600;
+      color: var(--steel-500);
+      text-transform: uppercase;
+      letter-spacing: 1px;
+      margin-bottom: 8px;
+    }
+    .step-title {
+      font-size: 28px;
+      font-weight: 600;
+      color: var(--navy-700);
+      margin-bottom: 8px;
+      line-height: 1.2;
+    }
+    .step-description {
+      font-size: 15px;
+      color: var(--slate-500);
+      margin-bottom: 32px;
+    }
+    
+    /* Form Elements */
+    .input-group {
+      margin-bottom: 24px;
+    }
+    .input-label {
+      display: block;
+      font-size: 13px;
+      font-weight: 500;
+      color: var(--slate-700);
+      margin-bottom: 8px;
+    }
+    .input-hint {
+      font-size: 12px;
+      color: var(--slate-400);
+      margin-top: 6px;
+    }
+    
+    input[type="text"],
+    textarea,
+    select {
+      width: 100%;
+      padding: 14px 16px;
+      border: 1px solid var(--slate-200);
+      border-radius: 10px;
+      font-size: 15px;
+      font-family: inherit;
+      color: var(--slate-900);
+      background: #FFF;
+      transition: all 0.2s;
+    }
+    input[type="text"]:focus,
+    textarea:focus,
+    select:focus {
+      outline: none;
+      border-color: var(--navy-400);
+      box-shadow: 0 0 0 3px rgba(25, 43, 69, 0.1);
+    }
+    input[type="text"]::placeholder,
+    textarea::placeholder {
+      color: var(--slate-400);
+    }
+    textarea {
+      resize: vertical;
+      min-height: 100px;
+    }
+    select {
+      cursor: pointer;
+      appearance: none;
+      background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 12 12'%3E%3Cpath fill='%236E7B8C' d='M6 8L2 4h8z'/%3E%3C/svg%3E");
+      background-repeat: no-repeat;
+      background-position: right 14px center;
+      padding-right: 40px;
+    }
+    
+    /* Option Pills */
+    .option-pills {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 10px;
+    }
+    .option-pill {
+      padding: 10px 18px;
+      border: 1px solid var(--slate-200);
+      border-radius: 24px;
+      font-size: 14px;
+      color: var(--slate-600);
+      background: #FFF;
+      cursor: pointer;
+      transition: all 0.2s;
+    }
+    .option-pill:hover {
+      border-color: var(--navy-400);
+      color: var(--navy-700);
+    }
+    .option-pill.selected {
+      background: var(--navy-700);
+      border-color: var(--navy-700);
+      color: #FFF;
+    }
+    
+    /* Role Tags */
+    .role-tags {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 10px;
+      margin-bottom: 16px;
+    }
+    .role-tag {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      padding: 8px 14px;
+      background: var(--navy-50);
+      border: 1px solid var(--navy-100);
+      border-radius: 8px;
+      font-size: 14px;
+      color: var(--navy-700);
+    }
+    .role-tag.external {
+      background: var(--success-light);
+      border-color: #B8E0D4;
+      color: var(--success);
+    }
+    .role-tag-remove {
+      width: 18px;
+      height: 18px;
+      border-radius: 50%;
+      background: rgba(0,0,0,0.1);
+      border: none;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 12px;
+      color: inherit;
+      opacity: 0.6;
+      transition: opacity 0.2s;
+    }
+    .role-tag-remove:hover {
+      opacity: 1;
+    }
+    
+    /* Suggested Roles */
+    .suggested-roles {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 8px;
+      margin-top: 16px;
+      padding-top: 16px;
+      border-top: 1px dashed var(--slate-200);
+    }
+    .suggested-label {
+      width: 100%;
+      font-size: 12px;
+      color: var(--slate-400);
+      margin-bottom: 4px;
+    }
+    .suggested-role {
+      padding: 6px 12px;
+      border: 1px dashed var(--slate-300);
+      border-radius: 6px;
+      font-size: 13px;
+      color: var(--slate-500);
+      background: transparent;
+      cursor: pointer;
+      transition: all 0.2s;
+    }
+    .suggested-role:hover {
+      border-color: var(--navy-400);
+      border-style: solid;
+      color: var(--navy-700);
+      background: var(--navy-50);
+    }
+    
+    /* Add Role Input */
+    .add-role-row {
+      display: flex;
+      gap: 10px;
+      margin-top: 16px;
+    }
+    .add-role-row input {
+      flex: 1;
+    }
+    .add-role-row select {
+      width: 140px;
+    }
+    .add-role-btn {
+      padding: 12px 20px;
+      background: var(--navy-700);
+      color: #FFF;
+      border: none;
+      border-radius: 10px;
+      font-size: 14px;
+      font-weight: 500;
+      cursor: pointer;
+      white-space: nowrap;
+      transition: background 0.2s;
+    }
+    .add-role-btn:hover {
+      background: var(--navy-800);
+    }
+    .add-role-btn:disabled {
+      background: var(--slate-300);
+      cursor: not-allowed;
+    }
+    
+    /* Buttons */
+    .btn-row {
+      display: flex;
+      gap: 12px;
+      justify-content: space-between;
+      margin-top: 32px;
+    }
+    .btn {
+      padding: 14px 28px;
+      border-radius: 10px;
+      font-size: 15px;
+      font-weight: 500;
+      cursor: pointer;
+      transition: all 0.2s;
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+    }
+    .btn-secondary {
+      background: transparent;
+      border: 1px solid var(--slate-300);
+      color: var(--slate-600);
+    }
+    .btn-secondary:hover {
+      background: var(--slate-50);
+      border-color: var(--slate-400);
+    }
+    .btn-primary {
+      background: var(--navy-700);
+      border: none;
+      color: #FFF;
+    }
+    .btn-primary:hover {
+      background: var(--navy-800);
+    }
+    .btn-primary:disabled {
+      background: var(--slate-300);
+      cursor: not-allowed;
+    }
+    .btn-generate {
+      background: linear-gradient(135deg, var(--amber-500), var(--amber-600));
+      border: none;
+      color: #FFF;
+      padding: 16px 32px;
+      font-size: 16px;
+    }
+    .btn-generate:hover {
+      background: linear-gradient(135deg, var(--amber-600), var(--amber-700));
+    }
+    .btn-generate:disabled {
+      background: var(--slate-300);
+      cursor: not-allowed;
+    }
+    
+    /* Loading State */
+    .generating {
+      text-align: center;
+      padding: 60px 40px;
+    }
+    .generating-icon {
+      width: 80px;
+      height: 80px;
+      margin: 0 auto 24px;
+      animation: pulse 2s ease-in-out infinite;
+    }
+    .generating-title {
+      font-size: 22px;
+      font-weight: 600;
+      color: var(--navy-700);
+      margin-bottom: 8px;
+    }
+    .generating-subtitle {
+      font-size: 15px;
+      color: var(--slate-500);
+    }
+    @keyframes pulse {
+      0%, 100% { opacity: 0.6; transform: scale(1); }
+      50% { opacity: 1; transform: scale(1.05); }
+    }
+    
+    /* Error State */
+    .error-banner {
+      background: var(--error-light);
+      border: 1px solid var(--error);
+      border-radius: 10px;
+      padding: 16px;
+      margin-bottom: 24px;
+      color: var(--error);
+      font-size: 14px;
+    }
+    
+    /* Responsive */
+    @media (max-width: 640px) {
+      .main {
+        padding: 32px 16px;
+      }
+      .card {
+        padding: 28px 20px;
+      }
+      .step-title {
+        font-size: 24px;
+      }
+      .btn-row {
+        flex-direction: column-reverse;
+      }
+      .btn {
+        width: 100%;
+        justify-content: center;
+      }
+      .add-role-row {
+        flex-direction: column;
+      }
+      .add-role-row select {
+        width: 100%;
+      }
+    }
+  </style>
+</head>
+<body>
+  <div class="topo-bg"></div>
+  
+  <nav class="nav">
+    <div class="nav-inner">
+      <a href="dashboard.html" class="logo">
+        <svg class="logo-icon" viewBox="0 0 40 40" fill="none">
+          <path d="M4 10 Q12 8 20 10 T36 10" stroke="#5B8A9A" stroke-width="2.5" fill="none" opacity="0.5"/>
+          <path d="M4 17 Q14 14 20 17 T36 17" stroke="#74A0AE" stroke-width="2.5" fill="none" opacity="0.65"/>
+          <path d="M4 24 Q10 27 20 24 T36 24" stroke="#96BCC7" stroke-width="2.5" fill="none" opacity="0.8"/>
+          <path d="M4 31 Q16 28 20 31 T36 31" stroke="#BDD6DE" stroke-width="2.5" fill="none" opacity="0.9"/>
+        </svg>
+        <span class="logo-text">FATHOM</span>
+      </a>
+      <a href="dashboard.html" class="nav-link">← Back to Dashboard</a>
+    </div>
+  </nav>
+  
+  <div id="root"></div>
+  
+  <script type="text/babel">
+    const { useState, useEffect, useCallback } = React;
+    
+    // GitHub Configuration
+    const GITHUB_CONFIG = {
+      owner: 'steveyoung74',
+      repo: 'journeymaps',
+      branch: 'main',
+      indexFile: 'maps/index.json',
+      mapsPath: 'maps'
+    };
+    
+    // Industry configurations with suggested roles and typical salaries (UK)
+    const INDUSTRIES = {
+      'financial-services': {
+        label: 'Financial Services',
+        roles: [
+          { name: 'Client', salary: 0, isExternal: true },
+          { name: 'Financial Adviser', salary: 75000, isExternal: false },
+          { name: 'Paraplanner', salary: 45000, isExternal: false },
+          { name: 'Administrator', salary: 28000, isExternal: false },
+          { name: 'Compliance Officer', salary: 55000, isExternal: false },
+          { name: 'Investment Manager', salary: 80000, isExternal: false },
+          { name: 'Operations', salary: 32000, isExternal: false }
+        ]
+      },
+      'accounting': {
+        label: 'Accounting & Professional Services',
+        roles: [
+          { name: 'Client', salary: 0, isExternal: true },
+          { name: 'Partner', salary: 150000, isExternal: false },
+          { name: 'Senior Accountant', salary: 55000, isExternal: false },
+          { name: 'Accountant', salary: 38000, isExternal: false },
+          { name: 'Administrator', salary: 26000, isExternal: false },
+          { name: 'Tax Specialist', salary: 60000, isExternal: false }
+        ]
+      },
+      'legal': {
+        label: 'Legal Services',
+        roles: [
+          { name: 'Client', salary: 0, isExternal: true },
+          { name: 'Partner', salary: 180000, isExternal: false },
+          { name: 'Associate', salary: 65000, isExternal: false },
+          { name: 'Paralegal', salary: 32000, isExternal: false },
+          { name: 'Legal Secretary', salary: 28000, isExternal: false },
+          { name: 'Compliance', salary: 50000, isExternal: false }
+        ]
+      },
+      'healthcare': {
+        label: 'Healthcare',
+        roles: [
+          { name: 'Patient', salary: 0, isExternal: true },
+          { name: 'Consultant', salary: 120000, isExternal: false },
+          { name: 'GP', salary: 85000, isExternal: false },
+          { name: 'Nurse', salary: 38000, isExternal: false },
+          { name: 'Administrator', salary: 26000, isExternal: false },
+          { name: 'Receptionist', salary: 24000, isExternal: false }
+        ]
+      },
+      'hr': {
+        label: 'HR / People Operations',
+        roles: [
+          { name: 'Employee', salary: 0, isExternal: true },
+          { name: 'Candidate', salary: 0, isExternal: true },
+          { name: 'HR Director', salary: 85000, isExternal: false },
+          { name: 'HR Manager', salary: 55000, isExternal: false },
+          { name: 'Recruiter', salary: 40000, isExternal: false },
+          { name: 'HR Administrator', salary: 28000, isExternal: false },
+          { name: 'Line Manager', salary: 50000, isExternal: false }
+        ]
+      },
+      'property': {
+        label: 'Property & Real Estate',
+        roles: [
+          { name: 'Buyer', salary: 0, isExternal: true },
+          { name: 'Seller', salary: 0, isExternal: true },
+          { name: 'Tenant', salary: 0, isExternal: true },
+          { name: 'Agent', salary: 35000, isExternal: false },
+          { name: 'Property Manager', salary: 42000, isExternal: false },
+          { name: 'Solicitor', salary: 55000, isExternal: false },
+          { name: 'Surveyor', salary: 48000, isExternal: false }
+        ]
+      },
+      'saas': {
+        label: 'B2B / SaaS',
+        roles: [
+          { name: 'Customer', salary: 0, isExternal: true },
+          { name: 'Prospect', salary: 0, isExternal: true },
+          { name: 'Account Executive', salary: 65000, isExternal: false },
+          { name: 'SDR', salary: 32000, isExternal: false },
+          { name: 'Customer Success', salary: 45000, isExternal: false },
+          { name: 'Solutions Engineer', salary: 70000, isExternal: false },
+          { name: 'Support', salary: 30000, isExternal: false }
+        ]
+      },
+      'government': {
+        label: 'Public Sector / Government',
+        roles: [
+          { name: 'Citizen', salary: 0, isExternal: true },
+          { name: 'Applicant', salary: 0, isExternal: true },
+          { name: 'Case Officer', salary: 35000, isExternal: false },
+          { name: 'Manager', salary: 48000, isExternal: false },
+          { name: 'Administrator', salary: 28000, isExternal: false },
+          { name: 'Specialist', salary: 42000, isExternal: false }
+        ]
+      },
+      'other': {
+        label: 'Other',
+        roles: [
+          { name: 'Customer', salary: 0, isExternal: true },
+          { name: 'Manager', salary: 50000, isExternal: false },
+          { name: 'Staff', salary: 32000, isExternal: false },
+          { name: 'Administrator', salary: 28000, isExternal: false }
+        ]
+      }
+    };
+    
+    const JOURNEY_TYPES = [
+      'Client Onboarding',
+      'Employee Onboarding',
+      'Service Delivery',
+      'Sales Process',
+      'Support / Case Management',
+      'Application Processing',
+      'Complaint Handling',
+      'Procurement',
+      'Other'
+    ];
+    
+    const COMPLEXITY_OPTIONS = [
+      { value: 'simple', label: 'Simple', stages: '3-4 stages' },
+      { value: 'medium', label: 'Medium', stages: '5-6 stages' },
+      { value: 'complex', label: 'Complex', stages: '7+ stages' }
+    ];
+    
+    // GitHub API functions
+    async function saveToGitHub(path, content, token, message = 'Update from Fathom') {
+      const apiUrl = `https://api.github.com/repos/${GITHUB_CONFIG.owner}/${GITHUB_CONFIG.repo}/contents/${path}`;
+      
+      // Get current file SHA if it exists
+      let sha;
+      try {
+        const response = await fetch(apiUrl, {
+          headers: { 'Authorization': `token ${token}` }
+        });
+        if (response.ok) {
+          const data = await response.json();
+          sha = data.sha;
+        }
+      } catch (e) {}
+      
+      const body = {
+        message,
+        content: btoa(unescape(encodeURIComponent(JSON.stringify(content, null, 2)))),
+        branch: GITHUB_CONFIG.branch
+      };
+      if (sha) body.sha = sha;
+      
+      const response = await fetch(apiUrl, {
+        method: 'PUT',
+        headers: {
+          'Authorization': `token ${token}`,
+          'Content-Type': 'application/json'
+        },
+        body: JSON.stringify(body)
+      });
+      
+      if (!response.ok) throw new Error('Failed to save to GitHub');
+      return response.json();
+    }
+    
+    async function fetchFromGitHub(path) {
+      const apiUrl = `https://api.github.com/repos/${GITHUB_CONFIG.owner}/${GITHUB_CONFIG.repo}/contents/${path}`;
+      const response = await fetch(apiUrl);
+      if (!response.ok) throw new Error('Failed to fetch');
+      const data = await response.json();
+      return JSON.parse(decodeURIComponent(escape(atob(data.content))));
+    }
+    
+    // Main Wizard Component
+    function Wizard() {
+      const [currentStep, setCurrentStep] = useState(1);
+      const [isGenerating, setIsGenerating] = useState(false);
+      const [error, setError] = useState('');
+      
+      // Form state
+      const [description, setDescription] = useState('');
+      const [industry, setIndustry] = useState('');
+      const [journeyType, setJourneyType] = useState('');
+      const [complexity, setComplexity] = useState('medium');
+      const [roles, setRoles] = useState([]);
+      const [newRoleName, setNewRoleName] = useState('');
+      const [newRoleType, setNewRoleType] = useState('internal');
+      const [knownStages, setKnownStages] = useState('');
+      
+      // User context
+      const [user, setUser] = useState(null);
+      const [token, setToken] = useState('');
+      const [maps, setMaps] = useState([]);
+      
+      // Load user and maps on mount
+      useEffect(() => {
+        const storedUser = localStorage.getItem('fathom_user');
+        const storedToken = localStorage.getItem('fathom_github_token');
+        
+        if (storedUser) {
+          setUser(JSON.parse(storedUser));
+        } else {
+          // Redirect to login if no user
+          window.location.href = 'index.html';
+          return;
+        }
+        
+        if (storedToken) {
+          setToken(storedToken);
+          // Load existing maps
+          fetchFromGitHub(GITHUB_CONFIG.indexFile)
+            .then(data => setMaps(data.maps || []))
+            .catch(() => setMaps([]));
+        }
+      }, []);
+      
+      // Get suggested roles based on industry
+      const suggestedRoles = industry ? INDUSTRIES[industry]?.roles || [] : [];
+      const unusedSuggestions = suggestedRoles.filter(
+        sr => !roles.find(r => r.name.toLowerCase() === sr.name.toLowerCase())
+      );
+      
+      const addRole = (roleName, salary = 35000, isExternal = false) => {
+        if (!roleName.trim()) return;
+        if (roles.find(r => r.name.toLowerCase() === roleName.toLowerCase())) return;
+        
+        setRoles([...roles, {
+          id: roleName.toLowerCase().replace(/\s+/g, '-'),
+          name: roleName.trim(),
+          salary: isExternal ? 0 : salary,
+          isExternal
+        }]);
+        setNewRoleName('');
+      };
+      
+      const addSuggestedRole = (suggestion) => {
+        addRole(suggestion.name, suggestion.salary, suggestion.isExternal);
+      };
+      
+      const removeRole = (index) => {
+        setRoles(roles.filter((_, i) => i !== index));
+      };
+      
+      const handleAddCustomRole = () => {
+        if (!newRoleName.trim()) return;
+        addRole(newRoleName, newRoleType === 'external' ? 0 : 35000, newRoleType === 'external');
+      };
+      
+      // Generate journey using Claude API
+      // Smart fallback generator (no AI required)
+      const generateFallbackJourney = () => {
+        // Parse known stages or use defaults based on journey type
+        let stageNames = [];
+        if (knownStages.trim()) {
+          stageNames = knownStages.split(/[,\n]+/).map(s => s.trim()).filter(Boolean);
+        } else {
+          // Default stages based on journey type
+          const defaultStages = {
+            'Client Onboarding': ['Initial Contact', 'Discovery', 'Documentation', 'Setup', 'Handover'],
+            'Employee Onboarding': ['Offer', 'Pre-boarding', 'Day One', 'Training', 'Integration'],
+            'Service Delivery': ['Request', 'Planning', 'Execution', 'Review', 'Delivery'],
+            'Sales Process': ['Lead', 'Qualification', 'Proposal', 'Negotiation', 'Close'],
+            'Support / Case Management': ['Intake', 'Triage', 'Investigation', 'Resolution', 'Follow-up'],
+            'Application Processing': ['Submission', 'Validation', 'Assessment', 'Decision', 'Notification'],
+            'Complaint Handling': ['Receipt', 'Investigation', 'Resolution', 'Communication', 'Learning'],
+            'Procurement': ['Request', 'Sourcing', 'Evaluation', 'Contracting', 'Onboarding']
+          };
+          stageNames = defaultStages[journeyType] || ['Initiation', 'Planning', 'Execution', 'Review', 'Completion'];
+        }
+        
+        // Adjust stage count based on complexity
+        const targetStages = complexity === 'simple' ? 3 : complexity === 'complex' ? 7 : 5;
+        while (stageNames.length < targetStages) {
+          stageNames.push(`Stage ${stageNames.length + 1}`);
+        }
+        stageNames = stageNames.slice(0, targetStages + 1);
+        
+        // Find primary internal and external roles
+        const externalRoles = roles.filter(r => r.isExternal);
+        const internalRoles = roles.filter(r => !r.isExternal);
+        const primaryExternal = externalRoles[0] || { id: 'customer', name: 'Customer', salary: 0, isExternal: true };
+        const primaryInternal = internalRoles[0] || { id: 'staff', name: 'Staff', salary: 35000, isExternal: false };
+        
+        // Generate stages with steps
+        const stages = stageNames.map((stageName, si) => {
+          const stepsPerStage = complexity === 'simple' ? 2 : complexity === 'complex' ? 4 : 3;
+          const steps = [];
+          
+          for (let i = 0; i < stepsPerStage; i++) {
+            // Vary owner based on step position
+            let owner;
+            if (i === 0 && externalRoles.length > 0) {
+              owner = primaryExternal;
+            } else if (internalRoles.length > 0) {
+              owner = internalRoles[i % internalRoles.length];
+            } else {
+              owner = primaryInternal;
+            }
+            
+            steps.push({
+              id: `step-${si + 1}-${i + 1}`,
+              name: `Step ${i + 1}`,
+              description: '',
+              owner: owner.id,
+              timeMinutes: [15, 30, 45, 60, 90][Math.floor(Math.random() * 5)],
+              frictionLevel: i === 0 ? 1 : [1, 2, 2, 3][Math.floor(Math.random() * 4)],
+              notes: ''
+            });
+          }
+          
+          return {
+            id: `stage-${si + 1}`,
+            name: stageName,
+            steps
+          };
+        });
+        
+        // Generate personas from roles
+        const personas = roles.map(r => ({
+          id: r.id,
+          label: r.name,
+          annualSalary: r.salary,
+          isExternal: r.isExternal,
+          burdenMultiplier: r.isExternal ? 1 : 1.3,
+          workspaceHourlyCost: r.isExternal ? 0 : 6,
+          color: r.isExternal ? '#2D8A6E' : '#5B8A9A'
+        }));
+        
+        // Create title from description
+        const title = description.length > 60 
+          ? description.slice(0, 60).trim() + '...'
+          : description || `${journeyType || 'Process'} Journey`;
+        
+        return { title, stages, personas };
+      };
+      
+      const generateJourney = async () => {
+        if (!token) {
+          setError('GitHub token required. Please set up your token in the dashboard settings.');
+          return;
+        }
+        
+        setIsGenerating(true);
+        setError('');
+        
+        // Check for API key
+        const apiKey = localStorage.getItem('fathom_anthropic_key');
+        
+        let journeyConfig;
+        
+        if (apiKey) {
+          // Try AI generation
+          try {
+            const prompt = `You are an expert in operational process design and journey mapping. Generate a detailed journey map for:
+
+CONTEXT:
+- Description: ${description}
+- Industry: ${INDUSTRIES[industry]?.label || 'General'}
+- Journey Type: ${journeyType || 'Process'}
+- Complexity: ${complexity} (${COMPLEXITY_OPTIONS.find(c => c.value === complexity)?.stages})
+- Roles involved: ${roles.map(r => \`\${r.name}\${r.isExternal ? ' (external)' : ''}\`).join(', ')}
+${knownStages ? `- Key stages mentioned: ${knownStages}` : ''}
+
+Generate a JSON object with this EXACT structure (no markdown, no code blocks, just pure JSON):
+{
+  "title": "Journey title based on description",
+  "stages": [
+    {
+      "id": "stage-1",
+      "name": "Stage Name",
+      "steps": [
+        {
+          "id": "step-1-1",
+          "name": "Step name",
+          "description": "Brief description of what happens",
+          "owner": "role-id matching one of the provided roles",
+          "timeMinutes": 30,
+          "frictionLevel": 1,
+          "notes": ""
+        }
+      ]
+    }
+  ],
+  "personas": [
+    {
+      "id": "role-id",
+      "label": "Role Name",
+      "annualSalary": 45000,
+      "isExternal": false,
+      "burdenMultiplier": 1.3,
+      "workspaceHourlyCost": 6
+    }
+  ]
+}
+
+IMPORTANT RULES:
+1. Use the EXACT roles provided: ${JSON.stringify(roles.map(r => ({ id: r.id, name: r.name, salary: r.salary, isExternal: r.isExternal })))}
+2. For personas, use "label" not "name"
+3. frictionLevel is a number: 1=none, 2=low, 3=medium, 4=high
+4. timeMinutes should be realistic for UK businesses
+5. External roles have salary: 0, isExternal: true
+6. Internal roles need burdenMultiplier: 1.3 and workspaceHourlyCost: 6
+7. Create ${complexity === 'simple' ? '3-4' : complexity === 'medium' ? '5-6' : '7-8'} stages with 2-5 steps each
+8. Each step must have an owner that matches a role id
+9. Return ONLY valid JSON, no explanation or markdown`;
+
+            const response = await fetch('https://api.anthropic.com/v1/messages', {
+              method: 'POST',
+              headers: {
+                'Content-Type': 'application/json',
+                'x-api-key': apiKey,
+                'anthropic-version': '2023-06-01',
+                'anthropic-dangerous-direct-browser-access': 'true'
+              },
+              body: JSON.stringify({
+                model: 'claude-sonnet-4-20250514',
+                max_tokens: 4000,
+                messages: [{ role: 'user', content: prompt }]
+              })
+            });
+            
+            if (!response.ok) {
+              console.warn('AI generation failed, using fallback');
+              journeyConfig = generateFallbackJourney();
+            } else {
+              const data = await response.json();
+              const content = data.content[0];
+              
+              if (content.type !== 'text') {
+                throw new Error('Unexpected response format');
+              }
+              
+              // Parse the JSON response
+              let jsonText = content.text.trim();
+              if (jsonText.startsWith('\`\`\`')) {
+                jsonText = jsonText.replace(/^\`\`\`json?\n?/, '').replace(/\n?\`\`\`$/, '');
+              }
+              journeyConfig = JSON.parse(jsonText);
+            }
+          } catch (e) {
+            console.warn('AI generation error, using fallback:', e);
+            journeyConfig = generateFallbackJourney();
+          }
+        } else {
+          // No API key - use fallback generator
+          journeyConfig = generateFallbackJourney();
+        }
+        
+        try {
+          
+          // Create the map in GitHub
+          const mapId = 'map-' + Date.now();
+          const now = new Date().toISOString();
+          
+          const mapMetadata = {
+            id: mapId,
+            title: journeyConfig.title || description.slice(0, 50),
+            description: description,
+            owner: user.email,
+            createdAt: now,
+            updatedAt: now,
+            sharedWith: []
+          };
+          
+          const mapConfig = {
+            meta: {
+              title: journeyConfig.title || description.slice(0, 50),
+              version: '1.0',
+              template: 'ai-generated',
+              product: 'FATHOM Wizard',
+              lastUpdated: now
+            },
+            funnel: {
+              enabled: false,
+              initialVolume: 100,
+              periodLabel: 'per month'
+            },
+            personas: journeyConfig.personas.map(p => ({
+              id: p.id,
+              label: p.label,
+              annualSalary: p.annualSalary || p.salary || 0,
+              isExternal: p.isExternal || false,
+              burdenMultiplier: p.burdenMultiplier || 1.3,
+              workspaceHourlyCost: p.workspaceHourlyCost || 6,
+              color: p.isExternal ? '#2D8A6E' : '#5B8A9A'
+            })),
+            stages: journeyConfig.stages.map(stage => ({
+              id: stage.id,
+              name: stage.name,
+              dropOffCount: 0,
+              steps: stage.steps.map(step => ({
+                id: step.id,
+                name: step.name,
+                description: step.description || '',
+                owner: step.owner,
+                timeMinutes: step.timeMinutes || 30,
+                frictionLevel: step.frictionLevel || 1,
+                painPoints: [],
+                automationOpportunity: 'none',
+                notes: step.notes || ''
+              }))
+            }))
+          };
+          
+          // Save to GitHub
+          await saveToGitHub(GITHUB_CONFIG.indexFile, { maps: [...maps, mapMetadata] }, token, `Create: ${mapMetadata.title}`);
+          await saveToGitHub(`${GITHUB_CONFIG.mapsPath}/${mapId}.json`, mapConfig, token, `Create config: ${mapMetadata.title}`);
+          
+          // Redirect to editor
+          window.location.href = `editor.html?map=${mapId}`;
+          
+        } catch (err) {
+          console.error('Generation error:', err);
+          setError(err.message || 'Failed to generate journey. Please try again.');
+          setIsGenerating(false);
+        }
+      };
+      
+      const canProceed = () => {
+        switch (currentStep) {
+          case 1: return description.trim().length > 10;
+          case 2: return true; // Optional step
+          case 3: return roles.length >= 2;
+          case 4: return true; // Optional step
+          default: return false;
+        }
+      };
+      
+      const nextStep = () => {
+        if (currentStep < 4) {
+          setCurrentStep(currentStep + 1);
+        }
+      };
+      
+      const prevStep = () => {
+        if (currentStep > 1) {
+          setCurrentStep(currentStep - 1);
+        }
+      };
+      
+      // Generating state
+      if (isGenerating) {
+        return (
+          <main className="main">
+            <div className="card generating">
+              <svg className="generating-icon" viewBox="0 0 80 80" fill="none">
+                <path d="M8 20 Q24 16 40 20 T72 20" stroke="#5B8A9A" strokeWidth="3" fill="none" opacity="0.5"/>
+                <path d="M8 34 Q28 28 40 34 T72 34" stroke="#74A0AE" strokeWidth="3" fill="none" opacity="0.65"/>
+                <path d="M8 48 Q20 54 40 48 T72 48" stroke="#96BCC7" strokeWidth="3" fill="none" opacity="0.8"/>
+                <path d="M8 62 Q32 56 40 62 T72 62" stroke="#BDD6DE" strokeWidth="3" fill="none" opacity="0.9"/>
+              </svg>
+              <h2 className="generating-title">Creating your journey map...</h2>
+              <p className="generating-subtitle">This usually takes about 10-15 seconds</p>
+            </div>
+          </main>
+        );
+      }
+      
+      return (
+        <main className="main">
+          {/* Progress */}
+          <div className="progress">
+            {[1, 2, 3, 4].map(step => (
+              <div
+                key={step}
+                className={`progress-step ${step === currentStep ? 'active' : ''} ${step < currentStep ? 'completed' : ''}`}
+              />
+            ))}
+          </div>
+          
+          {error && (
+            <div className="error-banner">
+              {error}
+            </div>
+          )}
+          
+          {/* Step 1: What are you mapping? */}
+          {currentStep === 1 && (
+            <div className="card">
+              <div className="step-label">Step 1 of 4</div>
+              <h1 className="step-title">What are you mapping?</h1>
+              <p className="step-description">
+                Describe the process or journey you want to understand better. Be as specific as you like.
+              </p>
+              
+              <div className="input-group">
+                <textarea
+                  value={description}
+                  onChange={(e) => setDescription(e.target.value)}
+                  placeholder="e.g., Client onboarding for a boutique accounting firm that specialises in owner-managed businesses"
+                  rows={4}
+                />
+                <div className="input-hint">
+                  The more detail you provide, the better we can tailor your journey map
+                </div>
+              </div>
+              
+              <div className="btn-row">
+                <a href="dashboard.html" className="btn btn-secondary">Cancel</a>
+                <button 
+                  className="btn btn-primary" 
+                  onClick={nextStep}
+                  disabled={!canProceed()}
+                >
+                  Continue →
+                </button>
+              </div>
+            </div>
+          )}
+          
+          {/* Step 2: Tell us more */}
+          {currentStep === 2 && (
+            <div className="card">
+              <div className="step-label">Step 2 of 4</div>
+              <h1 className="step-title">Tell us more</h1>
+              <p className="step-description">
+                These optional details help us generate more accurate time and cost estimates.
+              </p>
+              
+              <div className="input-group">
+                <label className="input-label">Industry</label>
+                <select value={industry} onChange={(e) => setIndustry(e.target.value)}>
+                  <option value="">Select an industry...</option>
+                  {Object.entries(INDUSTRIES).map(([key, ind]) => (
+                    <option key={key} value={key}>{ind.label}</option>
+                  ))}
+                </select>
+              </div>
+              
+              <div className="input-group">
+                <label className="input-label">Journey Type</label>
+                <select value={journeyType} onChange={(e) => setJourneyType(e.target.value)}>
+                  <option value="">Select a type...</option>
+                  {JOURNEY_TYPES.map(type => (
+                    <option key={type} value={type}>{type}</option>
+                  ))}
+                </select>
+              </div>
+              
+              <div className="input-group">
+                <label className="input-label">Complexity</label>
+                <div className="option-pills">
+                  {COMPLEXITY_OPTIONS.map(opt => (
+                    <button
+                      key={opt.value}
+                      className={`option-pill ${complexity === opt.value ? 'selected' : ''}`}
+                      onClick={() => setComplexity(opt.value)}
+                    >
+                      {opt.label} <span style={{ opacity: 0.7, fontSize: '12px' }}>({opt.stages})</span>
+                    </button>
+                  ))}
+                </div>
+              </div>
+              
+              <div className="btn-row">
+                <button className="btn btn-secondary" onClick={prevStep}>← Back</button>
+                <button className="btn btn-primary" onClick={nextStep}>
+                  Continue →
+                </button>
+              </div>
+            </div>
+          )}
+          
+          {/* Step 3: Who's involved? */}
+          {currentStep === 3 && (
+            <div className="card">
+              <div className="step-label">Step 3 of 4</div>
+              <h1 className="step-title">Who's involved?</h1>
+              <p className="step-description">
+                Add the roles that participate in this journey. Include both internal staff and external parties.
+              </p>
+              
+              {roles.length > 0 && (
+                <div className="role-tags">
+                  {roles.map((role, index) => (
+                    <div key={index} className={`role-tag ${role.isExternal ? 'external' : ''}`}>
+                      <span>{role.name}</span>
+                      {!role.isExternal && <span style={{ opacity: 0.6, fontSize: '12px' }}>£{(role.salary/1000).toFixed(0)}k</span>}
+                      <button className="role-tag-remove" onClick={() => removeRole(index)}>×</button>
+                    </div>
+                  ))}
+                </div>
+              )}
+              
+              <div className="add-role-row">
+                <input
+                  type="text"
+                  value={newRoleName}
+                  onChange={(e) => setNewRoleName(e.target.value)}
+                  placeholder="Add a role..."
+                  onKeyPress={(e) => e.key === 'Enter' && handleAddCustomRole()}
+                />
+                <select value={newRoleType} onChange={(e) => setNewRoleType(e.target.value)}>
+                  <option value="internal">Internal</option>
+                  <option value="external">External</option>
+                </select>
+                <button 
+                  className="add-role-btn" 
+                  onClick={handleAddCustomRole}
+                  disabled={!newRoleName.trim()}
+                >
+                  + Add
+                </button>
+              </div>
+              
+              {unusedSuggestions.length > 0 && (
+                <div className="suggested-roles">
+                  <div className="suggested-label">Suggested for {INDUSTRIES[industry]?.label || 'your industry'}:</div>
+                  {unusedSuggestions.slice(0, 6).map((suggestion, index) => (
+                    <button
+                      key={index}
+                      className="suggested-role"
+                      onClick={() => addSuggestedRole(suggestion)}
+                    >
+                      + {suggestion.name}
+                    </button>
+                  ))}
+                </div>
+              )}
+              
+              <div className="btn-row">
+                <button className="btn btn-secondary" onClick={prevStep}>← Back</button>
+                <button 
+                  className="btn btn-primary" 
+                  onClick={nextStep}
+                  disabled={!canProceed()}
+                >
+                  Continue →
+                </button>
+              </div>
+            </div>
+          )}
+          
+          {/* Step 4: Known stages */}
+          {currentStep === 4 && (
+            <div className="card">
+              <div className="step-label">Step 4 of 4</div>
+              <h1 className="step-title">Final details</h1>
+              <p className="step-description">
+                Optional information to help generate a better starting point for your journey.
+              </p>
+              
+              <div className="input-group">
+                <label className="input-label">Key stages you know about</label>
+                <textarea
+                  value={knownStages}
+                  onChange={(e) => setKnownStages(e.target.value)}
+                  placeholder="e.g., Engagement letter, AML/KYC checks, information gathering, accounts preparation, review, filing"
+                  rows={3}
+                />
+                <div className="input-hint">
+                  Separate stages with commas or new lines. Leave blank to auto-generate.
+                </div>
+              </div>
+              
+              {/* AI Enhancement Option */}
+              <div style={{ 
+                marginTop: '24px',
+                padding: '20px',
+                background: 'linear-gradient(135deg, var(--navy-50), var(--steel-100))',
+                borderRadius: '12px',
+                border: '1px solid var(--navy-100)'
+              }}>
+                <div style={{ display: 'flex', alignItems: 'flex-start', gap: '12px' }}>
+                  <span style={{ fontSize: '20px' }}>✨</span>
+                  <div style={{ flex: 1 }}>
+                    <div style={{ fontWeight: 600, color: 'var(--navy-700)', marginBottom: '4px', fontSize: '14px' }}>
+                      AI-Enhanced Generation
+                    </div>
+                    <div style={{ fontSize: '13px', color: 'var(--slate-600)', marginBottom: '12px' }}>
+                      Add your Anthropic API key for intelligent journey generation with realistic steps, descriptions, and time estimates.
+                    </div>
+                    <input
+                      type="password"
+                      placeholder="sk-ant-api03-..."
+                      value={localStorage.getItem('fathom_anthropic_key') || ''}
+                      onChange={(e) => {
+                        if (e.target.value) {
+                          localStorage.setItem('fathom_anthropic_key', e.target.value);
+                        } else {
+                          localStorage.removeItem('fathom_anthropic_key');
+                        }
+                      }}
+                      style={{ 
+                        width: '100%',
+                        padding: '10px 14px',
+                        fontSize: '13px',
+                        fontFamily: 'monospace'
+                      }}
+                    />
+                    <div style={{ fontSize: '11px', color: 'var(--slate-400)', marginTop: '6px' }}>
+                      Your key is stored locally and never sent to our servers. <a href="https://console.anthropic.com/settings/keys" target="_blank" style={{ color: 'var(--steel-600)' }}>Get an API key →</a>
+                    </div>
+                  </div>
+                </div>
+              </div>
+              
+              <div className="btn-row">
+                <button className="btn btn-secondary" onClick={prevStep}>← Back</button>
+                <button 
+                  className="btn btn-generate" 
+                  onClick={generateJourney}
+                >
+                  ✨ Generate My Journey
+                </button>
+              </div>
+            </div>
+          )}
+        </main>
+      );
+    }
+    
+    ReactDOM.render(<Wizard />, document.getElementById('root'));
+  </script>
+</body>
+</html>

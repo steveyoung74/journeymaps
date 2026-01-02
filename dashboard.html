@@ -1832,8 +1832,38 @@
               {step === 1 ? (
                 <>
                   <p style={{ color: 'var(--slate-500)', marginBottom: '20px', fontSize: '14px' }}>
-                    Start with a pre-built template or create from scratch.
+                    Let AI build your journey, choose a template, or start from scratch.
                   </p>
+                  
+                  {/* AI Generate - Hero Option */}
+                  <a
+                    href="wizard.html"
+                    style={{
+                      display: 'flex',
+                      alignItems: 'center',
+                      gap: '16px',
+                      width: '100%',
+                      padding: '18px 20px',
+                      background: 'linear-gradient(135deg, var(--navy-700), var(--navy-800))',
+                      border: 'none',
+                      borderRadius: '12px',
+                      cursor: 'pointer',
+                      textAlign: 'left',
+                      marginBottom: '12px',
+                      textDecoration: 'none',
+                      transition: 'all 0.2s',
+                      fontFamily: 'inherit'
+                    }}
+                    onMouseOver={(e) => { e.currentTarget.style.transform = 'translateY(-1px)'; e.currentTarget.style.boxShadow = '0 4px 12px rgba(25,43,69,0.3)'; }}
+                    onMouseOut={(e) => { e.currentTarget.style.transform = 'translateY(0)'; e.currentTarget.style.boxShadow = 'none'; }}
+                  >
+                    <div style={{ fontSize: '24px' }}>✨</div>
+                    <div style={{ flex: 1 }}>
+                      <div style={{ fontWeight: 600, color: '#FFF', fontSize: '15px' }}>AI-Powered Generation</div>
+                      <div style={{ fontSize: '12px', color: 'rgba(255,255,255,0.7)' }}>Describe your process and let AI build your journey</div>
+                    </div>
+                    <div style={{ color: 'rgba(255,255,255,0.7)', fontSize: '16px' }}>→</div>
+                  </a>
                   
                   {/* Blank Canvas */}
                   <button
