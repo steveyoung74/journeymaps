@@ -1220,6 +1220,13 @@
 
       // Manage mode functions
       const toggleSelectMap = (mapId) => {
+        const map = maps.find(m => m.id === mapId);
+        // Prevent selecting locked maps
+        if (map?.locked) {
+          alert('This map is locked and cannot be selected for deletion. Unlock it first.');
+          return;
+        }
+        
         const newSelected = new Set(selectedMaps);
         if (newSelected.has(mapId)) {
           newSelected.delete(mapId);
@@ -1257,6 +1264,22 @@
 
       const deleteSelectedMaps = async () => {
         if (selectedMaps.size === 0) return;
+        
+        // Check for locked maps
+        const lockedMaps = [...selectedMaps].filter(mapId => {
+          const map = maps.find(m => m.id === mapId);
+          return map?.locked;
+        });
+        
+        if (lockedMaps.length > 0) {
+          const lockedTitles = lockedMaps.map(mapId => {
+            const map = maps.find(m => m.id === mapId);
+            return mapConfigs[mapId]?.meta?.title || map?.title || mapId;
+          }).join(', ');
+          alert(`Cannot delete locked maps. Please unlock these maps first:\n\n${lockedTitles}`);
+          return;
+        }
+        
         if (!confirm(`Delete ${selectedMaps.size} map(s)? This cannot be undone.`)) return;
         
         try {
@@ -1417,18 +1440,20 @@
                     const metrics = getMapMetrics(map.id);
                     const isOwner = map.owner === user.email;
                     const isSelected = selectedMaps.has(map.id);
+                    const isLocked = map.locked;
+                    const canSelect = isOwner && !isLocked;
                     return (
                       <div 
                         key={map.id} 
                         className="card journey-card" 
-                        onClick={() => manageMode && isOwner ? toggleSelectMap(map.id) : openMap(map.id)}
+                        onClick={() => manageMode && canSelect ? toggleSelectMap(map.id) : !manageMode ? openMap(map.id) : null}
                         style={{ 
-                          cursor: manageMode ? (isOwner ? 'pointer' : 'not-allowed') : 'pointer',
+                          cursor: manageMode ? (canSelect ? 'pointer' : 'not-allowed') : 'pointer',
                           border: isSelected ? '2px solid var(--amber-500)' : '1px solid var(--slate-200)',
-                          opacity: manageMode && !isOwner ? 0.5 : 1
+                          opacity: manageMode && (!isOwner || isLocked) ? 0.5 : 1
                         }}
                       >
-                        {/* Manage mode checkbox */}
+                        {/* Manage mode checkbox - only show for unlocked owned maps */}
                         {manageMode && isOwner && (
                           <div style={{ 
                             position: 'absolute', 
@@ -1437,15 +1462,17 @@
                             width: '20px',
                             height: '20px',
                             borderRadius: '4px',
-                            border: isSelected ? 'none' : '2px solid var(--slate-300)',
-                            background: isSelected ? 'var(--amber-500)' : '#FFF',
+                            border: isSelected ? 'none' : isLocked ? '2px solid var(--slate-200)' : '2px solid var(--slate-300)',
+                            background: isSelected ? 'var(--amber-500)' : isLocked ? 'var(--slate-100)' : '#FFF',
                             display: 'flex',
                             alignItems: 'center',
                             justifyContent: 'center',
-                            color: '#FFF',
-                            fontSize: '14px'
+                            color: isLocked ? 'var(--slate-400)' : '#FFF',
+                            fontSize: '14px',
+                            zIndex: 2
                           }}>
                             {isSelected && '✓'}
+                            {isLocked && !isSelected && '🔒'}
                           </div>
                         )}
                         
@@ -1454,8 +1481,8 @@
                           {map.locked && <span title="Locked">🔒</span>}
                         </div>
                         
-                        <h3 className="journey-card-title">{mapConfigs[map.id]?.meta?.title || map.title}</h3>
-                        <p className="journey-card-desc">{mapConfigs[map.id]?.meta?.description || map.description || 'No description'}</p>
+                        <h3 className="journey-card-title" style={{ paddingLeft: manageMode && isOwner ? '32px' : 0 }}>{mapConfigs[map.id]?.meta?.title || map.title}</h3>
+                        <p className="journey-card-desc" style={{ paddingLeft: manageMode && isOwner ? '32px' : 0 }}>{mapConfigs[map.id]?.meta?.description || map.description || 'No description'}</p>
                         
                         {metrics && (
                           <div className="journey-card-metrics">
