@@ -680,7 +680,7 @@
   <div id="root"></div>
   
   <script type="text/babel">
-    const { useState, useEffect, useCallback, createContext, useContext } = React;
+    const { useState, useEffect, useCallback, useRef, createContext, useContext } = React;
     
     // ============================================
     // SUPABASE CONFIGURATION
@@ -719,6 +719,109 @@
       const [user, setUser] = useState(null);
       const [profile, setProfile] = useState(null);
       const [loading, setLoading] = useState(true);
+      const fetchingRef = useRef(false); // Prevent double-fetch
+      
+      // Define fetchProfile FIRST
+      const fetchProfile = useCallback(async (userId) => {
+        if (fetchingRef.current) {
+          console.log('Profile fetch already in progress, skipping');
+          return;
+        }
+        fetchingRef.current = true;
+        console.log('Fetching profile for:', userId);
+        
+        // Add timeout for entire profile fetch operation
+        const timeoutPromise = new Promise((_, reject) => 
+          setTimeout(() => reject(new Error('Profile fetch timeout')), 5000)
+        );
+        
+        try {
+          await Promise.race([
+            (async () => {
+              // Try to get existing profile
+              const { data, error } = await supabase
+                .from('users')
+                .select('*, organisations(*)')
+                .eq('id', userId)
+                .single();
+              
+              console.log('Profile fetch result:', { data: !!data, error: error?.message });
+              
+              if (data && data.organisation_id) {
+                console.log('Profile loaded successfully');
+                setProfile(data);
+                setLoading(false);
+                fetchingRef.current = false;
+                return;
+              }
+              
+              // Profile doesn't exist - create org and profile manually
+              console.log('Profile not found, creating...');
+              
+              // Get user email from auth
+              const { data: authUser } = await supabase.auth.getUser();
+              const email = authUser?.user?.email;
+              const displayName = authUser?.user?.user_metadata?.display_name || email?.split('@')[0];
+              
+              if (!email) {
+                console.error('No email found for user');
+                setLoading(false);
+                fetchingRef.current = false;
+                return;
+              }
+              
+              // Create organisation
+              const orgSlug = email.split('@')[0].toLowerCase().replace(/[^a-z0-9]/g, '-') + '-' + Date.now().toString(36);
+              const { data: newOrg, error: orgError } = await supabase
+                .from('organisations')
+                .insert({
+                  name: displayName + "'s Workspace",
+                  slug: orgSlug,
+                  settings: {}
+                })
+                .select()
+                .single();
+              
+              if (orgError) {
+                console.error('Failed to create org:', orgError);
+                setLoading(false);
+                fetchingRef.current = false;
+                return;
+              }
+              
+              // Create user profile
+              const { data: newProfile, error: profileError } = await supabase
+                .from('users')
+                .insert({
+                  id: userId,
+                  email: email,
+                  display_name: displayName,
+                  organisation_id: newOrg.id,
+                  role: 'owner'
+                })
+                .select('*, organisations(*)')
+                .single();
+              
+              if (profileError) {
+                console.error('Failed to create profile:', profileError);
+                setLoading(false);
+                fetchingRef.current = false;
+                return;
+              }
+              
+              console.log('Profile created:', newProfile);
+              setProfile(newProfile);
+              setLoading(false);
+              fetchingRef.current = false;
+            })(),
+            timeoutPromise
+          ]);
+        } catch (err) {
+          console.error('fetchProfile error:', err);
+          setLoading(false);
+          fetchingRef.current = false;
+        }
+      }, []);
       
       useEffect(() => {
         // Check if Supabase is available
@@ -737,137 +840,50 @@
             console.log('Auth timeout - showing login screen');
             setLoading(false);
           }
-        }, 2000);
+        }, 3000);
         
-        // Check current session with error handling
-        supabase.auth.getSession()
-          .then(({ data: { session }, error }) => {
-            resolved = true;
-            clearTimeout(timeout);
-            console.log('getSession returned:', { session: !!session, error });
-            if (error) {
-              console.error('Auth session error:', error);
-              setLoading(false);
-              return;
-            }
-            setUser(session?.user ?? null);
-            if (session?.user) {
-              console.log('User found, fetching profile...');
-              fetchProfile(session.user.id);
-            } else {
-              console.log('No session, showing login');
-              setLoading(false);
-            }
-          })
-          .catch(err => {
-            resolved = true;
-            clearTimeout(timeout);
-            console.error('Auth check failed:', err);
+        // Set up auth state change listener FIRST
+        const { data: { subscription } } = supabase.auth.onAuthStateChange(async (event, session) => {
+          resolved = true;
+          console.log('Auth state change:', event, 'hasUser:', !!session?.user);
+          
+          if (session?.user) {
+            setUser(session.user);
+            console.log('User authenticated, will fetch profile for:', session.user.id);
+            await fetchProfile(session.user.id);
+          } else {
+            console.log('No user, clearing state');
+            setUser(null);
+            setProfile(null);
             setLoading(false);
-          });
+          }
+        });
         
-        // Listen for auth changes
-        let subscription = null;
-        try {
-          const result = supabase.auth.onAuthStateChange(async (event, session) => {
-            resolved = true;
-            console.log('Auth state change:', event);
-            setUser(session?.user ?? null);
-            if (session?.user) {
-              await fetchProfile(session.user.id);
-              if (event === 'SIGNED_IN') {
-                await supabase.rpc('log_user_login', { user_id: session.user.id }).catch(() => {});
-              }
-            } else {
-              setProfile(null);
-            }
+        // Then get current session
+        supabase.auth.getSession().then(({ data: { session } }) => {
+          resolved = true;
+          clearTimeout(timeout);
+          console.log('getSession returned, hasUser:', !!session?.user);
+          
+          // If no user, show login
+          if (!session?.user) {
+            console.log('No session, showing login');
+            setUser(null);
             setLoading(false);
-          });
-          subscription = result.data.subscription;
-        } catch (e) {
-          console.error('onAuthStateChange error:', e);
-        }
+          }
+          // If user exists, onAuthStateChange will handle profile fetch
+        }).catch(err => {
+          resolved = true;
+          clearTimeout(timeout);
+          console.error('getSession error:', err);
+          setLoading(false);
+        });
         
         return () => {
           clearTimeout(timeout);
-          if (subscription) subscription.unsubscribe();
+          subscription?.unsubscribe();
         };
-      }, []);
-      
-      const fetchProfile = async (userId) => {
-        try {
-          // Try to get existing profile
-          const { data, error } = await supabase
-            .from('users')
-            .select('*, organisations(*)')
-            .eq('id', userId)
-            .single();
-          
-          if (data && data.organisation_id) {
-            setProfile(data);
-            setLoading(false);
-            return;
-          }
-          
-          // Profile doesn't exist - create org and profile manually
-          // This is a fallback in case the trigger didn't fire
-          console.log('Profile not found, creating...');
-          
-          // Get user email from auth
-          const { data: authUser } = await supabase.auth.getUser();
-          const email = authUser?.user?.email;
-          const displayName = authUser?.user?.user_metadata?.display_name || email?.split('@')[0];
-          
-          if (!email) {
-            console.error('No email found for user');
-            setLoading(false);
-            return;
-          }
-          
-          // Create organisation
-          const orgSlug = email.split('@')[0].toLowerCase().replace(/[^a-z0-9]/g, '-') + '-' + Date.now().toString(36);
-          const { data: newOrg, error: orgError } = await supabase
-            .from('organisations')
-            .insert({
-              name: displayName + "'s Organisation",
-              slug: orgSlug,
-              settings: {}
-            })
-            .select()
-            .single();
-          
-          if (orgError) {
-            console.error('Failed to create org:', orgError);
-            setLoading(false);
-            return;
-          }
-          
-          // Create user profile
-          const { data: newProfile, error: profileError } = await supabase
-            .from('users')
-            .insert({
-              id: userId,
-              email: email,
-              display_name: displayName,
-              organisation_id: newOrg.id,
-              role: 'owner'
-            })
-            .select('*, organisations(*)')
-            .single();
-          
-          if (profileError) {
-            console.error('Failed to create profile:', profileError);
-            setLoading(false);
-            return;
-          }
-          
-          console.log('Profile created:', newProfile);
-          setProfile(newProfile);
-        } catch (err) {
-          console.error('fetchProfile error:', err);
-        }
-        setLoading(false);
-      };
+      }, [fetchProfile]);
       
       const signUp = async (email, password, displayName) => {
         const { data, error } = await supabase.auth.signUp({
@@ -1209,6 +1225,12 @@
                   Don't have an account? <button onClick={() => setMode('signup')} style={{ background: 'none', border: 'none', color: 'var(--steel-500)', cursor: 'pointer', fontFamily: 'inherit', fontSize: 'inherit', textDecoration: 'underline' }}>Sign up</button>
                 </p>
               )}
+              
+              <div style={{ marginTop: '24px', paddingTop: '24px', borderTop: '1px solid var(--slate-200)', textAlign: 'center' }}>
+                <a href="index.html" style={{ color: 'var(--slate-500)', fontSize: '13px', textDecoration: 'none' }}>
+                  ← Back to Home
+                </a>
+              </div>
             </div>
           </div>
         </div>

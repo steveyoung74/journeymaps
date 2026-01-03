@@ -5839,8 +5839,8 @@
             <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', gap: '16px' }}>
               {/* Left side: Back Button (multi-user mode) + Logo + Divider + Title */}
               <div className="header-logo-title" style={{ display: 'flex', alignItems: 'center', gap: isMobile ? '12px' : '16px', flex: 1, minWidth: 0 }}>
-                {/* Back to Dashboard Button - only in multi-user mode */}
-                {isMultiUserMode && (
+                {/* Back to Dashboard Button - show in Supabase mode OR legacy multi-user mode */}
+                {(isSupabaseMode || isMultiUserMode) && (
                   <button
                     onClick={() => window.location.href = 'dashboard.html'}
                     style={{
