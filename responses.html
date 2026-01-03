@@ -1166,9 +1166,10 @@
       const [selectedMapId, setSelectedMapId] = useState(null);
       const [mapConfig, setMapConfig] = useState(null);
       const [responses, setResponses] = useState([]);
+      const [invitations, setInvitations] = useState([]);
       const [filterRole, setFilterRole] = useState('all');
       const [filterStage, setFilterStage] = useState('all');
-      const [viewMode, setViewMode] = useState('responses'); // 'responses' or 'comparison'
+      const [viewMode, setViewMode] = useState('responses'); // 'responses', 'comparison', or 'tracking'
       const [expandedCards, setExpandedCards] = useState(new Set());
       const [user, setUser] = useState(null);
       const [profile, setProfile] = useState(null);
@@ -1305,6 +1306,12 @@
           localResponses.sort((a, b) => new Date(b.submittedAt) - new Date(a.submittedAt));
           
           setResponses(localResponses);
+          
+          // Load invitations from localStorage
+          const allInvitations = JSON.parse(localStorage.getItem('fathom-survey-invitations') || '[]');
+          const mapInvitations = allInvitations.filter(inv => inv.mapId === mapId);
+          setInvitations(mapInvitations);
+          
           setLoading(false);
         } catch (err) {
           console.error('Load error:', err);
@@ -1312,6 +1319,87 @@
           setLoading(false);
         }
       };
+      
+      // Get invitation status - check if person has responded
+      const getInvitationStatus = (invitation) => {
+        // Find matching responses
+        const matchingResponses = responses.filter(r => 
+          r.mapId === invitation.mapId && 
+          r.roleId === invitation.roleId &&
+          (r.respondent?.email === invitation.email || r.respondentEmail === invitation.email)
+        );
+        
+        if (matchingResponses.length === 0) {
+          return { status: 'pending', label: 'Awaiting Response', color: '#F59E0B' };
+        }
+        
+        // Check completion - count unique steps responded to
+        const stepsResponded = new Set();
+        matchingResponses.forEach(r => {
+          r.responses?.forEach(resp => {
+            if (resp.stepId) stepsResponded.add(resp.stepId);
+          });
+        });
+        
+        const totalSteps = invitation.stepCount || 1;
+        const completedSteps = stepsResponded.size;
+        const percentage = Math.round((completedSteps / totalSteps) * 100);
+        
+        if (percentage >= 100) {
+          return { status: 'complete', label: 'Complete', color: '#10B981', percentage: 100 };
+        } else if (percentage > 0) {
+          return { status: 'partial', label: `${percentage}% Complete`, color: '#3B82F6', percentage };
+        }
+        
+        return { status: 'started', label: 'Started', color: '#3B82F6', percentage: 0 };
+      };
+      
+      // Send reminder email
+      const sendReminder = (invitation) => {
+        // Update invitation record to track reminder
+        const allInvitations = JSON.parse(localStorage.getItem('fathom-survey-invitations') || '[]');
+        const invIndex = allInvitations.findIndex(inv => 
+          inv.mapId === invitation.mapId && 
+          inv.roleId === invitation.roleId && 
+          inv.email === invitation.email
+        );
+        
+        if (invIndex >= 0) {
+          allInvitations[invIndex].lastSentAt = new Date().toISOString();
+          allInvitations[invIndex].sendCount = (allInvitations[invIndex].sendCount || 1) + 1;
+          localStorage.setItem('fathom-survey-invitations', JSON.stringify(allInvitations));
+          
+          // Reload invitations
+          const mapInvitations = allInvitations.filter(inv => inv.mapId === selectedMapId);
+          setInvitations(mapInvitations);
+        }
+        
+        const subject = encodeURIComponent(`Reminder: Process Survey - ${invitation.mapTitle}`);
+        const body = encodeURIComponent(`Hi ${invitation.name},
+
+Just a friendly reminder about the process survey we sent earlier.
+
+We'd really appreciate your input on the "${invitation.mapTitle}" process. It should only take about ${Math.ceil(invitation.stepCount * 2)} minutes.
+
+Complete the survey here:
+${invitation.url}
+
+Thank you!`);
+        
+        window.location.href = `mailto:${invitation.email}?subject=${subject}&body=${body}`;
+      };
+      
+      // Set default view mode based on data
+      useEffect(() => {
+        if (invitations.length > 0 && responses.length === 0) {
+          setViewMode('tracking');
+        } else if (responses.length > 0) {
+          // Keep current view or default to responses
+          if (viewMode !== 'tracking' && viewMode !== 'comparison') {
+            setViewMode('responses');
+          }
+        }
+      }, [invitations.length, responses.length]);
       
       // Get unique roles and stages from responses
       const roles = useMemo(() => {
@@ -1381,6 +1469,35 @@
           frictionLabel: avgFriction < 1 ? 'Low' : avgFriction < 2 ? 'Medium' : 'High'
         };
       }, [responses, mapConfig]);
+      
+      // Invitation stats
+      const invitationStats = useMemo(() => {
+        const total = invitations.length;
+        let responded = 0;
+        let complete = 0;
+        
+        invitations.forEach(inv => {
+          const status = getInvitationStatus(inv);
+          if (status.status !== 'pending') {
+            responded++;
+          }
+          if (status.status === 'complete') {
+            complete++;
+          }
+        });
+        
+        const responseRate = total > 0 ? Math.round((responded / total) * 100) : 0;
+        const completionRate = responded > 0 ? Math.round((complete / responded) * 100) : 0;
+        
+        return {
+          total,
+          responded,
+          complete,
+          pending: total - responded,
+          responseRate,
+          completionRate
+        };
+      }, [invitations, responses]);
       
       // Build comparison data (step by step)
       const comparisonData = useMemo(() => {
@@ -1724,17 +1841,26 @@
               
               <div className="stat-card">
                 <div className="stat-label">Response Rate</div>
-                <div className="stat-value">—</div>
-                <div className="stat-sub">Tracking not yet enabled</div>
+                {invitations.length > 0 ? (
+                  <>
+                    <div className="stat-value">{invitationStats.responseRate}%</div>
+                    <div className="stat-sub">{invitationStats.responded} of {invitationStats.total} responded</div>
+                  </>
+                ) : (
+                  <>
+                    <div className="stat-value">—</div>
+                    <div className="stat-sub">Send surveys to track</div>
+                  </>
+                )}
               </div>
             </div>
             
-            {responses.length === 0 ? (
+            {responses.length === 0 && invitations.length === 0 ? (
               <div className="empty-state">
                 <div className="empty-icon">📭</div>
                 <h2>No Responses Yet</h2>
                 <p>Survey responses will appear here once people complete them.</p>
-                <a href={`survey-admin.html?map=${selectedMapId}`} className="btn btn-primary">
+                <a href={`survey-admin.html?id=${selectedMapId}`} className="btn btn-primary">
                   📤 Send Survey Invitations
                 </a>
               </div>
@@ -1776,6 +1902,12 @@
                   
                   <div className="view-toggle">
                     <button 
+                      className={`view-btn ${viewMode === 'tracking' ? 'active' : ''}`}
+                      onClick={() => setViewMode('tracking')}
+                    >
+                      📋 Tracking ({invitations.length})
+                    </button>
+                    <button 
                       className={`view-btn ${viewMode === 'responses' ? 'active' : ''}`}
                       onClick={() => setViewMode('responses')}
                     >
@@ -1789,6 +1921,123 @@
                     </button>
                   </div>
                 </div>
+                
+                {/* Tracking View */}
+                {viewMode === 'tracking' && (
+                  <div className="tracking-view">
+                    {invitations.length === 0 ? (
+                      <div className="empty-state">
+                        <div className="empty-icon">📧</div>
+                        <h2>No Invitations Sent</h2>
+                        <p>Send survey invitations to track who has responded.</p>
+                        <a href={`survey-admin.html?id=${selectedMapId}`} className="btn btn-primary">
+                          📤 Send Survey Invitations
+                        </a>
+                      </div>
+                    ) : (
+                      <>
+                        <div style={{ 
+                          display: 'grid', 
+                          gridTemplateColumns: 'repeat(3, 1fr)', 
+                          gap: '12px', 
+                          marginBottom: '24px',
+                          padding: '16px',
+                          background: '#F8FAFC',
+                          borderRadius: '12px'
+                        }}>
+                          <div style={{ textAlign: 'center' }}>
+                            <div style={{ fontSize: '24px', fontWeight: 700, color: '#F59E0B' }}>{invitationStats.pending}</div>
+                            <div style={{ fontSize: '12px', color: '#64748B' }}>Awaiting Response</div>
+                          </div>
+                          <div style={{ textAlign: 'center' }}>
+                            <div style={{ fontSize: '24px', fontWeight: 700, color: '#3B82F6' }}>{invitationStats.responded - invitationStats.complete}</div>
+                            <div style={{ fontSize: '12px', color: '#64748B' }}>In Progress</div>
+                          </div>
+                          <div style={{ textAlign: 'center' }}>
+                            <div style={{ fontSize: '24px', fontWeight: 700, color: '#10B981' }}>{invitationStats.complete}</div>
+                            <div style={{ fontSize: '12px', color: '#64748B' }}>Complete</div>
+                          </div>
+                        </div>
+                        
+                        <div className="responses-list">
+                          {invitations.map((invitation, index) => {
+                            const status = getInvitationStatus(invitation);
+                            const sentDate = new Date(invitation.sentAt);
+                            const daysSinceSent = Math.floor((new Date() - sentDate) / (1000 * 60 * 60 * 24));
+                            
+                            return (
+                              <div key={invitation.id || index} className="response-card" style={{ borderLeft: `4px solid ${status.color}` }}>
+                                <div className="response-header" style={{ cursor: 'default' }}>
+                                  <div className="response-meta">
+                                    <div className="response-avatar" style={{ background: status.color }}>
+                                      {invitation.name?.charAt(0)?.toUpperCase() || invitation.email?.charAt(0)?.toUpperCase() || '?'}
+                                    </div>
+                                    <div className="response-info">
+                                      <h3>{invitation.name || invitation.email}</h3>
+                                      <p>{invitation.email}</p>
+                                    </div>
+                                  </div>
+                                  
+                                  <div className="response-badges">
+                                    <span className="badge badge-role">{invitation.roleName}</span>
+                                    <span className="badge" style={{ 
+                                      background: status.color + '20',
+                                      color: status.color
+                                    }}>
+                                      {status.label}
+                                    </span>
+                                    <span className="badge" style={{ background: '#F1F5F9' }}>
+                                      Sent {daysSinceSent === 0 ? 'today' : daysSinceSent === 1 ? 'yesterday' : `${daysSinceSent} days ago`}
+                                    </span>
+                                  </div>
+                                </div>
+                                
+                                <div style={{ 
+                                  padding: '12px 16px', 
+                                  borderTop: '1px solid #E2E8F0',
+                                  display: 'flex',
+                                  justifyContent: 'space-between',
+                                  alignItems: 'center'
+                                }}>
+                                  <div style={{ fontSize: '13px', color: '#64748B' }}>
+                                    {invitation.stepCount} step{invitation.stepCount !== 1 ? 's' : ''} to complete
+                                    {invitation.sendCount > 1 && (
+                                      <span style={{ marginLeft: '8px', color: '#94A3B8' }}>
+                                        • Reminded {invitation.sendCount - 1} time{invitation.sendCount > 2 ? 's' : ''}
+                                      </span>
+                                    )}
+                                  </div>
+                                  
+                                  {status.status === 'pending' && (
+                                    <button 
+                                      className="btn btn-secondary"
+                                      onClick={() => sendReminder(invitation)}
+                                      style={{ 
+                                        display: 'flex', 
+                                        alignItems: 'center', 
+                                        gap: '6px',
+                                        padding: '6px 12px',
+                                        fontSize: '13px'
+                                      }}
+                                    >
+                                      🔔 Send Reminder
+                                    </button>
+                                  )}
+                                  
+                                  {status.status === 'complete' && (
+                                    <span style={{ color: '#10B981', fontSize: '13px', fontWeight: 500 }}>
+                                      ✓ Complete
+                                    </span>
+                                  )}
+                                </div>
+                              </div>
+                            );
+                          })}
+                        </div>
+                      </>
+                    )}
+                  </div>
+                )}
                 
                 {/* Responses View */}
                 {viewMode === 'responses' && (

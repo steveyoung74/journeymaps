@@ -878,8 +878,45 @@ Your input is really valuable - thank you!`);
         return `mailto:${link.email}?subject=${subject}&body=${body}`;
       };
       
-      // Send email via mailto
+      // Track sent invitation in localStorage
+      const trackInvitation = (link) => {
+        const invitations = JSON.parse(localStorage.getItem('fathom-survey-invitations') || '[]');
+        
+        // Check if already tracked (same map, role, email)
+        const existing = invitations.find(inv => 
+          inv.mapId === selectedMapId && 
+          inv.roleId === link.roleId && 
+          inv.email === link.email
+        );
+        
+        if (existing) {
+          // Update the sent timestamp
+          existing.lastSentAt = new Date().toISOString();
+          existing.sendCount = (existing.sendCount || 1) + 1;
+        } else {
+          // Add new invitation
+          invitations.push({
+            id: `${selectedMapId}-${link.roleId}-${link.email}-${Date.now()}`,
+            mapId: selectedMapId,
+            mapTitle: mapConfig?.meta?.title || 'Journey Map',
+            roleId: link.roleId,
+            roleName: link.roleName,
+            email: link.email,
+            name: link.name,
+            url: link.url,
+            stepCount: link.stepCount,
+            sentAt: new Date().toISOString(),
+            lastSentAt: new Date().toISOString(),
+            sendCount: 1
+          });
+        }
+        
+        localStorage.setItem('fathom-survey-invitations', JSON.stringify(invitations));
+      };
+      
+      // Send email via mailto and track it
       const sendEmail = (link) => {
+        trackInvitation(link);
         window.location.href = getMailtoUrl(link);
       };
       
@@ -890,6 +927,8 @@ Your input is really valuable - thank you!`);
         
         for (let i = 0; i < generatedLinks.length; i++) {
           const link = generatedLinks[i];
+          // Track the invitation
+          trackInvitation(link);
           // Open mailto link
           window.open(getMailtoUrl(link), '_blank');
           setSentCount(i + 1);
