@@ -693,10 +693,21 @@
       console.error('Supabase library not loaded!');
     }
     
-    const supabase = window.supabase?.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+    // Create client with explicit options
+    const supabase = window.supabase?.createClient(SUPABASE_URL, SUPABASE_ANON_KEY, {
+      auth: {
+        persistSession: true,
+        autoRefreshToken: true,
+        detectSessionInUrl: true,
+        storage: window.localStorage,
+        flowType: 'implicit'
+      }
+    });
     
     if (supabase) {
       console.log('Supabase client initialized');
+      // Force initialize auth to prevent lock issues
+      supabase.auth.initialize().catch(e => console.log('Auth init:', e));
     }
     
     // ============================================
@@ -717,9 +728,23 @@
           return;
         }
         
+        console.log('Starting auth check...');
+        let resolved = false;
+        
+        // Fallback timeout - MUST fire
+        const timeout = setTimeout(() => {
+          if (!resolved) {
+            console.log('Auth timeout - showing login screen');
+            setLoading(false);
+          }
+        }, 2000);
+        
         // Check current session with error handling
         supabase.auth.getSession()
           .then(({ data: { session }, error }) => {
+            resolved = true;
+            clearTimeout(timeout);
+            console.log('getSession returned:', { session: !!session, error });
             if (error) {
               console.error('Auth session error:', error);
               setLoading(false);
@@ -727,39 +752,45 @@
             }
             setUser(session?.user ?? null);
             if (session?.user) {
+              console.log('User found, fetching profile...');
               fetchProfile(session.user.id);
             } else {
+              console.log('No session, showing login');
               setLoading(false);
             }
           })
           .catch(err => {
+            resolved = true;
+            clearTimeout(timeout);
             console.error('Auth check failed:', err);
             setLoading(false);
           });
         
-        // Fallback timeout in case auth hangs
-        const timeout = setTimeout(() => {
-          setLoading(false);
-        }, 5000);
-        
         // Listen for auth changes
-        const { data: { subscription } } = supabase.auth.onAuthStateChange(async (event, session) => {
-          clearTimeout(timeout);
-          setUser(session?.user ?? null);
-          if (session?.user) {
-            await fetchProfile(session.user.id);
-            if (event === 'SIGNED_IN') {
-              await supabase.rpc('log_user_login', { user_id: session.user.id }).catch(() => {});
+        let subscription = null;
+        try {
+          const result = supabase.auth.onAuthStateChange(async (event, session) => {
+            resolved = true;
+            console.log('Auth state change:', event);
+            setUser(session?.user ?? null);
+            if (session?.user) {
+              await fetchProfile(session.user.id);
+              if (event === 'SIGNED_IN') {
+                await supabase.rpc('log_user_login', { user_id: session.user.id }).catch(() => {});
+              }
+            } else {
+              setProfile(null);
             }
-          } else {
-            setProfile(null);
-          }
-          setLoading(false);
-        });
+            setLoading(false);
+          });
+          subscription = result.data.subscription;
+        } catch (e) {
+          console.error('onAuthStateChange error:', e);
+        }
         
         return () => {
           clearTimeout(timeout);
-          subscription.unsubscribe();
+          if (subscription) subscription.unsubscribe();
         };
       }, []);
       

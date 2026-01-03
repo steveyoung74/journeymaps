@@ -5308,41 +5308,11 @@
     // MAIN APP
     // ============================================
     function App() {
-      const [user, setUser] = useState(null);
-      const [token, setToken] = useState('');
-      const [showLogin, setShowLogin] = useState(false);
       const [isLoaded, setIsLoaded] = useState(false);
       
       useEffect(() => {
-        // Check for existing session
-        const savedUser = localStorage.getItem('fathom_user');
-        const savedToken = localStorage.getItem('fathom_token');
-        if (savedUser) {
-          setUser(JSON.parse(savedUser));
-          if (savedToken) setToken(savedToken);
-        }
         setIsLoaded(true);
       }, []);
-      
-      const handleLogin = (userData, userToken) => {
-        setUser(userData);
-        setToken(userToken || '');
-        localStorage.setItem('fathom_user', JSON.stringify(userData));
-        if (userToken) localStorage.setItem('fathom_token', userToken);
-        setShowLogin(false);
-      };
-      
-      const handleLogout = () => {
-        setUser(null);
-        setToken('');
-        localStorage.removeItem('fathom_user');
-        localStorage.removeItem('fathom_token');
-      };
-      
-      const handleUpdateToken = (newToken) => {
-        setToken(newToken);
-        localStorage.setItem('fathom_token', newToken);
-      };
       
       if (!isLoaded) {
         return (
@@ -5352,27 +5322,9 @@
         );
       }
       
-      // If logged in, redirect to dashboard
-      if (user) {
-        window.location.href = 'dashboard.html';
-        return (
-          <div style={{ minHeight: '100vh', display: 'flex', alignItems: 'center', justifyContent: 'center', background: 'var(--navy-700)' }}>
-            <img src="logo_light.png" alt="FATHOM" style={{ height: '40px', opacity: 0.5 }} />
-          </div>
-        );
-      }
-      
-      // Otherwise show landing page
+      // Show landing page - auth is handled in dashboard.html
       return (
-        <>
-          <LandingPage onGetStarted={() => setShowLogin(true)} />
-          {showLogin && (
-            <LoginModal 
-              onClose={() => setShowLogin(false)} 
-              onLogin={handleLogin}
-            />
-          )}
-        </>
+        <LandingPage onGetStarted={() => window.location.href = 'dashboard.html'} />
       );
     }
     
