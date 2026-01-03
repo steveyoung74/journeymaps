@@ -779,15 +779,23 @@
       };
       
       const loadPendingInvites = async (orgId) => {
-        const { data, error } = await supabase
-          .from('org_invitations')
-          .select('*')
-          .eq('organisation_id', orgId)
-          .eq('status', 'pending')
-          .order('invited_at', { ascending: false });
-        
-        if (!error && data) {
-          setPendingInvites(data);
+        try {
+          const { data, error } = await supabase
+            .from('org_invitations')
+            .select('*')
+            .eq('organisation_id', orgId)
+            .eq('status', 'pending')
+            .order('invited_at', { ascending: false });
+          
+          if (error) {
+            console.error('Error loading pending invites:', error);
+            // Table might not exist yet - silently continue
+            return;
+          }
+          
+          setPendingInvites(data || []);
+        } catch (err) {
+          console.error('Failed to load pending invites:', err);
         }
       };
       
@@ -829,7 +837,16 @@
               invited_by: user.id
             });
           
-          if (error) throw error;
+          if (error) {
+            console.error('Insert error:', error);
+            if (error.code === '42P01' || error.message?.includes('does not exist')) {
+              throw new Error('Team invitations not set up yet. Please run the database migration (003_sharing_and_teams.sql).');
+            }
+            throw error;
+          }
+          
+          // Send email notification via mailto
+          sendInviteEmail(inviteEmail, inviteRole);
           
           setSuccess(`Invitation sent to ${inviteEmail}`);
           setInviteEmail('');
@@ -843,6 +860,33 @@
         }
         
         setInviting(false);
+      };
+      
+      // Send invite email via mailto
+      const sendInviteEmail = (recipientEmail, role) => {
+        const senderName = profile?.display_name || user?.email?.split('@')[0] || 'Someone';
+        const orgName = organisation?.name || 'their organisation';
+        const roleName = ROLES[role]?.label || 'Member';
+        const signUpLink = `${window.location.origin}/journeymaps/dashboard.html`;
+        
+        const subject = encodeURIComponent(`${senderName} invited you to join ${orgName} on FATHOM`);
+        const body = encodeURIComponent(`Hi,
+
+${senderName} has invited you to join "${orgName}" on FATHOM as a ${roleName}.
+
+FATHOM is a journey intelligence platform that helps teams understand and optimise their operational processes.
+
+To accept this invitation:
+1. Go to ${signUpLink}
+2. Create an account using this email address (${recipientEmail})
+3. You'll automatically be added to the team
+
+Questions? Just reply to this email.
+
+Best,
+${senderName}`);
+        
+        window.open(`mailto:${recipientEmail}?subject=${subject}&body=${body}`, '_blank');
       };
       
       // Update member role
@@ -1113,17 +1157,27 @@
                         <span className="pending-email">{invite.email}</span>
                         <span className={`badge ${ROLES[invite.role]?.color}`}>{ROLES[invite.role]?.label}</span>
                       </div>
-                      <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
+                      <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
                         <span className="pending-meta">
                           Expires {formatDate(invite.expires_at)}
                         </span>
                         {canManageTeam && (
-                          <button 
-                            className="btn btn-ghost btn-sm"
-                            onClick={() => revokeInvitation(invite.id)}
-                          >
-                            Revoke
-                          </button>
+                          <>
+                            <button 
+                              className="btn btn-ghost btn-sm"
+                              onClick={() => sendInviteEmail(invite.email, invite.role)}
+                              title="Resend invitation email"
+                            >
+                              📧 Resend
+                            </button>
+                            <button 
+                              className="btn btn-ghost btn-sm"
+                              onClick={() => revokeInvitation(invite.id)}
+                              style={{ color: 'var(--error)' }}
+                            >
+                              Revoke
+                            </button>
+                          </>
                         )}
                       </div>
                     </div>
