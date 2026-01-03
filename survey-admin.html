@@ -917,7 +917,7 @@ Your input is really valuable - thank you!`);
       // Send email via mailto and track it
       const sendEmail = (link) => {
         trackInvitation(link);
-        window.location.href = getMailtoUrl(link);
+        window.open(getMailtoUrl(link), '_blank');
       };
       
       // Send all emails (opens each in sequence)

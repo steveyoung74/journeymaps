@@ -1386,7 +1386,7 @@ ${invitation.url}
 
 Thank you!`);
         
-        window.location.href = `mailto:${invitation.email}?subject=${subject}&body=${body}`;
+        window.open(`mailto:${invitation.email}?subject=${subject}&body=${body}`, '_blank');
       };
       
       // Set default view mode based on data
