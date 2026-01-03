@@ -1298,19 +1298,90 @@
           
           setMapConfig(data.config);
           
-          // Load responses from localStorage
+          // Load responses from Supabase
+          const { data: supabaseResponses, error: respError } = await supabase
+            .from('survey_responses')
+            .select('*')
+            .eq('journey_map_id', mapId)
+            .order('submitted_at', { ascending: false });
+          
+          if (respError) {
+            console.error('Error loading responses:', respError);
+          }
+          
+          // Normalize Supabase responses to match expected format
+          const normalizedResponses = (supabaseResponses || []).map(r => ({
+            surveyId: r.survey_id,
+            mapId: r.journey_map_id,
+            roleId: r.role_id,
+            roleName: r.role_name,
+            respondent: {
+              email: r.respondent_email,
+              name: r.respondent_name
+            },
+            respondentEmail: r.respondent_email,
+            respondentName: r.respondent_name,
+            submittedAt: r.submitted_at,
+            responses: r.responses || []
+          }));
+          
+          // Also check localStorage for legacy responses
           const localResponses = JSON.parse(localStorage.getItem('fathom-survey-responses') || '[]')
             .filter(r => r.mapId === mapId);
           
+          // Merge, avoiding duplicates by surveyId
+          const existingIds = new Set(normalizedResponses.map(r => r.surveyId));
+          const mergedResponses = [
+            ...normalizedResponses,
+            ...localResponses.filter(r => !existingIds.has(r.surveyId))
+          ];
+          
           // Sort by submission date (newest first)
-          localResponses.sort((a, b) => new Date(b.submittedAt) - new Date(a.submittedAt));
+          mergedResponses.sort((a, b) => new Date(b.submittedAt) - new Date(a.submittedAt));
           
-          setResponses(localResponses);
+          setResponses(mergedResponses);
           
-          // Load invitations from localStorage
-          const allInvitations = JSON.parse(localStorage.getItem('fathom-survey-invitations') || '[]');
-          const mapInvitations = allInvitations.filter(inv => inv.mapId === mapId);
-          setInvitations(mapInvitations);
+          // Load invitations from Supabase
+          const { data: supabaseInvitations, error: invError } = await supabase
+            .from('survey_invitations')
+            .select('*')
+            .eq('journey_map_id', mapId)
+            .order('sent_at', { ascending: false });
+          
+          if (invError) {
+            console.error('Error loading invitations:', invError);
+          }
+          
+          // Normalize Supabase invitations to match expected format
+          const normalizedInvitations = (supabaseInvitations || []).map(inv => ({
+            id: inv.id,
+            mapId: inv.journey_map_id,
+            mapTitle: data.config?.meta?.title || 'Journey Map',
+            roleId: inv.role_id,
+            roleName: inv.role_name,
+            email: inv.email,
+            name: inv.name,
+            url: inv.survey_url,
+            stepCount: inv.step_count,
+            sentAt: inv.sent_at,
+            lastSentAt: inv.last_sent_at,
+            sendCount: inv.send_count,
+            startedAt: inv.started_at,
+            completedAt: inv.completed_at
+          }));
+          
+          // Also check localStorage for legacy invitations
+          const localInvitations = JSON.parse(localStorage.getItem('fathom-survey-invitations') || '[]')
+            .filter(inv => inv.mapId === mapId);
+          
+          // Merge, avoiding duplicates by mapId + roleId + email
+          const existingInvKeys = new Set(normalizedInvitations.map(i => `${i.mapId}-${i.roleId}-${i.email}`));
+          const mergedInvitations = [
+            ...normalizedInvitations,
+            ...localInvitations.filter(i => !existingInvKeys.has(`${i.mapId}-${i.roleId}-${i.email}`))
+          ];
+          
+          setInvitations(mergedInvitations);
           
           setLoading(false);
         } catch (err) {
@@ -1355,23 +1426,31 @@
       };
       
       // Send reminder email
-      const sendReminder = (invitation) => {
-        // Update invitation record to track reminder
-        const allInvitations = JSON.parse(localStorage.getItem('fathom-survey-invitations') || '[]');
-        const invIndex = allInvitations.findIndex(inv => 
-          inv.mapId === invitation.mapId && 
-          inv.roleId === invitation.roleId && 
-          inv.email === invitation.email
-        );
-        
-        if (invIndex >= 0) {
-          allInvitations[invIndex].lastSentAt = new Date().toISOString();
-          allInvitations[invIndex].sendCount = (allInvitations[invIndex].sendCount || 1) + 1;
-          localStorage.setItem('fathom-survey-invitations', JSON.stringify(allInvitations));
-          
-          // Reload invitations
-          const mapInvitations = allInvitations.filter(inv => inv.mapId === selectedMapId);
-          setInvitations(mapInvitations);
+      const sendReminder = async (invitation) => {
+        // Update invitation record in Supabase
+        if (supabase && invitation.id) {
+          try {
+            const { error } = await supabase
+              .from('survey_invitations')
+              .update({
+                last_sent_at: new Date().toISOString(),
+                send_count: (invitation.sendCount || 1) + 1
+              })
+              .eq('id', invitation.id);
+            
+            if (error) {
+              console.error('Error updating invitation:', error);
+            } else {
+              // Update local state
+              setInvitations(prev => prev.map(inv => 
+                inv.id === invitation.id 
+                  ? { ...inv, lastSentAt: new Date().toISOString(), sendCount: (inv.sendCount || 1) + 1 }
+                  : inv
+              ));
+            }
+          } catch (err) {
+            console.error('Failed to update invitation:', err);
+          }
         }
         
         const subject = encodeURIComponent(`Reminder: Process Survey - ${invitation.mapTitle}`);

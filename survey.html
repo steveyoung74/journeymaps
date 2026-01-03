@@ -687,6 +687,7 @@
       const [loading, setLoading] = useState(true);
       const [error, setError] = useState(null);
       const [mapConfig, setMapConfig] = useState(null);
+      const [organisationId, setOrganisationId] = useState(null);
       const [roleName, setRoleName] = useState('');
       const [steps, setSteps] = useState([]);
       const [currentStep, setCurrentStep] = useState(-1); // -1 = welcome, -2 = review, -3 = success
@@ -710,7 +711,7 @@
               console.log('Loading map from Supabase:', mapId);
               const { data, error } = await supabase
                 .from('journey_maps')
-                .select('config, title')
+                .select('config, title, organisation_id')
                 .eq('id', mapId)
                 .single();
               
@@ -718,6 +719,7 @@
               if (!data?.config) throw new Error('Survey configuration not found');
               
               config = data.config;
+              setOrganisationId(data.organisation_id);
             } else {
               // Legacy GitHub mode
               console.log('Loading map from GitHub:', mapId);
@@ -847,8 +849,9 @@
         setSubmitting(true);
         
         try {
+          const surveyId = `${mapId}-${roleId}-${Date.now()}`;
           const responseData = {
-            surveyId: `${mapId}-${roleId}-${Date.now()}`,
+            surveyId,
             mapId,
             roleId,
             roleName,
@@ -868,12 +871,34 @@
             })
           };
           
-          // Save to localStorage
-          // TODO: In future, save to Supabase survey_responses table
-          const localResponses = JSON.parse(localStorage.getItem('fathom-survey-responses') || '[]');
-          localResponses.push(responseData);
-          localStorage.setItem('fathom-survey-responses', JSON.stringify(localResponses));
-          console.log('Response saved to localStorage:', responseData);
+          // Save to Supabase if in Supabase mode
+          if (isSupabaseMode && supabase && organisationId) {
+            const { error } = await supabase
+              .from('survey_responses')
+              .insert({
+                survey_id: surveyId,
+                journey_map_id: mapId,
+                organisation_id: organisationId,
+                role_id: roleId,
+                role_name: roleName,
+                respondent_email: respondentEmail,
+                respondent_name: respondentName,
+                responses: responseData.responses,
+                submitted_at: new Date().toISOString()
+              });
+            
+            if (error) {
+              console.error('Supabase save error:', error);
+              throw new Error('Failed to save response');
+            }
+            console.log('✅ Response saved to Supabase');
+          } else {
+            // Fallback to localStorage for legacy mode
+            const localResponses = JSON.parse(localStorage.getItem('fathom-survey-responses') || '[]');
+            localResponses.push(responseData);
+            localStorage.setItem('fathom-survey-responses', JSON.stringify(localResponses));
+            console.log('Response saved to localStorage:', responseData);
+          }
           
           setCurrentStep(-3); // Success
         } catch (err) {

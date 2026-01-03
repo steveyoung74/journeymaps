@@ -878,45 +878,65 @@ Your input is really valuable - thank you!`);
         return `mailto:${link.email}?subject=${subject}&body=${body}`;
       };
       
-      // Track sent invitation in localStorage
-      const trackInvitation = (link) => {
-        const invitations = JSON.parse(localStorage.getItem('fathom-survey-invitations') || '[]');
-        
-        // Check if already tracked (same map, role, email)
-        const existing = invitations.find(inv => 
-          inv.mapId === selectedMapId && 
-          inv.roleId === link.roleId && 
-          inv.email === link.email
-        );
-        
-        if (existing) {
-          // Update the sent timestamp
-          existing.lastSentAt = new Date().toISOString();
-          existing.sendCount = (existing.sendCount || 1) + 1;
-        } else {
-          // Add new invitation
-          invitations.push({
-            id: `${selectedMapId}-${link.roleId}-${link.email}-${Date.now()}`,
-            mapId: selectedMapId,
-            mapTitle: mapConfig?.meta?.title || 'Journey Map',
-            roleId: link.roleId,
-            roleName: link.roleName,
-            email: link.email,
-            name: link.name,
-            url: link.url,
-            stepCount: link.stepCount,
-            sentAt: new Date().toISOString(),
-            lastSentAt: new Date().toISOString(),
-            sendCount: 1
-          });
+      // Track sent invitation in Supabase
+      const trackInvitation = async (link) => {
+        if (!supabase || !userOrgId) {
+          console.warn('Cannot track invitation: Supabase not available');
+          return;
         }
         
-        localStorage.setItem('fathom-survey-invitations', JSON.stringify(invitations));
+        try {
+          // First check if invitation already exists
+          const { data: existing } = await supabase
+            .from('survey_invitations')
+            .select('id, send_count')
+            .eq('journey_map_id', selectedMapId)
+            .eq('role_id', link.roleId)
+            .eq('email', link.email)
+            .single();
+          
+          if (existing) {
+            // Update existing invitation
+            const { error } = await supabase
+              .from('survey_invitations')
+              .update({
+                last_sent_at: new Date().toISOString(),
+                send_count: (existing.send_count || 1) + 1
+              })
+              .eq('id', existing.id);
+            
+            if (error) console.error('Update error:', error);
+            else console.log('✅ Invitation updated (reminder sent)');
+          } else {
+            // Insert new invitation
+            const { error } = await supabase
+              .from('survey_invitations')
+              .insert({
+                journey_map_id: selectedMapId,
+                organisation_id: userOrgId,
+                role_id: link.roleId,
+                role_name: link.roleName,
+                email: link.email,
+                name: link.name,
+                survey_url: link.url,
+                step_count: link.stepCount,
+                sent_at: new Date().toISOString(),
+                last_sent_at: new Date().toISOString(),
+                send_count: 1,
+                created_by: user?.id
+              });
+            
+            if (error) console.error('Insert error:', error);
+            else console.log('✅ New invitation tracked');
+          }
+        } catch (err) {
+          console.error('Failed to track invitation:', err);
+        }
       };
       
       // Send email via mailto and track it
-      const sendEmail = (link) => {
-        trackInvitation(link);
+      const sendEmail = async (link) => {
+        await trackInvitation(link);
         window.open(getMailtoUrl(link), '_blank');
       };
       
@@ -928,7 +948,7 @@ Your input is really valuable - thank you!`);
         for (let i = 0; i < generatedLinks.length; i++) {
           const link = generatedLinks[i];
           // Track the invitation
-          trackInvitation(link);
+          await trackInvitation(link);
           // Open mailto link
           window.open(getMailtoUrl(link), '_blank');
           setSentCount(i + 1);
