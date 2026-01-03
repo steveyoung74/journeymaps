@@ -583,6 +583,122 @@
       color: #FFF;
     }
     
+    /* Mobile Menu - Threads style */
+    .nav-mobile-backdrop {
+      position: fixed;
+      inset: 0;
+      background: rgba(0, 0, 0, 0.5);
+      z-index: 999;
+      opacity: 0;
+      visibility: hidden;
+      transition: opacity 0.3s ease, visibility 0.3s ease;
+    }
+    .nav-mobile-backdrop.open {
+      opacity: 1;
+      visibility: visible;
+    }
+    .nav-mobile-menu {
+      position: fixed;
+      top: 0;
+      right: 0;
+      bottom: 0;
+      width: 280px;
+      max-width: 85vw;
+      background: var(--navy-800);
+      z-index: 1000;
+      display: flex;
+      flex-direction: column;
+      transform: translateX(100%);
+      transition: transform 0.3s ease;
+      box-shadow: -4px 0 24px rgba(0, 0, 0, 0.3);
+    }
+    .nav-mobile-menu.open {
+      transform: translateX(0);
+    }
+    .nav-mobile-header {
+      display: flex;
+      justify-content: flex-end;
+      padding: 16px 20px;
+      border-bottom: 1px solid rgba(255,255,255,0.1);
+    }
+    .nav-mobile-close {
+      background: rgba(255,255,255,0.1);
+      border: none;
+      color: #FFF;
+      font-size: 20px;
+      cursor: pointer;
+      padding: 8px 12px;
+      line-height: 1;
+      border-radius: 20px;
+      transition: background 0.15s;
+    }
+    .nav-mobile-close:hover {
+      background: rgba(255,255,255,0.2);
+    }
+    .nav-mobile-links {
+      display: flex;
+      flex-direction: column;
+      gap: 8px;
+      padding: 20px;
+      flex: 1;
+      overflow-y: auto;
+    }
+    .nav-mobile-link {
+      color: rgba(255,255,255,0.9);
+      text-decoration: none;
+      padding: 14px 20px;
+      border-radius: 24px;
+      font-size: 15px;
+      font-weight: 500;
+      background: rgba(255,255,255,0.05);
+      transition: all 0.15s;
+      text-align: center;
+    }
+    .nav-mobile-link:hover {
+      background: rgba(255,255,255,0.15);
+      color: #FFF;
+    }
+    .nav-mobile-link.active {
+      background: rgba(255,255,255,0.2);
+      color: #FFF;
+    }
+    .nav-mobile-section-label {
+      color: rgba(255,255,255,0.4);
+      font-size: 11px;
+      font-weight: 600;
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+      padding: 16px 20px 8px;
+    }
+    .nav-mobile-user {
+      padding: 20px;
+      border-top: 1px solid rgba(255,255,255,0.1);
+      background: rgba(0,0,0,0.2);
+    }
+    .nav-mobile-user-name {
+      color: rgba(255,255,255,0.6);
+      font-size: 13px;
+      margin-bottom: 12px;
+      text-align: center;
+    }
+    .nav-mobile-signout {
+      width: 100%;
+      padding: 12px;
+      background: transparent;
+      border: 1px solid rgba(255,255,255,0.3);
+      color: rgba(255,255,255,0.9);
+      border-radius: 24px;
+      font-size: 14px;
+      font-weight: 500;
+      cursor: pointer;
+      font-family: inherit;
+      transition: all 0.15s;
+    }
+    .nav-mobile-signout:hover {
+      background: rgba(255,255,255,0.1);
+      border-color: rgba(255,255,255,0.4);
+    }
+    
     /* Loading Animation - Sinking into depths */
     @keyframes sinkIntoDepths {
       0% {
@@ -780,11 +896,13 @@
       
       const loadPendingInvites = async (orgId) => {
         try {
-          const { data, error } = await supabase
+          console.log('Loading pending invites for org:', orgId);
+          
+          // First try with status filter
+          let { data, error } = await supabase
             .from('org_invitations')
             .select('*')
             .eq('organisation_id', orgId)
-            .eq('status', 'pending')
             .order('invited_at', { ascending: false });
           
           if (error) {
@@ -793,7 +911,13 @@
             return;
           }
           
-          setPendingInvites(data || []);
+          console.log('Loaded invites:', data);
+          
+          // Filter to pending only (in case status column exists)
+          const pending = data?.filter(i => !i.status || i.status === 'pending') || [];
+          console.log('Pending invites:', pending);
+          
+          setPendingInvites(pending);
         } catch (err) {
           console.error('Failed to load pending invites:', err);
         }
@@ -1035,26 +1159,34 @@ ${senderName}`);
                 <button className="nav-signout" onClick={handleSignOut}>Sign Out</button>
               </div>
               
-              <button className="nav-mobile-toggle" onClick={() => setShowMobileMenu(!showMobileMenu)}>
-                <span></span>
-                <span></span>
-                <span></span>
+              <button className="nav-mobile-toggle" onClick={() => setShowMobileMenu(true)}>
+                ☰
               </button>
             </div>
-            
-            <div className={`nav-mobile-menu ${showMobileMenu ? 'open' : ''}`}>
-              <a href="dashboard.html" className="nav-link">Dashboard</a>
-              <a href="survey-admin.html" className="nav-link">Send Surveys</a>
-              <a href="responses.html" className="nav-link">View Responses</a>
-              <a href="team.html" className="nav-link active">Team</a>
-              <a href="whats-new.html" className="nav-link">What's New</a>
-              <a href="about.html" className="nav-link">About</a>
-              <div style={{ padding: '12px 0', borderTop: '1px solid rgba(255,255,255,0.1)', marginTop: '8px' }}>
-                <span className="nav-user" style={{ display: 'block', marginBottom: '12px' }}>{displayName}</span>
-                <button className="nav-signout" onClick={handleSignOut}>Sign Out</button>
-              </div>
-            </div>
           </nav>
+          
+          {/* Mobile Menu - Threads-style */}
+          <div className={`nav-mobile-backdrop ${showMobileMenu ? 'open' : ''}`} onClick={() => setShowMobileMenu(false)} />
+          <div className={`nav-mobile-menu ${showMobileMenu ? 'open' : ''}`}>
+            <div className="nav-mobile-header">
+              <button className="nav-mobile-close" onClick={() => setShowMobileMenu(false)}>✕</button>
+            </div>
+            <div className="nav-mobile-links">
+              <a href="dashboard.html" className="nav-mobile-link">Dashboard</a>
+              <div className="nav-mobile-section-label">Surveys</div>
+              <a href="survey-admin.html" className="nav-mobile-link">Send Surveys</a>
+              <a href="responses.html" className="nav-mobile-link">View Responses</a>
+              <div className="nav-mobile-section-label">Organisation</div>
+              <a href="team.html" className="nav-mobile-link active">Team</a>
+              <div className="nav-mobile-section-label">Info</div>
+              <a href="whats-new.html" className="nav-mobile-link">What's New</a>
+              <a href="about.html" className="nav-mobile-link">About</a>
+            </div>
+            <div className="nav-mobile-user">
+              <div className="nav-mobile-user-name">Signed in as {displayName}</div>
+              <button onClick={() => { setShowMobileMenu(false); handleSignOut(); }} className="nav-mobile-signout">Sign Out</button>
+            </div>
+          </div>
         </>
       );
       
