@@ -143,6 +143,53 @@
       to { transform: translateY(0); }
     }
     
+    /* Loading Animation - Sinking into depths */
+    @keyframes sinkIntoDepths {
+      0% {
+        transform: translateY(-30px);
+        opacity: 0.6;
+      }
+      100% {
+        transform: translateY(30px);
+        opacity: 0.15;
+      }
+    }
+    
+    .loading-screen {
+      min-height: 100vh;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      background: linear-gradient(180deg, var(--navy-600) 0%, var(--navy-800) 100%);
+      position: relative;
+      overflow: hidden;
+    }
+    
+    .loading-logo {
+      height: 40px;
+      animation: sinkIntoDepths 2.5s ease-in-out infinite alternate;
+    }
+    
+    /* Subtle depth lines effect */
+    .loading-screen::before {
+      content: '';
+      position: absolute;
+      top: 0;
+      left: 0;
+      right: 0;
+      bottom: 0;
+      background: 
+        linear-gradient(180deg, transparent 0%, rgba(0,0,0,0.1) 100%),
+        repeating-linear-gradient(
+          0deg,
+          transparent,
+          transparent 40px,
+          rgba(255,255,255,0.02) 40px,
+          rgba(255,255,255,0.02) 41px
+        );
+      pointer-events: none;
+    }
+    
     /* Main app background with topographic pattern */
     /* Topographic pattern as fixed background layer */
     .topo-background {
@@ -6346,20 +6393,12 @@ FATHOM - Journey intelligence for modern operations`);
       // Loading screen while fetching config
       if (configLoading) {
         return (
-          <div className="dark-bg" style={{
-            minHeight: '100vh',
-            display: 'flex',
-            alignItems: 'center',
-            justifyContent: 'center',
-            background: 'linear-gradient(135deg, #0C1620 0%, #192B45 100%)',
-            fontFamily: "'Interstate', sans-serif"
-          }}>
-            <div style={{ textAlign: 'center', color: '#FFF' }}>
-              <div style={{ fontSize: '24px', marginBottom: '16px' }}>Loading...</div>
-              <div style={{ fontSize: '14px', opacity: 0.7, fontFamily: "'Interstate', sans-serif" }}>
-                Loading journey...
-              </div>
-            </div>
+          <div className="loading-screen">
+            <img 
+              src="https://steveyoung74.github.io/journeymaps/logo_light.png" 
+              alt="FATHOM" 
+              className="loading-logo"
+            />
           </div>
         );
       }
