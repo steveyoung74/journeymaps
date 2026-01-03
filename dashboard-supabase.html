@@ -1,0 +1,1348 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=5.0, viewport-fit=cover">
+  <title>FATHOM - Dashboard</title>
+  <script src="https://unpkg.com/react@18/umd/react.production.min.js"></script>
+  <script src="https://unpkg.com/react-dom@18/umd/react-dom.production.min.js"></script>
+  <script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+  <style>
+    /* Interstate Font Family */
+    @font-face {
+      font-family: 'Interstate';
+      src: url('fonts/Interstate-light.ttf') format('truetype');
+      font-weight: 300;
+      font-style: normal;
+      font-display: swap;
+    }
+    @font-face {
+      font-family: 'Interstate';
+      src: url('fonts/Interstate-regular.ttf') format('truetype');
+      font-weight: 400;
+      font-style: normal;
+      font-display: swap;
+    }
+    @font-face {
+      font-family: 'Interstate';
+      src: url('fonts/Interstate-bold.ttf') format('truetype');
+      font-weight: 700;
+      font-style: normal;
+      font-display: swap;
+    }
+    
+    /* CSS Custom Properties */
+    :root {
+      --navy-950: #0C1620;
+      --navy-900: #111E2E;
+      --navy-800: #15243A;
+      --navy-700: #192B45;
+      --navy-600: #243D5C;
+      --navy-500: #2F5070;
+      --navy-400: #456A8A;
+      --navy-300: #6889A8;
+      --navy-200: #9BB1C7;
+      --navy-100: #C8D5E2;
+      --navy-50: #E9EEF4;
+      --steel-700: #3A6070;
+      --steel-600: #4A7485;
+      --steel-500: #5B8A9A;
+      --steel-400: #74A0AE;
+      --steel-300: #96BCC7;
+      --steel-100: #E1EEF2;
+      --amber-700: #8B6914;
+      --amber-600: #A67D1D;
+      --amber-500: #C4942A;
+      --amber-400: #D4A84A;
+      --amber-200: #E8D5A3;
+      --amber-100: #FAF0D6;
+      --success: #2D8A6E;
+      --success-light: #D4EDE5;
+      --error: #B84A5A;
+      --error-light: #F5E0E3;
+      --slate-900: #1A2332;
+      --slate-700: #3D4A5C;
+      --slate-600: #556275;
+      --slate-500: #6E7B8C;
+      --slate-400: #8A95A5;
+      --slate-300: #A9B2BE;
+      --slate-200: #C8CED6;
+      --slate-100: #E4E7EB;
+      --slate-50: #F4F5F7;
+    }
+    
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    html, body { width: 100%; max-width: 100%; overflow-x: hidden; }
+    body { 
+      font-family: 'Interstate', -apple-system, BlinkMacSystemFont, sans-serif; 
+      background: var(--slate-50);
+      color: var(--slate-900);
+      line-height: 1.6;
+      min-height: 100vh;
+    }
+    
+    .btn { 
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      gap: 8px;
+      padding: 12px 20px; 
+      border-radius: 8px; 
+      font-size: 14px; 
+      font-weight: 500; 
+      cursor: pointer; 
+      transition: all 0.15s;
+      border: none;
+      font-family: inherit;
+    }
+    .btn-primary { background: var(--navy-700); color: #FFF; }
+    .btn-primary:hover { background: var(--navy-800); }
+    .btn-primary:disabled { background: var(--slate-300); cursor: not-allowed; }
+    .btn-secondary { background: #FFF; color: var(--slate-700); border: 1px solid var(--slate-200); }
+    .btn-secondary:hover { background: var(--slate-50); border-color: var(--slate-300); }
+    .btn-ghost { background: transparent; color: var(--slate-600); }
+    .btn-ghost:hover { background: var(--slate-100); }
+    .btn-danger { background: var(--error); color: #FFF; }
+    .btn-danger:hover { background: #A03E4D; }
+    
+    .input {
+      width: 100%;
+      padding: 12px 16px;
+      font-size: 14px;
+      border: 1px solid var(--slate-200);
+      border-radius: 8px;
+      font-family: inherit;
+      transition: border-color 0.15s, box-shadow 0.15s;
+    }
+    .input:focus {
+      outline: none;
+      border-color: var(--steel-400);
+      box-shadow: 0 0 0 3px rgba(91, 138, 154, 0.1);
+    }
+    
+    .label {
+      display: block;
+      font-size: 13px;
+      font-weight: 500;
+      color: var(--slate-600);
+      margin-bottom: 6px;
+    }
+    
+    /* Modal */
+    .modal-overlay {
+      position: fixed;
+      inset: 0;
+      background: rgba(12, 22, 32, 0.6);
+      backdrop-filter: blur(4px);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      z-index: 1000;
+      padding: 20px;
+      animation: fadeIn 0.2s ease;
+    }
+    .modal {
+      background: #FFF;
+      border-radius: 16px;
+      box-shadow: 0 20px 60px rgba(0,0,0,0.3);
+      max-height: 90vh;
+      overflow-y: auto;
+      animation: slideUp 0.3s ease;
+    }
+    @keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
+    @keyframes slideUp { from { opacity: 0; transform: translateY(20px); } to { opacity: 1; transform: translateY(0); } }
+    
+    /* Auth Screen */
+    .auth-container {
+      min-height: 100vh;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      background: linear-gradient(135deg, var(--navy-950) 0%, var(--navy-800) 100%);
+      padding: 20px;
+    }
+    .auth-card {
+      background: #FFF;
+      border-radius: 16px;
+      padding: 40px;
+      width: 100%;
+      max-width: 400px;
+      box-shadow: 0 20px 60px rgba(0,0,0,0.3);
+    }
+    .auth-logo {
+      text-align: center;
+      margin-bottom: 32px;
+    }
+    .auth-logo img {
+      height: 40px;
+    }
+    .auth-tabs {
+      display: flex;
+      gap: 8px;
+      margin-bottom: 24px;
+    }
+    .auth-tab {
+      flex: 1;
+      padding: 10px;
+      border: none;
+      background: var(--slate-100);
+      border-radius: 8px;
+      font-size: 14px;
+      font-weight: 500;
+      cursor: pointer;
+      transition: all 0.15s;
+      font-family: inherit;
+    }
+    .auth-tab.active {
+      background: var(--navy-700);
+      color: #FFF;
+    }
+    .auth-error {
+      background: var(--error-light);
+      color: var(--error);
+      padding: 12px;
+      border-radius: 8px;
+      font-size: 13px;
+      margin-bottom: 16px;
+    }
+    .auth-divider {
+      display: flex;
+      align-items: center;
+      gap: 16px;
+      margin: 24px 0;
+      color: var(--slate-400);
+      font-size: 13px;
+    }
+    .auth-divider::before, .auth-divider::after {
+      content: '';
+      flex: 1;
+      height: 1px;
+      background: var(--slate-200);
+    }
+    
+    /* Dashboard Header */
+    .header {
+      background: var(--navy-700);
+      color: #FFF;
+      padding: 16px 24px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      position: sticky;
+      top: 0;
+      z-index: 100;
+    }
+    .header-left {
+      display: flex;
+      align-items: center;
+      gap: 16px;
+    }
+    .header-logo img {
+      height: 28px;
+    }
+    .header-right {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+    }
+    .user-menu {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      padding: 8px 12px;
+      background: rgba(255,255,255,0.1);
+      border-radius: 8px;
+      cursor: pointer;
+      transition: background 0.15s;
+    }
+    .user-menu:hover {
+      background: rgba(255,255,255,0.15);
+    }
+    .user-avatar {
+      width: 32px;
+      height: 32px;
+      border-radius: 50%;
+      background: var(--steel-500);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-weight: 600;
+      font-size: 14px;
+    }
+    
+    /* Main Content */
+    .main {
+      max-width: 1200px;
+      margin: 0 auto;
+      padding: 32px 24px;
+    }
+    .page-header {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      margin-bottom: 24px;
+      flex-wrap: wrap;
+      gap: 16px;
+    }
+    .page-title {
+      font-size: 24px;
+      font-weight: 600;
+      color: var(--navy-700);
+    }
+    
+    /* Journey Map Cards */
+    .maps-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+      gap: 20px;
+    }
+    .map-card {
+      background: #FFF;
+      border-radius: 12px;
+      padding: 20px;
+      box-shadow: 0 2px 8px rgba(0,0,0,0.06);
+      border: 1px solid var(--slate-100);
+      transition: all 0.15s;
+      cursor: pointer;
+    }
+    .map-card:hover {
+      box-shadow: 0 4px 16px rgba(0,0,0,0.1);
+      border-color: var(--steel-300);
+    }
+    .map-card-header {
+      display: flex;
+      align-items: flex-start;
+      justify-content: space-between;
+      margin-bottom: 12px;
+    }
+    .map-card-title {
+      font-size: 16px;
+      font-weight: 600;
+      color: var(--navy-700);
+      margin-bottom: 4px;
+    }
+    .map-card-type {
+      font-size: 12px;
+      color: var(--slate-500);
+    }
+    .map-card-stats {
+      display: flex;
+      gap: 16px;
+      margin-top: 16px;
+      padding-top: 16px;
+      border-top: 1px solid var(--slate-100);
+    }
+    .map-stat {
+      font-size: 12px;
+      color: var(--slate-500);
+    }
+    .map-stat strong {
+      color: var(--slate-700);
+    }
+    .map-card-menu {
+      position: relative;
+    }
+    .map-menu-btn {
+      background: none;
+      border: none;
+      padding: 4px 8px;
+      cursor: pointer;
+      color: var(--slate-400);
+      border-radius: 4px;
+    }
+    .map-menu-btn:hover {
+      background: var(--slate-100);
+      color: var(--slate-600);
+    }
+    .map-menu-dropdown {
+      position: absolute;
+      top: 100%;
+      right: 0;
+      background: #FFF;
+      border-radius: 8px;
+      box-shadow: 0 4px 20px rgba(0,0,0,0.15);
+      min-width: 150px;
+      z-index: 10;
+      overflow: hidden;
+    }
+    .map-menu-item {
+      display: block;
+      width: 100%;
+      padding: 10px 16px;
+      text-align: left;
+      border: none;
+      background: none;
+      font-size: 13px;
+      cursor: pointer;
+      transition: background 0.1s;
+      font-family: inherit;
+    }
+    .map-menu-item:hover {
+      background: var(--slate-50);
+    }
+    .map-menu-item.danger {
+      color: var(--error);
+    }
+    
+    /* Empty State */
+    .empty-state {
+      text-align: center;
+      padding: 60px 20px;
+      background: #FFF;
+      border-radius: 12px;
+      border: 2px dashed var(--slate-200);
+    }
+    .empty-state-icon {
+      font-size: 48px;
+      margin-bottom: 16px;
+    }
+    .empty-state-title {
+      font-size: 18px;
+      font-weight: 600;
+      color: var(--navy-700);
+      margin-bottom: 8px;
+    }
+    .empty-state-text {
+      color: var(--slate-500);
+      margin-bottom: 24px;
+    }
+    
+    /* Loading */
+    .loading-container {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      min-height: 60vh;
+    }
+    .loading-spinner {
+      width: 40px;
+      height: 40px;
+      border: 3px solid var(--slate-200);
+      border-top-color: var(--steel-500);
+      border-radius: 50%;
+      animation: spin 1s linear infinite;
+    }
+    @keyframes spin {
+      to { transform: rotate(360deg); }
+    }
+    
+    /* Mobile */
+    @media (max-width: 768px) {
+      .header {
+        padding: 12px 16px;
+      }
+      .main {
+        padding: 20px 16px;
+      }
+      .page-header {
+        flex-direction: column;
+        align-items: stretch;
+      }
+      .maps-grid {
+        grid-template-columns: 1fr;
+      }
+      .auth-card {
+        padding: 24px;
+      }
+    }
+  </style>
+</head>
+<body>
+  <div id="root"></div>
+  
+  <script type="text/babel">
+    const { useState, useEffect, useCallback, createContext, useContext } = React;
+    
+    // ============================================
+    // SUPABASE CONFIG
+    // ============================================
+    const SUPABASE_URL = 'https://ktctvaeulualihczwnrl.supabase.co';
+    const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Imt0Y3R2YWV1bHVhbGloY3p3bnJsIiwicm9sZSI6ImFub24iLCJpYXQiOjE3Njc0MzczNjksImV4cCI6MjA4MzAxMzM2OX0.qnvrAUvUhp3hgu37YnahR0Ql-CKR0zcDt3sKWaMq95I';
+    
+    const supabase = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+    
+    // ============================================
+    // AUTH CONTEXT
+    // ============================================
+    const AuthContext = createContext(null);
+    
+    function AuthProvider({ children }) {
+      const [user, setUser] = useState(null);
+      const [profile, setProfile] = useState(null);
+      const [loading, setLoading] = useState(true);
+      
+      useEffect(() => {
+        // Check current session
+        supabase.auth.getSession().then(({ data: { session } }) => {
+          setUser(session?.user ?? null);
+          if (session?.user) {
+            fetchProfile(session.user.id);
+          } else {
+            setLoading(false);
+          }
+        });
+        
+        // Listen for auth changes
+        const { data: { subscription } } = supabase.auth.onAuthStateChange(async (event, session) => {
+          setUser(session?.user ?? null);
+          if (session?.user) {
+            await fetchProfile(session.user.id);
+            // Log login
+            if (event === 'SIGNED_IN') {
+              await supabase.rpc('log_user_login', { user_id: session.user.id });
+            }
+          } else {
+            setProfile(null);
+          }
+          setLoading(false);
+        });
+        
+        return () => subscription.unsubscribe();
+      }, []);
+      
+      const fetchProfile = async (userId) => {
+        const { data, error } = await supabase
+          .from('users')
+          .select('*, organisations(*)')
+          .eq('id', userId)
+          .single();
+        
+        if (data) {
+          setProfile(data);
+        }
+        setLoading(false);
+      };
+      
+      const signUp = async (email, password, displayName) => {
+        const { data, error } = await supabase.auth.signUp({
+          email,
+          password,
+          options: {
+            data: { display_name: displayName }
+          }
+        });
+        return { data, error };
+      };
+      
+      const signIn = async (email, password) => {
+        const { data, error } = await supabase.auth.signInWithPassword({
+          email,
+          password
+        });
+        return { data, error };
+      };
+      
+      const signOut = async () => {
+        await supabase.auth.signOut();
+        setUser(null);
+        setProfile(null);
+      };
+      
+      return (
+        <AuthContext.Provider value={{ user, profile, loading, signUp, signIn, signOut, fetchProfile }}>
+          {children}
+        </AuthContext.Provider>
+      );
+    }
+    
+    function useAuth() {
+      return useContext(AuthContext);
+    }
+    
+    // ============================================
+    // AUTH SCREEN
+    // ============================================
+    function AuthScreen() {
+      const { signUp, signIn } = useAuth();
+      const [mode, setMode] = useState('signin'); // signin, signup
+      const [email, setEmail] = useState('');
+      const [password, setPassword] = useState('');
+      const [displayName, setDisplayName] = useState('');
+      const [error, setError] = useState('');
+      const [loading, setLoading] = useState(false);
+      const [success, setSuccess] = useState('');
+      
+      const handleSubmit = async (e) => {
+        e.preventDefault();
+        setError('');
+        setSuccess('');
+        setLoading(true);
+        
+        try {
+          if (mode === 'signup') {
+            const { error } = await signUp(email, password, displayName);
+            if (error) throw error;
+            setSuccess('Check your email to confirm your account!');
+          } else {
+            const { error } = await signIn(email, password);
+            if (error) throw error;
+          }
+        } catch (err) {
+          setError(err.message);
+        }
+        setLoading(false);
+      };
+      
+      return (
+        <div className="auth-container">
+          <div className="auth-card">
+            <div className="auth-logo">
+              <img src="logo_dark.png" alt="FATHOM" onError={(e) => { e.target.style.display = 'none'; e.target.nextSibling.style.display = 'block'; }} />
+              <div style={{ display: 'none', fontSize: '28px', fontWeight: 700, color: 'var(--navy-700)', letterSpacing: '-1px' }}>FATHOM</div>
+            </div>
+            
+            <div className="auth-tabs">
+              <button 
+                className={`auth-tab ${mode === 'signin' ? 'active' : ''}`}
+                onClick={() => { setMode('signin'); setError(''); setSuccess(''); }}
+              >
+                Sign In
+              </button>
+              <button 
+                className={`auth-tab ${mode === 'signup' ? 'active' : ''}`}
+                onClick={() => { setMode('signup'); setError(''); setSuccess(''); }}
+              >
+                Sign Up
+              </button>
+            </div>
+            
+            {error && <div className="auth-error">{error}</div>}
+            {success && <div style={{ background: 'var(--success-light)', color: 'var(--success)', padding: '12px', borderRadius: '8px', fontSize: '13px', marginBottom: '16px' }}>{success}</div>}
+            
+            <form onSubmit={handleSubmit}>
+              {mode === 'signup' && (
+                <div style={{ marginBottom: '16px' }}>
+                  <label className="label">Your Name</label>
+                  <input
+                    type="text"
+                    className="input"
+                    value={displayName}
+                    onChange={(e) => setDisplayName(e.target.value)}
+                    placeholder="John Smith"
+                    required
+                  />
+                </div>
+              )}
+              
+              <div style={{ marginBottom: '16px' }}>
+                <label className="label">Email</label>
+                <input
+                  type="email"
+                  className="input"
+                  value={email}
+                  onChange={(e) => setEmail(e.target.value)}
+                  placeholder="you@company.com"
+                  required
+                />
+              </div>
+              
+              <div style={{ marginBottom: '24px' }}>
+                <label className="label">Password</label>
+                <input
+                  type="password"
+                  className="input"
+                  value={password}
+                  onChange={(e) => setPassword(e.target.value)}
+                  placeholder="••••••••"
+                  minLength={6}
+                  required
+                />
+              </div>
+              
+              <button type="submit" className="btn btn-primary" style={{ width: '100%' }} disabled={loading}>
+                {loading ? 'Please wait...' : mode === 'signup' ? 'Create Account' : 'Sign In'}
+              </button>
+            </form>
+            
+            {mode === 'signin' && (
+              <div style={{ textAlign: 'center', marginTop: '16px' }}>
+                <button 
+                  className="btn btn-ghost" 
+                  style={{ fontSize: '13px' }}
+                  onClick={() => {/* TODO: Password reset */}}
+                >
+                  Forgot password?
+                </button>
+              </div>
+            )}
+          </div>
+        </div>
+      );
+    }
+    
+    // ============================================
+    // JOURNEY TEMPLATES
+    // ============================================
+    const JOURNEY_TEMPLATES = [
+      { id: 'blank', name: 'Blank Canvas', description: 'Start from scratch', icon: '📄', industry: 'Any', stageCount: 1, config: { title: 'New Journey Map', stages: [{ id: 'stage-1', name: 'Stage 1', steps: [{ id: 'step-1-1', name: 'First Step', time: 30, personaId: null, friction: 'none', notes: '' }] }], personas: [{ id: 'customer', name: 'Customer', salary: 0, isExternal: true }, { id: 'staff', name: 'Staff Member', salary: 35000, isExternal: false }], funnelConfig: { enabled: false, startVolume: 100, stages: {} } }},
+      { id: 'financial_client_onboarding', name: 'Client Onboarding', description: 'Wealth management with KYC & compliance', icon: '🏦', industry: 'Financial Services', stageCount: 6, config: { title: 'Client Onboarding Journey', stages: [{ id: 'stage-1', name: 'Discovery', steps: [{ id: 's1-1', name: 'Initial Enquiry', time: 15, personaId: 'admin', friction: 'none' }, { id: 's1-2', name: 'Qualification Call', time: 45, personaId: 'advisor', friction: 'low' }]}, { id: 'stage-2', name: 'KYC & Compliance', steps: [{ id: 's2-1', name: 'ID Collection', time: 30, personaId: 'client', friction: 'medium' }, { id: 's2-2', name: 'AML Check', time: 45, personaId: 'compliance', friction: 'low' }]}], personas: [{ id: 'client', name: 'Client', salary: 0, isExternal: true }, { id: 'advisor', name: 'Advisor', salary: 75000, isExternal: false }, { id: 'admin', name: 'Admin', salary: 28000, isExternal: false }, { id: 'compliance', name: 'Compliance', salary: 55000, isExternal: false }], funnelConfig: { enabled: true, startVolume: 100, stages: {} } }},
+      { id: 'employee_onboarding', name: 'Employee Onboarding', description: 'Offer to productivity', icon: '👋', industry: 'HR / People Operations', stageCount: 6, config: { title: 'Employee Onboarding', stages: [{ id: 'stage-1', name: 'Pre-boarding', steps: [{ id: 's1-1', name: 'Offer Letter', time: 30, personaId: 'hr', friction: 'none' }]}], personas: [{ id: 'new-hire', name: 'New Hire', salary: 40000, isExternal: false }, { id: 'hr', name: 'HR', salary: 32000, isExternal: false }, { id: 'manager', name: 'Manager', salary: 65000, isExternal: false }], funnelConfig: { enabled: true, startVolume: 50, stages: {} } }},
+      // Add more templates as needed...
+    ];
+    
+    const INDUSTRIES = [
+      'Financial Services',
+      'Healthcare',
+      'HR / People Operations',
+      'Property & Real Estate',
+      'Legal & Professional Services',
+      'B2B / SaaS',
+      'Public Sector / Government',
+      'Operations / Service',
+      'Other'
+    ];
+    
+    // ============================================
+    // CREATE MAP WIZARD
+    // ============================================
+    function CreateMapWizard({ onClose, onCreated }) {
+      const { profile } = useAuth();
+      const [step, setStep] = useState(1); // 1: choose method, 2: AI form, 3: templates, 4: customize
+      const [method, setMethod] = useState(null); // 'ai', 'template', 'blank'
+      const [selectedTemplate, setSelectedTemplate] = useState(null);
+      
+      // AI generation fields
+      const [description, setDescription] = useState('');
+      const [industry, setIndustry] = useState('');
+      const [roles, setRoles] = useState(['']);
+      const [knownStages, setKnownStages] = useState('');
+      const [complexity, setComplexity] = useState('medium');
+      const [isGenerating, setIsGenerating] = useState(false);
+      const [generatedConfig, setGeneratedConfig] = useState(null);
+      
+      // Final customization
+      const [title, setTitle] = useState('');
+      const [mapDescription, setMapDescription] = useState('');
+      const [isCreating, setIsCreating] = useState(false);
+      const [error, setError] = useState('');
+      
+      const handleSelectMethod = (m) => {
+        setMethod(m);
+        if (m === 'ai') {
+          setStep(2);
+        } else if (m === 'template') {
+          setStep(3);
+        } else if (m === 'blank') {
+          setSelectedTemplate(JOURNEY_TEMPLATES.find(t => t.id === 'blank'));
+          setTitle('New Journey Map');
+          setStep(4);
+        }
+      };
+      
+      const handleSelectTemplate = (template) => {
+        setSelectedTemplate(template);
+        setTitle(template.config.title);
+        setMapDescription(template.description);
+        setStep(4);
+      };
+      
+      const handleGenerateAI = async () => {
+        if (!description.trim()) {
+          setError('Please describe your journey');
+          return;
+        }
+        
+        setIsGenerating(true);
+        setError('');
+        
+        try {
+          // Call edge function for AI generation
+          const { data, error } = await supabase.functions.invoke('generate-journey', {
+            body: {
+              description,
+              industry,
+              roles: roles.filter(r => r.trim()),
+              knownStages,
+              complexity
+            }
+          });
+          
+          if (error) throw error;
+          
+          setGeneratedConfig(data);
+          setTitle(data.title || 'AI Generated Journey');
+          setSelectedTemplate({ id: 'ai-generated', config: data });
+          setStep(4);
+        } catch (err) {
+          setError(err.message || 'Failed to generate journey. Please try again.');
+        }
+        setIsGenerating(false);
+      };
+      
+      const handleCreate = async () => {
+        if (!title.trim()) {
+          setError('Please enter a title');
+          return;
+        }
+        
+        setIsCreating(true);
+        setError('');
+        
+        try {
+          const templateConfig = selectedTemplate?.config || {};
+          
+          const journeyConfig = {
+            meta: {
+              title: title.trim(),
+              version: '1.0',
+              template: selectedTemplate?.id || 'blank'
+            },
+            funnel: {
+              enabled: templateConfig.funnelConfig?.enabled || false,
+              initialVolume: templateConfig.funnelConfig?.startVolume || 100,
+              periodLabel: 'per month'
+            },
+            personas: (templateConfig.personas || []).map(p => ({
+              id: p.id,
+              label: p.name || p.label,
+              salary: p.salary || 0,
+              isExternal: p.isExternal || false,
+              color: p.isExternal ? '#2D8A6E' : '#5B8A9A'
+            })),
+            stages: (templateConfig.stages || [{ id: 'stage-1', name: 'Stage 1', steps: [] }]).map(stage => ({
+              id: stage.id,
+              name: stage.name,
+              dropOffCount: 0,
+              steps: (stage.steps || []).map(step => ({
+                id: step.id,
+                name: step.name,
+                owner: step.personaId || step.persona || null,
+                timeMinutes: step.time || step.duration || 30,
+                frictionLevel: step.friction === 'high' ? 4 : step.friction === 'medium' ? 3 : step.friction === 'low' ? 2 : 1,
+                painPoints: [],
+                automationOpportunity: 'none',
+                notes: step.notes || ''
+              }))
+            }))
+          };
+          
+          // Insert into Supabase
+          const { data, error } = await supabase
+            .from('journey_maps')
+            .insert({
+              organisation_id: profile.organisation_id,
+              title: title.trim(),
+              description: mapDescription.trim(),
+              journey_type: industry || selectedTemplate?.industry || null,
+              config: journeyConfig,
+              created_by: profile.id,
+              template_source: selectedTemplate?.id || 'blank'
+            })
+            .select()
+            .single();
+          
+          if (error) throw error;
+          
+          onCreated(data);
+        } catch (err) {
+          setError(err.message || 'Failed to create journey map');
+        }
+        setIsCreating(false);
+      };
+      
+      const addRole = () => setRoles([...roles, '']);
+      const updateRole = (index, value) => {
+        const newRoles = [...roles];
+        newRoles[index] = value;
+        setRoles(newRoles);
+      };
+      const removeRole = (index) => setRoles(roles.filter((_, i) => i !== index));
+      
+      return (
+        <div className="modal-overlay" onClick={onClose}>
+          <div className="modal" onClick={e => e.stopPropagation()} style={{ maxWidth: step === 3 ? '600px' : '500px', width: '95%' }}>
+            <div style={{ padding: '32px' }}>
+              {/* Header */}
+              <div style={{ display: 'flex', alignItems: 'center', gap: '16px', marginBottom: '24px' }}>
+                {step > 1 && (
+                  <button 
+                    onClick={() => setStep(step === 4 && method === 'ai' ? 2 : step === 4 ? 3 : 1)} 
+                    style={{ background: 'none', border: 'none', cursor: 'pointer', fontSize: '18px', color: 'var(--slate-400)', padding: '4px' }}
+                  >
+                    ←
+                  </button>
+                )}
+                <h2 style={{ fontSize: '20px', fontWeight: 600, color: 'var(--navy-700)', margin: 0, flex: 1 }}>
+                  {step === 1 && 'Create New Map'}
+                  {step === 2 && 'Describe Your Journey'}
+                  {step === 3 && 'Choose a Template'}
+                  {step === 4 && 'Customize Your Map'}
+                </h2>
+                <button onClick={onClose} style={{ background: 'none', border: 'none', fontSize: '24px', color: 'var(--slate-400)', cursor: 'pointer' }}>×</button>
+              </div>
+              
+              {error && <div className="auth-error">{error}</div>}
+              
+              {/* Step 1: Choose Method */}
+              {step === 1 && (
+                <div style={{ display: 'flex', flexDirection: 'column', gap: '12px' }}>
+                  <button
+                    onClick={() => handleSelectMethod('ai')}
+                    style={{
+                      display: 'flex', alignItems: 'center', gap: '16px', padding: '20px',
+                      background: 'linear-gradient(135deg, var(--navy-700) 0%, var(--steel-600) 100%)',
+                      border: 'none', borderRadius: '12px', cursor: 'pointer', textAlign: 'left', color: '#FFF'
+                    }}
+                  >
+                    <span style={{ fontSize: '32px' }}>✨</span>
+                    <div>
+                      <div style={{ fontWeight: 600, fontSize: '16px', marginBottom: '4px' }}>Describe your journey</div>
+                      <div style={{ fontSize: '13px', opacity: 0.8 }}>AI generates a custom starting point based on your context</div>
+                    </div>
+                  </button>
+                  
+                  <button
+                    onClick={() => handleSelectMethod('template')}
+                    style={{
+                      display: 'flex', alignItems: 'center', gap: '16px', padding: '20px',
+                      background: '#FFF', border: '1px solid var(--slate-200)', borderRadius: '12px',
+                      cursor: 'pointer', textAlign: 'left'
+                    }}
+                  >
+                    <span style={{ fontSize: '32px' }}>📋</span>
+                    <div>
+                      <div style={{ fontWeight: 600, fontSize: '16px', marginBottom: '4px', color: 'var(--navy-700)' }}>Choose a template</div>
+                      <div style={{ fontSize: '13px', color: 'var(--slate-500)' }}>23 industry-specific pre-built journeys</div>
+                    </div>
+                  </button>
+                  
+                  <button
+                    onClick={() => handleSelectMethod('blank')}
+                    style={{
+                      display: 'flex', alignItems: 'center', gap: '16px', padding: '20px',
+                      background: 'var(--slate-50)', border: '2px dashed var(--slate-300)', borderRadius: '12px',
+                      cursor: 'pointer', textAlign: 'left'
+                    }}
+                  >
+                    <span style={{ fontSize: '32px' }}>📄</span>
+                    <div>
+                      <div style={{ fontWeight: 600, fontSize: '16px', marginBottom: '4px', color: 'var(--navy-700)' }}>Start blank</div>
+                      <div style={{ fontSize: '13px', color: 'var(--slate-500)' }}>Empty canvas for complete flexibility</div>
+                    </div>
+                  </button>
+                </div>
+              )}
+              
+              {/* Step 2: AI Form */}
+              {step === 2 && (
+                <div>
+                  <div style={{ marginBottom: '20px' }}>
+                    <label className="label">What process are you mapping?</label>
+                    <textarea
+                      className="input"
+                      value={description}
+                      onChange={(e) => setDescription(e.target.value)}
+                      placeholder="e.g., Client onboarding for a boutique accounting firm that specialises in owner-managed businesses"
+                      rows={3}
+                      style={{ resize: 'vertical' }}
+                    />
+                  </div>
+                  
+                  <div style={{ marginBottom: '20px' }}>
+                    <label className="label">Industry</label>
+                    <select className="input" value={industry} onChange={(e) => setIndustry(e.target.value)}>
+                      <option value="">Select industry...</option>
+                      {INDUSTRIES.map(ind => <option key={ind} value={ind}>{ind}</option>)}
+                    </select>
+                  </div>
+                  
+                  <div style={{ marginBottom: '20px' }}>
+                    <label className="label">Who's involved?</label>
+                    {roles.map((role, i) => (
+                      <div key={i} style={{ display: 'flex', gap: '8px', marginBottom: '8px' }}>
+                        <input
+                          className="input"
+                          value={role}
+                          onChange={(e) => updateRole(i, e.target.value)}
+                          placeholder="e.g., Client, Partner, Administrator"
+                        />
+                        {roles.length > 1 && (
+                          <button onClick={() => removeRole(i)} className="btn btn-ghost" style={{ padding: '8px' }}>×</button>
+                        )}
+                      </div>
+                    ))}
+                    <button onClick={addRole} className="btn btn-ghost" style={{ fontSize: '13px' }}>+ Add role</button>
+                  </div>
+                  
+                  <div style={{ marginBottom: '20px' }}>
+                    <label className="label">Complexity</label>
+                    <div style={{ display: 'flex', gap: '8px' }}>
+                      {['simple', 'medium', 'complex'].map(c => (
+                        <button
+                          key={c}
+                          onClick={() => setComplexity(c)}
+                          className={`btn ${complexity === c ? 'btn-primary' : 'btn-secondary'}`}
+                          style={{ flex: 1, textTransform: 'capitalize' }}
+                        >
+                          {c}
+                        </button>
+                      ))}
+                    </div>
+                  </div>
+                  
+                  <div style={{ marginBottom: '24px' }}>
+                    <label className="label">Any key stages you know about? (optional)</label>
+                    <input
+                      className="input"
+                      value={knownStages}
+                      onChange={(e) => setKnownStages(e.target.value)}
+                      placeholder="e.g., Engagement letter, AML checks, accounts prep, filing"
+                    />
+                  </div>
+                  
+                  <button 
+                    onClick={handleGenerateAI} 
+                    className="btn btn-primary" 
+                    style={{ width: '100%' }}
+                    disabled={isGenerating || !description.trim()}
+                  >
+                    {isGenerating ? '✨ Generating...' : '✨ Generate Journey'}
+                  </button>
+                </div>
+              )}
+              
+              {/* Step 3: Template Selection */}
+              {step === 3 && (
+                <div style={{ maxHeight: '60vh', overflowY: 'auto' }}>
+                  {/* Group by industry */}
+                  {Object.entries(
+                    JOURNEY_TEMPLATES.filter(t => t.id !== 'blank').reduce((acc, t) => {
+                      if (!acc[t.industry]) acc[t.industry] = [];
+                      acc[t.industry].push(t);
+                      return acc;
+                    }, {})
+                  ).map(([industry, templates]) => (
+                    <div key={industry} style={{ marginBottom: '20px' }}>
+                      <h4 style={{ fontSize: '11px', fontWeight: 600, color: 'var(--slate-400)', textTransform: 'uppercase', letterSpacing: '1px', marginBottom: '8px' }}>
+                        {industry}
+                      </h4>
+                      <div style={{ display: 'flex', flexDirection: 'column', gap: '4px' }}>
+                        {templates.map(template => (
+                          <button
+                            key={template.id}
+                            onClick={() => handleSelectTemplate(template)}
+                            style={{
+                              display: 'flex', alignItems: 'center', gap: '12px', padding: '12px 16px',
+                              background: '#FFF', border: '1px solid transparent', borderRadius: '8px',
+                              cursor: 'pointer', textAlign: 'left', width: '100%', fontFamily: 'inherit',
+                              transition: 'all 0.1s'
+                            }}
+                            onMouseOver={(e) => { e.currentTarget.style.background = 'var(--slate-50)'; e.currentTarget.style.borderColor = 'var(--slate-200)'; }}
+                            onMouseOut={(e) => { e.currentTarget.style.background = '#FFF'; e.currentTarget.style.borderColor = 'transparent'; }}
+                          >
+                            <span style={{ fontSize: '20px' }}>{template.icon}</span>
+                            <div style={{ flex: 1 }}>
+                              <div style={{ fontWeight: 500, color: 'var(--navy-700)', fontSize: '14px' }}>{template.name}</div>
+                            </div>
+                            <span style={{ fontSize: '12px', color: 'var(--slate-400)' }}>{template.stageCount} stages</span>
+                            <span style={{ color: 'var(--slate-300)' }}>›</span>
+                          </button>
+                        ))}
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              )}
+              
+              {/* Step 4: Customize */}
+              {step === 4 && (
+                <div>
+                  {selectedTemplate && selectedTemplate.id !== 'blank' && (
+                    <div style={{ display: 'flex', alignItems: 'center', gap: '14px', padding: '14px', background: 'var(--slate-50)', borderRadius: '10px', marginBottom: '20px' }}>
+                      <span style={{ fontSize: '32px' }}>{selectedTemplate.icon || '✨'}</span>
+                      <div>
+                        <div style={{ fontWeight: 600, color: 'var(--navy-700)', fontSize: '14px' }}>{selectedTemplate.name || 'AI Generated'}</div>
+                        <div style={{ fontSize: '12px', color: 'var(--slate-500)' }}>
+                          {selectedTemplate.id === 'ai-generated' ? 'Custom generated based on your description' : `${selectedTemplate.stageCount} stages • ${selectedTemplate.config?.personas?.length || 0} roles`}
+                        </div>
+                      </div>
+                    </div>
+                  )}
+                  
+                  <div style={{ marginBottom: '16px' }}>
+                    <label className="label">Map Title</label>
+                    <input
+                      type="text"
+                      className="input"
+                      value={title}
+                      onChange={(e) => setTitle(e.target.value)}
+                      placeholder="e.g., Client Onboarding Journey"
+                      autoFocus
+                    />
+                  </div>
+                  
+                  <div style={{ marginBottom: '24px' }}>
+                    <label className="label">Description <span style={{ fontWeight: 400, color: 'var(--slate-400)' }}>(optional)</span></label>
+                    <textarea
+                      className="input"
+                      value={mapDescription}
+                      onChange={(e) => setMapDescription(e.target.value)}
+                      placeholder="Brief description of this journey map"
+                      rows={2}
+                      style={{ resize: 'vertical' }}
+                    />
+                  </div>
+                  
+                  <div style={{ display: 'flex', gap: '12px' }}>
+                    <button onClick={onClose} className="btn btn-secondary" style={{ flex: 1 }}>Cancel</button>
+                    <button onClick={handleCreate} className="btn btn-primary" style={{ flex: 1 }} disabled={!title.trim() || isCreating}>
+                      {isCreating ? 'Creating...' : 'Create Map'}
+                    </button>
+                  </div>
+                </div>
+              )}
+            </div>
+          </div>
+        </div>
+      );
+    }
+    
+    // ============================================
+    // DASHBOARD
+    // ============================================
+    function Dashboard() {
+      const { user, profile, signOut } = useAuth();
+      const [maps, setMaps] = useState([]);
+      const [loading, setLoading] = useState(true);
+      const [showCreateModal, setShowCreateModal] = useState(false);
+      const [menuOpen, setMenuOpen] = useState(null);
+      const [userMenuOpen, setUserMenuOpen] = useState(false);
+      
+      const fetchMaps = useCallback(async () => {
+        if (!profile?.organisation_id) return;
+        
+        setLoading(true);
+        const { data, error } = await supabase
+          .from('journey_maps')
+          .select('*')
+          .eq('organisation_id', profile.organisation_id)
+          .is('archived_at', null)
+          .order('updated_at', { ascending: false });
+        
+        if (data) {
+          setMaps(data);
+        }
+        setLoading(false);
+      }, [profile?.organisation_id]);
+      
+      useEffect(() => {
+        fetchMaps();
+      }, [fetchMaps]);
+      
+      const handleOpenMap = (map) => {
+        // Open editor with map ID
+        window.location.href = `editor.html?id=${map.id}`;
+      };
+      
+      const handleDeleteMap = async (mapId) => {
+        if (!confirm('Are you sure you want to delete this journey map?')) return;
+        
+        const { error } = await supabase
+          .from('journey_maps')
+          .update({ archived_at: new Date().toISOString() })
+          .eq('id', mapId);
+        
+        if (!error) {
+          setMaps(maps.filter(m => m.id !== mapId));
+        }
+        setMenuOpen(null);
+      };
+      
+      const handleDuplicateMap = async (map) => {
+        const { data, error } = await supabase
+          .from('journey_maps')
+          .insert({
+            organisation_id: profile.organisation_id,
+            title: `${map.title} (Copy)`,
+            description: map.description,
+            journey_type: map.journey_type,
+            config: map.config,
+            created_by: profile.id,
+            template_source: map.template_source
+          })
+          .select()
+          .single();
+        
+        if (data) {
+          setMaps([data, ...maps]);
+        }
+        setMenuOpen(null);
+      };
+      
+      const getInitials = (name) => {
+        return name?.split(' ').map(n => n[0]).join('').toUpperCase().slice(0, 2) || '?';
+      };
+      
+      const formatDate = (dateStr) => {
+        const date = new Date(dateStr);
+        return date.toLocaleDateString('en-GB', { day: 'numeric', month: 'short', year: 'numeric' });
+      };
+      
+      return (
+        <>
+          {/* Header */}
+          <header className="header">
+            <div className="header-left">
+              <div className="header-logo">
+                <img src="logo_light.png" alt="FATHOM" style={{ height: '28px' }} onError={(e) => { e.target.style.display = 'none'; e.target.nextSibling.style.display = 'block'; }} />
+                <div style={{ display: 'none', fontSize: '20px', fontWeight: 700, color: '#FFF', letterSpacing: '-0.5px' }}>FATHOM</div>
+              </div>
+            </div>
+            <div className="header-right">
+              <div 
+                className="user-menu"
+                onClick={() => setUserMenuOpen(!userMenuOpen)}
+              >
+                <div className="user-avatar">
+                  {getInitials(profile?.display_name)}
+                </div>
+                <span style={{ fontSize: '14px' }}>{profile?.display_name || profile?.email}</span>
+                <span>▾</span>
+              </div>
+              {userMenuOpen && (
+                <div style={{
+                  position: 'absolute',
+                  top: '60px',
+                  right: '24px',
+                  background: '#FFF',
+                  borderRadius: '8px',
+                  boxShadow: '0 4px 20px rgba(0,0,0,0.15)',
+                  minWidth: '200px',
+                  zIndex: 100
+                }}>
+                  <div style={{ padding: '12px 16px', borderBottom: '1px solid var(--slate-100)' }}>
+                    <div style={{ fontWeight: 500, color: 'var(--slate-700)', fontSize: '14px' }}>{profile?.display_name}</div>
+                    <div style={{ fontSize: '12px', color: 'var(--slate-500)' }}>{profile?.email}</div>
+                  </div>
+                  <button onClick={signOut} className="map-menu-item" style={{ color: 'var(--error)' }}>
+                    Sign Out
+                  </button>
+                </div>
+              )}
+            </div>
+          </header>
+          
+          {/* Main Content */}
+          <main className="main">
+            <div className="page-header">
+              <h1 className="page-title">Journey Maps</h1>
+              <button className="btn btn-primary" onClick={() => setShowCreateModal(true)}>
+                + New Map
+              </button>
+            </div>
+            
+            {loading ? (
+              <div className="loading-container">
+                <div className="loading-spinner"></div>
+              </div>
+            ) : maps.length === 0 ? (
+              <div className="empty-state">
+                <div className="empty-state-icon">🗺️</div>
+                <h3 className="empty-state-title">No journey maps yet</h3>
+                <p className="empty-state-text">Create your first journey map to start visualizing and optimizing your processes.</p>
+                <button className="btn btn-primary" onClick={() => setShowCreateModal(true)}>
+                  Create Your First Map
+                </button>
+              </div>
+            ) : (
+              <div className="maps-grid">
+                {maps.map(map => (
+                  <div key={map.id} className="map-card" onClick={() => handleOpenMap(map)}>
+                    <div className="map-card-header">
+                      <div>
+                        <div className="map-card-title">{map.title}</div>
+                        {map.journey_type && <div className="map-card-type">{map.journey_type}</div>}
+                      </div>
+                      <div className="map-card-menu">
+                        <button 
+                          className="map-menu-btn"
+                          onClick={(e) => { e.stopPropagation(); setMenuOpen(menuOpen === map.id ? null : map.id); }}
+                        >
+                          ⋮
+                        </button>
+                        {menuOpen === map.id && (
+                          <div className="map-menu-dropdown">
+                            <button className="map-menu-item" onClick={(e) => { e.stopPropagation(); handleOpenMap(map); }}>
+                              Open
+                            </button>
+                            <button className="map-menu-item" onClick={(e) => { e.stopPropagation(); handleDuplicateMap(map); }}>
+                              Duplicate
+                            </button>
+                            <button className="map-menu-item danger" onClick={(e) => { e.stopPropagation(); handleDeleteMap(map.id); }}>
+                              Delete
+                            </button>
+                          </div>
+                        )}
+                      </div>
+                    </div>
+                    {map.description && (
+                      <p style={{ fontSize: '13px', color: 'var(--slate-500)', marginBottom: '12px' }}>
+                        {map.description.length > 100 ? map.description.slice(0, 100) + '...' : map.description}
+                      </p>
+                    )}
+                    <div className="map-card-stats">
+                      <div className="map-stat">
+                        <strong>{map.config?.stages?.length || 0}</strong> stages
+                      </div>
+                      <div className="map-stat">
+                        <strong>{map.config?.stages?.reduce((acc, s) => acc + (s.steps?.length || 0), 0) || 0}</strong> steps
+                      </div>
+                      <div className="map-stat" style={{ marginLeft: 'auto' }}>
+                        {formatDate(map.updated_at)}
+                      </div>
+                    </div>
+                  </div>
+                ))}
+              </div>
+            )}
+          </main>
+          
+          {/* Create Modal */}
+          {showCreateModal && (
+            <CreateMapWizard
+              onClose={() => setShowCreateModal(false)}
+              onCreated={(newMap) => {
+                setMaps([newMap, ...maps]);
+                setShowCreateModal(false);
+                // Optionally open the new map immediately
+                // handleOpenMap(newMap);
+              }}
+            />
+          )}
+        </>
+      );
+    }
+    
+    // ============================================
+    // APP
+    // ============================================
+    function App() {
+      const { user, loading } = useAuth();
+      
+      if (loading) {
+        return (
+          <div className="loading-container" style={{ minHeight: '100vh' }}>
+            <div className="loading-spinner"></div>
+          </div>
+        );
+      }
+      
+      if (!user) {
+        return <AuthScreen />;
+      }
+      
+      return <Dashboard />;
+    }
+    
+    // ============================================
+    // RENDER
+    // ============================================
+    ReactDOM.createRoot(document.getElementById('root')).render(
+      <AuthProvider>
+        <App />
+      </AuthProvider>
+    );
+  </script>
+</body>
+</html>
