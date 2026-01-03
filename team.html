@@ -856,7 +856,14 @@
           await loadPendingInvites(organisation.id);
         } catch (err) {
           console.error('Invite error:', err);
-          setError(err.message || 'Failed to send invitation');
+          // Handle specific error cases
+          if (err.code === '23505' || err.message?.includes('duplicate key')) {
+            setError('An invitation already exists for this email. Check the Pending Invitations section or revoke the existing invite first.');
+          } else if (err.code === '42501' || err.message?.includes('permission denied')) {
+            setError('Permission denied. Please check database policies.');
+          } else {
+            setError(err.message || 'Failed to send invitation');
+          }
         }
         
         setInviting(false);
