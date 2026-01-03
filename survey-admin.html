@@ -640,6 +640,8 @@
       const [profile, setProfile] = useState(null);
       const [userOrgId, setUserOrgId] = useState(null);
       const [showMobileMenu, setShowMobileMenu] = useState(false);
+      const [sendingAll, setSendingAll] = useState(false);
+      const [sentCount, setSentCount] = useState(0);
       
       // Get map ID from URL if present
       const urlParams = new URLSearchParams(window.location.search);
@@ -859,6 +861,48 @@ Your input is really valuable - thank you!`;
         copyToClipboard(template, `email-${link.email}`);
       };
       
+      // Generate mailto URL for sending email
+      const getMailtoUrl = (link) => {
+        const subject = encodeURIComponent(`Process Survey: ${mapConfig?.meta?.title || 'Journey Map'}`);
+        const body = encodeURIComponent(`Hi ${link.name},
+
+We're currently mapping out our "${mapConfig?.meta?.title || 'process'}" to understand how it really works and identify opportunities for improvement.
+
+As someone involved in this process (${link.roleName}), we'd love to get your input. We've put together a short survey (about ${Math.ceil(link.stepCount * 2)} minutes) to capture your experience.
+
+Please complete the survey here:
+${link.url}
+
+Your input is really valuable - thank you!`);
+        
+        return `mailto:${link.email}?subject=${subject}&body=${body}`;
+      };
+      
+      // Send email via mailto
+      const sendEmail = (link) => {
+        window.location.href = getMailtoUrl(link);
+      };
+      
+      // Send all emails (opens each in sequence)
+      const sendAllEmails = async () => {
+        setSendingAll(true);
+        setSentCount(0);
+        
+        for (let i = 0; i < generatedLinks.length; i++) {
+          const link = generatedLinks[i];
+          // Open mailto link
+          window.open(getMailtoUrl(link), '_blank');
+          setSentCount(i + 1);
+          
+          // Small delay between emails to prevent browser blocking
+          if (i < generatedLinks.length - 1) {
+            await new Promise(resolve => setTimeout(resolve, 500));
+          }
+        }
+        
+        setSendingAll(false);
+      };
+      
       // Navigation component
       const Nav = () => (
         <>
@@ -1030,9 +1074,23 @@ Your input is really valuable - thank you!`;
             
             {generatedLinks.length > 0 && (
               <div className="card">
-                <h2>3. Survey Links</h2>
+                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '16px' }}>
+                  <h2 style={{ margin: 0 }}>3. Survey Links</h2>
+                  <button 
+                    className="btn btn-primary"
+                    onClick={sendAllEmails}
+                    disabled={sendingAll}
+                    style={{ display: 'flex', alignItems: 'center', gap: '8px' }}
+                  >
+                    {sendingAll ? (
+                      <>Sending... ({sentCount}/{generatedLinks.length})</>
+                    ) : (
+                      <>📧 Send All Emails ({generatedLinks.length})</>
+                    )}
+                  </button>
+                </div>
                 <div className="info-box">
-                  Send these links to each person. They can complete the survey on any device without logging in.
+                  Click "Send Email" to open your email client with a pre-filled message, or use "Send All" to queue them all.
                 </div>
                 
                 <div className="generated-links">
@@ -1047,16 +1105,17 @@ Your input is really valuable - thank you!`;
                       <div className="link-url">{link.url}</div>
                       <div className="link-actions">
                         <button 
+                          className="btn btn-primary"
+                          onClick={() => sendEmail(link)}
+                          style={{ display: 'flex', alignItems: 'center', gap: '6px' }}
+                        >
+                          📧 Send Email
+                        </button>
+                        <button 
                           className="btn btn-secondary"
                           onClick={() => copyToClipboard(link.url, index)}
                         >
                           {copiedIndex === index ? '✓ Copied!' : 'Copy Link'}
-                        </button>
-                        <button 
-                          className="btn btn-secondary"
-                          onClick={() => copyEmailTemplate(link)}
-                        >
-                          {copiedIndex === `email-${link.email}` ? '✓ Copied!' : 'Copy Email Template'}
                         </button>
                         <button 
                           className="btn btn-secondary"
