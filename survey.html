@@ -740,11 +740,29 @@
             }
             setRoleName(persona.label || persona.name || roleId);
             
-            // Filter steps for this role
+            // Filter steps for this role - check roleInvolvement, owner, or persona
             const roleSteps = [];
             config.stages?.forEach(stage => {
               stage.steps?.forEach(step => {
-                if (step.persona === roleId) {
+                let isAssigned = false;
+                
+                // Check roleInvolvement (new format)
+                if (step.roleInvolvement && step.roleInvolvement[roleId]) {
+                  const involvement = step.roleInvolvement[roleId];
+                  if (involvement.timeMinutes > 0) {
+                    isAssigned = true;
+                  }
+                }
+                // Check owner (fallback)
+                else if (step.owner === roleId) {
+                  isAssigned = true;
+                }
+                // Check persona (legacy)
+                else if (step.persona === roleId) {
+                  isAssigned = true;
+                }
+                
+                if (isAssigned) {
                   roleSteps.push({
                     ...step,
                     stageName: stage.name,

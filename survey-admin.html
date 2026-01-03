@@ -740,15 +740,33 @@
             const config = data.config;
             setMapConfig(config);
             
-            // Count steps per persona
+            // Count steps per persona using roleInvolvement
             const stepCounts = {};
             config.stages?.forEach(stage => {
               stage.steps?.forEach(step => {
-                if (step.persona) {
+                // Check roleInvolvement (new format)
+                if (step.roleInvolvement) {
+                  Object.keys(step.roleInvolvement).forEach(roleId => {
+                    const involvement = step.roleInvolvement[roleId];
+                    // Only count if they have time assigned
+                    if (involvement && involvement.timeMinutes > 0) {
+                      stepCounts[roleId] = (stepCounts[roleId] || 0) + 1;
+                    }
+                  });
+                }
+                // Also check owner (legacy fallback)
+                if (step.owner && !step.roleInvolvement) {
+                  stepCounts[step.owner] = (stepCounts[step.owner] || 0) + 1;
+                }
+                // Also check persona (oldest format)
+                if (step.persona && !step.roleInvolvement && !step.owner) {
                   stepCounts[step.persona] = (stepCounts[step.persona] || 0) + 1;
                 }
               });
             });
+            
+            console.log('Step counts by persona:', stepCounts);
+            console.log('Personas:', config.personas);
             
             // Initialize assignments from personas
             const initialAssignments = config.personas

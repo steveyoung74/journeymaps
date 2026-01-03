@@ -5000,6 +5000,42 @@
         localStorage.setItem(STORAGE_KEY, JSON.stringify(config));
       }, [config]);
 
+      // Auto-save to Supabase when config changes (debounced)
+      const autoSaveTimerRef = useRef(null);
+      useEffect(() => {
+        if (!isSupabaseMode || !supabase || configLoading) return;
+        
+        // Clear any pending save
+        if (autoSaveTimerRef.current) {
+          clearTimeout(autoSaveTimerRef.current);
+        }
+        
+        // Debounce auto-save by 1 second
+        autoSaveTimerRef.current = setTimeout(async () => {
+          try {
+            const { error } = await supabase
+              .from('journey_maps')
+              .update({ 
+                config: config,
+                title: config.meta?.title || 'Journey Map',
+                updated_at: new Date().toISOString()
+              })
+              .eq('id', mapId);
+            
+            if (error) throw error;
+            console.log('✅ Auto-saved to Supabase');
+          } catch (error) {
+            console.error('❌ Auto-save failed:', error);
+          }
+        }, 1000);
+        
+        return () => {
+          if (autoSaveTimerRef.current) {
+            clearTimeout(autoSaveTimerRef.current);
+          }
+        };
+      }, [config, isSupabaseMode, mapId, configLoading]);
+
       // Supabase save function
       const saveToSupabase = useCallback(async () => {
         if (!isSupabaseMode || !supabase) {
