@@ -10,6 +10,7 @@
   <script src="https://unpkg.com/react@18/umd/react.production.min.js"></script>
   <script src="https://unpkg.com/react-dom@18/umd/react-dom.production.min.js"></script>
   <script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
   <style>
     /* Interstate Font Family - Brand/Display Font */
     @font-face {
@@ -679,9 +680,241 @@
   <div id="root"></div>
   
   <script type="text/babel">
-    const { useState, useEffect } = React;
+    const { useState, useEffect, useCallback, createContext, useContext } = React;
     
-    // GitHub configuration
+    // ============================================
+    // SUPABASE CONFIGURATION
+    // ============================================
+    const SUPABASE_URL = 'https://ktctvaeulualihczwnrl.supabase.co';
+    const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Imt0Y3R2YWV1bHVhbGloY3p3bnJsIiwicm9sZSI6ImFub24iLCJpYXQiOjE3Njc0MzczNjksImV4cCI6MjA4MzAxMzM2OX0.qnvrAUvUhp3hgu37YnahR0Ql-CKR0zcDt3sKWaMq95I';
+    
+    // Check if Supabase loaded
+    if (!window.supabase) {
+      console.error('Supabase library not loaded!');
+    }
+    
+    const supabase = window.supabase?.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+    
+    if (supabase) {
+      console.log('Supabase client initialized');
+    }
+    
+    // ============================================
+    // AUTH CONTEXT
+    // ============================================
+    const AuthContext = createContext(null);
+    
+    function AuthProvider({ children }) {
+      const [user, setUser] = useState(null);
+      const [profile, setProfile] = useState(null);
+      const [loading, setLoading] = useState(true);
+      
+      useEffect(() => {
+        // Check if Supabase is available
+        if (!supabase) {
+          console.error('Supabase not initialized');
+          setLoading(false);
+          return;
+        }
+        
+        // Check current session with error handling
+        supabase.auth.getSession()
+          .then(({ data: { session }, error }) => {
+            if (error) {
+              console.error('Auth session error:', error);
+              setLoading(false);
+              return;
+            }
+            setUser(session?.user ?? null);
+            if (session?.user) {
+              fetchProfile(session.user.id);
+            } else {
+              setLoading(false);
+            }
+          })
+          .catch(err => {
+            console.error('Auth check failed:', err);
+            setLoading(false);
+          });
+        
+        // Fallback timeout in case auth hangs
+        const timeout = setTimeout(() => {
+          setLoading(false);
+        }, 5000);
+        
+        // Listen for auth changes
+        const { data: { subscription } } = supabase.auth.onAuthStateChange(async (event, session) => {
+          clearTimeout(timeout);
+          setUser(session?.user ?? null);
+          if (session?.user) {
+            await fetchProfile(session.user.id);
+            if (event === 'SIGNED_IN') {
+              await supabase.rpc('log_user_login', { user_id: session.user.id }).catch(() => {});
+            }
+          } else {
+            setProfile(null);
+          }
+          setLoading(false);
+        });
+        
+        return () => {
+          clearTimeout(timeout);
+          subscription.unsubscribe();
+        };
+      }, []);
+      
+      const fetchProfile = async (userId) => {
+        try {
+          // Try to get existing profile
+          const { data, error } = await supabase
+            .from('users')
+            .select('*, organisations(*)')
+            .eq('id', userId)
+            .single();
+          
+          if (data && data.organisation_id) {
+            setProfile(data);
+            setLoading(false);
+            return;
+          }
+          
+          // Profile doesn't exist - create org and profile manually
+          // This is a fallback in case the trigger didn't fire
+          console.log('Profile not found, creating...');
+          
+          // Get user email from auth
+          const { data: authUser } = await supabase.auth.getUser();
+          const email = authUser?.user?.email;
+          const displayName = authUser?.user?.user_metadata?.display_name || email?.split('@')[0];
+          
+          if (!email) {
+            console.error('No email found for user');
+            setLoading(false);
+            return;
+          }
+          
+          // Create organisation
+          const orgSlug = email.split('@')[0].toLowerCase().replace(/[^a-z0-9]/g, '-') + '-' + Date.now().toString(36);
+          const { data: newOrg, error: orgError } = await supabase
+            .from('organisations')
+            .insert({
+              name: displayName + "'s Organisation",
+              slug: orgSlug,
+              settings: {}
+            })
+            .select()
+            .single();
+          
+          if (orgError) {
+            console.error('Failed to create org:', orgError);
+            setLoading(false);
+            return;
+          }
+          
+          // Create user profile
+          const { data: newProfile, error: profileError } = await supabase
+            .from('users')
+            .insert({
+              id: userId,
+              email: email,
+              display_name: displayName,
+              organisation_id: newOrg.id,
+              role: 'owner'
+            })
+            .select('*, organisations(*)')
+            .single();
+          
+          if (profileError) {
+            console.error('Failed to create profile:', profileError);
+            setLoading(false);
+            return;
+          }
+          
+          console.log('Profile created:', newProfile);
+          setProfile(newProfile);
+        } catch (err) {
+          console.error('fetchProfile error:', err);
+        }
+        setLoading(false);
+      };
+      
+      const signUp = async (email, password, displayName) => {
+        const { data, error } = await supabase.auth.signUp({
+          email,
+          password,
+          options: { data: { display_name: displayName } }
+        });
+        return { data, error };
+      };
+      
+      const signIn = async (email, password) => {
+        const { data, error } = await supabase.auth.signInWithPassword({ email, password });
+        return { data, error };
+      };
+      
+      const signOut = async () => {
+        await supabase.auth.signOut();
+        setUser(null);
+        setProfile(null);
+      };
+      
+      return (
+        <AuthContext.Provider value={{ user, profile, loading, signUp, signIn, signOut, fetchProfile }}>
+          {children}
+        </AuthContext.Provider>
+      );
+    }
+    
+    const useAuth = () => useContext(AuthContext);
+    
+    // ============================================
+    // SUPABASE DATA FUNCTIONS
+    // ============================================
+    async function fetchMapsFromSupabase(organisationId) {
+      const { data, error } = await supabase
+        .from('journey_maps')
+        .select('*')
+        .eq('organisation_id', organisationId)
+        .is('archived_at', null)
+        .order('updated_at', { ascending: false });
+      
+      if (error) throw error;
+      return data || [];
+    }
+    
+    async function saveMapToSupabase(map) {
+      const { data, error } = await supabase
+        .from('journey_maps')
+        .upsert(map)
+        .select()
+        .single();
+      
+      if (error) throw error;
+      return data;
+    }
+    
+    async function createMapInSupabase(mapData) {
+      const { data, error } = await supabase
+        .from('journey_maps')
+        .insert(mapData)
+        .select()
+        .single();
+      
+      if (error) throw error;
+      return data;
+    }
+    
+    async function deleteMapFromSupabase(mapId) {
+      // Soft delete
+      const { error } = await supabase
+        .from('journey_maps')
+        .update({ archived_at: new Date().toISOString() })
+        .eq('id', mapId);
+      
+      if (error) throw error;
+    }
+    
+    // GitHub configuration (legacy/fallback)
     const GITHUB_CONFIG = {
       owner: 'steveyoung74',
       repo: 'journeymaps',
@@ -794,7 +1027,165 @@
     // ============================================
     // LOGIN MODAL
     // ============================================
-    function LoginModal({ onLogin }) {
+    function AuthScreen() {
+      const { signUp, signIn } = useAuth();
+      const [mode, setMode] = useState('signin'); // signin, signup
+      const [name, setName] = useState('');
+      const [email, setEmail] = useState('');
+      const [password, setPassword] = useState('');
+      const [error, setError] = useState('');
+      const [success, setSuccess] = useState('');
+      const [isLoading, setIsLoading] = useState(false);
+
+      const handleSubmit = async (e) => {
+        e.preventDefault();
+        setError('');
+        setSuccess('');
+        
+        if (!email.trim() || !password.trim()) {
+          setError('Please enter email and password');
+          return;
+        }
+        if (mode === 'signup' && !name.trim()) {
+          setError('Please enter your name');
+          return;
+        }
+        if (password.length < 6) {
+          setError('Password must be at least 6 characters');
+          return;
+        }
+        
+        setIsLoading(true);
+        try {
+          if (mode === 'signup') {
+            const { error } = await signUp(email.trim(), password, name.trim());
+            if (error) throw error;
+            setSuccess('Account created! You can now sign in.');
+            setMode('signin');
+            setPassword('');
+          } else {
+            const { error } = await signIn(email.trim(), password);
+            if (error) throw error;
+          }
+        } catch (err) {
+          setError(err.message || 'An error occurred');
+        }
+        setIsLoading(false);
+      };
+
+      return (
+        <div className="modal-overlay" style={{ background: 'linear-gradient(135deg, var(--navy-950) 0%, var(--navy-800) 100%)' }}>
+          <div className="modal">
+            <div className="modal-content">
+              <div className="modal-header">
+                <img src="https://steveyoung74.github.io/journeymaps/logo_dark.png" alt="FATHOM" style={{ height: '28px' }} />
+              </div>
+              
+              <h2 className="modal-title">Welcome to Fathom</h2>
+              <p className="text-muted" style={{ marginBottom: '16px', fontSize: '14px' }}>
+                {mode === 'signup' ? 'Create your account to get started' : 'Sign in to access your journey maps'}
+              </p>
+              
+              {/* Auth tabs */}
+              <div style={{ display: 'flex', gap: '8px', marginBottom: '20px' }}>
+                <button
+                  onClick={() => { setMode('signin'); setError(''); setSuccess(''); }}
+                  style={{
+                    flex: 1, padding: '10px', border: 'none', borderRadius: '8px',
+                    fontSize: '14px', fontWeight: 500, cursor: 'pointer',
+                    background: mode === 'signin' ? 'var(--navy-700)' : 'var(--slate-100)',
+                    color: mode === 'signin' ? '#FFF' : 'var(--slate-600)',
+                    fontFamily: 'inherit', transition: 'all 0.15s'
+                  }}
+                >
+                  Sign In
+                </button>
+                <button
+                  onClick={() => { setMode('signup'); setError(''); setSuccess(''); }}
+                  style={{
+                    flex: 1, padding: '10px', border: 'none', borderRadius: '8px',
+                    fontSize: '14px', fontWeight: 500, cursor: 'pointer',
+                    background: mode === 'signup' ? 'var(--navy-700)' : 'var(--slate-100)',
+                    color: mode === 'signup' ? '#FFF' : 'var(--slate-600)',
+                    fontFamily: 'inherit', transition: 'all 0.15s'
+                  }}
+                >
+                  Sign Up
+                </button>
+              </div>
+
+              {error && (
+                <div style={{ padding: '12px 14px', background: 'var(--error-light)', borderRadius: '8px', marginBottom: '16px', color: 'var(--error)', fontSize: '13px' }}>
+                  {error}
+                </div>
+              )}
+              
+              {success && (
+                <div style={{ padding: '12px 14px', background: 'var(--success-light)', borderRadius: '8px', marginBottom: '16px', color: 'var(--success)', fontSize: '13px' }}>
+                  {success}
+                </div>
+              )}
+
+              <form onSubmit={handleSubmit}>
+                {mode === 'signup' && (
+                  <div style={{ marginBottom: '16px' }}>
+                    <label className="label">Your Name</label>
+                    <input
+                      type="text"
+                      className="input"
+                      value={name}
+                      onChange={(e) => setName(e.target.value)}
+                      placeholder="Steve Young"
+                    />
+                  </div>
+                )}
+
+                <div style={{ marginBottom: '16px' }}>
+                  <label className="label">Email Address</label>
+                  <input
+                    type="email"
+                    className="input"
+                    value={email}
+                    onChange={(e) => setEmail(e.target.value)}
+                    placeholder="steve@company.com"
+                    autoFocus
+                  />
+                </div>
+
+                <div style={{ marginBottom: '24px' }}>
+                  <label className="label">Password</label>
+                  <input
+                    type="password"
+                    className="input"
+                    value={password}
+                    onChange={(e) => setPassword(e.target.value)}
+                    placeholder="••••••••"
+                  />
+                  {mode === 'signup' && (
+                    <p className="text-muted text-small" style={{ marginTop: '6px' }}>
+                      Minimum 6 characters
+                    </p>
+                  )}
+                </div>
+
+                <button type="submit" className="btn btn-primary" style={{ width: '100%', padding: '14px' }} disabled={isLoading}>
+                  {isLoading ? 'Please wait...' : mode === 'signup' ? 'Create Account' : 'Sign In'}
+                </button>
+              </form>
+              
+              {mode === 'signin' && (
+                <p className="text-muted text-small" style={{ marginTop: '16px', textAlign: 'center' }}>
+                  Don't have an account? <button onClick={() => setMode('signup')} style={{ background: 'none', border: 'none', color: 'var(--steel-500)', cursor: 'pointer', fontFamily: 'inherit', fontSize: 'inherit', textDecoration: 'underline' }}>Sign up</button>
+                </p>
+              )}
+            </div>
+          </div>
+        </div>
+      );
+    }
+    
+    // Legacy LoginModal (kept for reference)
+    function LoginModal_Legacy({ onLogin }) {
       const [name, setName] = useState('');
       const [email, setEmail] = useState('');
       const [token, setToken] = useState('');
@@ -884,14 +1275,13 @@
     // ============================================
     // DASHBOARD
     // ============================================
-    function Dashboard({ user, token, onLogout, onUpdateToken }) {
+    function Dashboard() {
+      const { user, profile, signOut } = useAuth();
       const [maps, setMaps] = useState([]);
-      const [mapConfigs, setMapConfigs] = useState({});
       const [loading, setLoading] = useState(true);
       const [error, setError] = useState('');
       const [showCreateModal, setShowCreateModal] = useState(false);
       const [showShareModal, setShowShareModal] = useState(null);
-      const [showTokenModal, setShowTokenModal] = useState(false);
       const [activeTab, setActiveTab] = useState('my-maps');
       const [showMobileMenu, setShowMobileMenu] = useState(false);
       const [manageMode, setManageMode] = useState(false);
@@ -899,37 +1289,47 @@
 
       useEffect(() => {
         window.scrollTo(0, 0);
-        fetchMaps();
-      }, []);
-
-      useEffect(() => {
-        if (maps.length > 0) fetchMapConfigs();
-      }, [maps]);
+        if (profile?.organisation_id) {
+          fetchMaps();
+        }
+      }, [profile?.organisation_id]);
 
       const fetchMaps = async () => {
+        if (!profile?.organisation_id) {
+          setLoading(false);
+          return;
+        }
         setLoading(true);
+        setError('');
         try {
-          const index = await fetchFromGitHub(GITHUB_CONFIG.indexFile);
-          setMaps(index?.maps || []);
+          const data = await fetchMapsFromSupabase(profile.organisation_id);
+          // Transform Supabase data to match existing map structure
+          const transformedMaps = data.map(m => ({
+            id: m.id,
+            title: m.title,
+            description: m.description,
+            journeyType: m.journey_type,
+            template: m.template_source,
+            createdAt: m.created_at,
+            updatedAt: m.updated_at,
+            createdBy: m.created_by,
+            // Config is stored directly in the map
+            config: m.config,
+            // Legacy compatibility
+            favourite: m.config?.favourite || false,
+            locked: m.config?.locked || false,
+            sharedWith: m.config?.sharedWith || []
+          }));
+          setMaps(transformedMaps);
         } catch (err) {
+          console.error('Fetch error:', err);
           setError('Failed to load maps');
         }
         setLoading(false);
       };
 
-      const fetchMapConfigs = async () => {
-        const configs = {};
-        for (const map of maps) {
-          try {
-            const config = await fetchFromGitHub(`${GITHUB_CONFIG.mapsPath}/${map.id}.json`);
-            if (config) configs[map.id] = config;
-          } catch (err) {}
-        }
-        setMapConfigs(configs);
-      };
-
-      const getMapMetrics = (mapId) => {
-        const config = mapConfigs[mapId];
+      const getMapMetrics = (map) => {
+        const config = map.config;
         if (!config?.stages) return null;
         
         const allSteps = config.stages.flatMap(s => s.steps || []);
@@ -953,8 +1353,11 @@
           });
         }
         
-        return { totalTime, totalSteps: allSteps.length, stageCount: config.stages.length, totalPainPoints, highImprovements, avgFriction, totalCost };
+        return { totalTime, totalSteps: allSteps.length, stageCount: config.stages?.length || 0, totalPainPoints, highImprovements, avgFriction, totalCost };
       };
+
+      // Helper for map configs (now embedded in map)
+      const mapConfigs = maps.reduce((acc, m) => { acc[m.id] = m.config; return acc; }, {});
 
       // Calculate hourly rate from annual salary
       const calculateHourlyRate = (salary, burdenMultiplier = 1.4) => {
@@ -1205,17 +1608,19 @@
         printWindow.document.close();
       };
 
-      const myMaps = maps.filter(m => m.owner === user.email).sort((a, b) => {
+      // With Supabase, maps are filtered by organisation via RLS
+      // For now, all maps user can access are considered "their" maps
+      const myMaps = maps.sort((a, b) => {
         if (a.favourite !== b.favourite) return a.favourite ? -1 : 1;
-        return new Date(b.updatedAt) - new Date(a.updatedAt);
+        return new Date(b.updatedAt || b.updated_at) - new Date(a.updatedAt || a.updated_at);
       });
-      const sharedMaps = maps.filter(m => m.owner !== user.email && m.sharedWith?.some(s => s.email === user.email));
+      const sharedMaps = []; // TODO: Implement via journey_map_shares table
       
       const openMap = (mapId) => {
         if (manageMode) return; // Don't open in manage mode
         const map = maps.find(m => m.id === mapId);
-        const title = mapConfigs[mapId]?.meta?.title || map?.title || 'Journey Map';
-        window.location.href = `editor.html?map=${mapId}&title=${encodeURIComponent(title)}`;
+        const title = map?.config?.meta?.title || map?.title || 'Journey Map';
+        window.location.href = `editor.html?id=${mapId}&title=${encodeURIComponent(title)}`;
       };
 
       // Manage mode functions
@@ -1240,10 +1645,12 @@
         const map = maps.find(m => m.id === mapId);
         if (!map) return;
         try {
-          const updatedMap = { ...map, favourite: !map.favourite };
-          const updatedMaps = maps.map(m => m.id === mapId ? updatedMap : m);
-          await saveToGitHub(GITHUB_CONFIG.indexFile, { maps: updatedMaps }, token, `Toggle favourite: ${map.title}`);
-          setMaps(updatedMaps);
+          const updatedConfig = { ...map.config, favourite: !map.favourite };
+          await supabase
+            .from('journey_maps')
+            .update({ config: updatedConfig })
+            .eq('id', mapId);
+          setMaps(maps.map(m => m.id === mapId ? { ...m, favourite: !m.favourite, config: updatedConfig } : m));
         } catch (err) {
           console.error('Failed to toggle favourite:', err);
         }
@@ -1253,10 +1660,12 @@
         const map = maps.find(m => m.id === mapId);
         if (!map) return;
         try {
-          const updatedMap = { ...map, locked: !map.locked };
-          const updatedMaps = maps.map(m => m.id === mapId ? updatedMap : m);
-          await saveToGitHub(GITHUB_CONFIG.indexFile, { maps: updatedMaps }, token, `Toggle lock: ${map.title}`);
-          setMaps(updatedMaps);
+          const updatedConfig = { ...map.config, locked: !map.locked };
+          await supabase
+            .from('journey_maps')
+            .update({ config: updatedConfig })
+            .eq('id', mapId);
+          setMaps(maps.map(m => m.id === mapId ? { ...m, locked: !m.locked, config: updatedConfig } : m));
         } catch (err) {
           console.error('Failed to toggle lock:', err);
         }
@@ -1274,7 +1683,7 @@
         if (lockedMaps.length > 0) {
           const lockedTitles = lockedMaps.map(mapId => {
             const map = maps.find(m => m.id === mapId);
-            return mapConfigs[mapId]?.meta?.title || map?.title || mapId;
+            return map?.config?.meta?.title || map?.title || mapId;
           }).join(', ');
           alert(`Cannot delete locked maps. Please unlock these maps first:\n\n${lockedTitles}`);
           return;
@@ -1283,21 +1692,12 @@
         if (!confirm(`Delete ${selectedMaps.size} map(s)? This cannot be undone.`)) return;
         
         try {
-          const mapsToDelete = [...selectedMaps];
-          const updatedMaps = maps.filter(m => !selectedMaps.has(m.id));
-          
-          // Delete each map's config file
-          for (const mapId of mapsToDelete) {
-            try {
-              await deleteFromGitHub(`${GITHUB_CONFIG.mapsPath}/${mapId}.json`, token, `Delete map config: ${mapId}`);
-            } catch (err) {
-              console.warn(`Failed to delete config for ${mapId}:`, err);
-            }
+          // Soft delete from Supabase
+          for (const mapId of selectedMaps) {
+            await deleteMapFromSupabase(mapId);
           }
           
-          // Update index
-          await saveToGitHub(GITHUB_CONFIG.indexFile, { maps: updatedMaps }, token, `Delete ${mapsToDelete.length} map(s)`);
-          setMaps(updatedMaps);
+          setMaps(maps.filter(m => !selectedMaps.has(m.id)));
           setSelectedMaps(new Set());
           setManageMode(false);
         } catch (err) {
@@ -1312,6 +1712,16 @@
       };
 
       const displayMaps = activeTab === 'my-maps' ? myMaps : sharedMaps;
+
+      // Show loading if profile not ready
+      if (!profile) {
+        return (
+          <div style={{ minHeight: '100vh', display: 'flex', alignItems: 'center', justifyContent: 'center', background: 'var(--slate-50)', flexDirection: 'column', gap: '16px' }}>
+            <img src="https://steveyoung74.github.io/journeymaps/logo_dark.png" alt="FATHOM" style={{ height: '32px', opacity: 0.5 }} />
+            <p style={{ color: 'var(--slate-500)', fontSize: '14px' }}>Setting up your workspace...</p>
+          </div>
+        );
+      }
 
       return (
         <div className="page-container">
@@ -1336,8 +1746,8 @@
                 </div>
               </div>
               <div className="nav-right">
-                <span className="nav-user">{user.name}</span>
-                <button onClick={onLogout} className="nav-signout">Sign Out</button>
+                <span className="nav-user">{profile?.display_name || profile?.email}</span>
+                <button onClick={signOut} className="nav-signout">Sign Out</button>
               </div>
               <button className="nav-mobile-toggle" onClick={() => setShowMobileMenu(true)}>☰</button>
             </div>
@@ -1359,8 +1769,8 @@
               <a href="about.html" className="nav-mobile-link">About</a>
             </div>
             <div className="nav-mobile-user">
-              <div className="nav-mobile-user-name">Signed in as {user.name}</div>
-              <button onClick={() => { setShowMobileMenu(false); onLogout(); }} className="nav-mobile-signout">Sign Out</button>
+              <div className="nav-mobile-user-name">Signed in as {profile?.display_name || profile?.email}</div>
+              <button onClick={() => { setShowMobileMenu(false); signOut(); }} className="nav-mobile-signout">Sign Out</button>
             </div>
           </div>
 
@@ -1373,7 +1783,7 @@
                     <h1 className="dash-title">Your Journey Maps</h1>
                     <p className="dash-subtitle">Create, manage, and share operational journey maps</p>
                   </div>
-                  <button onClick={() => token ? setShowCreateModal(true) : setShowTokenModal(true)} className="btn btn-primary">
+                  <button onClick={() => setShowCreateModal(true)} className="btn btn-primary">
                     + New Map
                   </button>
                 </div>
@@ -1389,7 +1799,7 @@
                     Shared with Me ({sharedMaps.length})
                   </button>
                 </div>
-                {activeTab === 'my-maps' && token && !manageMode && (
+                {activeTab === 'my-maps' && !manageMode && (
                   <button onClick={() => setManageMode(true)} className="btn btn-ghost" style={{ fontSize: '13px' }}>
                     ⚙️ Manage
                   </button>
@@ -1437,8 +1847,8 @@
               ) : (
                 <div className="cards-grid">
                   {displayMaps.map(map => {
-                    const metrics = getMapMetrics(map.id);
-                    const isOwner = map.owner === user.email;
+                    const metrics = getMapMetrics(map);
+                    const isOwner = map.createdBy === profile?.id || map.created_by === profile?.id || true; // User can edit all org maps
                     const isSelected = selectedMaps.has(map.id);
                     const isLocked = map.locked;
                     const canSelect = isOwner && !isLocked;
@@ -1588,30 +1998,9 @@
             </div>
           </footer>
 
-          {/* Token Modal */}
-          {showTokenModal && (
-            <div className="modal-overlay" onClick={() => setShowTokenModal(false)}>
-              <div className="modal" onClick={e => e.stopPropagation()}>
-                <div className="modal-content">
-                  <div className="modal-header">
-                    <h2 className="modal-title">GitHub Token Required</h2>
-                    <button className="modal-close" onClick={() => setShowTokenModal(false)}>×</button>
-                  </div>
-                  <p className="text-muted" style={{ marginBottom: '16px' }}>To create and edit maps, you need a GitHub token.</p>
-                  <TokenForm 
-                    onSave={(newToken) => { onUpdateToken(newToken); setShowTokenModal(false); setShowCreateModal(true); }}
-                    onCancel={() => setShowTokenModal(false)}
-                  />
-                </div>
-              </div>
-            </div>
-          )}
-
           {/* Create Modal */}
           {showCreateModal && (
             <CreateMapModal 
-              user={user}
-              token={token}
               maps={maps}
               onClose={() => setShowCreateModal(false)}
               onCreated={() => { setShowCreateModal(false); fetchMaps(); }}
@@ -1623,8 +2012,6 @@
             <ShareModal
               mapId={showShareModal}
               maps={maps}
-              mapConfigs={mapConfigs}
-              token={token}
               onClose={() => setShowShareModal(null)}
               onUpdated={fetchMaps}
             />
@@ -1845,7 +2232,8 @@
       { value: 'complex', label: 'Complex', stages: '7+ stages' }
     ];
 
-    function CreateMapModal({ user, token, maps, onClose, onCreated }) {
+    function CreateMapModal({ maps, onClose, onCreated }) {
+      const { profile } = useAuth();
       // Modal mode: 'select', 'wizard', 'customize', 'generating'
       const [mode, setMode] = useState('select');
       const [wizardStep, setWizardStep] = useState(1);
@@ -2000,8 +2388,8 @@
       
       // Generate with AI or fallback
       const handleGenerate = async () => {
-        if (!token) {
-          setError('GitHub token required. Please set up your token in settings.');
+        if (!profile?.organisation_id) {
+          setError('Profile not loaded. Please refresh and try again.');
           return;
         }
         if (roles.length < 2) {
@@ -2075,21 +2463,8 @@ RULES:
           journeyConfig = generateFallbackJourney();
         }
         
-        // Save to GitHub
+        // Save to Supabase
         try {
-          const mapId = 'map-' + Date.now();
-          const now = new Date().toISOString();
-          
-          const mapMetadata = {
-            id: mapId,
-            title: journeyConfig.title || description.slice(0, 50),
-            description: description,
-            owner: user.email,
-            createdAt: now,
-            updatedAt: now,
-            sharedWith: []
-          };
-          
           const mapConfig = {
             meta: { title: journeyConfig.title, version: '1.0', template: 'ai-generated' },
             funnel: { enabled: false, initialVolume: 100, periodLabel: 'per month' },
@@ -2108,8 +2483,15 @@ RULES:
             }))
           };
           
-          await saveToGitHub(GITHUB_CONFIG.indexFile, { maps: [...maps, mapMetadata] }, token, `Create: ${journeyConfig.title}`);
-          await saveToGitHub(`${GITHUB_CONFIG.mapsPath}/${mapId}.json`, mapConfig, token, `Config: ${journeyConfig.title}`);
+          await createMapInSupabase({
+            organisation_id: profile.organisation_id,
+            title: journeyConfig.title || description.slice(0, 50),
+            description: description,
+            journey_type: journeyType || industry,
+            config: mapConfig,
+            created_by: profile.id,
+            template_source: 'ai-generated'
+          });
           
           onCreated();
         } catch (err) {
@@ -2121,18 +2503,15 @@ RULES:
       
       const handleCreateTemplate = async () => {
         if (!title.trim() || !selectedTemplate) return;
+        if (!profile?.organisation_id) {
+          setError('Profile not loaded. Please refresh and try again.');
+          return;
+        }
         setIsCreating(true);
         setError('');
         
         try {
           const templateConfig = JSON.parse(JSON.stringify(selectedTemplate.config));
-          const mapId = 'map-' + Date.now();
-          const now = new Date().toISOString();
-          
-          const mapMetadata = {
-            id: mapId, title: title.trim(), description: templateDescription.trim(),
-            owner: user.email, createdAt: now, updatedAt: now, sharedWith: []
-          };
           
           const mapConfig = {
             meta: { title: title.trim(), version: '1.0', template: selectedTemplate.id },
@@ -2148,8 +2527,17 @@ RULES:
             }))
           };
           
-          await saveToGitHub(GITHUB_CONFIG.indexFile, { maps: [...maps, mapMetadata] }, token, `Create: ${title}`);
-          await saveToGitHub(`${GITHUB_CONFIG.mapsPath}/${mapId}.json`, mapConfig, token, `Create config: ${title}`);
+          // Save to Supabase
+          await createMapInSupabase({
+            organisation_id: profile.organisation_id,
+            title: title.trim(),
+            description: templateDescription.trim(),
+            journey_type: selectedTemplate.industry,
+            config: mapConfig,
+            created_by: profile.id,
+            template_source: selectedTemplate.id
+          });
+          
           onCreated();
         } catch (err) {
           setError(err.message || 'Failed to create map');
@@ -2469,39 +2857,10 @@ RULES:
       );
     }
 
-    // Share Modal (simplified)
-    function ShareModal({ mapId, maps, mapConfigs, token, onClose, onUpdated }) {
+    // Share Modal (placeholder - Supabase sharing coming soon)
+    function ShareModal({ mapId, maps, onClose, onUpdated }) {
       const map = maps.find(m => m.id === mapId);
-      const displayTitle = mapConfigs?.[mapId]?.meta?.title || map?.title || 'Journey Map';
-      const [email, setEmail] = useState('');
-      const [permission, setPermission] = useState('view');
-      const [isSharing, setIsSharing] = useState(false);
-
-      const handleShare = async () => {
-        if (!email.trim() || !email.includes('@')) return;
-        setIsSharing(true);
-        
-        try {
-          const updatedMap = {
-            ...map,
-            sharedWith: [...(map.sharedWith || []), { email: email.trim().toLowerCase(), permission, sharedAt: new Date().toISOString() }]
-          };
-          const updatedMaps = maps.map(m => m.id === mapId ? updatedMap : m);
-          await saveToGitHub(GITHUB_CONFIG.indexFile, { maps: updatedMaps }, token, `Share ${displayTitle}`);
-          onUpdated();
-          setEmail('');
-        } catch (err) {}
-        setIsSharing(false);
-      };
-
-      const handleRemove = async (emailToRemove) => {
-        try {
-          const updatedMap = { ...map, sharedWith: map.sharedWith.filter(s => s.email !== emailToRemove) };
-          const updatedMaps = maps.map(m => m.id === mapId ? updatedMap : m);
-          await saveToGitHub(GITHUB_CONFIG.indexFile, { maps: updatedMaps }, token, `Unshare ${displayTitle}`);
-          onUpdated();
-        } catch (err) {}
-      };
+      const displayTitle = map?.config?.meta?.title || map?.title || 'Journey Map';
 
       return (
         <div className="modal-overlay" onClick={onClose}>
@@ -2512,28 +2871,14 @@ RULES:
                 <button className="modal-close" onClick={onClose}>×</button>
               </div>
               
-              <div style={{ display: 'flex', gap: '8px', marginBottom: '16px' }}>
-                <input type="email" className="input" value={email} onChange={e => setEmail(e.target.value)} placeholder="colleague@company.com" style={{ flex: 1 }} />
-                <select className="input" value={permission} onChange={e => setPermission(e.target.value)} style={{ width: '100px' }}>
-                  <option value="view">View</option>
-                  <option value="edit">Edit</option>
-                </select>
-                <button onClick={handleShare} className="btn btn-primary" disabled={isSharing}>Share</button>
+              <div style={{ textAlign: 'center', padding: '32px 16px' }}>
+                <div style={{ fontSize: '48px', marginBottom: '16px' }}>🔗</div>
+                <h3 style={{ marginBottom: '8px', color: 'var(--navy-700)' }}>Sharing Coming Soon</h3>
+                <p className="text-muted" style={{ fontSize: '14px', marginBottom: '24px' }}>
+                  Team sharing with granular permissions is being built. For now, all maps are available to your organisation.
+                </p>
+                <button onClick={onClose} className="btn btn-primary">Got it</button>
               </div>
-              
-              {map?.sharedWith?.length > 0 && (
-                <div>
-                  <p className="label" style={{ marginBottom: '8px' }}>Shared with:</p>
-                  {map.sharedWith.map(s => (
-                    <div key={s.email} style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', padding: '8px 0', borderBottom: '1px solid var(--slate-100)' }}>
-                      <span style={{ fontSize: '14px' }}>{s.email} <span className="badge" style={{ marginLeft: '8px' }}>{s.permission}</span></span>
-                      <button onClick={() => handleRemove(s.email)} className="btn btn-ghost" style={{ padding: '4px 8px', fontSize: '12px', color: 'var(--error)' }}>Remove</button>
-                    </div>
-                  ))}
-                </div>
-              )}
-              
-              <button onClick={onClose} className="btn btn-secondary" style={{ width: '100%', marginTop: '16px' }}>Done</button>
             </div>
           </div>
         </div>
@@ -2543,42 +2888,10 @@ RULES:
     // ============================================
     // APP
     // ============================================
-    function App() {
-      const [user, setUser] = useState(null);
-      const [token, setToken] = useState('');
-      const [isLoaded, setIsLoaded] = useState(false);
+    function AppContent() {
+      const { user, profile, loading } = useAuth();
       
-      useEffect(() => {
-        const savedUser = localStorage.getItem('fathom_user');
-        const savedToken = localStorage.getItem('fathom_token');
-        if (savedUser) {
-          setUser(JSON.parse(savedUser));
-          if (savedToken) setToken(savedToken);
-        }
-        setIsLoaded(true);
-      }, []);
-      
-      const handleLogin = (userData, userToken) => {
-        setUser(userData);
-        setToken(userToken || '');
-        localStorage.setItem('fathom_user', JSON.stringify(userData));
-        if (userToken) localStorage.setItem('fathom_token', userToken);
-      };
-      
-      const handleLogout = () => {
-        setUser(null);
-        setToken('');
-        localStorage.removeItem('fathom_user');
-        localStorage.removeItem('fathom_token');
-        window.location.href = 'index.html';
-      };
-      
-      const handleUpdateToken = (newToken) => {
-        setToken(newToken);
-        localStorage.setItem('fathom_token', newToken);
-      };
-      
-      if (!isLoaded) {
+      if (loading) {
         return (
           <div style={{ minHeight: '100vh', display: 'flex', alignItems: 'center', justifyContent: 'center', background: 'var(--navy-700)' }}>
             <img src="https://steveyoung74.github.io/journeymaps/logo_light.png" alt="FATHOM" style={{ height: '32px', opacity: 0.5 }} />
@@ -2587,10 +2900,18 @@ RULES:
       }
       
       if (!user) {
-        return <LoginModal onLogin={handleLogin} />;
+        return <AuthScreen />;
       }
       
-      return <Dashboard user={user} token={token} onLogout={handleLogout} onUpdateToken={handleUpdateToken} />;
+      return <Dashboard />;
+    }
+    
+    function App() {
+      return (
+        <AuthProvider>
+          <AppContent />
+        </AuthProvider>
+      );
     }
     
     ReactDOM.createRoot(document.getElementById('root')).render(<App />);
