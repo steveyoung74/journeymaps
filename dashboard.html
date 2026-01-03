@@ -2999,7 +2999,7 @@ RULES:
 
     // Share Modal - Full Supabase implementation
     function ShareModal({ mapId, maps, onClose, onUpdated }) {
-      const { user } = useAuth();
+      const { user, profile } = useAuth();
       const map = maps.find(m => m.id === mapId);
       const displayTitle = map?.config?.meta?.title || map?.title || 'Journey Map';
       
@@ -3011,6 +3011,7 @@ RULES:
       const [error, setError] = useState(null);
       const [success, setSuccess] = useState(null);
       const [copySuccess, setCopySuccess] = useState(false);
+      const [sendNotification, setSendNotification] = useState(true);
       
       useEffect(() => {
         loadShares();
@@ -3040,6 +3041,28 @@ RULES:
           console.error('Error loading shares:', err);
         }
         setLoading(false);
+      };
+      
+      // Send email notification via mailto
+      const sendShareEmail = (recipientEmail, mapTitle, permissionLevel) => {
+        const shareLink = `${window.location.origin}/journeymaps/editor.html?id=${mapId}`;
+        const senderName = profile?.display_name || user?.email?.split('@')[0] || 'Someone';
+        const permissionText = permissionLevel === 'edit' ? 'edit' : 'view';
+        
+        const subject = encodeURIComponent(`${senderName} shared "${mapTitle}" with you`);
+        const body = encodeURIComponent(`Hi,
+
+${senderName} has shared a journey map with you on FATHOM.
+
+Map: ${mapTitle}
+Permission: Can ${permissionText}
+
+View it here:
+${shareLink}
+
+FATHOM - Journey intelligence for modern operations`);
+        
+        window.open(`mailto:${recipientEmail}?subject=${subject}&body=${body}`, '_blank');
       };
       
       const addShare = async (e) => {
@@ -3085,7 +3108,12 @@ RULES:
           
           if (error) throw error;
           
-          setSuccess(`Shared with ${email}`);
+          // Send email notification if enabled
+          if (sendNotification) {
+            sendShareEmail(email, displayTitle, permission);
+          }
+          
+          setSuccess(`Shared with ${email}${sendNotification ? ' - email notification sent' : ''}`);
           setEmail('');
           await loadShares();
         } catch (err) {
@@ -3185,7 +3213,7 @@ RULES:
               {/* Add Share Form */}
               <form onSubmit={addShare} style={{ marginBottom: '20px' }}>
                 <label className="label">Share with someone</label>
-                <div style={{ display: 'flex', gap: '8px' }}>
+                <div style={{ display: 'flex', gap: '8px', marginBottom: '10px' }}>
                   <input
                     type="email"
                     placeholder="Email address"
@@ -3211,6 +3239,15 @@ RULES:
                     {sharing ? '...' : 'Share'}
                   </button>
                 </div>
+                <label style={{ display: 'flex', alignItems: 'center', gap: '8px', fontSize: '13px', color: 'var(--slate-600)', cursor: 'pointer' }}>
+                  <input
+                    type="checkbox"
+                    checked={sendNotification}
+                    onChange={(e) => setSendNotification(e.target.checked)}
+                    style={{ width: '16px', height: '16px', cursor: 'pointer' }}
+                  />
+                  📧 Send email notification
+                </label>
               </form>
               
               {error && (
@@ -3295,6 +3332,20 @@ RULES:
                               <option value="view">Can view</option>
                               <option value="edit">Can edit</option>
                             </select>
+                            <button
+                              onClick={() => sendShareEmail(displayEmail, displayTitle, share.permission)}
+                              style={{ 
+                                background: 'none', 
+                                border: 'none', 
+                                color: 'var(--steel-600)', 
+                                cursor: 'pointer',
+                                fontSize: '14px',
+                                padding: '4px'
+                              }}
+                              title="Send notification email"
+                            >
+                              📧
+                            </button>
                             <button
                               onClick={() => removeShare(share.id)}
                               style={{ 

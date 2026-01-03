@@ -3386,6 +3386,7 @@
       const [error, setError] = useState(null);
       const [success, setSuccess] = useState(null);
       const [copySuccess, setCopySuccess] = useState(false);
+      const [sendNotification, setSendNotification] = useState(true);
       
       // Load existing shares
       React.useEffect(() => {
@@ -3417,6 +3418,28 @@
           console.error('Error loading shares:', err);
         }
         setLoading(false);
+      };
+      
+      // Send email notification via mailto
+      const sendShareEmail = (recipientEmail, title, permissionLevel) => {
+        const shareLink = `${window.location.origin}${window.location.pathname}?id=${mapId}`;
+        const senderName = currentUser?.email?.split('@')[0] || 'Someone';
+        const permissionText = permissionLevel === 'edit' ? 'edit' : 'view';
+        
+        const subject = encodeURIComponent(`${senderName} shared "${title}" with you`);
+        const body = encodeURIComponent(`Hi,
+
+${senderName} has shared a journey map with you on FATHOM.
+
+Map: ${title}
+Permission: Can ${permissionText}
+
+View it here:
+${shareLink}
+
+FATHOM - Journey intelligence for modern operations`);
+        
+        window.open(`mailto:${recipientEmail}?subject=${subject}&body=${body}`, '_blank');
       };
       
       const addShare = async (e) => {
@@ -3464,7 +3487,12 @@
           
           if (error) throw error;
           
-          setSuccess(`Shared with ${email}`);
+          // Send email notification if enabled
+          if (sendNotification) {
+            sendShareEmail(email, mapTitle, permission);
+          }
+          
+          setSuccess(`Shared with ${email}${sendNotification ? ' - email sent' : ''}`);
           setEmail('');
           await loadShares();
         } catch (err) {
@@ -3598,7 +3626,7 @@
               <div style={{ fontFamily: "'Interstate', sans-serif", fontSize: '13px', fontWeight: 600, color: '#556275', marginBottom: '8px' }}>
                 Share with someone
               </div>
-              <div style={{ display: 'flex', gap: '8px' }}>
+              <div style={{ display: 'flex', gap: '8px', marginBottom: '10px' }}>
                 <input
                   type="email"
                   placeholder="Email address"
@@ -3646,6 +3674,15 @@
                   {sharing ? '...' : 'Share'}
                 </button>
               </div>
+              <label style={{ display: 'flex', alignItems: 'center', gap: '8px', fontSize: '13px', color: '#556275', cursor: 'pointer', fontFamily: "'Interstate', sans-serif" }}>
+                <input
+                  type="checkbox"
+                  checked={sendNotification}
+                  onChange={(e) => setSendNotification(e.target.checked)}
+                  style={{ width: '16px', height: '16px', cursor: 'pointer' }}
+                />
+                📧 Send email notification
+              </label>
             </form>
             
             {error && (
@@ -3736,6 +3773,20 @@
                             <option value="view">Can view</option>
                             <option value="edit">Can edit</option>
                           </select>
+                          <button
+                            onClick={() => sendShareEmail(displayEmail, mapTitle, share.permission)}
+                            style={{ 
+                              background: 'none', 
+                              border: 'none', 
+                              color: '#5B8A9A', 
+                              cursor: 'pointer',
+                              fontSize: '14px',
+                              padding: '4px'
+                            }}
+                            title="Send notification email"
+                          >
+                            📧
+                          </button>
                           <button
                             onClick={() => removeShare(share.id)}
                             style={{ 
