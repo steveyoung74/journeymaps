@@ -2997,28 +2997,336 @@ RULES:
       );
     }
 
-    // Share Modal (placeholder - Supabase sharing coming soon)
+    // Share Modal - Full Supabase implementation
     function ShareModal({ mapId, maps, onClose, onUpdated }) {
+      const { user } = useAuth();
       const map = maps.find(m => m.id === mapId);
       const displayTitle = map?.config?.meta?.title || map?.title || 'Journey Map';
+      
+      const [shares, setShares] = useState([]);
+      const [loading, setLoading] = useState(true);
+      const [email, setEmail] = useState('');
+      const [permission, setPermission] = useState('view');
+      const [sharing, setSharing] = useState(false);
+      const [error, setError] = useState(null);
+      const [success, setSuccess] = useState(null);
+      const [copySuccess, setCopySuccess] = useState(false);
+      
+      useEffect(() => {
+        loadShares();
+      }, [mapId]);
+      
+      const loadShares = async () => {
+        if (!mapId) return;
+        try {
+          const { data, error } = await supabase
+            .from('journey_map_shares')
+            .select(`
+              id,
+              permission,
+              shared_at,
+              shared_with_user_id,
+              shared_with_email,
+              users:shared_with_user_id (
+                email,
+                display_name
+              )
+            `)
+            .eq('journey_map_id', mapId);
+          
+          if (error) throw error;
+          setShares(data || []);
+        } catch (err) {
+          console.error('Error loading shares:', err);
+        }
+        setLoading(false);
+      };
+      
+      const addShare = async (e) => {
+        e.preventDefault();
+        if (!email.trim()) return;
+        
+        setSharing(true);
+        setError(null);
+        setSuccess(null);
+        
+        try {
+          const existingShare = shares.find(s => 
+            s.shared_with_email === email.toLowerCase() ||
+            s.users?.email === email.toLowerCase()
+          );
+          
+          if (existingShare) {
+            throw new Error('This map is already shared with this person');
+          }
+          
+          const { data: existingUser } = await supabase
+            .from('users')
+            .select('id, email')
+            .eq('email', email.toLowerCase())
+            .single();
+          
+          const shareData = {
+            journey_map_id: mapId,
+            permission,
+            shared_by: user?.id,
+            shared_at: new Date().toISOString()
+          };
+          
+          if (existingUser) {
+            shareData.shared_with_user_id = existingUser.id;
+          } else {
+            shareData.shared_with_email = email.toLowerCase();
+          }
+          
+          const { error } = await supabase
+            .from('journey_map_shares')
+            .insert(shareData);
+          
+          if (error) throw error;
+          
+          setSuccess(`Shared with ${email}`);
+          setEmail('');
+          await loadShares();
+        } catch (err) {
+          console.error('Share error:', err);
+          setError(err.message || 'Failed to share');
+        }
+        
+        setSharing(false);
+      };
+      
+      const removeShare = async (shareId) => {
+        try {
+          const { error } = await supabase
+            .from('journey_map_shares')
+            .delete()
+            .eq('id', shareId);
+          
+          if (error) throw error;
+          setShares(prev => prev.filter(s => s.id !== shareId));
+          setSuccess('Share removed');
+          setTimeout(() => setSuccess(null), 2000);
+        } catch (err) {
+          console.error('Remove error:', err);
+          setError('Failed to remove share');
+        }
+      };
+      
+      const updatePermission = async (shareId, newPermission) => {
+        try {
+          const { error } = await supabase
+            .from('journey_map_shares')
+            .update({ permission: newPermission })
+            .eq('id', shareId);
+          
+          if (error) throw error;
+          setShares(prev => prev.map(s => 
+            s.id === shareId ? { ...s, permission: newPermission } : s
+          ));
+        } catch (err) {
+          setError('Failed to update permission');
+        }
+      };
+      
+      const copyLink = () => {
+        const link = `${window.location.origin}/journeymaps/editor.html?id=${mapId}`;
+        navigator.clipboard.writeText(link);
+        setCopySuccess(true);
+        setTimeout(() => setCopySuccess(false), 2000);
+      };
+      
+      const getInitials = (name) => {
+        if (!name) return '?';
+        return name.split(' ').map(n => n[0]).join('').toUpperCase().slice(0, 2);
+      };
 
       return (
         <div className="modal-overlay" onClick={onClose}>
-          <div className="modal" onClick={e => e.stopPropagation()}>
+          <div className="modal" style={{ maxWidth: '500px' }} onClick={e => e.stopPropagation()}>
             <div className="modal-content">
               <div className="modal-header">
-                <h2 className="modal-title">Share "{displayTitle}"</h2>
+                <h2 className="modal-title">🔗 Share "{displayTitle}"</h2>
                 <button className="modal-close" onClick={onClose}>×</button>
               </div>
               
-              <div style={{ textAlign: 'center', padding: '32px 16px' }}>
-                <div style={{ fontSize: '48px', marginBottom: '16px' }}>🔗</div>
-                <h3 style={{ marginBottom: '8px', color: 'var(--navy-700)' }}>Sharing Coming Soon</h3>
-                <p className="text-muted" style={{ fontSize: '14px', marginBottom: '24px' }}>
-                  Team sharing with granular permissions is being built. For now, all maps are available to your organisation.
-                </p>
-                <button onClick={onClose} className="btn btn-primary">Got it</button>
+              {/* Copy Link */}
+              <div style={{ 
+                display: 'flex', 
+                gap: '8px', 
+                marginBottom: '20px',
+                padding: '12px',
+                background: 'var(--slate-50)',
+                borderRadius: '8px'
+              }}>
+                <input
+                  type="text"
+                  readOnly
+                  value={`${window.location.origin}/journeymaps/editor.html?id=${mapId}`}
+                  style={{ 
+                    flex: 1, 
+                    padding: '8px 12px', 
+                    border: '1px solid var(--slate-200)', 
+                    borderRadius: '6px', 
+                    fontSize: '12px',
+                    fontFamily: 'monospace',
+                    background: '#FFF'
+                  }}
+                />
+                <button
+                  onClick={copyLink}
+                  className="btn btn-primary btn-sm"
+                  style={{ whiteSpace: 'nowrap' }}
+                >
+                  {copySuccess ? '✓ Copied!' : '📋 Copy'}
+                </button>
               </div>
+              
+              {/* Add Share Form */}
+              <form onSubmit={addShare} style={{ marginBottom: '20px' }}>
+                <label className="label">Share with someone</label>
+                <div style={{ display: 'flex', gap: '8px' }}>
+                  <input
+                    type="email"
+                    placeholder="Email address"
+                    value={email}
+                    onChange={(e) => setEmail(e.target.value)}
+                    className="input"
+                    style={{ flex: 1 }}
+                  />
+                  <select
+                    value={permission}
+                    onChange={(e) => setPermission(e.target.value)}
+                    className="input"
+                    style={{ width: '120px' }}
+                  >
+                    <option value="view">Can view</option>
+                    <option value="edit">Can edit</option>
+                  </select>
+                  <button
+                    type="submit"
+                    disabled={sharing || !email.trim()}
+                    className="btn btn-primary"
+                  >
+                    {sharing ? '...' : 'Share'}
+                  </button>
+                </div>
+              </form>
+              
+              {error && (
+                <div style={{ 
+                  padding: '10px 14px', 
+                  background: 'var(--error-light)', 
+                  color: 'var(--error)', 
+                  borderRadius: '6px', 
+                  marginBottom: '16px',
+                  fontSize: '13px'
+                }}>
+                  {error}
+                </div>
+              )}
+              
+              {success && (
+                <div style={{ 
+                  padding: '10px 14px', 
+                  background: 'var(--success-light)', 
+                  color: 'var(--success)', 
+                  borderRadius: '6px', 
+                  marginBottom: '16px',
+                  fontSize: '13px'
+                }}>
+                  {success}
+                </div>
+              )}
+              
+              {/* Existing Shares */}
+              {shares.length > 0 && (
+                <div>
+                  <label className="label">Shared with ({shares.length})</label>
+                  <div style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
+                    {shares.map(share => {
+                      const displayEmail = share.users?.email || share.shared_with_email;
+                      const displayName = share.users?.display_name || displayEmail?.split('@')[0];
+                      
+                      return (
+                        <div 
+                          key={share.id}
+                          style={{ 
+                            display: 'flex', 
+                            alignItems: 'center', 
+                            justifyContent: 'space-between',
+                            padding: '10px 12px',
+                            background: 'var(--slate-50)',
+                            borderRadius: '8px'
+                          }}
+                        >
+                          <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
+                            <div style={{ 
+                              width: '32px', 
+                              height: '32px', 
+                              borderRadius: '50%', 
+                              background: 'var(--navy-100)',
+                              color: 'var(--navy-700)',
+                              display: 'flex',
+                              alignItems: 'center',
+                              justifyContent: 'center',
+                              fontSize: '12px',
+                              fontWeight: 600
+                            }}>
+                              {getInitials(displayName)}
+                            </div>
+                            <div>
+                              <div style={{ fontWeight: 500, fontSize: '14px' }}>{displayName}</div>
+                              <div style={{ fontSize: '12px', color: 'var(--slate-500)' }}>{displayEmail}</div>
+                            </div>
+                          </div>
+                          <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+                            <select
+                              value={share.permission}
+                              onChange={(e) => updatePermission(share.id, e.target.value)}
+                              style={{ 
+                                padding: '4px 8px', 
+                                border: '1px solid var(--slate-200)', 
+                                borderRadius: '4px', 
+                                fontSize: '12px',
+                                background: '#FFF'
+                              }}
+                            >
+                              <option value="view">Can view</option>
+                              <option value="edit">Can edit</option>
+                            </select>
+                            <button
+                              onClick={() => removeShare(share.id)}
+                              style={{ 
+                                background: 'none', 
+                                border: 'none', 
+                                color: 'var(--error)', 
+                                cursor: 'pointer',
+                                fontSize: '16px',
+                                padding: '4px'
+                              }}
+                              title="Remove share"
+                            >
+                              ×
+                            </button>
+                          </div>
+                        </div>
+                      );
+                    })}
+                  </div>
+                </div>
+              )}
+              
+              {shares.length === 0 && !loading && (
+                <div style={{ 
+                  textAlign: 'center', 
+                  padding: '24px',
+                  color: 'var(--slate-500)',
+                  fontSize: '14px'
+                }}>
+                  This map hasn't been shared with anyone yet
+                </div>
+              )}
             </div>
           </div>
         </div>
