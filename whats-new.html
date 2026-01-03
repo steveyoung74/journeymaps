@@ -609,9 +609,124 @@
     // Release notes data - easy to update
     const RELEASES = [
       {
+        version: '9.2.0',
+        date: 'January 2026',
+        badge: 'latest',
+        title: 'Team Management & Invitations',
+        sections: [
+          {
+            type: 'new',
+            icon: '✨',
+            items: [
+              'Team page for managing organisation members',
+              'Invite team members via email with role selection',
+              'Pending invitations with expiry dates',
+              'Resend invitation emails with one click',
+              'Role-based permissions (Owner, Admin, Member, Viewer)',
+              'Team page restricted to Owners and Admins only',
+              'Role permissions reference guide'
+            ]
+          },
+          {
+            type: 'improved',
+            icon: '🔧',
+            items: [
+              'Team link appears in nav bar for authorised users only',
+              'Better error messages for invitation conflicts',
+              'Consistent navigation across all pages'
+            ]
+          }
+        ]
+      },
+      {
+        version: '9.1.0',
+        date: 'January 2026',
+        title: 'Map Sharing & Collaboration',
+        sections: [
+          {
+            type: 'new',
+            icon: '✨',
+            items: [
+              'Share maps with colleagues via email',
+              'View or Edit permission levels',
+              'Email notification when sharing maps',
+              'Resend share notifications',
+              'Copy shareable link to clipboard',
+              'See who has access to your maps',
+              'Shared with Me tab on dashboard'
+            ]
+          },
+          {
+            type: 'improved',
+            icon: '🔧',
+            items: [
+              'Share modal accessible from dashboard and editor',
+              'Avatar display for shared users',
+              'Permission badges (Can View / Can Edit)'
+            ]
+          }
+        ]
+      },
+      {
+        version: '9.0.0',
+        date: 'January 2026',
+        title: 'Supabase Backend & User Accounts',
+        sections: [
+          {
+            type: 'new',
+            icon: '✨',
+            items: [
+              'Full Supabase backend integration',
+              'User accounts with email/password authentication',
+              'Organisation workspaces for team data isolation',
+              'Row-level security for data protection',
+              'Persistent cloud storage (goodbye localStorage!)',
+              'User profiles with display names',
+              'Automatic organisation creation on signup'
+            ]
+          },
+          {
+            type: 'improved',
+            icon: '🔧',
+            items: [
+              'Journey maps now saved to PostgreSQL database',
+              'Real-time sync across devices',
+              'Secure session management',
+              'EU data hosting for GDPR compliance'
+            ]
+          }
+        ]
+      },
+      {
+        version: '8.9.0',
+        date: 'January 2026',
+        title: 'UI Polish & Brand Refinements',
+        sections: [
+          {
+            type: 'new',
+            icon: '✨',
+            items: [
+              'Sinking logo loading animation — the Fathom logo descends into the depths',
+              'Dashboard cards with gradient headers',
+              'Favourite maps highlighted with amber/gold gradient',
+              'Mobile-responsive improvements throughout'
+            ]
+          },
+          {
+            type: 'improved',
+            icon: '🔧',
+            items: [
+              'Consistent loading experience across all pages',
+              'Better visual hierarchy on dashboard cards',
+              'Refined topographic background patterns',
+              'Interstate font applied consistently'
+            ]
+          }
+        ]
+      },
+      {
         version: '8.8.0',
         date: 'December 2025',
-        badge: 'latest',
         title: 'Survey Response Viewer & Product Navigation',
         sections: [
           {
@@ -707,12 +822,12 @@
     ];
     
     const ROADMAP = [
-      { title: 'Team Management', description: 'Invite team members, manage roles and permissions' },
-      { title: 'AI Synthesis', description: 'Auto-summarise survey responses with consistent tone' },
+      { title: 'AI Journey Generation', description: 'Describe your process and let AI create a starting point' },
+      { title: 'AI Survey Synthesis', description: 'Auto-summarise survey responses with consistent tone' },
+      { title: 'Benchmark Intelligence', description: 'Compare your journeys against anonymised industry data' },
       { title: 'PDF Export', description: 'Export journey maps as professional reports' },
-      { title: 'Version History', description: 'Track changes and compare versions' },
-      { title: 'API Access', description: 'Integrate Fathom with your existing tools' },
-      { title: 'Pricing & Plans', description: 'Free tier, Pro, and Enterprise options' }
+      { title: 'Version History', description: 'Track changes and compare versions over time' },
+      { title: 'API Access', description: 'Integrate Fathom with your existing tools' }
     ];
     
     function WhatsNewPage() {
