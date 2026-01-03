@@ -656,7 +656,7 @@
             setUser(session.user);
             supabase
               .from('users')
-              .select('display_name, organisation_id')
+              .select('display_name, organisation_id, role')
               .eq('id', session.user.id)
               .single()
               .then(({ data }) => {
@@ -688,6 +688,7 @@
       
       // Display name helper
       const displayName = profile?.display_name || user?.email?.split('@')[0] || 'User';
+      const canManageTeam = profile?.role === 'owner' || profile?.role === 'admin';
       
       // Load maps from Supabase
       useEffect(() => {
@@ -981,6 +982,9 @@ Your input is really valuable - thank you!`);
                       <a href="responses.html" className="nav-dropdown-item">View Responses</a>
                     </div>
                   </div>
+                  {canManageTeam && (
+                    <a href="team.html" className="nav-link">Team</a>
+                  )}
                   <a href="whats-new.html" className="nav-link">What's New</a>
                   <a href="about.html" className="nav-link">About</a>
                 </div>
@@ -1016,6 +1020,12 @@ Your input is really valuable - thank you!`);
                 <div className="nav-mobile-section-label">Surveys</div>
                 <a href="survey-admin.html" className="nav-mobile-link active">Send Surveys</a>
                 <a href="responses.html" className="nav-mobile-link">View Responses</a>
+                {canManageTeam && (
+                  <>
+                    <div className="nav-mobile-section-label">Organisation</div>
+                    <a href="team.html" className="nav-mobile-link">Team</a>
+                  </>
+                )}
                 <div className="nav-mobile-section-label">Info</div>
               </>
             )}

@@ -677,7 +677,7 @@
             setUser(session.user);
             supabase
               .from('users')
-              .select('display_name')
+              .select('display_name, role')
               .eq('id', session.user.id)
               .single()
               .then(({ data }) => {
@@ -702,6 +702,7 @@
       };
       
       const displayName = profile?.display_name || user?.email?.split('@')[0] || 'User';
+      const canManageTeam = profile?.role === 'owner' || profile?.role === 'admin';
       
       const currentPath = window.location.pathname.split('/').pop() || 'index.html';
       
@@ -725,6 +726,9 @@
                           <a href="responses.html" className="nav-dropdown-item">View Responses</a>
                         </div>
                       </div>
+                      {canManageTeam && (
+                        <a href="team.html" className={`nav-link ${currentPath === 'team.html' ? 'active' : ''}`}>Team</a>
+                      )}
                     </>
                   )}
                   <a href="whats-new.html" className={`nav-link ${currentPath === 'whats-new.html' ? 'active' : ''}`}>What's New</a>
@@ -761,6 +765,12 @@
                   <div className="nav-mobile-section-label">Surveys</div>
                   <a href="survey-admin.html" className="nav-mobile-link">Send Surveys</a>
                   <a href="responses.html" className="nav-mobile-link">View Responses</a>
+                  {canManageTeam && (
+                    <>
+                      <div className="nav-mobile-section-label">Organisation</div>
+                      <a href="team.html" className="nav-mobile-link">Team</a>
+                    </>
+                  )}
                   <div className="nav-mobile-section-label">Info</div>
                 </>
               )}
