@@ -1146,14 +1146,6 @@
     // CONFIGURATION
     // ============================================
     
-    const GITHUB_CONFIG = {
-      owner: 'steveyoung74',
-      repo: 'journeymaps',
-      branch: 'main',
-      mapsPath: 'maps',
-      responsesPath: 'responses'
-    };
-    
     const FRICTION_OPTIONS = [
       { id: 'none', emoji: '😊', label: 'None', score: 0 },
       { id: 'low', emoji: '🙂', label: 'Low', score: 1 },
@@ -1161,27 +1153,6 @@
       { id: 'high', emoji: '😣', label: 'High', score: 3 },
       { id: 'severe', emoji: '😫', label: 'Severe', score: 4 }
     ];
-    
-    const getRawUrl = (path) => 
-      `https://raw.githubusercontent.com/${GITHUB_CONFIG.owner}/${GITHUB_CONFIG.repo}/${GITHUB_CONFIG.branch}/${path}`;
-    
-    const getApiUrl = (path) =>
-      `https://api.github.com/repos/${GITHUB_CONFIG.owner}/${GITHUB_CONFIG.repo}/contents/${path}`;
-    
-    // Fetch from GitHub API (no caching issues)
-    async function fetchFromGitHub(path) {
-      const url = `${getApiUrl(path)}?ref=${GITHUB_CONFIG.branch}&t=${Date.now()}`;
-      const response = await fetch(url, {
-        headers: { 'Accept': 'application/vnd.github.v3+json' }
-      });
-      if (!response.ok) {
-        if (response.status === 404) return null;
-        throw new Error(`GitHub API error: ${response.status}`);
-      }
-      const data = await response.json();
-      const content = atob(data.content);
-      return JSON.parse(content);
-    }
     
     // ============================================
     // RESPONSE VIEWER APP
@@ -1203,9 +1174,9 @@
       const [profile, setProfile] = useState(null);
       const [showMobileMenu, setShowMobileMenu] = useState(false);
       
-      // Get map ID from URL
+      // Get map ID from URL (support both 'id' for Supabase and 'map' for legacy)
       const urlParams = new URLSearchParams(window.location.search);
-      const mapIdFromUrl = urlParams.get('map');
+      const mapIdFromUrl = urlParams.get('id') || urlParams.get('map');
       
       // Load user from Supabase
       useEffect(() => {
@@ -1216,11 +1187,13 @@
             setUser(session.user);
             supabase
               .from('users')
-              .select('display_name')
+              .select('display_name, organisation_id')
               .eq('id', session.user.id)
               .single()
               .then(({ data }) => {
-                if (data) setProfile(data);
+                if (data) {
+                  setProfile(data);
+                }
               });
           }
         });
@@ -1245,12 +1218,14 @@
       
       // Initial load - either load maps list or specific map
       useEffect(() => {
+        if (!profile?.organisation_id) return;
+        
         if (mapIdFromUrl) {
           setSelectedMapId(mapIdFromUrl);
         } else {
           loadMapsWithCounts();
         }
-      }, [mapIdFromUrl]);
+      }, [mapIdFromUrl, profile?.organisation_id]);
       
       // Load responses when a map is selected
       useEffect(() => {
@@ -1259,19 +1234,28 @@
         }
       }, [selectedMapId]);
       
-      // Load maps index with response counts
+      // Load maps from Supabase with response counts from localStorage
       const loadMapsWithCounts = async () => {
+        if (!supabase || !profile?.organisation_id) return;
+        
         try {
-          const data = await fetchFromGitHub(GITHUB_CONFIG.indexFile);
-          const mapsList = data?.maps || [];
+          const { data, error } = await supabase
+            .from('journey_maps')
+            .select('id, title, journey_type, created_at')
+            .eq('organisation_id', profile.organisation_id)
+            .is('archived_at', null)
+            .order('updated_at', { ascending: false });
+          
+          if (error) throw error;
+          
+          const mapsList = data || [];
           setMaps(mapsList);
           
-          // Check response counts for each map
+          // Check response counts from localStorage
           const counts = {};
-          await Promise.all(mapsList.map(async (map) => {
-            const count = await getResponseCount(map.id);
-            counts[map.id] = count;
-          }));
+          mapsList.forEach(map => {
+            counts[map.id] = getResponseCount(map.id);
+          });
           setMapResponseCounts(counts);
           
           setLoading(false);
@@ -1281,107 +1265,51 @@
         }
       };
       
-      // Get response count for a map
-      const getResponseCount = async (mapId) => {
-        try {
-          // Check GitHub
-          const dirUrl = getApiUrl(`${GITHUB_CONFIG.responsesPath}/${mapId}`);
-          const dirRes = await fetch(dirUrl);
-          
-          let githubCount = 0;
-          if (dirRes.ok) {
-            const files = await dirRes.json();
-            if (Array.isArray(files)) {
-              githubCount = files.filter(f => f.name.endsWith('.json')).length;
-            }
-          }
-          
-          // Check localStorage
-          const localResponses = JSON.parse(localStorage.getItem('fathom-survey-responses') || '[]')
-            .filter(r => r.mapId === mapId);
-          
-          // Return combined (rough count - may have duplicates but good enough for indicator)
-          return githubCount + localResponses.length;
-        } catch (err) {
-          return 0;
-        }
+      // Get response count for a map (localStorage only for now)
+      const getResponseCount = (mapId) => {
+        const localResponses = JSON.parse(localStorage.getItem('fathom-survey-responses') || '[]')
+          .filter(r => r.mapId === mapId);
+        return localResponses.length;
       };
       
       // Handle map selection
       const handleMapSelect = (mapId) => {
         setSelectedMapId(mapId);
         // Update URL without reload
-        window.history.pushState({}, '', `responses.html?map=${mapId}`);
+        window.history.pushState({}, '', `responses.html?id=${mapId}`);
       };
       
       const loadData = async (mapId) => {
+        if (!supabase) return;
+        
         setLoading(true);
         setError(null);
         try {
-          // Load map configuration using API (no cache issues)
-          const mapData = await fetchFromGitHub(`${GITHUB_CONFIG.mapsPath}/${mapId}.json`);
-          if (!mapData) throw new Error('Could not load journey map');
-          setMapConfig(mapData);
+          // Load map configuration from Supabase
+          const { data, error } = await supabase
+            .from('journey_maps')
+            .select('config, title')
+            .eq('id', mapId)
+            .single();
           
-          // Load responses from GitHub
-          const githubResponses = await loadGitHubResponses(mapId);
+          if (error) throw error;
+          if (!data?.config) throw new Error('Could not load journey map');
           
-          // Also check localStorage
+          setMapConfig(data.config);
+          
+          // Load responses from localStorage
           const localResponses = JSON.parse(localStorage.getItem('fathom-survey-responses') || '[]')
             .filter(r => r.mapId === mapId);
           
-          // Merge and deduplicate
-          const allResponses = [...githubResponses];
-          localResponses.forEach(local => {
-            if (!allResponses.find(r => r.surveyId === local.surveyId)) {
-              allResponses.push(local);
-            }
-          });
-          
           // Sort by submission date (newest first)
-          allResponses.sort((a, b) => new Date(b.submittedAt) - new Date(a.submittedAt));
+          localResponses.sort((a, b) => new Date(b.submittedAt) - new Date(a.submittedAt));
           
-          setResponses(allResponses);
+          setResponses(localResponses);
           setLoading(false);
         } catch (err) {
           console.error('Load error:', err);
           setError(err.message);
           setLoading(false);
-        }
-      };
-      
-      const loadGitHubResponses = async (mapId) => {
-        try {
-          // Try to list files in the responses/{mapId} directory
-          const dirUrl = getApiUrl(`${GITHUB_CONFIG.responsesPath}/${mapId}`);
-          const dirRes = await fetch(dirUrl);
-          
-          if (!dirRes.ok) {
-            console.log('No responses directory found');
-            return [];
-          }
-          
-          const files = await dirRes.json();
-          if (!Array.isArray(files)) return [];
-          
-          // Fetch each response file
-          const responsePromises = files
-            .filter(f => f.name.endsWith('.json'))
-            .map(async (file) => {
-              try {
-                const res = await fetch(getRawUrl(`${GITHUB_CONFIG.responsesPath}/${mapId}/${file.name}`));
-                if (res.ok) return await res.json();
-              } catch (e) {
-                console.warn('Failed to load response:', file.name);
-              }
-              return null;
-            });
-          
-          const results = await Promise.all(responsePromises);
-          return results.filter(r => r !== null);
-        } catch (err) {
-          console.warn('Failed to load GitHub responses:', err);
-          return [];
         }
       };
       

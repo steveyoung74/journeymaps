@@ -627,12 +627,21 @@
   <script src="https://unpkg.com/react@18/umd/react.production.min.js"></script>
   <script src="https://unpkg.com/react-dom@18/umd/react-dom.production.min.js"></script>
   <script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
   
   <script type="text/babel">
     const { useState, useEffect, useCallback } = React;
     
     // ============================================
-    // GITHUB CONFIG
+    // SUPABASE CONFIG
+    // ============================================
+    const SUPABASE_URL = 'https://ktctvaeulualihczwnrl.supabase.co';
+    const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Imt0Y3R2YWV1bHVhbGloY3p3bnJsIiwicm9sZSI6ImFub24iLCJpYXQiOjE3Njc0MzczNjksImV4cCI6MjA4MzAxMzM2OX0.qnvrAUvUhp3hgu37YnahR0Ql-CKR0zcDt3sKWaMq95I';
+    
+    const supabase = window.supabase?.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+    
+    // ============================================
+    // GITHUB CONFIG (Legacy fallback)
     // ============================================
     const GITHUB_CONFIG = {
       owner: 'steveyoung74',
@@ -652,11 +661,14 @@
     // URL PARAMS
     // ============================================
     const urlParams = new URLSearchParams(window.location.search);
-    const mapId = urlParams.get('map');
+    const supabaseMapId = urlParams.get('id');  // New Supabase UUID format
+    const legacyMapId = urlParams.get('map');   // Legacy GitHub format
+    const mapId = supabaseMapId || legacyMapId;
+    const isSupabaseMode = !!supabaseMapId;
+    
     const roleId = urlParams.get('role');
     const respondentEmail = urlParams.get('email');
     const respondentName = urlParams.get('name') || respondentEmail?.split('@')[0] || 'Respondent';
-    const token = urlParams.get('token'); // GitHub token for saving (optional, can be admin's token)
     
     // ============================================
     // FRICTION OPTIONS
@@ -691,14 +703,34 @@
         
         const loadMap = async () => {
           try {
-            const url = getRawUrl(`${GITHUB_CONFIG.mapsPath}/${mapId}.json`) + '?t=' + Date.now();
-            const response = await fetch(url);
+            let config;
             
-            if (!response.ok) {
-              throw new Error('Survey not found');
+            // Load from Supabase or GitHub based on mode
+            if (isSupabaseMode && supabase) {
+              console.log('Loading map from Supabase:', mapId);
+              const { data, error } = await supabase
+                .from('journey_maps')
+                .select('config, title')
+                .eq('id', mapId)
+                .single();
+              
+              if (error) throw new Error('Survey not found');
+              if (!data?.config) throw new Error('Survey configuration not found');
+              
+              config = data.config;
+            } else {
+              // Legacy GitHub mode
+              console.log('Loading map from GitHub:', mapId);
+              const url = getRawUrl(`${GITHUB_CONFIG.mapsPath}/${mapId}.json`) + '?t=' + Date.now();
+              const response = await fetch(url);
+              
+              if (!response.ok) {
+                throw new Error('Survey not found');
+              }
+              
+              config = await response.json();
             }
             
-            const config = await response.json();
             setMapConfig(config);
             
             // Find role/persona
@@ -818,43 +850,17 @@
             })
           };
           
-          // If we have a token, save to GitHub
-          if (token) {
-            const filename = `${mapId}/${responseData.surveyId}.json`;
-            const content = btoa(unescape(encodeURIComponent(JSON.stringify(responseData, null, 2))));
-            
-            const response = await fetch(getApiUrl(`${GITHUB_CONFIG.responsesPath}/${filename}`), {
-              method: 'PUT',
-              headers: {
-                'Authorization': `token ${token}`,
-                'Content-Type': 'application/json'
-              },
-              body: JSON.stringify({
-                message: `Survey response from ${respondentName} (${roleName})`,
-                content,
-                branch: GITHUB_CONFIG.branch
-              })
-            });
-            
-            if (!response.ok) {
-              console.warn('Failed to save to GitHub, storing locally');
-              // Fallback: store in localStorage
-              const localResponses = JSON.parse(localStorage.getItem('fathom-survey-responses') || '[]');
-              localResponses.push(responseData);
-              localStorage.setItem('fathom-survey-responses', JSON.stringify(localResponses));
-            }
-          } else {
-            // No token - store locally
-            const localResponses = JSON.parse(localStorage.getItem('fathom-survey-responses') || '[]');
-            localResponses.push(responseData);
-            localStorage.setItem('fathom-survey-responses', JSON.stringify(localResponses));
-            console.log('Response saved to localStorage:', responseData);
-          }
+          // Save to localStorage
+          // TODO: In future, save to Supabase survey_responses table
+          const localResponses = JSON.parse(localStorage.getItem('fathom-survey-responses') || '[]');
+          localResponses.push(responseData);
+          localStorage.setItem('fathom-survey-responses', JSON.stringify(localResponses));
+          console.log('Response saved to localStorage:', responseData);
           
           setCurrentStep(-3); // Success
         } catch (err) {
           console.error('Submit error:', err);
-          alert('Failed to submit. Your responses have been saved locally.');
+          alert('Failed to submit. Please try again.');
         }
         
         setSubmitting(false);

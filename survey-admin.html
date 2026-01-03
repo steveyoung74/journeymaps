@@ -625,30 +625,6 @@
       }
     });
     
-    // GitHub config
-    const GITHUB_CONFIG = {
-      owner: 'steveyoung74',
-      repo: 'journeymaps',
-      branch: 'main',
-      indexFile: 'maps/index.json',
-      mapsPath: 'maps'
-    };
-    
-    // Fetch from GitHub API (no caching issues)
-    async function fetchFromGitHub(path) {
-      const url = `https://api.github.com/repos/${GITHUB_CONFIG.owner}/${GITHUB_CONFIG.repo}/contents/${path}?ref=${GITHUB_CONFIG.branch}&t=${Date.now()}`;
-      const response = await fetch(url, {
-        headers: { 'Accept': 'application/vnd.github.v3+json' }
-      });
-      if (!response.ok) {
-        if (response.status === 404) return null;
-        throw new Error(`GitHub API error: ${response.status}`);
-      }
-      const data = await response.json();
-      const content = atob(data.content);
-      return JSON.parse(content);
-    }
-    
     const BASE_SURVEY_URL = 'https://steveyoung74.github.io/journeymaps/survey.html';
     
     function LinkGenerator() {
@@ -660,14 +636,14 @@
       const [assignments, setAssignments] = useState([]);
       const [generatedLinks, setGeneratedLinks] = useState([]);
       const [copiedIndex, setCopiedIndex] = useState(null);
-      const [githubToken, setGithubToken] = useState(localStorage.getItem('fathom_token') || '');
       const [user, setUser] = useState(null);
       const [profile, setProfile] = useState(null);
+      const [userOrgId, setUserOrgId] = useState(null);
       const [showMobileMenu, setShowMobileMenu] = useState(false);
       
       // Get map ID from URL if present
       const urlParams = new URLSearchParams(window.location.search);
-      const preselectedMapId = urlParams.get('map');
+      const preselectedMapId = urlParams.get('map') || urlParams.get('id');
       
       // Load user from Supabase
       useEffect(() => {
@@ -678,18 +654,24 @@
             setUser(session.user);
             supabase
               .from('users')
-              .select('display_name')
+              .select('display_name, organisation_id')
               .eq('id', session.user.id)
               .single()
               .then(({ data }) => {
-                if (data) setProfile(data);
+                if (data) {
+                  setProfile(data);
+                  setUserOrgId(data.organisation_id);
+                }
               });
           }
         });
         
         const { data: { subscription } } = supabase.auth.onAuthStateChange((event, session) => {
           setUser(session?.user ?? null);
-          if (!session?.user) setProfile(null);
+          if (!session?.user) {
+            setProfile(null);
+            setUserOrgId(null);
+          }
         });
         
         return () => subscription?.unsubscribe();
@@ -705,15 +687,25 @@
       // Display name helper
       const displayName = profile?.display_name || user?.email?.split('@')[0] || 'User';
       
-      // Load maps index
+      // Load maps from Supabase
       useEffect(() => {
+        if (!supabase || !userOrgId) return;
+        
         const loadMaps = async () => {
           try {
-            const data = await fetchFromGitHub(GITHUB_CONFIG.indexFile);
-            setMaps(data?.maps || []);
+            const { data, error } = await supabase
+              .from('journey_maps')
+              .select('id, title, journey_type, created_at')
+              .eq('organisation_id', userOrgId)
+              .is('archived_at', null)
+              .order('updated_at', { ascending: false });
+            
+            if (error) throw error;
+            
+            setMaps(data || []);
             
             // Pre-select map from URL parameter
-            if (preselectedMapId && data?.maps?.some(m => m.id === preselectedMapId)) {
+            if (preselectedMapId && data?.some(m => m.id === preselectedMapId)) {
               setSelectedMapId(preselectedMapId);
             }
             
@@ -724,11 +716,11 @@
           }
         };
         loadMaps();
-      }, []);
+      }, [userOrgId, preselectedMapId]);
       
-      // Load selected map config
+      // Load selected map config from Supabase
       useEffect(() => {
-        if (!selectedMapId) {
+        if (!selectedMapId || !supabase) {
           setMapConfig(null);
           setAssignments([]);
           return;
@@ -736,8 +728,16 @@
         
         const loadMapConfig = async () => {
           try {
-            const config = await fetchFromGitHub(`${GITHUB_CONFIG.mapsPath}/${selectedMapId}.json`);
-            if (!config) throw new Error('Map not found');
+            const { data, error } = await supabase
+              .from('journey_maps')
+              .select('config, title')
+              .eq('id', selectedMapId)
+              .single();
+            
+            if (error) throw error;
+            if (!data?.config) throw new Error('Map not found');
+            
+            const config = data.config;
             setMapConfig(config);
             
             // Count steps per persona
@@ -799,16 +799,11 @@
           .filter(a => a.email) // Only generate for assignments with email
           .map(a => {
             const params = new URLSearchParams({
-              map: selectedMapId,
+              id: selectedMapId,  // Supabase UUID
               role: a.roleId,
               email: a.email,
               name: a.name || a.email.split('@')[0]
             });
-            
-            // Add token if available
-            if (githubToken) {
-              params.set('token', githubToken);
-            }
             
             return {
               ...a,
@@ -844,12 +839,6 @@ ${link.url}
 Your input is really valuable - thank you!`;
         
         copyToClipboard(template, `email-${link.email}`);
-      };
-      
-      // Save token
-      const saveToken = (value) => {
-        setGithubToken(value);
-        localStorage.setItem('fathom_token', value);
       };
       
       // Navigation component
@@ -1063,23 +1052,6 @@ Your input is really valuable - thank you!`;
                 </div>
               </div>
             )}
-            
-            <div className="card">
-              <h2>Settings</h2>
-              <div className="field">
-                <label className="field-label">GitHub Token (for saving responses)</label>
-                <input 
-                  type="password"
-                  className="input"
-                  value={githubToken}
-                  onChange={(e) => saveToken(e.target.value)}
-                  placeholder="ghp_xxxx..."
-                />
-                <div style={{ fontSize: '12px', color: 'var(--slate-500)', marginTop: '4px' }}>
-                  Optional. If provided, responses will be saved to your GitHub repo. Otherwise, they'll be saved to the respondent's browser localStorage.
-                </div>
-              </div>
-            </div>
           </main>
           
           <footer className="footer">
