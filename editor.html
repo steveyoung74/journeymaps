@@ -3361,13 +3361,55 @@
         stage.steps.map(step => ({ ...step, stageName: stage.name, stageIndex }))
       );
       
-      const totalCost = allSteps.reduce((acc, s) => acc + calculateStepCost(s, personas), 0);
-      const totalMinutes = allSteps.reduce((acc, s) => acc + s.timeMinutes, 0);
-      const avgCostPerMinute = totalMinutes > 0 ? totalCost / totalMinutes : 0;
+      // Inline step cost calculator - replicates the working roleCosts logic
+      const getStepCost = (step) => {
+        let cost = 0;
+        
+        // NEW FORMAT: roleInvolvement
+        if (step.roleInvolvement && Object.keys(step.roleInvolvement).length > 0) {
+          Object.entries(step.roleInvolvement).forEach(([roleId, involvement]) => {
+            const persona = personas.find(p => p.id === roleId);
+            if (persona && !persona.isExternal) {
+              const salary = persona.annualSalary || persona.salary || 0;
+              if (salary > 0) {
+                const baseHourly = salary / WORKING_HOURS_PER_YEAR;
+                const burdenMultiplier = persona.burdenMultiplier || 1.0;
+                const workspaceHourly = persona.workspaceHourlyCost || 0;
+                const fullyLoadedRate = (baseHourly * burdenMultiplier) + workspaceHourly;
+                const hours = (involvement.timeMinutes || 0) / 60;
+                const headcount = involvement.headcount || 1;
+                cost += fullyLoadedRate * hours * headcount;
+              }
+            }
+          });
+        }
+        // LEGACY FORMAT: Single owner with timeMinutes
+        else if (step.owner && step.timeMinutes > 0) {
+          const persona = personas.find(p => p.id === step.owner);
+          if (persona && !persona.isExternal) {
+            const salary = persona.annualSalary || persona.salary || 0;
+            if (salary > 0) {
+              const baseHourly = salary / WORKING_HOURS_PER_YEAR;
+              const burdenMultiplier = persona.burdenMultiplier || 1.0;
+              const workspaceHourly = persona.workspaceHourlyCost || 0;
+              const fullyLoadedRate = (baseHourly * burdenMultiplier) + workspaceHourly;
+              const hours = step.timeMinutes / 60;
+              cost += fullyLoadedRate * hours;
+            }
+          }
+        }
+        
+        // Additional costs
+        if (step.additionalCosts && Array.isArray(step.additionalCosts)) {
+          step.additionalCosts.forEach(c => { cost += c.amount || 0; });
+        }
+        
+        return cost;
+      };
       
-      // Calculate metrics for each step
+      // Calculate metrics for each step using inline function
       const stepMetrics = allSteps.map(step => {
-        const cost = calculateStepCost(step, personas);
+        const cost = getStepCost(step);
         const costPerMinute = step.timeMinutes > 0 ? cost / step.timeMinutes : 0;
         const automationSavings = step.automationOpportunity === 'high' ? cost * 0.7 
           : step.automationOpportunity === 'medium' ? cost * 0.4 
@@ -3381,13 +3423,13 @@
       const byTotalCost = [...stepMetrics].sort((a, b) => b.cost - a.cost);
       const byAutomationSavings = [...stepMetrics].sort((a, b) => b.automationSavings - a.automationSavings);
       
-      // Stage comparison
+      // Stage comparison using inline function
       const stageMetrics = stages.map((stage, i) => {
-        const stageCost = stage.steps.reduce((acc, s) => acc + calculateStepCost(s, personas), 0);
-        const stageMinutes = stage.steps.reduce((acc, s) => acc + s.timeMinutes, 0);
+        const stageCost = stage.steps.reduce((acc, s) => acc + getStepCost(s), 0);
+        const stageMinutes = stage.steps.reduce((acc, s) => acc + (s.timeMinutes || 0), 0);
         const stageCostPerMinute = stageMinutes > 0 ? stageCost / stageMinutes : 0;
         const stageAutomationSavings = stage.steps.reduce((acc, s) => {
-          const cost = calculateStepCost(s, personas);
+          const cost = getStepCost(s);
           return acc + (s.automationOpportunity === 'high' ? cost * 0.7 
             : s.automationOpportunity === 'medium' ? cost * 0.4 
             : s.automationOpportunity === 'low' ? cost * 0.1 : 0);
@@ -3403,9 +3445,13 @@
         };
       });
       
+      // Calculate totals from stepMetrics
+      const totalCost = stepMetrics.reduce((acc, s) => acc + s.cost, 0);
+      const totalMinutes = allSteps.reduce((acc, s) => acc + (s.timeMinutes || 0), 0);
+      const avgCostPerMinute = totalMinutes > 0 ? totalCost / totalMinutes : 0;
       const totalAutomationSavings = stepMetrics.reduce((acc, s) => acc + s.automationSavings, 0);
       
-      // Role cost breakdown
+      // Role cost breakdown using inline function
       const roleCosts = personas.filter(p => !p.isExternal).map(persona => {
         let totalRoleCost = 0;
         let totalRoleMinutes = 0;
@@ -3451,7 +3497,7 @@
           
           return {
             ...step,
-            cost: calculateStepCost(step, personas),
+            cost: getStepCost(step),
             owners
           };
         });
