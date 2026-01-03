@@ -10,6 +10,7 @@
   <script src="https://unpkg.com/react@18/umd/react.production.min.js"></script>
   <script src="https://unpkg.com/react-dom@18/umd/react-dom.production.min.js"></script>
   <script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
   <style>
     /* ============================================
        FATHOM RESPONSE VIEWER - STYLES
@@ -1129,6 +1130,18 @@
   <script type="text/babel">
     const { useState, useEffect, useMemo } = React;
     
+    // Supabase Configuration
+    const SUPABASE_URL = 'https://ktctvaeulualihczwnrl.supabase.co';
+    const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Imt0Y3R2YWV1bHVhbGloY3p3bnJsIiwicm9sZSI6ImFub24iLCJpYXQiOjE3Njc0MzczNjksImV4cCI6MjA4MzAxMzM2OX0.qnvrAUvUhp3hgu37YnahR0Ql-CKR0zcDt3sKWaMq95I';
+    
+    const supabase = window.supabase?.createClient(SUPABASE_URL, SUPABASE_ANON_KEY, {
+      auth: {
+        persistSession: true,
+        autoRefreshToken: true,
+        storage: window.localStorage
+      }
+    });
+    
     // ============================================
     // CONFIGURATION
     // ============================================
@@ -1187,27 +1200,48 @@
       const [viewMode, setViewMode] = useState('responses'); // 'responses' or 'comparison'
       const [expandedCards, setExpandedCards] = useState(new Set());
       const [user, setUser] = useState(null);
+      const [profile, setProfile] = useState(null);
       const [showMobileMenu, setShowMobileMenu] = useState(false);
       
       // Get map ID from URL
       const urlParams = new URLSearchParams(window.location.search);
       const mapIdFromUrl = urlParams.get('map');
       
-      // Load user
+      // Load user from Supabase
       useEffect(() => {
-        const stored = localStorage.getItem('fathom_user');
-        if (stored) {
-          try {
-            setUser(JSON.parse(stored));
-          } catch (e) {}
-        }
+        if (!supabase) return;
+        
+        supabase.auth.getSession().then(({ data: { session } }) => {
+          if (session?.user) {
+            setUser(session.user);
+            supabase
+              .from('users')
+              .select('display_name')
+              .eq('id', session.user.id)
+              .single()
+              .then(({ data }) => {
+                if (data) setProfile(data);
+              });
+          }
+        });
+        
+        const { data: { subscription } } = supabase.auth.onAuthStateChange((event, session) => {
+          setUser(session?.user ?? null);
+          if (!session?.user) setProfile(null);
+        });
+        
+        return () => subscription?.unsubscribe();
       }, []);
       
-      const handleSignOut = () => {
-        localStorage.removeItem('fathom_user');
-        localStorage.removeItem('fathom_token');
+      const handleSignOut = async () => {
+        if (supabase) {
+          await supabase.auth.signOut();
+        }
         window.location.href = 'index.html';
       };
+      
+      // Display name helper
+      const displayName = profile?.display_name || user?.email?.split('@')[0] || 'User';
       
       // Initial load - either load maps list or specific map
       useEffect(() => {
@@ -1580,11 +1614,11 @@
             <div className="nav-right">
               {user ? (
                 <>
-                  <span className="nav-user">{user.name}</span>
+                  <span className="nav-user">{displayName}</span>
                   <button onClick={handleSignOut} className="nav-signout">Sign Out</button>
                 </>
               ) : (
-                <a href="index.html" className="nav-link" style={{ color: '#FFF' }}>Sign In</a>
+                <a href="dashboard.html" className="nav-link" style={{ color: '#FFF' }}>Sign In</a>
               )}
             </div>
             {/* Mobile hamburger */}
@@ -1616,11 +1650,11 @@
           <div className="nav-mobile-user">
             {user ? (
               <>
-                <div className="nav-mobile-user-name">Signed in as {user.name}</div>
+                <div className="nav-mobile-user-name">Signed in as {displayName}</div>
                 <button onClick={() => { setShowMobileMenu(false); handleSignOut(); }} className="nav-mobile-signout">Sign Out</button>
               </>
             ) : (
-              <a href="index.html" className="nav-mobile-signout" style={{ display: 'block', textAlign: 'center', textDecoration: 'none' }}>Sign In</a>
+              <a href="dashboard.html" className="nav-mobile-signout" style={{ display: 'block', textAlign: 'center', textDecoration: 'none' }}>Sign In</a>
             )}
           </div>
         </div>
