@@ -82,12 +82,18 @@
     /* Loading Animation - Sinking into depths */
     @keyframes sinkIntoDepths {
       0% {
-        transform: translateY(-30px);
-        opacity: 0.6;
+        transform: translateY(-100px);
+        opacity: 0;
+      }
+      8% {
+        opacity: 0.85;
+      }
+      85% {
+        opacity: 0.12;
       }
       100% {
-        transform: translateY(30px);
-        opacity: 0.15;
+        transform: translateY(120px);
+        opacity: 0;
       }
     }
     
@@ -103,7 +109,7 @@
     
     .loading-logo {
       height: 40px;
-      animation: sinkIntoDepths 2.5s ease-in-out infinite alternate;
+      animation: sinkIntoDepths 5s ease-in-out infinite;
     }
     
     /* Subtle depth particles/lines effect */
@@ -1936,7 +1942,9 @@
                       <a href="responses.html" className="dropdown-item">View Responses</a>
                     </div>
                   </div>
-                  <a href="team.html" className="nav-link">Team</a>
+                  {(profile?.role === 'owner' || profile?.role === 'admin') && (
+                    <a href="team.html" className="nav-link">Team</a>
+                  )}
                   <a href="whats-new.html" className="nav-link">What's New</a>
                   <a href="about.html" className="nav-link">About</a>
                 </div>
@@ -1960,6 +1968,12 @@
               <div className="nav-mobile-section-label">Surveys</div>
               <a href="survey-admin.html" className="nav-mobile-link">Send Surveys</a>
               <a href="responses.html" className="nav-mobile-link">View Responses</a>
+              {(profile?.role === 'owner' || profile?.role === 'admin') && (
+                <>
+                  <div className="nav-mobile-section-label">Organisation</div>
+                  <a href="team.html" className="nav-mobile-link">Team</a>
+                </>
+              )}
               <div className="nav-mobile-section-label">Info</div>
               <a href="whats-new.html" className="nav-mobile-link">What's New</a>
               <a href="about.html" className="nav-mobile-link">About</a>

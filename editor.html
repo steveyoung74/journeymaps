@@ -146,12 +146,18 @@
     /* Loading Animation - Sinking into depths */
     @keyframes sinkIntoDepths {
       0% {
-        transform: translateY(-30px);
-        opacity: 0.6;
+        transform: translateY(-100px);
+        opacity: 0;
+      }
+      8% {
+        opacity: 0.85;
+      }
+      85% {
+        opacity: 0.12;
       }
       100% {
-        transform: translateY(30px);
-        opacity: 0.15;
+        transform: translateY(120px);
+        opacity: 0;
       }
     }
     
@@ -167,7 +173,7 @@
     
     .loading-logo {
       height: 40px;
-      animation: sinkIntoDepths 2.5s ease-in-out infinite alternate;
+      animation: sinkIntoDepths 5s ease-in-out infinite;
     }
     
     /* Subtle depth lines effect */
