@@ -454,26 +454,31 @@
       gap: 16px;
     }
     .journey-card {
-      padding: 20px;
+      padding: 0;
       cursor: pointer;
       transition: all 0.2s;
       position: relative;
+      overflow: hidden;
     }
     .journey-card:hover {
       box-shadow: 0 4px 20px rgba(25, 43, 69, 0.1);
     }
     .journey-card-header {
-      display: flex;
-      justify-content: space-between;
-      align-items: flex-start;
-      margin-bottom: 8px;
+      background: linear-gradient(135deg, var(--steel-500) 0%, var(--steel-600) 100%);
+      padding: 16px 20px;
+      position: relative;
+      border-radius: 12px 12px 0 0;
+    }
+    .journey-card-header.favourite {
+      background: linear-gradient(135deg, var(--amber-500) 0%, var(--amber-600) 100%);
     }
     .journey-card-title {
       font-size: 16px;
       font-weight: 600;
-      color: var(--navy-700);
+      color: #FFF;
       line-height: 1.3;
-      padding-right: 40px;
+      padding-right: 50px;
+      margin: 0;
     }
     .journey-card-icons {
       display: flex;
@@ -482,6 +487,9 @@
       position: absolute;
       top: 16px;
       right: 16px;
+    }
+    .journey-card-body {
+      padding: 16px 20px;
     }
     .journey-card-desc {
       color: var(--slate-500);
@@ -657,7 +665,8 @@
         gap: 20px;
       }
       
-      .journey-card { padding: 24px; }
+      .journey-card-header { padding: 18px 24px; }
+      .journey-card-body { padding: 20px 24px; }
       .journey-card-title { font-size: 17px; }
     }
     
@@ -2003,122 +2012,131 @@
                           opacity: manageMode && (!isOwner || isLocked) ? 0.5 : 1
                         }}
                       >
-                        {/* Manage mode checkbox - only show for unlocked owned maps */}
-                        {manageMode && isOwner && (
-                          <div style={{ 
-                            position: 'absolute', 
-                            top: '12px', 
-                            left: '12px',
-                            width: '20px',
-                            height: '20px',
-                            borderRadius: '4px',
-                            border: isSelected ? 'none' : isLocked ? '2px solid var(--slate-200)' : '2px solid var(--slate-300)',
-                            background: isSelected ? 'var(--amber-500)' : isLocked ? 'var(--slate-100)' : '#FFF',
-                            display: 'flex',
-                            alignItems: 'center',
-                            justifyContent: 'center',
-                            color: isLocked ? 'var(--slate-400)' : '#FFF',
-                            fontSize: '14px',
-                            zIndex: 2
-                          }}>
-                            {isSelected && '✓'}
-                            {isLocked && !isSelected && '🔒'}
-                          </div>
-                        )}
-                        
-                        <div className="journey-card-icons">
-                          {map.favourite && <span title="Favourite">⭐</span>}
-                          {map.locked && <span title="Locked">🔒</span>}
-                        </div>
-                        
-                        <h3 className="journey-card-title" style={{ paddingLeft: manageMode && isOwner ? '32px' : 0 }}>{mapConfigs[map.id]?.meta?.title || map.title}</h3>
-                        <p className="journey-card-desc" style={{ paddingLeft: manageMode && isOwner ? '32px' : 0 }}>{mapConfigs[map.id]?.meta?.description || map.description || 'No description'}</p>
-                        
-                        {metrics && (
-                          <div className="journey-card-metrics">
-                            <div className="metric" title="Total time">
-                              <span>⏱️</span>
-                              <span className="metric-value">{formatTime(metrics.totalTime)}</span>
-                            </div>
-                            <span className="metric-dot">·</span>
-                            <div className="metric" title="Stages / Steps">
-                              <span>📋</span>
-                              <span>{metrics.stageCount} / {metrics.totalSteps}</span>
-                            </div>
-                            {metrics.avgFriction && (
-                              <>
-                                <span className="metric-dot">·</span>
-                                <div className="metric" title="Avg friction">
-                                  <span>{metrics.avgFriction >= 4 ? '😰' : metrics.avgFriction >= 3 ? '😐' : '🙂'}</span>
-                                  <span>{metrics.avgFriction}/5</span>
-                                </div>
-                              </>
-                            )}
-                            {metrics.totalPainPoints > 0 && (
-                              <>
-                                <span className="metric-dot">·</span>
-                                <div className="metric" title="Pain points">
-                                  <span>⚠️</span>
-                                  <span style={{ color: 'var(--error)' }}>{metrics.totalPainPoints}</span>
-                                </div>
-                              </>
-                            )}
-                            {metrics.highImprovements > 0 && (
-                              <>
-                                <span className="metric-dot">·</span>
-                                <div className="metric" title="High improvement opps">
-                                  <span>🎯</span>
-                                  <span style={{ color: 'var(--success)' }}>{metrics.highImprovements}</span>
-                                </div>
-                              </>
-                            )}
-                            {metrics.totalCost !== null && (
-                              <>
-                                <span className="metric-dot">·</span>
-                                <div className="metric" title="Cost per journey">
-                                  <span>💷</span>
-                                  <span className="metric-value">{formatCurrency(metrics.totalCost)}</span>
-                                </div>
-                              </>
-                            )}
-                          </div>
-                        )}
-                        
-                        <div className="journey-card-footer">
-                          <span className="journey-card-date">
-                            Updated {formatDate(map.updatedAt)}
-                            {map.sharedWith?.length > 0 && <span> · 👥 {map.sharedWith.length}</span>}
-                          </span>
-                          
-                          {/* Normal mode actions */}
-                          {!manageMode && isOwner && (
-                            <div className="journey-card-actions" onClick={e => e.stopPropagation()}>
-                              <button onClick={() => generateReport(map.id)} className="btn btn-ghost">📄 Report</button>
-                              <button onClick={() => window.location.href = `responses.html?map=${map.id}`} className="btn btn-ghost">📊 Responses</button>
-                              <button onClick={() => setShowShareModal(map.id)} className="btn btn-ghost">Share</button>
-                            </div>
-                          )}
-                          
-                          {/* Manage mode actions */}
+                        {/* Colored header with gradient */}
+                        <div className={`journey-card-header ${map.favourite ? 'favourite' : ''}`}>
+                          {/* Manage mode checkbox */}
                           {manageMode && isOwner && (
-                            <div className="journey-card-actions" onClick={e => e.stopPropagation()}>
-                              <button 
-                                onClick={() => toggleFavourite(map.id)} 
-                                className="btn btn-ghost"
-                                title={map.favourite ? 'Remove favourite' : 'Add favourite'}
-                              >
-                                {map.favourite ? '⭐' : '☆'}
-                              </button>
-                              <button 
-                                onClick={() => toggleLock(map.id)} 
-                                className="btn btn-ghost"
-                                title={map.locked ? 'Unlock' : 'Lock'}
-                              >
-                                {map.locked ? '🔓' : '🔒'}
-                              </button>
+                            <div style={{ 
+                              position: 'absolute', 
+                              top: '14px', 
+                              left: '14px',
+                              width: '20px',
+                              height: '20px',
+                              borderRadius: '4px',
+                              border: isSelected ? 'none' : isLocked ? '2px solid rgba(255,255,255,0.3)' : '2px solid rgba(255,255,255,0.5)',
+                              background: isSelected ? 'var(--amber-500)' : isLocked ? 'rgba(255,255,255,0.1)' : 'rgba(255,255,255,0.2)',
+                              display: 'flex',
+                              alignItems: 'center',
+                              justifyContent: 'center',
+                              color: '#FFF',
+                              fontSize: '14px',
+                              zIndex: 2
+                            }}>
+                              {isSelected && '✓'}
+                              {isLocked && !isSelected && '🔒'}
                             </div>
                           )}
+                          
+                          <div className="journey-card-icons">
+                            {map.favourite && <span title="Favourite">⭐</span>}
+                            {map.locked && <span title="Locked">🔒</span>}
+                          </div>
+                          
+                          <h3 className="journey-card-title" style={{ paddingLeft: manageMode && isOwner ? '32px' : 0 }}>
+                            {mapConfigs[map.id]?.meta?.title || map.title}
+                          </h3>
                         </div>
+                        
+                        {/* Card body */}
+                        <div className="journey-card-body">
+                          <p className="journey-card-desc">{mapConfigs[map.id]?.meta?.description || map.description || 'No description'}</p>
+                          
+                          {metrics && (
+                            <div className="journey-card-metrics">
+                              <div className="metric" title="Total time">
+                                <span>⏱️</span>
+                                <span className="metric-value">{formatTime(metrics.totalTime)}</span>
+                              </div>
+                              <span className="metric-dot">·</span>
+                              <div className="metric" title="Stages / Steps">
+                                <span>📋</span>
+                                <span>{metrics.stageCount} / {metrics.totalSteps}</span>
+                              </div>
+                              {metrics.avgFriction && (
+                                <>
+                                  <span className="metric-dot">·</span>
+                                  <div className="metric" title="Avg friction">
+                                    <span>{metrics.avgFriction >= 4 ? '😰' : metrics.avgFriction >= 3 ? '😐' : '🙂'}</span>
+                                    <span>{metrics.avgFriction}/5</span>
+                                  </div>
+                                </>
+                              )}
+                              {metrics.totalPainPoints > 0 && (
+                                <>
+                                  <span className="metric-dot">·</span>
+                                  <div className="metric" title="Pain points">
+                                    <span>⚠️</span>
+                                    <span style={{ color: 'var(--error)' }}>{metrics.totalPainPoints}</span>
+                                  </div>
+                                </>
+                              )}
+                              {metrics.highImprovements > 0 && (
+                                <>
+                                  <span className="metric-dot">·</span>
+                                  <div className="metric" title="High improvement opps">
+                                    <span>🎯</span>
+                                    <span style={{ color: 'var(--success)' }}>{metrics.highImprovements}</span>
+                                  </div>
+                                </>
+                              )}
+                              {metrics.totalCost !== null && (
+                                <>
+                                  <span className="metric-dot">·</span>
+                                  <div className="metric" title="Cost per journey">
+                                    <span>💷</span>
+                                    <span className="metric-value">{formatCurrency(metrics.totalCost)}</span>
+                                  </div>
+                                </>
+                              )}
+                            </div>
+                          )}
+                          
+                          <div className="journey-card-footer">
+                            <span className="journey-card-date">
+                              Updated {formatDate(map.updatedAt)}
+                              {map.sharedWith?.length > 0 && <span> · 👥 {map.sharedWith.length}</span>}
+                            </span>
+                            
+                            {/* Normal mode actions */}
+                            {!manageMode && isOwner && (
+                              <div className="journey-card-actions" onClick={e => e.stopPropagation()}>
+                                <button onClick={() => generateReport(map.id)} className="btn btn-ghost">📄 Report</button>
+                                <button onClick={() => window.location.href = `responses.html?map=${map.id}`} className="btn btn-ghost">📊 Responses</button>
+                                <button onClick={() => setShowShareModal(map.id)} className="btn btn-ghost">Share</button>
+                              </div>
+                            )}
+                          
+                            {/* Manage mode actions */}
+                            {manageMode && isOwner && (
+                              <div className="journey-card-actions" onClick={e => e.stopPropagation()}>
+                                <button 
+                                  onClick={() => toggleFavourite(map.id)} 
+                                  className="btn btn-ghost"
+                                  title={map.favourite ? 'Remove favourite' : 'Add favourite'}
+                                >
+                                  {map.favourite ? '⭐' : '☆'}
+                                </button>
+                                <button 
+                                  onClick={() => toggleLock(map.id)} 
+                                  className="btn btn-ghost"
+                                  title={map.locked ? 'Unlock' : 'Lock'}
+                                >
+                                  {map.locked ? '🔓' : '🔒'}
+                                </button>
+                              </div>
+                            )}
+                          </div>
+                        </div>{/* end journey-card-body */}
                       </div>
                     );
                   })}
