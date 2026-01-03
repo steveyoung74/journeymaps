@@ -1331,6 +1331,7 @@
     function Dashboard() {
       const { user, profile, signOut } = useAuth();
       const [maps, setMaps] = useState([]);
+      const [sharedMaps, setSharedMaps] = useState([]);
       const [loading, setLoading] = useState(true);
       const [error, setError] = useState('');
       const [showCreateModal, setShowCreateModal] = useState(false);
@@ -1344,6 +1345,7 @@
         window.scrollTo(0, 0);
         if (profile?.organisation_id) {
           fetchMaps();
+          fetchSharedMaps();
         }
       }, [profile?.organisation_id]);
 
@@ -1379,6 +1381,90 @@
           setError('Failed to load maps');
         }
         setLoading(false);
+      };
+      
+      const fetchSharedMaps = async () => {
+        if (!user?.id) return;
+        
+        try {
+          // Get maps shared directly with user
+          const { data: sharedWithUser, error: err1 } = await supabase
+            .from('journey_map_shares')
+            .select(`
+              id,
+              permission,
+              shared_at,
+              shared_by,
+              journey_maps (
+                id,
+                title,
+                description,
+                journey_type,
+                config,
+                created_at,
+                updated_at,
+                created_by,
+                users:created_by (
+                  display_name,
+                  email
+                )
+              )
+            `)
+            .eq('shared_with_user_id', user.id);
+          
+          // Also get maps shared via email (for users who signed up after being shared with)
+          const { data: sharedWithEmail, error: err2 } = await supabase
+            .from('journey_map_shares')
+            .select(`
+              id,
+              permission,
+              shared_at,
+              shared_by,
+              journey_maps (
+                id,
+                title,
+                description,
+                journey_type,
+                config,
+                created_at,
+                updated_at,
+                created_by,
+                users:created_by (
+                  display_name,
+                  email
+                )
+              )
+            `)
+            .eq('shared_with_email', user.email);
+          
+          const allShared = [...(sharedWithUser || []), ...(sharedWithEmail || [])];
+          
+          // Transform and dedupe
+          const seenIds = new Set();
+          const transformedShared = allShared
+            .filter(s => s.journey_maps && !seenIds.has(s.journey_maps.id))
+            .map(s => {
+              seenIds.add(s.journey_maps.id);
+              const m = s.journey_maps;
+              return {
+                id: m.id,
+                title: m.title,
+                description: m.description,
+                journeyType: m.journey_type,
+                createdAt: m.created_at,
+                updatedAt: m.updated_at,
+                config: m.config,
+                permission: s.permission,
+                sharedAt: s.shared_at,
+                sharedBy: m.users?.display_name || m.users?.email || 'Someone',
+                isShared: true
+              };
+            });
+          
+          setSharedMaps(transformedShared);
+        } catch (err) {
+          console.error('Error fetching shared maps:', err);
+        }
       };
 
       const getMapMetrics = (map) => {
@@ -1794,6 +1880,7 @@
                       <a href="responses.html" className="dropdown-item">View Responses</a>
                     </div>
                   </div>
+                  <a href="team.html" className="nav-link">Team</a>
                   <a href="whats-new.html" className="nav-link">What's New</a>
                   <a href="about.html" className="nav-link">About</a>
                 </div>

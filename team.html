@@ -1,0 +1,1175 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=5.0, viewport-fit=cover">
+  <title>FATHOM - Team</title>
+  <script src="https://unpkg.com/react@18/umd/react.production.min.js"></script>
+  <script src="https://unpkg.com/react-dom@18/umd/react-dom.production.min.js"></script>
+  <script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
+  <style>
+    /* Interstate Font Family */
+    @font-face {
+      font-family: 'Interstate';
+      src: url('https://steveyoung74.github.io/journeymaps/fonts/Interstate-light.ttf') format('truetype');
+      font-weight: 300;
+      font-style: normal;
+      font-display: swap;
+    }
+    @font-face {
+      font-family: 'Interstate';
+      src: url('https://steveyoung74.github.io/journeymaps/fonts/Interstate-regular.ttf') format('truetype');
+      font-weight: 400;
+      font-style: normal;
+      font-display: swap;
+    }
+    @font-face {
+      font-family: 'Interstate';
+      src: url('https://steveyoung74.github.io/journeymaps/fonts/Interstate-bold.ttf') format('truetype');
+      font-weight: 700;
+      font-style: normal;
+      font-display: swap;
+    }
+    
+    /* CSS Custom Properties */
+    :root {
+      --navy-950: #0C1620;
+      --navy-900: #111E2E;
+      --navy-800: #15243A;
+      --navy-700: #192B45;
+      --navy-600: #243D5C;
+      --navy-500: #2F5070;
+      --navy-400: #456A8A;
+      --navy-300: #6889A8;
+      --navy-200: #9BB1C7;
+      --navy-100: #C8D5E2;
+      --navy-50: #E9EEF4;
+      --steel-700: #3A6070;
+      --steel-600: #4A7485;
+      --steel-500: #5B8A9A;
+      --steel-400: #74A0AE;
+      --steel-300: #96BCC7;
+      --steel-100: #E1EEF2;
+      --amber-700: #8B6914;
+      --amber-600: #A67D1D;
+      --amber-500: #C4942A;
+      --amber-400: #D4A84A;
+      --amber-200: #E8D5A3;
+      --amber-100: #FAF0D6;
+      --success: #2D8A6E;
+      --success-light: #D4EDE5;
+      --error: #B84A5A;
+      --error-light: #F5E0E3;
+      --slate-900: #1A2332;
+      --slate-700: #3D4A5C;
+      --slate-600: #556275;
+      --slate-500: #6E7B8C;
+      --slate-400: #8A95A5;
+      --slate-300: #A9B2BE;
+      --slate-200: #C8CED6;
+      --slate-100: #E4E7EB;
+      --slate-50: #F4F5F7;
+    }
+    
+    /* Base Reset */
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    html, body {
+      width: 100%;
+      max-width: 100%;
+      overflow-x: hidden;
+    }
+    body { 
+      font-family: 'Interstate', -apple-system, BlinkMacSystemFont, sans-serif; 
+      background: var(--slate-50);
+      color: var(--slate-900);
+      line-height: 1.6;
+      min-height: 100vh;
+    }
+    
+    /* Buttons */
+    .btn { 
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      gap: 8px;
+      padding: 12px 20px; 
+      border-radius: 8px; 
+      font-size: 14px; 
+      font-weight: 500; 
+      cursor: pointer; 
+      transition: all 0.2s;
+      border: none;
+      font-family: inherit;
+      text-decoration: none;
+    }
+    .btn:disabled { opacity: 0.5; cursor: not-allowed; }
+    .btn-primary { background: var(--navy-700); color: #FFF; }
+    .btn-primary:hover:not(:disabled) { background: var(--navy-800); }
+    .btn-secondary { background: #FFF; color: var(--navy-700); border: 2px solid var(--navy-700); }
+    .btn-secondary:hover:not(:disabled) { background: var(--navy-50); }
+    .btn-ghost { background: transparent; color: var(--slate-600); }
+    .btn-ghost:hover:not(:disabled) { background: var(--slate-100); }
+    .btn-danger { background: var(--error); color: #FFF; }
+    .btn-danger:hover:not(:disabled) { background: #A33D4D; }
+    .btn-sm { padding: 8px 14px; font-size: 13px; }
+    
+    /* Form Elements */
+    .input, .select {
+      width: 100%;
+      padding: 12px 14px;
+      border: 1px solid var(--slate-200);
+      border-radius: 8px;
+      font-size: 15px;
+      font-family: inherit;
+      transition: border-color 0.15s, box-shadow 0.15s;
+      background: #FFF;
+    }
+    .input:focus, .select:focus { 
+      outline: none;
+      border-color: var(--steel-500); 
+      box-shadow: 0 0 0 3px rgba(91, 138, 154, 0.15);
+    }
+    .label {
+      display: block;
+      font-size: 14px;
+      font-weight: 500;
+      color: var(--slate-700);
+      margin-bottom: 6px;
+    }
+    
+    /* Cards */
+    .card {
+      background: #FFF;
+      border-radius: 12px;
+      box-shadow: 0 2px 12px rgba(25, 43, 69, 0.06);
+      border: 1px solid var(--slate-100);
+      padding: 24px;
+      margin-bottom: 24px;
+    }
+    .card-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 20px;
+    }
+    .card-title {
+      font-size: 18px;
+      font-weight: 600;
+      color: var(--navy-800);
+    }
+    
+    /* Badge */
+    .badge {
+      display: inline-flex;
+      align-items: center;
+      padding: 4px 10px;
+      border-radius: 16px;
+      font-size: 11px;
+      font-weight: 600;
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+    }
+    .badge-owner { background: var(--amber-100); color: var(--amber-700); }
+    .badge-admin { background: var(--steel-100); color: var(--steel-700); }
+    .badge-member { background: var(--success-light); color: var(--success); }
+    .badge-viewer { background: var(--slate-100); color: var(--slate-600); }
+    .badge-pending { background: var(--amber-100); color: var(--amber-600); }
+    
+    /* Page Layout */
+    .page-container {
+      min-height: 100vh;
+      display: flex;
+      flex-direction: column;
+    }
+    .page-container::before {
+      content: '';
+      position: fixed;
+      inset: 0;
+      background: url('https://steveyoung74.github.io/journeymaps/topography-light.svg') center/600px 600px repeat;
+      opacity: 1;
+      pointer-events: none;
+      z-index: -1;
+    }
+    
+    /* Navigation */
+    .nav {
+      background: linear-gradient(135deg, var(--navy-700) 0%, var(--navy-900) 100%);
+      position: sticky;
+      top: 0;
+      z-index: 100;
+    }
+    .nav::before {
+      content: '';
+      position: absolute;
+      inset: 0;
+      background: url('https://steveyoung74.github.io/journeymaps/topography-dark.svg') center/600px 600px repeat;
+      opacity: 1;
+      pointer-events: none;
+      z-index: 0;
+    }
+    .nav-inner {
+      max-width: 1200px;
+      margin: 0 auto;
+      padding: 0 24px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      height: 64px;
+      position: relative;
+      z-index: 1;
+    }
+    .nav-logo { height: 26px; }
+    .nav-left {
+      display: flex;
+      align-items: center;
+      gap: 32px;
+    }
+    .nav-links {
+      display: none;
+      align-items: center;
+      gap: 4px;
+    }
+    .nav-link {
+      color: rgba(255,255,255,0.7);
+      text-decoration: none;
+      padding: 8px 16px;
+      border-radius: 6px;
+      font-size: 14px;
+      font-weight: 500;
+      transition: all 0.15s;
+    }
+    .nav-link:hover { color: #FFF; background: rgba(255,255,255,0.1); }
+    .nav-link.active { color: #FFF; background: rgba(255,255,255,0.15); }
+    .nav-right {
+      display: none;
+      align-items: center;
+      gap: 16px;
+    }
+    .nav-user {
+      color: rgba(255,255,255,0.8);
+      font-size: 14px;
+    }
+    .nav-signout {
+      color: rgba(255,255,255,0.6);
+      background: rgba(255,255,255,0.1);
+      border: 1px solid rgba(255,255,255,0.2);
+      padding: 6px 14px;
+      border-radius: 6px;
+      font-size: 13px;
+      cursor: pointer;
+      font-family: inherit;
+      transition: all 0.15s;
+    }
+    .nav-signout:hover { background: rgba(255,255,255,0.2); color: #FFF; }
+    
+    /* Mobile hamburger */
+    .nav-mobile-toggle {
+      display: flex;
+      flex-direction: column;
+      gap: 5px;
+      padding: 8px;
+      background: transparent;
+      border: none;
+      cursor: pointer;
+    }
+    .nav-mobile-toggle span {
+      display: block;
+      width: 22px;
+      height: 2px;
+      background: rgba(255,255,255,0.8);
+      border-radius: 1px;
+    }
+    .nav-mobile-menu {
+      display: none;
+      position: absolute;
+      top: 100%;
+      left: 0;
+      right: 0;
+      background: var(--navy-800);
+      padding: 16px 24px;
+      flex-direction: column;
+      gap: 8px;
+      z-index: 100;
+    }
+    .nav-mobile-menu.open { display: flex; }
+    .nav-mobile-menu .nav-link { 
+      display: block; 
+      padding: 12px 0;
+      border-bottom: 1px solid rgba(255,255,255,0.1);
+    }
+    
+    /* Main Content */
+    .main {
+      flex: 1;
+      max-width: 900px;
+      margin: 0 auto;
+      padding: 32px 24px;
+      width: 100%;
+    }
+    
+    .page-header {
+      margin-bottom: 32px;
+    }
+    .page-title {
+      font-size: 28px;
+      font-weight: 700;
+      color: var(--navy-800);
+      margin-bottom: 8px;
+    }
+    .page-subtitle {
+      color: var(--slate-500);
+      font-size: 16px;
+    }
+    
+    /* Member List */
+    .member-list {
+      display: flex;
+      flex-direction: column;
+      gap: 12px;
+    }
+    .member-item {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 16px;
+      background: var(--slate-50);
+      border-radius: 10px;
+      gap: 16px;
+    }
+    .member-info {
+      display: flex;
+      align-items: center;
+      gap: 14px;
+      flex: 1;
+      min-width: 0;
+    }
+    .member-avatar {
+      width: 44px;
+      height: 44px;
+      border-radius: 50%;
+      background: var(--navy-100);
+      color: var(--navy-700);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-weight: 600;
+      font-size: 16px;
+      flex-shrink: 0;
+    }
+    .member-details {
+      min-width: 0;
+    }
+    .member-name {
+      font-weight: 600;
+      color: var(--navy-800);
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+    }
+    .member-email {
+      font-size: 13px;
+      color: var(--slate-500);
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+    }
+    .member-you {
+      font-size: 11px;
+      color: var(--steel-600);
+      background: var(--steel-100);
+      padding: 2px 8px;
+      border-radius: 10px;
+      margin-left: 8px;
+    }
+    .member-actions {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      flex-shrink: 0;
+    }
+    .role-select {
+      padding: 6px 10px;
+      border: 1px solid var(--slate-200);
+      border-radius: 6px;
+      font-size: 13px;
+      background: #FFF;
+      cursor: pointer;
+    }
+    .role-select:disabled {
+      opacity: 0.6;
+      cursor: not-allowed;
+    }
+    
+    /* Invite Form */
+    .invite-form {
+      display: flex;
+      gap: 12px;
+      align-items: flex-end;
+    }
+    .invite-form .field {
+      flex: 1;
+    }
+    .invite-form .field-role {
+      width: 140px;
+      flex-shrink: 0;
+    }
+    
+    /* Pending Invitations */
+    .pending-item {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 12px 16px;
+      background: var(--amber-100);
+      border-radius: 8px;
+      gap: 16px;
+    }
+    .pending-info {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+    }
+    .pending-email {
+      font-weight: 500;
+      color: var(--navy-800);
+    }
+    .pending-meta {
+      font-size: 12px;
+      color: var(--slate-500);
+    }
+    
+    /* Org Info */
+    .org-header {
+      display: flex;
+      align-items: center;
+      gap: 16px;
+      margin-bottom: 24px;
+      padding-bottom: 24px;
+      border-bottom: 1px solid var(--slate-100);
+    }
+    .org-icon {
+      width: 56px;
+      height: 56px;
+      border-radius: 12px;
+      background: var(--navy-100);
+      color: var(--navy-700);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 24px;
+      font-weight: 700;
+    }
+    .org-name {
+      font-size: 22px;
+      font-weight: 700;
+      color: var(--navy-800);
+    }
+    .org-meta {
+      font-size: 14px;
+      color: var(--slate-500);
+    }
+    
+    /* Empty State */
+    .empty-state {
+      text-align: center;
+      padding: 48px 24px;
+      color: var(--slate-500);
+    }
+    .empty-icon {
+      font-size: 48px;
+      margin-bottom: 16px;
+    }
+    
+    /* Error/Success Messages */
+    .message {
+      padding: 12px 16px;
+      border-radius: 8px;
+      margin-bottom: 16px;
+      font-size: 14px;
+    }
+    .message-error {
+      background: var(--error-light);
+      color: var(--error);
+    }
+    .message-success {
+      background: var(--success-light);
+      color: var(--success);
+    }
+    
+    /* Footer */
+    .footer {
+      background: var(--navy-800);
+      padding: 24px;
+      text-align: center;
+    }
+    .footer-inner {
+      max-width: 1200px;
+      margin: 0 auto;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+    }
+    .footer-brand {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+    }
+    .footer-logo { height: 20px; opacity: 0.6; }
+    .footer-version { color: rgba(255,255,255,0.4); font-size: 12px; }
+    .footer-copy { color: rgba(255,255,255,0.5); font-size: 13px; }
+    
+    /* Responsive */
+    @media (min-width: 768px) {
+      .nav-links { display: flex; }
+      .nav-right { display: flex; }
+      .nav-mobile-toggle { display: none; }
+      
+      .invite-form {
+        flex-direction: row;
+      }
+    }
+    
+    @media (max-width: 767px) {
+      .invite-form {
+        flex-direction: column;
+      }
+      .invite-form .field-role {
+        width: 100%;
+      }
+      .member-item {
+        flex-direction: column;
+        align-items: stretch;
+      }
+      .member-actions {
+        margin-top: 12px;
+        justify-content: space-between;
+      }
+      .footer-inner {
+        flex-direction: column;
+        gap: 12px;
+      }
+    }
+    
+    /* Dropdown */
+    .nav-dropdown {
+      position: relative;
+    }
+    .nav-dropdown-menu {
+      display: none;
+      position: absolute;
+      top: 100%;
+      left: 0;
+      background: var(--navy-800);
+      border-radius: 8px;
+      min-width: 180px;
+      padding: 8px 0;
+      box-shadow: 0 4px 20px rgba(0,0,0,0.3);
+      z-index: 1000;
+    }
+    .nav-dropdown:hover .nav-dropdown-menu {
+      display: block;
+    }
+    .nav-dropdown-item {
+      display: block;
+      padding: 10px 16px;
+      color: rgba(255,255,255,0.8);
+      text-decoration: none;
+      font-size: 14px;
+      transition: background 0.15s;
+    }
+    .nav-dropdown-item:hover {
+      background: rgba(255,255,255,0.1);
+      color: #FFF;
+    }
+    
+    /* Loading */
+    .loading {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      min-height: 200px;
+      color: var(--slate-500);
+    }
+  </style>
+</head>
+<body>
+  <div id="root"></div>
+  
+  <script type="text/babel">
+    const { useState, useEffect, useMemo } = React;
+    
+    // ============================================
+    // SUPABASE CONFIG
+    // ============================================
+    const SUPABASE_URL = 'https://ggzeyrpvwwmhubttvgvm.supabase.co';
+    const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImdnemV5cnB2d3dtaHVidHR2Z3ZtIiwicm9sZSI6ImFub24iLCJpYXQiOjE3MzU5MTg0MzIsImV4cCI6MjA1MTQ5NDQzMn0.aGZPMWDmnCgnEBtFU8xyHAPSXtKNIc1Y3PrAqLdxPYc';
+    
+    const supabase = window.supabase?.createClient(SUPABASE_URL, SUPABASE_ANON_KEY, {
+      auth: {
+        persistSession: true,
+        autoRefreshToken: true,
+        storage: window.localStorage
+      }
+    });
+    
+    // Role labels and permissions
+    const ROLES = {
+      owner: { label: 'Owner', color: 'badge-owner', canManage: true, canInvite: true },
+      admin: { label: 'Admin', color: 'badge-admin', canManage: true, canInvite: true },
+      member: { label: 'Member', color: 'badge-member', canManage: false, canInvite: false },
+      viewer: { label: 'Viewer', color: 'badge-viewer', canManage: false, canInvite: false }
+    };
+    
+    function TeamPage() {
+      const [loading, setLoading] = useState(true);
+      const [user, setUser] = useState(null);
+      const [profile, setProfile] = useState(null);
+      const [organisation, setOrganisation] = useState(null);
+      const [members, setMembers] = useState([]);
+      const [pendingInvites, setPendingInvites] = useState([]);
+      const [showMobileMenu, setShowMobileMenu] = useState(false);
+      
+      // Invite form state
+      const [inviteEmail, setInviteEmail] = useState('');
+      const [inviteRole, setInviteRole] = useState('member');
+      const [inviting, setInviting] = useState(false);
+      
+      // Messages
+      const [error, setError] = useState(null);
+      const [success, setSuccess] = useState(null);
+      
+      // Current user's role
+      const currentUserRole = profile?.role || 'viewer';
+      const canManageTeam = ROLES[currentUserRole]?.canManage || false;
+      
+      // Load user and data
+      useEffect(() => {
+        if (!supabase) return;
+        
+        supabase.auth.getSession().then(({ data: { session } }) => {
+          if (session?.user) {
+            setUser(session.user);
+            loadUserProfile(session.user.id);
+          } else {
+            window.location.href = 'dashboard.html';
+          }
+        });
+        
+        const { data: { subscription } } = supabase.auth.onAuthStateChange((event, session) => {
+          setUser(session?.user ?? null);
+          if (!session?.user) {
+            window.location.href = 'dashboard.html';
+          }
+        });
+        
+        return () => subscription?.unsubscribe();
+      }, []);
+      
+      const loadUserProfile = async (userId) => {
+        try {
+          const { data: profileData, error: profileError } = await supabase
+            .from('users')
+            .select('display_name, organisation_id, role')
+            .eq('id', userId)
+            .single();
+          
+          if (profileError) throw profileError;
+          setProfile(profileData);
+          
+          if (profileData?.organisation_id) {
+            await loadOrganisation(profileData.organisation_id);
+            await loadMembers(profileData.organisation_id);
+            await loadPendingInvites(profileData.organisation_id);
+          }
+          
+          setLoading(false);
+        } catch (err) {
+          console.error('Error loading profile:', err);
+          setError('Failed to load team data');
+          setLoading(false);
+        }
+      };
+      
+      const loadOrganisation = async (orgId) => {
+        const { data, error } = await supabase
+          .from('organisations')
+          .select('*')
+          .eq('id', orgId)
+          .single();
+        
+        if (!error && data) {
+          setOrganisation(data);
+        }
+      };
+      
+      const loadMembers = async (orgId) => {
+        const { data, error } = await supabase
+          .from('users')
+          .select('id, email, display_name, role, created_at')
+          .eq('organisation_id', orgId)
+          .order('created_at', { ascending: true });
+        
+        if (!error && data) {
+          setMembers(data);
+        }
+      };
+      
+      const loadPendingInvites = async (orgId) => {
+        const { data, error } = await supabase
+          .from('org_invitations')
+          .select('*')
+          .eq('organisation_id', orgId)
+          .eq('status', 'pending')
+          .order('invited_at', { ascending: false });
+        
+        if (!error && data) {
+          setPendingInvites(data);
+        }
+      };
+      
+      const handleSignOut = async () => {
+        await supabase.auth.signOut();
+        window.location.href = 'index.html';
+      };
+      
+      const displayName = profile?.display_name || user?.email?.split('@')[0] || 'User';
+      
+      // Send invitation
+      const sendInvitation = async (e) => {
+        e.preventDefault();
+        if (!inviteEmail.trim() || !organisation) return;
+        
+        setInviting(true);
+        setError(null);
+        setSuccess(null);
+        
+        try {
+          // Check if user already exists in org
+          const existingMember = members.find(m => m.email === inviteEmail.toLowerCase());
+          if (existingMember) {
+            throw new Error('This person is already a team member');
+          }
+          
+          // Check if invite already pending
+          const existingInvite = pendingInvites.find(i => i.email === inviteEmail.toLowerCase());
+          if (existingInvite) {
+            throw new Error('An invitation is already pending for this email');
+          }
+          
+          const { error } = await supabase
+            .from('org_invitations')
+            .insert({
+              organisation_id: organisation.id,
+              email: inviteEmail.toLowerCase(),
+              role: inviteRole,
+              invited_by: user.id
+            });
+          
+          if (error) throw error;
+          
+          setSuccess(`Invitation sent to ${inviteEmail}`);
+          setInviteEmail('');
+          setInviteRole('member');
+          
+          // Reload pending invites
+          await loadPendingInvites(organisation.id);
+        } catch (err) {
+          console.error('Invite error:', err);
+          setError(err.message || 'Failed to send invitation');
+        }
+        
+        setInviting(false);
+      };
+      
+      // Update member role
+      const updateMemberRole = async (memberId, newRole) => {
+        if (!canManageTeam) return;
+        
+        // Can't change owner's role unless you're the owner
+        const member = members.find(m => m.id === memberId);
+        if (member?.role === 'owner' && currentUserRole !== 'owner') {
+          setError("You can't change the owner's role");
+          return;
+        }
+        
+        // Can't demote yourself if you're the only owner
+        if (memberId === user?.id && member?.role === 'owner') {
+          const otherOwners = members.filter(m => m.role === 'owner' && m.id !== memberId);
+          if (otherOwners.length === 0) {
+            setError("You can't remove yourself as owner. Transfer ownership first.");
+            return;
+          }
+        }
+        
+        try {
+          const { error } = await supabase
+            .from('users')
+            .update({ role: newRole, updated_at: new Date().toISOString() })
+            .eq('id', memberId);
+          
+          if (error) throw error;
+          
+          setMembers(prev => prev.map(m => 
+            m.id === memberId ? { ...m, role: newRole } : m
+          ));
+          setSuccess('Role updated');
+          setTimeout(() => setSuccess(null), 3000);
+        } catch (err) {
+          console.error('Role update error:', err);
+          setError('Failed to update role');
+        }
+      };
+      
+      // Remove member
+      const removeMember = async (memberId) => {
+        if (!canManageTeam) return;
+        
+        const member = members.find(m => m.id === memberId);
+        if (member?.role === 'owner') {
+          setError("You can't remove the owner");
+          return;
+        }
+        
+        if (!confirm(`Remove ${member?.display_name || member?.email} from the team?`)) {
+          return;
+        }
+        
+        try {
+          // Set their organisation_id to null
+          const { error } = await supabase
+            .from('users')
+            .update({ organisation_id: null, role: 'member', updated_at: new Date().toISOString() })
+            .eq('id', memberId);
+          
+          if (error) throw error;
+          
+          setMembers(prev => prev.filter(m => m.id !== memberId));
+          setSuccess('Member removed');
+          setTimeout(() => setSuccess(null), 3000);
+        } catch (err) {
+          console.error('Remove error:', err);
+          setError('Failed to remove member');
+        }
+      };
+      
+      // Revoke invitation
+      const revokeInvitation = async (inviteId) => {
+        if (!canManageTeam) return;
+        
+        try {
+          const { error } = await supabase
+            .from('org_invitations')
+            .update({ status: 'revoked' })
+            .eq('id', inviteId);
+          
+          if (error) throw error;
+          
+          setPendingInvites(prev => prev.filter(i => i.id !== inviteId));
+          setSuccess('Invitation revoked');
+          setTimeout(() => setSuccess(null), 3000);
+        } catch (err) {
+          console.error('Revoke error:', err);
+          setError('Failed to revoke invitation');
+        }
+      };
+      
+      // Get initials for avatar
+      const getInitials = (name) => {
+        if (!name) return '?';
+        return name.split(' ').map(n => n[0]).join('').toUpperCase().slice(0, 2);
+      };
+      
+      // Format date
+      const formatDate = (dateStr) => {
+        if (!dateStr) return '';
+        return new Date(dateStr).toLocaleDateString('en-GB', { 
+          day: 'numeric', 
+          month: 'short', 
+          year: 'numeric' 
+        });
+      };
+      
+      // Navigation component
+      const Nav = () => (
+        <>
+          <nav className="nav">
+            <div className="nav-inner">
+              <div className="nav-left">
+                <a href="index.html">
+                  <img src="https://steveyoung74.github.io/journeymaps/logo_light.png" alt="FATHOM" className="nav-logo" />
+                </a>
+                {user && (
+                  <div className="nav-links">
+                    <a href="dashboard.html" className="nav-link">Dashboard</a>
+                    <div className="nav-dropdown">
+                      <span className="nav-link">Surveys ▾</span>
+                      <div className="nav-dropdown-menu">
+                        <a href="survey-admin.html" className="nav-dropdown-item">Send Surveys</a>
+                        <a href="responses.html" className="nav-dropdown-item">View Responses</a>
+                      </div>
+                    </div>
+                    <a href="team.html" className="nav-link active">Team</a>
+                    <a href="whats-new.html" className="nav-link">What's New</a>
+                    <a href="about.html" className="nav-link">About</a>
+                  </div>
+                )}
+              </div>
+              
+              <div className="nav-right">
+                <span className="nav-user">{displayName}</span>
+                <button className="nav-signout" onClick={handleSignOut}>Sign Out</button>
+              </div>
+              
+              <button className="nav-mobile-toggle" onClick={() => setShowMobileMenu(!showMobileMenu)}>
+                <span></span>
+                <span></span>
+                <span></span>
+              </button>
+            </div>
+            
+            <div className={`nav-mobile-menu ${showMobileMenu ? 'open' : ''}`}>
+              <a href="dashboard.html" className="nav-link">Dashboard</a>
+              <a href="survey-admin.html" className="nav-link">Send Surveys</a>
+              <a href="responses.html" className="nav-link">View Responses</a>
+              <a href="team.html" className="nav-link active">Team</a>
+              <a href="whats-new.html" className="nav-link">What's New</a>
+              <a href="about.html" className="nav-link">About</a>
+              <div style={{ padding: '12px 0', borderTop: '1px solid rgba(255,255,255,0.1)', marginTop: '8px' }}>
+                <span className="nav-user" style={{ display: 'block', marginBottom: '12px' }}>{displayName}</span>
+                <button className="nav-signout" onClick={handleSignOut}>Sign Out</button>
+              </div>
+            </div>
+          </nav>
+        </>
+      );
+      
+      if (loading) {
+        return (
+          <div className="page-container">
+            <Nav />
+            <main className="main">
+              <div className="loading">Loading team...</div>
+            </main>
+          </div>
+        );
+      }
+      
+      return (
+        <div className="page-container">
+          <Nav />
+          
+          <main className="main">
+            <div className="page-header">
+              <h1 className="page-title">Team</h1>
+              <p className="page-subtitle">Manage your organisation members and invitations</p>
+            </div>
+            
+            {error && (
+              <div className="message message-error">
+                {error}
+                <button onClick={() => setError(null)} style={{ float: 'right', background: 'none', border: 'none', cursor: 'pointer' }}>✕</button>
+              </div>
+            )}
+            
+            {success && (
+              <div className="message message-success">
+                {success}
+              </div>
+            )}
+            
+            {/* Organisation Info */}
+            {organisation && (
+              <div className="card">
+                <div className="org-header">
+                  <div className="org-icon">
+                    {organisation.name?.charAt(0)?.toUpperCase() || 'O'}
+                  </div>
+                  <div>
+                    <div className="org-name">{organisation.name}</div>
+                    <div className="org-meta">
+                      {members.length} member{members.length !== 1 ? 's' : ''} • 
+                      Created {formatDate(organisation.created_at)}
+                    </div>
+                  </div>
+                </div>
+              </div>
+            )}
+            
+            {/* Invite New Member */}
+            {canManageTeam && (
+              <div className="card">
+                <h2 className="card-title" style={{ marginBottom: '16px' }}>Invite Team Member</h2>
+                <form className="invite-form" onSubmit={sendInvitation}>
+                  <div className="field">
+                    <label className="label">Email address</label>
+                    <input
+                      type="email"
+                      className="input"
+                      placeholder="colleague@company.com"
+                      value={inviteEmail}
+                      onChange={(e) => setInviteEmail(e.target.value)}
+                      required
+                    />
+                  </div>
+                  <div className="field field-role">
+                    <label className="label">Role</label>
+                    <select 
+                      className="select"
+                      value={inviteRole}
+                      onChange={(e) => setInviteRole(e.target.value)}
+                    >
+                      <option value="viewer">Viewer</option>
+                      <option value="member">Member</option>
+                      <option value="admin">Admin</option>
+                      {currentUserRole === 'owner' && <option value="owner">Owner</option>}
+                    </select>
+                  </div>
+                  <button 
+                    type="submit" 
+                    className="btn btn-primary"
+                    disabled={inviting || !inviteEmail.trim()}
+                    style={{ alignSelf: 'flex-end' }}
+                  >
+                    {inviting ? 'Sending...' : '📧 Send Invite'}
+                  </button>
+                </form>
+              </div>
+            )}
+            
+            {/* Pending Invitations */}
+            {pendingInvites.length > 0 && (
+              <div className="card">
+                <h2 className="card-title" style={{ marginBottom: '16px' }}>Pending Invitations</h2>
+                <div className="member-list">
+                  {pendingInvites.map(invite => (
+                    <div key={invite.id} className="pending-item">
+                      <div className="pending-info">
+                        <span className="badge badge-pending">Pending</span>
+                        <span className="pending-email">{invite.email}</span>
+                        <span className={`badge ${ROLES[invite.role]?.color}`}>{ROLES[invite.role]?.label}</span>
+                      </div>
+                      <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
+                        <span className="pending-meta">
+                          Expires {formatDate(invite.expires_at)}
+                        </span>
+                        {canManageTeam && (
+                          <button 
+                            className="btn btn-ghost btn-sm"
+                            onClick={() => revokeInvitation(invite.id)}
+                          >
+                            Revoke
+                          </button>
+                        )}
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              </div>
+            )}
+            
+            {/* Team Members */}
+            <div className="card">
+              <div className="card-header">
+                <h2 className="card-title">Team Members</h2>
+              </div>
+              
+              {members.length === 0 ? (
+                <div className="empty-state">
+                  <div className="empty-icon">👥</div>
+                  <p>No team members yet</p>
+                </div>
+              ) : (
+                <div className="member-list">
+                  {members.map(member => (
+                    <div key={member.id} className="member-item">
+                      <div className="member-info">
+                        <div className="member-avatar">
+                          {getInitials(member.display_name || member.email)}
+                        </div>
+                        <div className="member-details">
+                          <div className="member-name">
+                            {member.display_name || member.email?.split('@')[0]}
+                            {member.id === user?.id && <span className="member-you">You</span>}
+                          </div>
+                          <div className="member-email">{member.email}</div>
+                        </div>
+                      </div>
+                      
+                      <div className="member-actions">
+                        {canManageTeam && member.id !== user?.id ? (
+                          <>
+                            <select
+                              className="role-select"
+                              value={member.role}
+                              onChange={(e) => updateMemberRole(member.id, e.target.value)}
+                              disabled={member.role === 'owner' && currentUserRole !== 'owner'}
+                            >
+                              <option value="viewer">Viewer</option>
+                              <option value="member">Member</option>
+                              <option value="admin">Admin</option>
+                              {currentUserRole === 'owner' && <option value="owner">Owner</option>}
+                            </select>
+                            {member.role !== 'owner' && (
+                              <button 
+                                className="btn btn-ghost btn-sm"
+                                onClick={() => removeMember(member.id)}
+                                title="Remove from team"
+                              >
+                                ✕
+                              </button>
+                            )}
+                          </>
+                        ) : (
+                          <span className={`badge ${ROLES[member.role]?.color}`}>
+                            {ROLES[member.role]?.label}
+                          </span>
+                        )}
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              )}
+            </div>
+            
+            {/* Role Permissions Info */}
+            <div className="card" style={{ background: 'var(--slate-50)', border: 'none' }}>
+              <h3 style={{ fontSize: '14px', fontWeight: 600, marginBottom: '12px', color: 'var(--slate-600)' }}>Role Permissions</h3>
+              <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(150px, 1fr))', gap: '12px', fontSize: '13px', color: 'var(--slate-600)' }}>
+                <div>
+                  <strong>Owner</strong>
+                  <p>Full access, billing, delete org</p>
+                </div>
+                <div>
+                  <strong>Admin</strong>
+                  <p>Manage team, all maps</p>
+                </div>
+                <div>
+                  <strong>Member</strong>
+                  <p>Create & edit own maps</p>
+                </div>
+                <div>
+                  <strong>Viewer</strong>
+                  <p>View maps only</p>
+                </div>
+              </div>
+            </div>
+          </main>
+          
+          <footer className="footer">
+            <div className="footer-inner">
+              <div className="footer-brand">
+                <img src="https://steveyoung74.github.io/journeymaps/logo_light.png" alt="Fathom" className="footer-logo" />
+                <span className="footer-version">v8.9.0</span>
+              </div>
+              <div className="footer-copy">© 2025 Fathom · Journey intelligence for modern operations</div>
+            </div>
+          </footer>
+        </div>
+      );
+    }
+    
+    ReactDOM.createRoot(document.getElementById('root')).render(<TeamPage />);
+  </script>
+  <script src="https://unpkg.com/@supabase/supabase-js@2"></script>
+</body>
+</html>
