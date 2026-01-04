@@ -1786,38 +1786,53 @@
         }
       };
 
-      // Calculate hourly rate from annual salary
-      const calculateHourlyRate = (salary, burdenMultiplier = 1.4) => {
-        return (salary * burdenMultiplier) / (52 * 37.5);
+      // Calculate hourly rate from annual salary (matches editor.html)
+      const WORKING_HOURS_PER_YEAR = 1820; // 52 weeks * 35 hours (UK standard)
+      
+      const calculateFullyLoadedRate = (persona) => {
+        if (!persona || persona.isExternal) return 0;
+        const salary = persona.annualSalary || persona.salary || 0;
+        if (salary === 0) return 0;
+        const baseHourly = salary / WORKING_HOURS_PER_YEAR;
+        const burdenMultiplier = persona.burdenMultiplier || 1.0;
+        const workspaceHourly = persona.workspaceHourlyCost || 0;
+        return (baseHourly * burdenMultiplier) + workspaceHourly;
       };
 
       // Calculate step cost - handles both legacy (owner) and new (roleInvolvement) formats
       const calculateStepCost = (step, personas) => {
         if (!personas) return 0;
+        let totalCost = 0;
         
         // New format: roleInvolvement object
         if (step.roleInvolvement && Object.keys(step.roleInvolvement).length > 0) {
-          return Object.entries(step.roleInvolvement).reduce((total, [personaId, inv]) => {
+          Object.entries(step.roleInvolvement).forEach(([personaId, inv]) => {
             const persona = personas.find(p => p.id === personaId);
-            if (!persona) return total;
-            const salary = persona.salary || persona.annualSalary;
-            if (!salary) return total;
-            const hourlyRate = calculateHourlyRate(salary, persona.burdenMultiplier);
-            return total + (inv.timeMinutes / 60) * hourlyRate * (inv.headcount || 1);
-          }, 0);
+            if (persona && !persona.isExternal) {
+              const fullyLoadedRate = calculateFullyLoadedRate(persona);
+              const hours = (inv.timeMinutes || 0) / 60;
+              const headcount = inv.headcount || 1;
+              totalCost += fullyLoadedRate * hours * headcount;
+            }
+          });
         }
-        
         // Legacy format: owner + timeMinutes
-        if (step.owner && step.timeMinutes) {
+        else if (step.owner && step.timeMinutes) {
           const persona = personas.find(p => p.id === step.owner);
-          if (!persona) return 0;
-          const salary = persona.salary || persona.annualSalary;
-          if (!salary || persona.isExternal) return 0;
-          const hourlyRate = calculateHourlyRate(salary, persona.burdenMultiplier || 1.3);
-          return (step.timeMinutes / 60) * hourlyRate;
+          if (persona && !persona.isExternal) {
+            const fullyLoadedRate = calculateFullyLoadedRate(persona);
+            totalCost += fullyLoadedRate * (step.timeMinutes / 60);
+          }
         }
         
-        return 0;
+        // Additional costs (third-party services, materials, etc.)
+        if (step.additionalCosts && Array.isArray(step.additionalCosts)) {
+          step.additionalCosts.forEach(cost => {
+            totalCost += cost.amount || 0;
+          });
+        }
+        
+        return totalCost;
       };
 
       const getMapMetrics = (map) => {
@@ -1908,20 +1923,19 @@
         const roleCosts = (config.personas || []).filter(p => !p.isExternal && (p.salary || p.annualSalary)).map(persona => {
           let roleTime = 0;
           let roleCost = 0;
-          const salary = persona.salary || persona.annualSalary;
-          const hourlyRate = calculateHourlyRate(salary, persona.burdenMultiplier || 1.3);
+          const fullyLoadedRate = calculateFullyLoadedRate(persona);
           
           allSteps.forEach(step => {
             // New format: roleInvolvement
             const inv = step.roleInvolvement?.[persona.id];
             if (inv) {
               roleTime += inv.timeMinutes || 0;
-              roleCost += (inv.timeMinutes / 60) * hourlyRate * (inv.headcount || 1);
+              roleCost += (inv.timeMinutes / 60) * fullyLoadedRate * (inv.headcount || 1);
             }
             // Legacy format: owner
             else if (step.owner === persona.id && step.timeMinutes) {
               roleTime += step.timeMinutes;
-              roleCost += (step.timeMinutes / 60) * hourlyRate;
+              roleCost += (step.timeMinutes / 60) * fullyLoadedRate;
             }
           });
           return { label: persona.label || persona.name, color: persona.color, totalMinutes: roleTime, totalCost: roleCost };
