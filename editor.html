@@ -292,7 +292,8 @@
       padding: 8px 12px;
       border-radius: 6px;
       font-size: 12px;
-      white-space: nowrap;
+      white-space: normal;
+      max-width: 420px;
       z-index: 9999;
       font-family: var(--font-body);
       line-height: 1.4;
@@ -8055,14 +8056,11 @@ FATHOM - Journey intelligence for modern operations`);
                             {step.isHardCheckpoint && (
                               <div 
                                 className="tooltip" 
-                                data-tooltip={step.checkpointDetails || 'Checkpoint - must be completed before proceeding'}
+                                data-tooltip={`${(step.checkpointType || 'Compliance').charAt(0).toUpperCase() + (step.checkpointType || 'compliance').slice(1)}: ${step.checkpointDetails || 'Must be completed before proceeding'}`}
                                 style={{ display: 'flex', alignItems: 'center', gap: '8px', padding: '10px 12px', background: '#F5E0E3', borderRadius: '6px', border: '2px solid #B84A5A', marginBottom: '8px', cursor: 'help' }}
                               >
                                 <span style={{ fontSize: '16px' }}>🚧</span>
-                                <div>
-                                  <div style={{ fontFamily: "'Interstate', sans-serif", fontSize: '12px', color: '#B84A5A', fontWeight: 600, textTransform: 'uppercase', letterSpacing: '0.5px' }}>Checkpoint</div>
-                                  <div style={{ fontFamily: "'Interstate', sans-serif", fontSize: '11px', color: '#9D174D', textTransform: 'capitalize' }}>{step.checkpointType || 'Compliance'}</div>
-                                </div>
+                                <div style={{ fontFamily: "'Interstate', sans-serif", fontSize: '12px', color: '#B84A5A', fontWeight: 600, textTransform: 'uppercase', letterSpacing: '0.5px' }}>Checkpoint</div>
                               </div>
                             )}
                             {/* Reg requirements and Pain points at bottom */}
@@ -8071,17 +8069,17 @@ FATHOM - Journey intelligence for modern operations`);
                                 <div 
                                   className="tooltip" 
                                   data-tooltip={step.regulatoryRequirements.join(' • ')}
-                                  style={{ display: 'flex', alignItems: 'center', gap: '6px', padding: '6px 10px', background: '#E1EEF2', borderRadius: '6px', cursor: 'help' }}
+                                  style={{ display: 'flex', alignItems: 'center', gap: '6px', padding: '8px 12px', background: '#E1EEF2', borderRadius: '6px', cursor: 'help' }}
                                 >
-                                  <span style={{ fontSize: '12px' }}>📋</span>
-                                  <span style={{ fontFamily: "'Interstate', sans-serif", fontSize: '11px', color: '#5A5B8A', fontWeight: 500 }}>{step.regulatoryRequirements.length} reg req{step.regulatoryRequirements.length > 1 ? 's' : ''}</span>
+                                  <span style={{ fontSize: '14px' }}>📋</span>
+                                  <span style={{ fontFamily: "'Interstate', sans-serif", fontSize: '12px', color: '#5A5B8A', fontWeight: 500 }}>{step.regulatoryRequirements.length} reg. requirement{step.regulatoryRequirements.length > 1 ? 's' : ''}</span>
                                 </div>
                               )}
                               {step.painPoints.length > 0 && (
                                 <div 
                                   className="tooltip" 
                                   data-tooltip={step.painPoints.join(' • ')}
-                                  style={{ display: 'flex', alignItems: 'center', gap: '6px', padding: '8px 12px', background: '#F5E0E3', borderRadius: '6px', border: '1px solid #F5E0E3', cursor: 'help' }}
+                                  style={{ display: 'flex', alignItems: 'center', gap: '6px', padding: '8px 12px', background: '#F5E0E3', borderRadius: '6px', cursor: 'help' }}
                                 >
                                   <span style={{ fontSize: '14px' }}>⚠️</span>
                                   <span style={{ fontFamily: "'Interstate', sans-serif", fontSize: '12px', color: '#B84A5A', fontWeight: 500 }}>{step.painPoints.length} pain point{step.painPoints.length > 1 ? 's' : ''}</span>
