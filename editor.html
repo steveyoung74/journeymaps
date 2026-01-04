@@ -284,22 +284,35 @@
     .tooltip:hover::after {
       content: attr(data-tooltip);
       position: absolute;
-      top: 100%;
+      bottom: 100%;
       left: 50%;
       transform: translateX(-50%);
       background: var(--navy-700);
       color: #FFF;
-      padding: 8px 12px;
+      padding: 10px 14px;
       border-radius: 6px;
       font-size: 12px;
       white-space: normal;
+      width: 420px;
       max-width: 420px;
       z-index: 9999;
       font-family: var(--font-body);
-      line-height: 1.4;
+      line-height: 1.5;
       text-align: left;
-      box-shadow: 0 4px 12px rgba(25, 43, 69, 0.2);
-      margin-top: 6px;
+      box-shadow: 0 4px 12px rgba(25, 43, 69, 0.25);
+      margin-bottom: 8px;
+      pointer-events: none;
+    }
+    .tooltip:hover::before {
+      content: '';
+      position: absolute;
+      bottom: 100%;
+      left: 50%;
+      transform: translateX(-50%);
+      border: 6px solid transparent;
+      border-top-color: var(--navy-700);
+      margin-bottom: -4px;
+      z-index: 9999;
       pointer-events: none;
     }
     .step-card:hover {
