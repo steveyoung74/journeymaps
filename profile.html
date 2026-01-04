@@ -960,7 +960,13 @@
           setTimeout(() => setUploadProgress(0), 1000);
         } catch (err) {
           console.error('Avatar upload failed:', err);
-          setError(err.message || 'Failed to upload avatar');
+          if (err.message?.includes('Bucket not found')) {
+            setError('Avatar storage not configured. Please create an "avatars" bucket in Supabase Storage.');
+          } else if (err.message?.includes('Policy')) {
+            setError('Storage permissions not configured. Please add storage policies in Supabase.');
+          } else {
+            setError(err.message || 'Failed to upload avatar');
+          }
         }
         
         setUploading(false);
