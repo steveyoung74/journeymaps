@@ -199,6 +199,148 @@
       align-items: center;
       gap: 16px;
     }
+    
+    /* Profile Dropdown */
+    .profile-trigger {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      padding: 6px 12px 6px 6px;
+      background: rgba(255,255,255,0.08);
+      border: 1px solid rgba(255,255,255,0.15);
+      border-radius: 24px;
+      cursor: pointer;
+      transition: all 0.15s;
+    }
+    .profile-trigger:hover {
+      background: rgba(255,255,255,0.15);
+      border-color: rgba(255,255,255,0.25);
+    }
+    .profile-avatar {
+      width: 32px;
+      height: 32px;
+      border-radius: 50%;
+      background: var(--steel-500);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      color: #FFF;
+      font-size: 13px;
+      font-weight: 600;
+      text-transform: uppercase;
+    }
+    .profile-name {
+      color: rgba(255,255,255,0.9);
+      font-size: 14px;
+      font-weight: 500;
+      max-width: 120px;
+      overflow: hidden;
+      text-overflow: ellipsis;
+      white-space: nowrap;
+    }
+    .profile-chevron {
+      color: rgba(255,255,255,0.5);
+      font-size: 10px;
+      transition: transform 0.2s;
+    }
+    .profile-trigger.open .profile-chevron {
+      transform: rotate(180deg);
+    }
+    .profile-dropdown {
+      position: absolute;
+      top: calc(100% + 8px);
+      right: 0;
+      background: #FFF;
+      border-radius: 12px;
+      box-shadow: 0 8px 32px rgba(0,0,0,0.2);
+      min-width: 220px;
+      padding: 8px 0;
+      opacity: 0;
+      visibility: hidden;
+      transform: translateY(-8px);
+      transition: all 0.2s;
+      z-index: 1000;
+    }
+    .profile-dropdown.open {
+      opacity: 1;
+      visibility: visible;
+      transform: translateY(0);
+    }
+    .profile-dropdown-header {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      padding: 12px 16px;
+      border-bottom: 1px solid var(--slate-100);
+      margin-bottom: 4px;
+    }
+    .profile-dropdown-avatar {
+      width: 40px;
+      height: 40px;
+      border-radius: 50%;
+      background: var(--steel-500);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      color: #FFF;
+      font-size: 16px;
+      font-weight: 600;
+      flex-shrink: 0;
+    }
+    .profile-dropdown-info {
+      flex: 1;
+      min-width: 0;
+    }
+    .profile-dropdown-name {
+      font-weight: 600;
+      color: var(--slate-900);
+      font-size: 14px;
+      overflow: hidden;
+      text-overflow: ellipsis;
+      white-space: nowrap;
+    }
+    .profile-dropdown-email {
+      color: var(--slate-500);
+      font-size: 12px;
+      overflow: hidden;
+      text-overflow: ellipsis;
+      white-space: nowrap;
+    }
+    .profile-dropdown-item {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      padding: 10px 16px;
+      color: var(--slate-700);
+      text-decoration: none;
+      font-size: 14px;
+      cursor: pointer;
+      transition: background 0.1s;
+      border: none;
+      background: none;
+      width: 100%;
+      text-align: left;
+      font-family: inherit;
+    }
+    .profile-dropdown-item:hover {
+      background: var(--slate-50);
+    }
+    .profile-dropdown-item .icon {
+      width: 18px;
+      text-align: center;
+    }
+    .profile-dropdown-divider {
+      height: 1px;
+      background: var(--slate-100);
+      margin: 4px 0;
+    }
+    .profile-dropdown-item.danger {
+      color: var(--error);
+    }
+    .profile-dropdown-item.danger:hover {
+      background: rgba(184, 74, 90, 0.08);
+    }
+    
     .nav-user {
       color: rgba(255,255,255,0.8);
       font-size: 14px;
@@ -640,8 +782,26 @@
       const [profile, setProfile] = useState(null);
       const [userOrgId, setUserOrgId] = useState(null);
       const [showMobileMenu, setShowMobileMenu] = useState(false);
+      const [showProfileMenu, setShowProfileMenu] = useState(false);
       const [sendingAll, setSendingAll] = useState(false);
       const [sentCount, setSentCount] = useState(0);
+      
+      // Helper to get user initials
+      const getInitials = (name) => {
+        if (!name) return '?';
+        return name.split(' ').map(n => n[0]).join('').toUpperCase().slice(0, 2);
+      };
+      
+      // Close profile menu when clicking outside
+      useEffect(() => {
+        const handleClickOutside = (e) => {
+          if (showProfileMenu && !e.target.closest('.profile-container')) {
+            setShowProfileMenu(false);
+          }
+        };
+        document.addEventListener('click', handleClickOutside);
+        return () => document.removeEventListener('click', handleClickOutside);
+      }, [showProfileMenu]);
       
       // Get map ID from URL if present
       const urlParams = new URLSearchParams(window.location.search);
@@ -992,10 +1152,63 @@ Your input is really valuable - thank you!`);
             </div>
             <div className="nav-right">
               {user ? (
-                <>
-                  <span className="nav-user">{displayName}</span>
-                  <button onClick={handleSignOut} className="nav-signout">Sign Out</button>
-                </>
+                <div className="profile-container" style={{ position: 'relative' }}>
+                  <button 
+                    className={`profile-trigger ${showProfileMenu ? 'open' : ''}`}
+                    onClick={(e) => { e.stopPropagation(); setShowProfileMenu(!showProfileMenu); }}
+                  >
+                    <div className="profile-avatar">
+                      {getInitials(displayName)}
+                    </div>
+                    <span className="profile-name">{displayName}</span>
+                    <span className="profile-chevron">▼</span>
+                  </button>
+                  
+                  <div className={`profile-dropdown ${showProfileMenu ? 'open' : ''}`}>
+                    <div className="profile-dropdown-header">
+                      <div className="profile-dropdown-avatar">
+                        {getInitials(displayName)}
+                      </div>
+                      <div className="profile-dropdown-info">
+                        <div className="profile-dropdown-name">{profile?.display_name || 'User'}</div>
+                        <div className="profile-dropdown-email">{user?.email}</div>
+                      </div>
+                    </div>
+                    
+                    <a href="profile.html" className="profile-dropdown-item" onClick={() => setShowProfileMenu(false)}>
+                      <span className="icon">👤</span>
+                      Profile Settings
+                    </a>
+                    
+                    {canManageTeam && (
+                      <a href="team.html" className="profile-dropdown-item" onClick={() => setShowProfileMenu(false)}>
+                        <span className="icon">👥</span>
+                        Team Management
+                      </a>
+                    )}
+                    
+                    <div className="profile-dropdown-divider" />
+                    
+                    <a href="whats-new.html" className="profile-dropdown-item" onClick={() => setShowProfileMenu(false)}>
+                      <span className="icon">✨</span>
+                      What's New
+                    </a>
+                    <a href="about.html" className="profile-dropdown-item" onClick={() => setShowProfileMenu(false)}>
+                      <span className="icon">ℹ️</span>
+                      About Fathom
+                    </a>
+                    
+                    <div className="profile-dropdown-divider" />
+                    
+                    <button 
+                      className="profile-dropdown-item danger"
+                      onClick={() => { setShowProfileMenu(false); handleSignOut(); }}
+                    >
+                      <span className="icon">🚪</span>
+                      Sign Out
+                    </button>
+                  </div>
+                </div>
               ) : (
                 <a href="dashboard.html" className="nav-link" style={{ color: '#FFF' }}>Sign In</a>
               )}
