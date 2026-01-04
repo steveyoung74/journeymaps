@@ -543,38 +543,113 @@
     .avatar-section {
       display: flex;
       align-items: center;
-      gap: 20px;
+      gap: 24px;
       margin-bottom: 24px;
       padding-bottom: 24px;
       border-bottom: 1px solid var(--slate-100);
     }
     .avatar-preview {
-      width: 80px;
-      height: 80px;
+      width: 96px;
+      height: 96px;
       border-radius: 50%;
       background: var(--steel-500);
       display: flex;
       align-items: center;
       justify-content: center;
       color: #FFF;
-      font-size: 28px;
+      font-size: 32px;
       font-weight: 600;
       flex-shrink: 0;
+      position: relative;
+      overflow: hidden;
+      cursor: pointer;
+      transition: all 0.2s;
+    }
+    .avatar-preview:hover {
+      opacity: 0.9;
+    }
+    .avatar-preview img {
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+    }
+    .avatar-preview .avatar-overlay {
+      position: absolute;
+      inset: 0;
+      background: rgba(0,0,0,0.5);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      opacity: 0;
+      transition: opacity 0.2s;
+    }
+    .avatar-preview:hover .avatar-overlay {
+      opacity: 1;
+    }
+    .avatar-overlay-text {
+      color: #FFF;
+      font-size: 12px;
+      font-weight: 600;
+      text-align: center;
     }
     .avatar-actions {
       display: flex;
       flex-direction: column;
-      gap: 8px;
+      gap: 12px;
+      flex: 1;
     }
     .avatar-actions h3 {
       font-size: 16px;
       font-weight: 600;
       color: var(--slate-900);
-      margin-bottom: 4px;
+      margin: 0;
     }
     .avatar-actions p {
       font-size: 13px;
       color: var(--slate-500);
+      margin: 0;
+    }
+    .avatar-buttons {
+      display: flex;
+      gap: 8px;
+      flex-wrap: wrap;
+    }
+    .btn-sm {
+      padding: 6px 12px;
+      font-size: 13px;
+    }
+    .btn-outline {
+      background: transparent;
+      border: 1px solid var(--slate-200);
+      color: var(--slate-600);
+    }
+    .btn-outline:hover {
+      background: var(--slate-50);
+      border-color: var(--slate-300);
+    }
+    .btn-danger-outline {
+      background: transparent;
+      border: 1px solid var(--accent-red);
+      color: var(--accent-red);
+    }
+    .btn-danger-outline:hover {
+      background: rgba(184, 74, 90, 0.08);
+    }
+    .avatar-upload-input {
+      display: none;
+    }
+    .upload-progress {
+      width: 100%;
+      height: 4px;
+      background: var(--slate-100);
+      border-radius: 2px;
+      overflow: hidden;
+      margin-top: 8px;
+    }
+    .upload-progress-bar {
+      height: 100%;
+      background: var(--steel-500);
+      transition: width 0.3s;
     }
     
     /* Buttons */
@@ -724,9 +799,13 @@
       
       // Form state
       const [displayName, setDisplayName] = useState('');
+      const [avatarUrl, setAvatarUrl] = useState(null);
+      const [uploading, setUploading] = useState(false);
+      const [uploadProgress, setUploadProgress] = useState(0);
       const [saving, setSaving] = useState(false);
       const [success, setSuccess] = useState('');
       const [error, setError] = useState('');
+      const fileInputRef = React.useRef(null);
       
       // Helper to get user initials
       const getInitials = (name) => {
@@ -792,11 +871,140 @@
           if (data) {
             setProfile(data);
             setDisplayName(data.display_name || '');
+            setAvatarUrl(data.avatar_url || null);
           }
         } catch (err) {
           console.error('Failed to load profile:', err);
         }
         setLoading(false);
+      };
+      
+      // Handle avatar upload
+      const handleAvatarUpload = async (e) => {
+        const file = e.target.files?.[0];
+        if (!file) return;
+        
+        // Validate file type
+        const allowedTypes = ['image/jpeg', 'image/png', 'image/gif', 'image/webp'];
+        if (!allowedTypes.includes(file.type)) {
+          setError('Please upload a valid image file (JPEG, PNG, GIF, or WebP)');
+          return;
+        }
+        
+        // Validate file size (max 2MB)
+        if (file.size > 2 * 1024 * 1024) {
+          setError('Image must be smaller than 2MB');
+          return;
+        }
+        
+        setUploading(true);
+        setUploadProgress(0);
+        setError('');
+        setSuccess('');
+        
+        try {
+          // Create unique filename
+          const fileExt = file.name.split('.').pop();
+          const fileName = `${user.id}-${Date.now()}.${fileExt}`;
+          const filePath = `avatars/${fileName}`;
+          
+          // Simulate progress (Supabase doesn't provide progress events)
+          const progressInterval = setInterval(() => {
+            setUploadProgress(prev => Math.min(prev + 10, 90));
+          }, 100);
+          
+          // Upload to Supabase Storage
+          const { data: uploadData, error: uploadError } = await supabase.storage
+            .from('avatars')
+            .upload(filePath, file, {
+              cacheControl: '3600',
+              upsert: false
+            });
+          
+          clearInterval(progressInterval);
+          
+          if (uploadError) throw uploadError;
+          
+          // Get public URL
+          const { data: urlData } = supabase.storage
+            .from('avatars')
+            .getPublicUrl(filePath);
+          
+          const publicUrl = urlData.publicUrl;
+          
+          // Delete old avatar if exists
+          if (avatarUrl) {
+            const oldPath = avatarUrl.split('/avatars/')[1];
+            if (oldPath) {
+              await supabase.storage.from('avatars').remove([`avatars/${oldPath}`]);
+            }
+          }
+          
+          // Update user profile with new avatar URL
+          const { error: updateError } = await supabase
+            .from('users')
+            .update({ 
+              avatar_url: publicUrl,
+              updated_at: new Date().toISOString()
+            })
+            .eq('id', user.id);
+          
+          if (updateError) throw updateError;
+          
+          setUploadProgress(100);
+          setAvatarUrl(publicUrl);
+          setProfile(prev => ({ ...prev, avatar_url: publicUrl }));
+          setSuccess('Avatar updated successfully');
+          
+          // Reset progress after a moment
+          setTimeout(() => setUploadProgress(0), 1000);
+        } catch (err) {
+          console.error('Avatar upload failed:', err);
+          setError(err.message || 'Failed to upload avatar');
+        }
+        
+        setUploading(false);
+        // Reset file input
+        if (fileInputRef.current) {
+          fileInputRef.current.value = '';
+        }
+      };
+      
+      // Handle avatar removal
+      const handleAvatarRemove = async () => {
+        if (!avatarUrl) return;
+        
+        setUploading(true);
+        setError('');
+        setSuccess('');
+        
+        try {
+          // Extract path from URL and delete from storage
+          const pathMatch = avatarUrl.match(/avatars\/(.+)$/);
+          if (pathMatch) {
+            await supabase.storage.from('avatars').remove([`avatars/${pathMatch[1]}`]);
+          }
+          
+          // Update user profile to remove avatar URL
+          const { error: updateError } = await supabase
+            .from('users')
+            .update({ 
+              avatar_url: null,
+              updated_at: new Date().toISOString()
+            })
+            .eq('id', user.id);
+          
+          if (updateError) throw updateError;
+          
+          setAvatarUrl(null);
+          setProfile(prev => ({ ...prev, avatar_url: null }));
+          setSuccess('Avatar removed');
+        } catch (err) {
+          console.error('Avatar removal failed:', err);
+          setError(err.message || 'Failed to remove avatar');
+        }
+        
+        setUploading(false);
       };
       
       const handleSave = async (e) => {
@@ -876,7 +1084,11 @@
                     onClick={(e) => { e.stopPropagation(); setShowProfileMenu(!showProfileMenu); }}
                   >
                     <div className="profile-avatar">
-                      {getInitials(profile?.display_name || user?.email)}
+                      {avatarUrl ? (
+                        <img src={avatarUrl} alt="" />
+                      ) : (
+                        getInitials(profile?.display_name || user?.email)
+                      )}
                     </div>
                     <span className="profile-chevron">▼</span>
                   </button>
@@ -884,7 +1096,11 @@
                   <div className={`profile-dropdown ${showProfileMenu ? 'open' : ''}`}>
                     <div className="profile-dropdown-header">
                       <div className="profile-dropdown-avatar">
-                        {getInitials(profile?.display_name || user?.email)}
+                        {avatarUrl ? (
+                          <img src={avatarUrl} alt="" style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
+                        ) : (
+                          getInitials(profile?.display_name || user?.email)
+                        )}
                       </div>
                       <div className="profile-dropdown-info">
                         <div className="profile-dropdown-name">{profile?.display_name || 'User'}</div>
@@ -977,13 +1193,63 @@
               
               {/* Avatar Section */}
               <div className="avatar-section">
-                <div className="avatar-preview">
-                  {getInitials(displayName || profile?.email)}
+                <div 
+                  className="avatar-preview" 
+                  onClick={() => !uploading && fileInputRef.current?.click()}
+                  style={{ cursor: uploading ? 'wait' : 'pointer' }}
+                >
+                  {avatarUrl ? (
+                    <img src={avatarUrl} alt="Avatar" />
+                  ) : (
+                    getInitials(displayName || profile?.email)
+                  )}
+                  {!uploading && (
+                    <div className="avatar-overlay">
+                      <span className="avatar-overlay-text">
+                        {avatarUrl ? 'Change' : 'Upload'}
+                      </span>
+                    </div>
+                  )}
                 </div>
                 <div className="avatar-actions">
                   <h3>Profile Picture</h3>
-                  <p>Avatar support coming soon</p>
+                  <p>JPEG, PNG, GIF or WebP. Max 2MB.</p>
+                  <div className="avatar-buttons">
+                    <button 
+                      type="button"
+                      className="btn btn-sm btn-outline"
+                      onClick={() => fileInputRef.current?.click()}
+                      disabled={uploading}
+                    >
+                      {uploading ? 'Uploading...' : (avatarUrl ? 'Change Photo' : 'Upload Photo')}
+                    </button>
+                    {avatarUrl && (
+                      <button 
+                        type="button"
+                        className="btn btn-sm btn-danger-outline"
+                        onClick={handleAvatarRemove}
+                        disabled={uploading}
+                      >
+                        Remove
+                      </button>
+                    )}
+                  </div>
+                  {uploading && uploadProgress > 0 && (
+                    <div className="upload-progress">
+                      <div 
+                        className="upload-progress-bar" 
+                        style={{ width: `${uploadProgress}%` }}
+                      />
+                    </div>
+                  )}
                 </div>
+                <input 
+                  ref={fileInputRef}
+                  type="file"
+                  accept="image/jpeg,image/png,image/gif,image/webp"
+                  className="avatar-upload-input"
+                  onChange={handleAvatarUpload}
+                />
               </div>
               
               <form onSubmit={handleSave}>
