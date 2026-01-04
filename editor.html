@@ -366,6 +366,31 @@
       }
     }
     
+    /* Dashboard Modal - full screen on mobile */
+    @media (max-width: 768px) {
+      .dashboard-modal-overlay {
+        padding: 0 !important;
+        align-items: stretch !important;
+        justify-content: stretch !important;
+      }
+      .dashboard-modal-content {
+        max-height: none !important;
+        height: 100% !important;
+        border-radius: 0 !important;
+        width: 100% !important;
+        max-width: none !important;
+      }
+    }
+    
+    /* iOS safe area support for dashboard */
+    @supports (padding-top: env(safe-area-inset-top)) {
+      @media (max-width: 768px) {
+        .dashboard-modal-content {
+          padding-bottom: env(safe-area-inset-bottom);
+        }
+      }
+    }
+    
     /* Cost Analysis Dashboard Mobile Responsive */
     @media (max-width: 768px) {
       .cost-analysis-panel {
@@ -8845,7 +8870,7 @@ FATHOM - Journey intelligence for modern operations`);
             <div className="dashboard-modal-overlay" style={{ position: 'fixed', top: 0, left: 0, right: 0, bottom: 0, background: 'rgba(12,22,32,0.6)', backdropFilter: 'blur(8px)', WebkitBackdropFilter: 'blur(8px)', display: 'flex', alignItems: 'center', justifyContent: 'center', zIndex: 3000, padding: '12px' }} onClick={() => setShowDashboard(false)}>
               <div className="dashboard-modal-content" onClick={(e) => e.stopPropagation()} style={{ background: '#FFF', borderRadius: '12px', maxWidth: '1400px', width: '100%', maxHeight: '90vh', display: 'flex', flexDirection: 'column', overflow: 'hidden', boxShadow: '0 20px 60px rgba(0,0,0,0.3)' }}>
                 {/* Dashboard Header with Tabs */}
-                <div style={{ background: '#192B45', padding: '12px 16px', display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: '12px', flexShrink: 0 }}>
+                <div style={{ background: '#192B45', padding: '12px 16px', paddingTop: 'max(12px, env(safe-area-inset-top))', display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: '12px', flexShrink: 0 }}>
                   {/* Left: Icon + Title (title hidden on mobile) */}
                   <div style={{ display: 'flex', alignItems: 'center', gap: '8px', flexShrink: 0 }}>
                     <span style={{ fontSize: '18px' }}>📊</span>
