@@ -5357,6 +5357,7 @@ FATHOM - Journey intelligence for modern operations`);
       const [showGitHubSettings, setShowGitHubSettings] = useState(false);
       const [showPasswordPrompt, setShowPasswordPrompt] = useState(false);
       const [showShareModal, setShowShareModal] = useState(false);
+      const [showProfileMenu, setShowProfileMenu] = useState(false);
       const [shares, setShares] = useState([]);
       const [isMobile, setIsMobile] = useState(() => window.innerWidth < 768);
       const [isCompact, setIsCompact] = useState(() => window.innerWidth < 1024 && window.innerWidth >= 768);
@@ -5950,6 +5951,23 @@ FATHOM - Journey intelligence for modern operations`);
           return () => document.removeEventListener('click', handleClickOutside);
         }
       }, [showSettingsMenu]);
+      
+      // Close profile menu when clicking outside
+      useEffect(() => {
+        const handleClickOutside = (e) => {
+          if (showProfileMenu && !e.target.closest('.profile-container')) {
+            setShowProfileMenu(false);
+          }
+        };
+        document.addEventListener('click', handleClickOutside);
+        return () => document.removeEventListener('click', handleClickOutside);
+      }, [showProfileMenu]);
+      
+      // Helper to get user initials
+      const getInitials = (name) => {
+        if (!name) return '?';
+        return name.split(' ').map(n => n[0]).join('').toUpperCase().slice(0, 2);
+      };
 
       const totalTime = useMemo(() => 
         config.stages.reduce((acc, stage) => 
@@ -6819,37 +6837,39 @@ FATHOM - Journey intelligence for modern operations`);
                         {(isSupabaseMode ? canAccessSettings : isSettingsUnlocked) ? '⚙️' : '👁️'} <span style={{ fontSize: '8px' }}>▼</span>
                       </button>
                       {showSettingsMenu && (isSupabaseMode ? canAccessSettings : isSettingsUnlocked) && (
-                        <div onClick={(e) => e.stopPropagation()} style={{ position: 'absolute', top: '100%', right: 0, marginTop: '8px', background: 'var(--navy-800, #15243A)', borderRadius: '16px', boxShadow: '0 8px 32px rgba(0,0,0,0.3)', overflow: 'hidden', zIndex: 9999, minWidth: '200px', padding: '12px' }}>
-                          <div style={{ color: 'rgba(255,255,255,0.4)', fontSize: '10px', fontWeight: 600, textTransform: 'uppercase', letterSpacing: '0.5px', padding: '8px 16px 8px' }}>Configuration</div>
+                        <div onClick={(e) => e.stopPropagation()} style={{ position: 'absolute', top: '100%', right: 0, marginTop: '8px', background: '#FFF', borderRadius: '12px', boxShadow: '0 8px 32px rgba(0,0,0,0.2)', overflow: 'hidden', zIndex: 9999, minWidth: '220px', padding: '8px 0' }}>
+                          <div style={{ color: '#6E7B8C', fontSize: '10px', fontWeight: 600, textTransform: 'uppercase', letterSpacing: '0.5px', padding: '8px 16px 4px' }}>Configuration</div>
                           {/* Only show Edit Mode if user can edit */}
                           {canEdit && (
-                            <button onClick={enterEditMode} style={{ display: 'flex', alignItems: 'center', gap: '12px', width: '100%', padding: '12px 16px', border: 'none', background: 'rgba(255,255,255,0.05)', cursor: 'pointer', textAlign: 'left', fontFamily: "'Interstate', sans-serif", fontSize: '14px', color: 'rgba(255,255,255,0.9)', borderRadius: '12px', marginBottom: '6px', transition: 'background 0.15s' }} onMouseOver={(e) => e.currentTarget.style.background = 'rgba(255,255,255,0.15)'} onMouseOut={(e) => e.currentTarget.style.background = 'rgba(255,255,255,0.05)'}>
-                              <span>✏️</span> Edit Mode
+                            <button onClick={enterEditMode} style={{ display: 'flex', alignItems: 'center', gap: '12px', width: '100%', padding: '10px 16px', border: 'none', background: 'transparent', cursor: 'pointer', textAlign: 'left', fontFamily: "'Interstate', sans-serif", fontSize: '14px', color: '#3D4A5C', transition: 'background 0.1s' }} onMouseOver={(e) => e.currentTarget.style.background = '#F4F5F7'} onMouseOut={(e) => e.currentTarget.style.background = 'transparent'}>
+                              <span style={{ width: '18px', textAlign: 'center' }}>✏️</span> Edit Mode
                             </button>
                           )}
                           {canEdit && (
-                            <button onClick={() => { setShowSalarySettings(true); setShowSettingsMenu(false); }} style={{ display: 'flex', alignItems: 'center', gap: '12px', width: '100%', padding: '12px 16px', border: 'none', background: 'rgba(255,255,255,0.05)', cursor: 'pointer', textAlign: 'left', fontFamily: "'Interstate', sans-serif", fontSize: '14px', color: 'rgba(255,255,255,0.9)', borderRadius: '12px', marginBottom: '6px', transition: 'background 0.15s' }} onMouseOver={(e) => e.currentTarget.style.background = 'rgba(255,255,255,0.15)'} onMouseOut={(e) => e.currentTarget.style.background = 'rgba(255,255,255,0.05)'}>
-                              <span>👥</span> Manage Roles
+                            <button onClick={() => { setShowSalarySettings(true); setShowSettingsMenu(false); }} style={{ display: 'flex', alignItems: 'center', gap: '12px', width: '100%', padding: '10px 16px', border: 'none', background: 'transparent', cursor: 'pointer', textAlign: 'left', fontFamily: "'Interstate', sans-serif", fontSize: '14px', color: '#3D4A5C', transition: 'background 0.1s' }} onMouseOver={(e) => e.currentTarget.style.background = '#F4F5F7'} onMouseOut={(e) => e.currentTarget.style.background = 'transparent'}>
+                              <span style={{ width: '18px', textAlign: 'center' }}>👥</span> Manage Roles
                             </button>
                           )}
                           {canEdit && (
-                            <button onClick={() => { setShowStructurePanel(true); setShowSettingsMenu(false); }} style={{ display: 'flex', alignItems: 'center', gap: '12px', width: '100%', padding: '12px 16px', border: 'none', background: 'rgba(255,255,255,0.05)', cursor: 'pointer', textAlign: 'left', fontFamily: "'Interstate', sans-serif", fontSize: '14px', color: 'rgba(255,255,255,0.9)', borderRadius: '12px', marginBottom: '6px', transition: 'background 0.15s' }} onMouseOver={(e) => e.currentTarget.style.background = 'rgba(255,255,255,0.15)'} onMouseOut={(e) => e.currentTarget.style.background = 'rgba(255,255,255,0.05)'}>
-                              <span>🏗️</span> Configure Structure
+                            <button onClick={() => { setShowStructurePanel(true); setShowSettingsMenu(false); }} style={{ display: 'flex', alignItems: 'center', gap: '12px', width: '100%', padding: '10px 16px', border: 'none', background: 'transparent', cursor: 'pointer', textAlign: 'left', fontFamily: "'Interstate', sans-serif", fontSize: '14px', color: '#3D4A5C', transition: 'background 0.1s' }} onMouseOver={(e) => e.currentTarget.style.background = '#F4F5F7'} onMouseOut={(e) => e.currentTarget.style.background = 'transparent'}>
+                              <span style={{ width: '18px', textAlign: 'center' }}>🏗️</span> Configure Structure
                             </button>
                           )}
                           {canEdit && (
-                            <button onClick={() => { setShowFunnelSettings(true); setShowSettingsMenu(false); }} style={{ display: 'flex', alignItems: 'center', gap: '12px', width: '100%', padding: '12px 16px', border: 'none', background: 'rgba(255,255,255,0.05)', cursor: 'pointer', textAlign: 'left', fontFamily: "'Interstate', sans-serif", fontSize: '14px', color: 'rgba(255,255,255,0.9)', borderRadius: '12px', marginBottom: '6px', transition: 'background 0.15s' }} onMouseOver={(e) => e.currentTarget.style.background = 'rgba(255,255,255,0.15)'} onMouseOut={(e) => e.currentTarget.style.background = 'rgba(255,255,255,0.05)'}>
-                              <span>🔻</span> Funnel Settings
+                            <button onClick={() => { setShowFunnelSettings(true); setShowSettingsMenu(false); }} style={{ display: 'flex', alignItems: 'center', gap: '12px', width: '100%', padding: '10px 16px', border: 'none', background: 'transparent', cursor: 'pointer', textAlign: 'left', fontFamily: "'Interstate', sans-serif", fontSize: '14px', color: '#3D4A5C', transition: 'background 0.1s' }} onMouseOver={(e) => e.currentTarget.style.background = '#F4F5F7'} onMouseOut={(e) => e.currentTarget.style.background = 'transparent'}>
+                              <span style={{ width: '18px', textAlign: 'center' }}>🔻</span> Funnel Settings
                             </button>
                           )}
                           {!isSupabaseMode && (
                             <>
-                              <div style={{ color: 'rgba(255,255,255,0.4)', fontSize: '10px', fontWeight: 600, textTransform: 'uppercase', letterSpacing: '0.5px', padding: '12px 16px 8px' }}>Data</div>
-                              <button onClick={() => { setShowGitHubSettings(true); setShowSettingsMenu(false); }} style={{ display: 'flex', alignItems: 'center', gap: '12px', width: '100%', padding: '12px 16px', border: 'none', background: 'rgba(255,255,255,0.05)', cursor: 'pointer', textAlign: 'left', fontFamily: "'Interstate', sans-serif", fontSize: '14px', color: 'rgba(255,255,255,0.9)', borderRadius: '12px', marginBottom: '6px', transition: 'background 0.15s' }} onMouseOver={(e) => e.currentTarget.style.background = 'rgba(255,255,255,0.15)'} onMouseOut={(e) => e.currentTarget.style.background = 'rgba(255,255,255,0.05)'}>
-                                <span>🐙</span> GitHub Settings
+                              <div style={{ height: '1px', background: '#E4E7EB', margin: '4px 0' }} />
+                              <div style={{ color: '#6E7B8C', fontSize: '10px', fontWeight: 600, textTransform: 'uppercase', letterSpacing: '0.5px', padding: '8px 16px 4px' }}>Data</div>
+                              <button onClick={() => { setShowGitHubSettings(true); setShowSettingsMenu(false); }} style={{ display: 'flex', alignItems: 'center', gap: '12px', width: '100%', padding: '10px 16px', border: 'none', background: 'transparent', cursor: 'pointer', textAlign: 'left', fontFamily: "'Interstate', sans-serif", fontSize: '14px', color: '#3D4A5C', transition: 'background 0.1s' }} onMouseOver={(e) => e.currentTarget.style.background = '#F4F5F7'} onMouseOut={(e) => e.currentTarget.style.background = 'transparent'}>
+                                <span style={{ width: '18px', textAlign: 'center' }}>🐙</span> GitHub Settings
                               </button>
                             </>
                           )}
+                          <div style={{ height: '1px', background: '#E4E7EB', margin: '4px 0' }} />
                           <button 
                             onClick={() => setShowCosts(!showCosts)} 
                             style={{ 
@@ -6857,29 +6877,28 @@ FATHOM - Journey intelligence for modern operations`);
                               alignItems: 'center', 
                               gap: '12px', 
                               width: '100%', 
-                              padding: '12px 16px', 
+                              padding: '10px 16px', 
                               border: 'none', 
-                              background: 'rgba(255,255,255,0.05)', 
+                              background: 'transparent', 
                               cursor: 'pointer', 
                               textAlign: 'left', 
                               fontFamily: "'Interstate', sans-serif", 
                               fontSize: '14px', 
-                              color: 'rgba(255,255,255,0.9)',
-                              borderRadius: '12px',
-                              transition: 'background 0.15s'
+                              color: '#3D4A5C',
+                              transition: 'background 0.1s'
                             }} 
-                            onMouseOver={(e) => e.currentTarget.style.background = 'rgba(255,255,255,0.15)'} 
-                            onMouseOut={(e) => e.currentTarget.style.background = 'rgba(255,255,255,0.05)'}
+                            onMouseOver={(e) => e.currentTarget.style.background = '#F4F5F7'} 
+                            onMouseOut={(e) => e.currentTarget.style.background = 'transparent'}
                           >
-                            <span>{showCosts ? '💰' : '🚫'}</span> 
+                            <span style={{ width: '18px', textAlign: 'center' }}>{showCosts ? '💰' : '🚫'}</span> 
                             <span style={{ flex: 1 }}>Cost Data</span>
                             <span style={{ 
                               padding: '3px 10px', 
                               borderRadius: '12px', 
                               fontSize: '10px', 
                               fontWeight: 600,
-                              background: showCosts ? 'rgba(45, 138, 110, 0.3)' : 'rgba(184, 74, 90, 0.3)',
-                              color: showCosts ? '#6EE7B7' : '#FDA4AF'
+                              background: showCosts ? 'rgba(45, 138, 110, 0.15)' : 'rgba(184, 74, 90, 0.15)',
+                              color: showCosts ? '#2D8A6E' : '#B84A5A'
                             }}>
                               {showCosts ? 'VISIBLE' : 'HIDDEN'}
                             </span>
@@ -6887,6 +6906,120 @@ FATHOM - Journey intelligence for modern operations`);
                         </div>
                       )}
                     </div>
+                    
+                    {/* Profile Dropdown (Supabase mode only) */}
+                    {isSupabaseMode && currentUser && (
+                      <div className="profile-container" style={{ position: 'relative', marginLeft: '8px' }}>
+                        <button 
+                          onClick={(e) => { e.stopPropagation(); setShowProfileMenu(!showProfileMenu); }}
+                          style={{ 
+                            display: 'flex', 
+                            alignItems: 'center', 
+                            gap: '8px',
+                            padding: '4px 10px 4px 4px',
+                            background: showProfileMenu ? 'rgba(255,255,255,0.15)' : 'rgba(255,255,255,0.08)',
+                            border: '1px solid rgba(255,255,255,0.2)',
+                            borderRadius: '20px',
+                            cursor: 'pointer',
+                            transition: 'all 0.15s'
+                          }}
+                        >
+                          <div style={{ 
+                            width: '28px', 
+                            height: '28px', 
+                            borderRadius: '50%', 
+                            background: 'var(--steel-500, #5B8A9A)', 
+                            display: 'flex', 
+                            alignItems: 'center', 
+                            justifyContent: 'center', 
+                            color: '#FFF', 
+                            fontSize: '11px', 
+                            fontWeight: 600 
+                          }}>
+                            {getInitials(currentUser?.email)}
+                          </div>
+                          <span style={{ color: 'rgba(255,255,255,0.9)', fontSize: '12px', fontWeight: 500, maxWidth: '80px', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
+                            {currentUser?.email?.split('@')[0]}
+                          </span>
+                          <span style={{ color: 'rgba(255,255,255,0.5)', fontSize: '8px' }}>▼</span>
+                        </button>
+                        
+                        {showProfileMenu && (
+                          <div onClick={(e) => e.stopPropagation()} style={{ 
+                            position: 'absolute', 
+                            top: 'calc(100% + 8px)', 
+                            right: 0, 
+                            background: '#FFF', 
+                            borderRadius: '12px', 
+                            boxShadow: '0 8px 32px rgba(0,0,0,0.2)', 
+                            minWidth: '220px', 
+                            padding: '8px 0',
+                            zIndex: 9999
+                          }}>
+                            <div style={{ display: 'flex', alignItems: 'center', gap: '12px', padding: '12px 16px', borderBottom: '1px solid #E4E7EB', marginBottom: '4px' }}>
+                              <div style={{ width: '40px', height: '40px', borderRadius: '50%', background: '#5B8A9A', display: 'flex', alignItems: 'center', justifyContent: 'center', color: '#FFF', fontSize: '16px', fontWeight: 600, flexShrink: 0 }}>
+                                {getInitials(currentUser?.email)}
+                              </div>
+                              <div style={{ flex: 1, minWidth: 0 }}>
+                                <div style={{ fontWeight: 600, color: '#1A2332', fontSize: '14px', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
+                                  {currentUser?.email?.split('@')[0]}
+                                </div>
+                                <div style={{ color: '#6E7B8C', fontSize: '12px', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
+                                  {currentUser?.email}
+                                </div>
+                              </div>
+                            </div>
+                            
+                            <a href="profile.html" style={{ display: 'flex', alignItems: 'center', gap: '12px', padding: '10px 16px', color: '#3D4A5C', textDecoration: 'none', fontSize: '14px', transition: 'background 0.1s' }} 
+                               onMouseOver={(e) => e.currentTarget.style.background = '#F4F5F7'} 
+                               onMouseOut={(e) => e.currentTarget.style.background = 'transparent'}>
+                              <span style={{ width: '18px', textAlign: 'center' }}>👤</span>
+                              Profile Settings
+                            </a>
+                            
+                            <a href="team.html" style={{ display: 'flex', alignItems: 'center', gap: '12px', padding: '10px 16px', color: '#3D4A5C', textDecoration: 'none', fontSize: '14px', transition: 'background 0.1s' }} 
+                               onMouseOver={(e) => e.currentTarget.style.background = '#F4F5F7'} 
+                               onMouseOut={(e) => e.currentTarget.style.background = 'transparent'}>
+                              <span style={{ width: '18px', textAlign: 'center' }}>👥</span>
+                              Team Management
+                            </a>
+                            
+                            <div style={{ height: '1px', background: '#E4E7EB', margin: '4px 0' }} />
+                            
+                            <a href="dashboard.html" style={{ display: 'flex', alignItems: 'center', gap: '12px', padding: '10px 16px', color: '#3D4A5C', textDecoration: 'none', fontSize: '14px', transition: 'background 0.1s' }} 
+                               onMouseOver={(e) => e.currentTarget.style.background = '#F4F5F7'} 
+                               onMouseOut={(e) => e.currentTarget.style.background = 'transparent'}>
+                              <span style={{ width: '18px', textAlign: 'center' }}>📊</span>
+                              Dashboard
+                            </a>
+                            
+                            <a href="whats-new.html" style={{ display: 'flex', alignItems: 'center', gap: '12px', padding: '10px 16px', color: '#3D4A5C', textDecoration: 'none', fontSize: '14px', transition: 'background 0.1s' }} 
+                               onMouseOver={(e) => e.currentTarget.style.background = '#F4F5F7'} 
+                               onMouseOut={(e) => e.currentTarget.style.background = 'transparent'}>
+                              <span style={{ width: '18px', textAlign: 'center' }}>✨</span>
+                              What's New
+                            </a>
+                            
+                            <div style={{ height: '1px', background: '#E4E7EB', margin: '4px 0' }} />
+                            
+                            <button 
+                              onClick={() => { 
+                                setShowProfileMenu(false);
+                                supabase?.auth.signOut().then(() => {
+                                  window.location.href = 'dashboard.html';
+                                });
+                              }}
+                              style={{ display: 'flex', alignItems: 'center', gap: '12px', padding: '10px 16px', color: '#B84A5A', background: 'none', border: 'none', width: '100%', textAlign: 'left', fontSize: '14px', cursor: 'pointer', fontFamily: 'inherit', transition: 'background 0.1s' }} 
+                              onMouseOver={(e) => e.currentTarget.style.background = 'rgba(184, 74, 90, 0.08)'} 
+                              onMouseOut={(e) => e.currentTarget.style.background = 'transparent'}
+                            >
+                              <span style={{ width: '18px', textAlign: 'center' }}>🚪</span>
+                              Sign Out
+                            </button>
+                          </div>
+                        )}
+                      </div>
+                    )}
                   </>
                 )}
               </div>
@@ -7002,36 +7135,38 @@ FATHOM - Journey intelligence for modern operations`);
                       {(isSupabaseMode ? canAccessSettings : isSettingsUnlocked) ? '⚙️' : '👁️'} <span style={{ fontSize: '8px' }}>▼</span>
                     </button>
                     {showSettingsMenu && (isSupabaseMode ? canAccessSettings : isSettingsUnlocked) && (
-                      <div onClick={(e) => e.stopPropagation()} style={{ position: 'absolute', top: '100%', right: 0, marginTop: '8px', background: 'var(--navy-800, #15243A)', borderRadius: '16px', boxShadow: '0 8px 32px rgba(0,0,0,0.3)', overflow: 'hidden', zIndex: 9999, minWidth: '200px', padding: '12px' }}>
-                        <div style={{ color: 'rgba(255,255,255,0.4)', fontSize: '10px', fontWeight: 600, textTransform: 'uppercase', letterSpacing: '0.5px', padding: '8px 16px 8px' }}>Configuration</div>
+                      <div onClick={(e) => e.stopPropagation()} style={{ position: 'absolute', top: '100%', right: 0, marginTop: '8px', background: '#FFF', borderRadius: '12px', boxShadow: '0 8px 32px rgba(0,0,0,0.2)', overflow: 'hidden', zIndex: 9999, minWidth: '220px', padding: '8px 0' }}>
+                        <div style={{ color: '#6E7B8C', fontSize: '10px', fontWeight: 600, textTransform: 'uppercase', letterSpacing: '0.5px', padding: '8px 16px 4px' }}>Configuration</div>
                         {canEdit && (
-                          <button onClick={enterEditMode} style={{ display: 'flex', alignItems: 'center', gap: '12px', width: '100%', padding: '12px 16px', border: 'none', background: 'rgba(255,255,255,0.05)', cursor: 'pointer', textAlign: 'left', fontFamily: "'Interstate', sans-serif", fontSize: '14px', color: 'rgba(255,255,255,0.9)', borderRadius: '12px', marginBottom: '6px', transition: 'background 0.15s' }} onMouseOver={(e) => e.currentTarget.style.background = 'rgba(255,255,255,0.15)'} onMouseOut={(e) => e.currentTarget.style.background = 'rgba(255,255,255,0.05)'}>
-                            <span>✏️</span> Edit Mode
+                          <button onClick={enterEditMode} style={{ display: 'flex', alignItems: 'center', gap: '12px', width: '100%', padding: '10px 16px', border: 'none', background: 'transparent', cursor: 'pointer', textAlign: 'left', fontFamily: "'Interstate', sans-serif", fontSize: '14px', color: '#3D4A5C', transition: 'background 0.1s' }} onMouseOver={(e) => e.currentTarget.style.background = '#F4F5F7'} onMouseOut={(e) => e.currentTarget.style.background = 'transparent'}>
+                            <span style={{ width: '18px', textAlign: 'center' }}>✏️</span> Edit Mode
                           </button>
                         )}
                         {canEdit && (
-                          <button onClick={() => { setShowSalarySettings(true); setShowSettingsMenu(false); }} style={{ display: 'flex', alignItems: 'center', gap: '12px', width: '100%', padding: '12px 16px', border: 'none', background: 'rgba(255,255,255,0.05)', cursor: 'pointer', textAlign: 'left', fontFamily: "'Interstate', sans-serif", fontSize: '14px', color: 'rgba(255,255,255,0.9)', borderRadius: '12px', marginBottom: '6px', transition: 'background 0.15s' }} onMouseOver={(e) => e.currentTarget.style.background = 'rgba(255,255,255,0.15)'} onMouseOut={(e) => e.currentTarget.style.background = 'rgba(255,255,255,0.05)'}>
-                            <span>👥</span> Manage Roles
+                          <button onClick={() => { setShowSalarySettings(true); setShowSettingsMenu(false); }} style={{ display: 'flex', alignItems: 'center', gap: '12px', width: '100%', padding: '10px 16px', border: 'none', background: 'transparent', cursor: 'pointer', textAlign: 'left', fontFamily: "'Interstate', sans-serif", fontSize: '14px', color: '#3D4A5C', transition: 'background 0.1s' }} onMouseOver={(e) => e.currentTarget.style.background = '#F4F5F7'} onMouseOut={(e) => e.currentTarget.style.background = 'transparent'}>
+                            <span style={{ width: '18px', textAlign: 'center' }}>👥</span> Manage Roles
                           </button>
                         )}
                         {canEdit && (
-                          <button onClick={() => { setShowStructurePanel(true); setShowSettingsMenu(false); }} style={{ display: 'flex', alignItems: 'center', gap: '12px', width: '100%', padding: '12px 16px', border: 'none', background: 'rgba(255,255,255,0.05)', cursor: 'pointer', textAlign: 'left', fontFamily: "'Interstate', sans-serif", fontSize: '14px', color: 'rgba(255,255,255,0.9)', borderRadius: '12px', marginBottom: '6px', transition: 'background 0.15s' }} onMouseOver={(e) => e.currentTarget.style.background = 'rgba(255,255,255,0.15)'} onMouseOut={(e) => e.currentTarget.style.background = 'rgba(255,255,255,0.05)'}>
-                            <span>🏗️</span> Configure Structure
+                          <button onClick={() => { setShowStructurePanel(true); setShowSettingsMenu(false); }} style={{ display: 'flex', alignItems: 'center', gap: '12px', width: '100%', padding: '10px 16px', border: 'none', background: 'transparent', cursor: 'pointer', textAlign: 'left', fontFamily: "'Interstate', sans-serif", fontSize: '14px', color: '#3D4A5C', transition: 'background 0.1s' }} onMouseOver={(e) => e.currentTarget.style.background = '#F4F5F7'} onMouseOut={(e) => e.currentTarget.style.background = 'transparent'}>
+                            <span style={{ width: '18px', textAlign: 'center' }}>🏗️</span> Configure Structure
                           </button>
                         )}
                         {canEdit && (
-                          <button onClick={() => { setShowFunnelSettings(true); setShowSettingsMenu(false); }} style={{ display: 'flex', alignItems: 'center', gap: '12px', width: '100%', padding: '12px 16px', border: 'none', background: 'rgba(255,255,255,0.05)', cursor: 'pointer', textAlign: 'left', fontFamily: "'Interstate', sans-serif", fontSize: '14px', color: 'rgba(255,255,255,0.9)', borderRadius: '12px', marginBottom: '6px', transition: 'background 0.15s' }} onMouseOver={(e) => e.currentTarget.style.background = 'rgba(255,255,255,0.15)'} onMouseOut={(e) => e.currentTarget.style.background = 'rgba(255,255,255,0.05)'}>
-                            <span>🔻</span> Funnel Settings
+                          <button onClick={() => { setShowFunnelSettings(true); setShowSettingsMenu(false); }} style={{ display: 'flex', alignItems: 'center', gap: '12px', width: '100%', padding: '10px 16px', border: 'none', background: 'transparent', cursor: 'pointer', textAlign: 'left', fontFamily: "'Interstate', sans-serif", fontSize: '14px', color: '#3D4A5C', transition: 'background 0.1s' }} onMouseOver={(e) => e.currentTarget.style.background = '#F4F5F7'} onMouseOut={(e) => e.currentTarget.style.background = 'transparent'}>
+                            <span style={{ width: '18px', textAlign: 'center' }}>🔻</span> Funnel Settings
                           </button>
                         )}
                         {!isSupabaseMode && (
                           <>
-                            <div style={{ color: 'rgba(255,255,255,0.4)', fontSize: '10px', fontWeight: 600, textTransform: 'uppercase', letterSpacing: '0.5px', padding: '12px 16px 8px' }}>Data</div>
-                            <button onClick={() => { setShowGitHubSettings(true); setShowSettingsMenu(false); }} style={{ display: 'flex', alignItems: 'center', gap: '12px', width: '100%', padding: '12px 16px', border: 'none', background: 'rgba(255,255,255,0.05)', cursor: 'pointer', textAlign: 'left', fontFamily: "'Interstate', sans-serif", fontSize: '14px', color: 'rgba(255,255,255,0.9)', borderRadius: '12px', marginBottom: '6px', transition: 'background 0.15s' }} onMouseOver={(e) => e.currentTarget.style.background = 'rgba(255,255,255,0.15)'} onMouseOut={(e) => e.currentTarget.style.background = 'rgba(255,255,255,0.05)'}>
-                              <span>🐙</span> GitHub Settings
+                            <div style={{ height: '1px', background: '#E4E7EB', margin: '4px 0' }} />
+                            <div style={{ color: '#6E7B8C', fontSize: '10px', fontWeight: 600, textTransform: 'uppercase', letterSpacing: '0.5px', padding: '8px 16px 4px' }}>Data</div>
+                            <button onClick={() => { setShowGitHubSettings(true); setShowSettingsMenu(false); }} style={{ display: 'flex', alignItems: 'center', gap: '12px', width: '100%', padding: '10px 16px', border: 'none', background: 'transparent', cursor: 'pointer', textAlign: 'left', fontFamily: "'Interstate', sans-serif", fontSize: '14px', color: '#3D4A5C', transition: 'background 0.1s' }} onMouseOver={(e) => e.currentTarget.style.background = '#F4F5F7'} onMouseOut={(e) => e.currentTarget.style.background = 'transparent'}>
+                              <span style={{ width: '18px', textAlign: 'center' }}>🐙</span> GitHub Settings
                             </button>
                           </>
                         )}
+                        <div style={{ height: '1px', background: '#E4E7EB', margin: '4px 0' }} />
                         <button 
                           onClick={() => setShowCosts(!showCosts)} 
                           style={{ 
@@ -7039,29 +7174,28 @@ FATHOM - Journey intelligence for modern operations`);
                             alignItems: 'center', 
                             gap: '12px', 
                             width: '100%', 
-                            padding: '12px 16px', 
+                            padding: '10px 16px', 
                             border: 'none', 
-                            background: 'rgba(255,255,255,0.05)', 
+                            background: 'transparent', 
                             cursor: 'pointer', 
                             textAlign: 'left', 
                             fontFamily: "'Interstate', sans-serif", 
                             fontSize: '14px', 
-                            color: 'rgba(255,255,255,0.9)',
-                            borderRadius: '12px',
-                            transition: 'background 0.15s'
+                            color: '#3D4A5C',
+                            transition: 'background 0.1s'
                           }} 
-                          onMouseOver={(e) => e.currentTarget.style.background = 'rgba(255,255,255,0.15)'} 
-                          onMouseOut={(e) => e.currentTarget.style.background = 'rgba(255,255,255,0.05)'}
+                          onMouseOver={(e) => e.currentTarget.style.background = '#F4F5F7'} 
+                          onMouseOut={(e) => e.currentTarget.style.background = 'transparent'}
                         >
-                          <span>{showCosts ? '💰' : '🚫'}</span> 
+                          <span style={{ width: '18px', textAlign: 'center' }}>{showCosts ? '💰' : '🚫'}</span> 
                           <span style={{ flex: 1 }}>Cost Data</span>
                           <span style={{ 
                             padding: '3px 10px', 
                             borderRadius: '12px', 
                             fontSize: '10px', 
                             fontWeight: 600,
-                            background: showCosts ? 'rgba(45, 138, 110, 0.3)' : 'rgba(184, 74, 90, 0.3)',
-                            color: showCosts ? '#6EE7B7' : '#FDA4AF'
+                            background: showCosts ? 'rgba(45, 138, 110, 0.15)' : 'rgba(184, 74, 90, 0.15)',
+                            color: showCosts ? '#2D8A6E' : '#B84A5A'
                           }}>
                             {showCosts ? 'VISIBLE' : 'HIDDEN'}
                           </span>
