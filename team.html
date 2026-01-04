@@ -799,23 +799,44 @@
       useEffect(() => {
         if (!supabase) return;
         
-        supabase.auth.getSession().then(({ data: { session } }) => {
+        let redirectTimeout = null;
+        let foundSession = false;
+        
+        // Listen for auth state - this fires with current session state
+        const { data: { subscription } } = supabase.auth.onAuthStateChange((event, session) => {
+          console.log('Team: onAuthStateChange:', event, !!session?.user);
+          
           if (session?.user) {
+            foundSession = true;
             setUser(session.user);
             loadUserProfile(session.user.id);
-          } else {
+            // Clear any pending redirect
+            if (redirectTimeout) {
+              clearTimeout(redirectTimeout);
+              redirectTimeout = null;
+            }
+          } else if (event === 'SIGNED_OUT') {
+            // Explicit sign out - redirect
             window.location.href = 'dashboard.html';
           }
         });
         
-        const { data: { subscription } } = supabase.auth.onAuthStateChange((event, session) => {
-          setUser(session?.user ?? null);
-          if (!session?.user) {
-            window.location.href = 'dashboard.html';
+        // Also do a direct session check after a moment
+        redirectTimeout = setTimeout(() => {
+          if (!foundSession) {
+            supabase.auth.getSession().then(({ data: { session } }) => {
+              console.log('Team: Timeout check, session:', !!session?.user);
+              if (!session?.user) {
+                window.location.href = 'dashboard.html';
+              }
+            });
           }
-        });
+        }, 500);
         
-        return () => subscription?.unsubscribe();
+        return () => {
+          if (redirectTimeout) clearTimeout(redirectTimeout);
+          subscription?.unsubscribe();
+        };
       }, []);
       
       const loadUserProfile = async (userId) => {

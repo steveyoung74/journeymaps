@@ -571,17 +571,48 @@
       const [success, setSuccess] = useState('');
       const [error, setError] = useState('');
       
+      // Load user and data
       useEffect(() => {
-        const checkAuth = async () => {
-          const { data: { session } } = await supabase.auth.getSession();
+        if (!supabase) return;
+        
+        let redirectTimeout = null;
+        let foundSession = false;
+        
+        // Listen for auth state - this fires with current session state
+        const { data: { subscription } } = supabase.auth.onAuthStateChange((event, session) => {
+          console.log('Profile: onAuthStateChange:', event, !!session?.user);
+          
           if (session?.user) {
+            foundSession = true;
             setUser(session.user);
-            await loadProfile(session.user.id);
-          } else {
+            loadProfile(session.user.id);
+            // Clear any pending redirect
+            if (redirectTimeout) {
+              clearTimeout(redirectTimeout);
+              redirectTimeout = null;
+            }
+          } else if (event === 'SIGNED_OUT') {
+            // Explicit sign out - redirect
             window.location.href = 'dashboard.html';
           }
+        });
+        
+        // Also do a direct session check after a moment
+        redirectTimeout = setTimeout(() => {
+          if (!foundSession) {
+            supabase.auth.getSession().then(({ data: { session } }) => {
+              console.log('Profile: Timeout check, session:', !!session?.user);
+              if (!session?.user) {
+                window.location.href = 'dashboard.html';
+              }
+            });
+          }
+        }, 500);
+        
+        return () => {
+          if (redirectTimeout) clearTimeout(redirectTimeout);
+          subscription?.unsubscribe();
         };
-        checkAuth();
       }, []);
       
       const loadProfile = async (userId) => {
