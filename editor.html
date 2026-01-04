@@ -7411,7 +7411,7 @@ FATHOM - Journey intelligence for modern operations`);
               overflowX: 'auto', 
               paddingBottom: '20px', 
               flex: isMobile ? 'none' : 1, 
-              alignItems: isMobile ? 'flex-start' : 'stretch' 
+              alignItems: 'flex-start'
             }}>
               {viewMode === 'stages' ? (
                 /* Stages Summary View */
@@ -7861,8 +7861,8 @@ FATHOM - Journey intelligence for modern operations`);
                     {/* Steps Row */}
                     <div style={{ 
                       display: 'flex', 
-                      background: '#FFF', 
-                      minHeight: '300px'
+                      background: '#FFF',
+                      alignItems: 'stretch'
                     }}>
                       {stage.steps.map((step, stepIndex) => {
                         const isSelected = selectedStep?.id === step.id;
