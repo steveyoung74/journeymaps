@@ -1020,7 +1020,7 @@
             // Fetch profile for display name and role
             supabase
               .from('users')
-              .select('display_name, role')
+              .select('display_name, role, avatar_url')
               .eq('id', session.user.id)
               .single()
               .then(({ data }) => {

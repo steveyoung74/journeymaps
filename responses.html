@@ -1359,7 +1359,7 @@
             setUser(session.user);
             supabase
               .from('users')
-              .select('display_name, organisation_id, role')
+              .select('display_name, organisation_id, role, avatar_url')
               .eq('id', session.user.id)
               .single()
               .then(({ data }) => {
