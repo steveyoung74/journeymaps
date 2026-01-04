@@ -1275,7 +1275,6 @@ ${senderName}`);
                   {pendingInvites.map(invite => (
                     <div key={invite.id} className="pending-item">
                       <div className="pending-info">
-                        <span className="badge badge-pending">Pending</span>
                         <span className="pending-email">{invite.email}</span>
                         <span className={`badge ${ROLES[invite.role]?.color}`}>{ROLES[invite.role]?.label}</span>
                       </div>
