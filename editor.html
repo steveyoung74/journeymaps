@@ -239,7 +239,7 @@
       position: relative;
       z-index: 2;
       background: #FFF !important;
-      box-shadow: 0 2px 8px rgba(0,0,0,0.08) !important;
+      box-shadow: 0 4px 16px rgba(0,0,0,0.1) !important;
     }
     
     /* Dropdown menus - solid backgrounds */
@@ -7474,7 +7474,7 @@ FATHOM - Journey intelligence for modern operations`);
                       background: '#FFF', 
                       borderRadius: '12px', 
                       overflow: 'hidden',
-                      boxShadow: '0 2px 8px rgba(0,0,0,0.06)',
+                      boxShadow: '0 4px 16px rgba(0,0,0,0.1)',
                       display: 'flex',
                       flexDirection: 'column',
                       maxHeight: isMobile ? 'none' : '100%'
@@ -7766,9 +7766,15 @@ FATHOM - Journey intelligence for modern operations`);
                 const stageCost = stage.steps.reduce((acc, step) => acc + calculateStepCost(step, config.personas), 0);
                 const stageFunnelData = funnelMetrics?.stageMetrics?.[stageIndex];
                 return (
-                  <div key={stage.id} style={{ flex: stage.steps.length > 0 ? `${stage.steps.length} 0 ${stage.steps.length * 220}px` : '0 0 220px', minWidth: stage.steps.length > 0 ? stage.steps.length * 220 + 'px' : '220px' }}>
+                  <div key={stage.id} className="stage-card" style={{ 
+                    flex: stage.steps.length > 0 ? `${stage.steps.length} 0 ${stage.steps.length * 220}px` : '0 0 220px', 
+                    minWidth: stage.steps.length > 0 ? stage.steps.length * 220 + 'px' : '220px',
+                    borderRadius: '12px',
+                    overflow: 'hidden',
+                    boxShadow: '0 4px 16px rgba(0,0,0,0.1)'
+                  }}>
                     {/* Stage Header */}
-                    <div style={{ background: getStageColor(stageIndex), padding: '16px 20px', borderRadius: '8px 8px 0 0', color: '#FFF' }}>
+                    <div style={{ background: getStageColor(stageIndex), padding: '16px 20px', color: '#FFF' }}>
                       <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start' }}>
                         <div>
                           <div style={{ fontSize: '10px', opacity: 0.7, textTransform: 'uppercase', letterSpacing: '0.5px', marginBottom: '2px' }}>Stage {stageIndex + 1}</div>
@@ -7853,7 +7859,11 @@ FATHOM - Journey intelligence for modern operations`);
                     </div>
 
                     {/* Steps Row */}
-                    <div style={{ display: 'flex', gap: '2px', background: '#E8E8E8', minHeight: '300px' }}>
+                    <div style={{ 
+                      display: 'flex', 
+                      background: '#FFF', 
+                      minHeight: '300px'
+                    }}>
                       {stage.steps.map((step, stepIndex) => {
                         const isSelected = selectedStep?.id === step.id;
                         const isFiltered = activePerspective !== 'all' && !step.actions[activePerspective] && step.owner !== activePerspective && !(activePerspective === 'client' && step.clientTouchpoint);
@@ -7870,25 +7880,27 @@ FATHOM - Journey intelligence for modern operations`);
                         const stageColor = getStageColor(stageIndex);
                         const stageColorDark = getStageColor(stageIndex, 'dark');
                         
+                        const isFirstStep = stepIndex === 0;
+                        
                         return (
                           <div key={step.id} className="step-card" onClick={() => setSelectedStep(isSelected ? null : { ...step, stageId: stage.id, stageIndex })} style={{ 
                             flex: '1 0 218px', 
-                            background: isSelected ? '#FFF' : isHighOpportunity ? 'linear-gradient(135deg, #D4EDE5 0%, #96BCC7 100%)' : isMediumOpportunity ? 'linear-gradient(135deg, #FAF0D6 0%, #F0DDA8 100%)' : '#F4F5F7', 
+                            background: isSelected ? '#FFF' : isHighOpportunity ? 'linear-gradient(135deg, #D4EDE5 0%, #96BCC7 100%)' : isMediumOpportunity ? 'linear-gradient(135deg, #FAF0D6 0%, #F0DDA8 100%)' : '#FFF', 
                             padding: '20px', 
                             cursor: 'pointer', 
                             opacity: isFiltered ? 0.4 : 1, 
-                            borderLeft: isSelected ? `4px solid ${stageColorDark}` : '4px solid transparent',
+                            borderLeft: isFirstStep ? 'none' : '1px solid #E4E7EB',
                             display: 'flex', 
                             flexDirection: 'column', 
                             position: 'relative',
                             boxShadow: isSelected 
                               ? `0 0 0 2px ${stageColorDark}, 0 8px 24px rgba(0, 0, 0, 0.15)` 
                               : isHighOpportunity 
-                                ? '0 0 0 2px #2D8A6E, 0 4px 12px rgba(5, 150, 105, 0.2)' 
+                                ? '0 0 0 2px #2D8A6E' 
                                 : isMediumOpportunity 
                                   ? '0 0 0 2px #C4942A' 
                                   : 'none',
-                            borderRadius: isSelected ? '8px' : (isHighOpportunity || isMediumOpportunity) ? '8px' : '0',
+                            borderRadius: (isSelected || isHighOpportunity || isMediumOpportunity) ? '8px' : '0',
                             transform: isSelected ? 'translateY(-2px)' : 'none',
                             transition: 'all 0.15s ease',
                             zIndex: isSelected ? 10 : 1
