@@ -762,9 +762,75 @@
     // Release notes data - easy to update
     const RELEASES = [
       {
-        version: '9.2.0',
+        version: '9.4.0',
         date: 'January 2026',
         badge: 'latest',
+        title: 'Dashboard Views & Data Import',
+        sections: [
+          {
+            type: 'new',
+            icon: '✨',
+            items: [
+              'Dashboard view toggle — switch between Card and List view',
+              'List view with sortable columns (Time, Cost, Steps, Friction, Updated)',
+              'JSON Import — import journey maps from legacy systems',
+              'Automatic format detection for legacy/current JSON structures',
+              'Preview imported data before creating map',
+              'Smooth loading screen gradients without banding artifacts'
+            ]
+          },
+          {
+            type: 'improved',
+            icon: '🔧',
+            items: [
+              'Loading screen visual polish across all pages',
+              'View toggle hidden on mobile (cards only)',
+              'Better grid layout for list view with consistent spacing'
+            ]
+          }
+        ]
+      },
+      {
+        version: '9.3.0',
+        date: 'January 2026',
+        title: 'Avatar Upload & Cost Accuracy',
+        sections: [
+          {
+            type: 'new',
+            icon: '✨',
+            items: [
+              'Profile avatar upload with image cropping',
+              'Avatar display across all pages (nav, team, profile)',
+              'Workspace name editing on Team page',
+              'Stage cards with unified shadow and rounded corners',
+              'Step separators with connected card design'
+            ]
+          },
+          {
+            type: 'improved',
+            icon: '🔧',
+            items: [
+              'Cost calculations now match exactly between Dashboard, Editor, and Reports',
+              'Support for both legacy (owner) and new (roleInvolvement) data formats',
+              'Workspace overhead and burden multiplier applied consistently',
+              'Additional costs (third-party services) included in totals',
+              'Friction level calculation handles all format variations'
+            ]
+          },
+          {
+            type: 'fixed',
+            icon: '🐛',
+            items: [
+              'Dashboard card cost now matches Editor total',
+              'Report cost analysis shows correct values',
+              'Role costs properly calculated for legacy imports'
+            ]
+          }
+        ]
+      },
+      {
+        version: '9.2.0',
+        date: 'January 2026',
         title: 'Team Management & Invitations',
         sections: [
           {
@@ -1250,7 +1316,7 @@
             <div className="footer-inner">
               <div className="footer-brand">
                 <img src="https://steveyoung74.github.io/journeymaps/logo_light.png" alt="Fathom" className="footer-logo" />
-                <span className="footer-version">v8.8.0</span>
+                <span className="footer-version">v9.4.0</span>
               </div>
               <div className="footer-copy">© 2025 Fathom · Journey intelligence for modern operations</div>
             </div>
