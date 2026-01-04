@@ -735,12 +735,35 @@
       display: flex;
       align-items: center;
       justify-content: center;
-      background: linear-gradient(180deg, var(--navy-600) 0%, var(--navy-800) 100%);
+      background: linear-gradient(
+        180deg, 
+        #2B4358 0%,
+        #28404F 10%,
+        #253D49 20%,
+        #233A44 30%,
+        #20373F 40%,
+        #1E343A 50%,
+        #1C3136 60%,
+        #1A2E32 70%,
+        #182B2E 80%,
+        #16282A 90%,
+        #142526 100%
+      );
       z-index: 9999;
+    }
+    .loading-screen::before {
+      content: '';
+      position: absolute;
+      inset: 0;
+      opacity: 0.15;
+      pointer-events: none;
+      background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='300' height='300'%3E%3Cfilter id='n' x='0' y='0'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.75' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='300' height='300' filter='url(%23n)' opacity='1'/%3E%3C/svg%3E");
     }
     .loading-logo {
       height: 40px;
       animation: sinkIntoDepths 5s ease-in-out infinite;
+      position: relative;
+      z-index: 1;
     }
     
     /* Responsive */
@@ -906,7 +929,6 @@
           // Create unique filename
           const fileExt = file.name.split('.').pop();
           const fileName = `${user.id}-${Date.now()}.${fileExt}`;
-          const filePath = `avatars/${fileName}`;
           
           // Simulate progress (Supabase doesn't provide progress events)
           const progressInterval = setInterval(() => {
@@ -916,7 +938,7 @@
           // Upload to Supabase Storage
           const { data: uploadData, error: uploadError } = await supabase.storage
             .from('avatars')
-            .upload(filePath, file, {
+            .upload(fileName, file, {
               cacheControl: '3600',
               upsert: false
             });
@@ -928,15 +950,17 @@
           // Get public URL
           const { data: urlData } = supabase.storage
             .from('avatars')
-            .getPublicUrl(filePath);
+            .getPublicUrl(fileName);
           
           const publicUrl = urlData.publicUrl;
           
           // Delete old avatar if exists
           if (avatarUrl) {
-            const oldPath = avatarUrl.split('/avatars/')[1];
-            if (oldPath) {
-              await supabase.storage.from('avatars').remove([`avatars/${oldPath}`]);
+            // Extract just the filename from the URL
+            const urlParts = avatarUrl.split('/');
+            const oldFileName = urlParts[urlParts.length - 1];
+            if (oldFileName && oldFileName !== fileName) {
+              await supabase.storage.from('avatars').remove([oldFileName]);
             }
           }
           

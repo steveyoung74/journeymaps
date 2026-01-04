@@ -166,20 +166,33 @@
       display: flex;
       align-items: center;
       justify-content: center;
-      background: linear-gradient(180deg, var(--navy-600) 0%, var(--navy-700) 50%, var(--navy-800) 100%);
+      /* Very smooth gradient with many stops to reduce banding */
+      background: linear-gradient(
+        180deg, 
+        #2B4358 0%,
+        #28404F 10%,
+        #253D49 20%,
+        #233A44 30%,
+        #20373F 40%,
+        #1E343A 50%,
+        #1C3136 60%,
+        #1A2E32 70%,
+        #182B2E 80%,
+        #16282A 90%,
+        #142526 100%
+      );
       position: relative;
       overflow: hidden;
     }
     
-    /* Fix gradient banding with noise overlay */
-    .loading-screen::after {
+    /* Noise texture to break up any remaining banding */
+    .loading-screen::before {
       content: '';
       position: absolute;
       inset: 0;
-      background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 200 200' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noise'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.65' numOctaves='3' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noise)'/%3E%3C/svg%3E");
-      opacity: 0.03;
+      opacity: 0.15;
       pointer-events: none;
-      z-index: 0;
+      background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='300' height='300'%3E%3Cfilter id='n' x='0' y='0'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.75' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='300' height='300' filter='url(%23n)' opacity='1'/%3E%3C/svg%3E");
     }
     
     .loading-logo {
