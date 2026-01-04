@@ -7877,10 +7877,8 @@ FATHOM - Journey intelligence for modern operations`);
                       background: '#FFF',
                       alignItems: 'stretch',
                       borderRadius: '0 0 12px 12px',
-                      paddingTop: '12px',
-                      paddingBottom: '4px',
-                      marginTop: '-1px',
-                      overflow: 'visible'
+                      overflow: 'visible',
+                      paddingTop: highlightOpportunities ? '14px' : '0'
                     }}>
                       {stage.steps.map((step, stepIndex) => {
                         const isSelected = selectedStep?.id === step.id;
@@ -7914,15 +7912,14 @@ FATHOM - Journey intelligence for modern operations`);
                             boxShadow: isSelected 
                               ? `0 0 0 2px ${stageColorDark}, 0 8px 24px rgba(0, 0, 0, 0.15)` 
                               : isHighOpportunity 
-                                ? '0 0 0 2px #2D8A6E' 
+                                ? 'inset 0 0 0 2px #2D8A6E' 
                                 : isMediumOpportunity 
-                                  ? '0 0 0 2px #C4942A' 
+                                  ? 'inset 0 0 0 2px #C4942A' 
                                   : 'none',
                             borderRadius: (isSelected || isHighOpportunity || isMediumOpportunity) ? '8px' : '0',
                             transform: isSelected ? 'translateY(-2px)' : 'none',
                             transition: 'all 0.15s ease',
-                            zIndex: isSelected ? 10 : (isHighOpportunity || isMediumOpportunity) ? 5 : 1,
-                            margin: (isHighOpportunity || isMediumOpportunity) ? '0 4px 4px 4px' : '0'
+                            zIndex: isSelected ? 10 : (isHighOpportunity || isMediumOpportunity) ? 5 : 1
                           }}>
                             {/* Opportunity Badge */}
                             {showCosts && (isHighOpportunity || isMediumOpportunity) && (
