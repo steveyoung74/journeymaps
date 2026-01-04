@@ -817,8 +817,8 @@
                 return;
               }
               
-              // Profile doesn't exist - create org and profile manually
-              console.log('Profile not found, creating...');
+              // Profile doesn't exist - check for pending invitation first
+              console.log('Profile not found, checking for invitation...');
               
               // Get user email from auth
               const { data: authUser } = await supabase.auth.getUser();
@@ -832,7 +832,59 @@
                 return;
               }
               
-              // Create organisation
+              // Check for pending invitation
+              const { data: invitation, error: inviteError } = await supabase
+                .from('org_invitations')
+                .select('*, organisations(*)')
+                .eq('email', email.toLowerCase())
+                .eq('status', 'pending')
+                .single();
+              
+              console.log('Invitation check:', { invitation: !!invitation, error: inviteError?.message });
+              
+              if (invitation && invitation.organisation_id) {
+                // Accept invitation - join existing organisation
+                console.log('Found invitation, joining organisation:', invitation.organisations?.name);
+                
+                // Create user profile with invited role
+                const { data: newProfile, error: profileError } = await supabase
+                  .from('users')
+                  .insert({
+                    id: userId,
+                    email: email,
+                    display_name: displayName,
+                    organisation_id: invitation.organisation_id,
+                    role: invitation.role || 'member'
+                  })
+                  .select('*, organisations(*)')
+                  .single();
+                
+                if (profileError) {
+                  console.error('Failed to create profile:', profileError);
+                  setLoading(false);
+                  fetchingRef.current = false;
+                  return;
+                }
+                
+                // Mark invitation as accepted
+                await supabase
+                  .from('org_invitations')
+                  .update({ 
+                    status: 'accepted',
+                    accepted_at: new Date().toISOString()
+                  })
+                  .eq('id', invitation.id);
+                
+                console.log('Profile created via invitation:', newProfile);
+                setProfile(newProfile);
+                setLoading(false);
+                fetchingRef.current = false;
+                return;
+              }
+              
+              // No invitation found - create new organisation
+              console.log('No invitation found, creating new organisation...');
+              
               const orgSlug = email.split('@')[0].toLowerCase().replace(/[^a-z0-9]/g, '-') + '-' + Date.now().toString(36);
               const { data: newOrg, error: orgError } = await supabase
                 .from('organisations')
@@ -851,7 +903,7 @@
                 return;
               }
               
-              // Create user profile
+              // Create user profile as owner
               const { data: newProfile, error: profileError } = await supabase
                 .from('users')
                 .insert({
@@ -871,7 +923,7 @@
                 return;
               }
               
-              console.log('Profile created:', newProfile);
+              console.log('Profile created with new org:', newProfile);
               setProfile(newProfile);
               setLoading(false);
               fetchingRef.current = false;
@@ -1145,6 +1197,11 @@
       const [error, setError] = useState('');
       const [success, setSuccess] = useState('');
       const [isLoading, setIsLoading] = useState(false);
+      
+      // Check for login redirect from editor
+      const urlParams = new URLSearchParams(window.location.search);
+      const loginRequired = urlParams.get('login') === 'required';
+      const returnUrl = urlParams.get('return');
 
       const handleSubmit = async (e) => {
         e.preventDefault();
@@ -1175,6 +1232,12 @@
           } else {
             const { error } = await signIn(email.trim(), password);
             if (error) throw error;
+            // If there's a return URL, redirect back after login
+            if (returnUrl) {
+              setTimeout(() => {
+                window.location.href = decodeURIComponent(returnUrl);
+              }, 500);
+            }
           }
         } catch (err) {
           setError(err.message || 'An error occurred');
@@ -1192,8 +1255,26 @@
               
               <h2 className="modal-title">Welcome to Fathom</h2>
               <p className="text-muted" style={{ marginBottom: '16px', fontSize: '14px' }}>
-                {mode === 'signup' ? 'Create your account to get started' : 'Sign in to access your journey maps'}
+                {loginRequired 
+                  ? 'Please sign in to view this shared journey map'
+                  : (mode === 'signup' ? 'Create your account to get started' : 'Sign in to access your journey maps')
+                }
               </p>
+              
+              {/* Login required notice */}
+              {loginRequired && (
+                <div style={{ 
+                  background: 'rgba(196, 148, 42, 0.1)', 
+                  border: '1px solid rgba(196, 148, 42, 0.3)',
+                  borderRadius: '8px',
+                  padding: '12px',
+                  marginBottom: '16px',
+                  fontSize: '13px',
+                  color: 'var(--amber-600)'
+                }}>
+                  🔒 This journey map requires authentication to view
+                </div>
+              )}
               
               {/* Auth tabs */}
               <div style={{ display: 'flex', gap: '8px', marginBottom: '20px' }}>

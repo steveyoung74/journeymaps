@@ -5366,6 +5366,29 @@ FATHOM - Journey intelligence for modern operations`);
       const [currentUser, setCurrentUser] = useState(null);
       const [userRole, setUserRole] = useState(null);
       const [mapCreatedBy, setMapCreatedBy] = useState(null);
+      const [mapPermission, setMapPermission] = useState(null); // 'owner', 'edit', 'view', or null
+      const [authChecked, setAuthChecked] = useState(false);
+      const [mapOrgId, setMapOrgId] = useState(null);
+      
+      // Can user edit this map?
+      const canEdit = useMemo(() => {
+        // In legacy (non-Supabase) mode, always allow edit
+        if (!isSupabaseMode) return true;
+        
+        // If no user logged in, no edit
+        if (!currentUser) return false;
+        
+        // Map owner can always edit
+        if (mapPermission === 'owner') return true;
+        
+        // Explicit edit permission
+        if (mapPermission === 'edit') return true;
+        
+        // Owner and admin roles can edit any map in their org
+        if ((userRole === 'owner' || userRole === 'admin') && mapOrgId) return true;
+        
+        return false;
+      }, [isSupabaseMode, currentUser, mapPermission, userRole, mapOrgId]);
       
       // Settings access: owner/admin can always access, creator can access their own maps
       const canAccessSettings = useMemo(() => {
@@ -5381,9 +5404,12 @@ FATHOM - Journey intelligence for modern operations`);
         // Creator of this specific map has access
         if (mapCreatedBy && currentUser.id === mapCreatedBy) return true;
         
+        // Users with edit permission can access settings
+        if (mapPermission === 'edit' || mapPermission === 'owner') return true;
+        
         // Viewers don't have settings access
         return false;
-      }, [isSupabaseMode, currentUser, userRole, mapCreatedBy]);
+      }, [isSupabaseMode, currentUser, userRole, mapCreatedBy, mapPermission]);
       
       // Legacy password state (kept for non-Supabase mode compatibility)
       const [passwords, setPasswords] = useState(null);
@@ -5391,33 +5417,123 @@ FATHOM - Journey intelligence for modern operations`);
         return localStorage.getItem('journeymap-settings-unlocked') === 'true';
       });
       
-      // Fetch user auth and role in Supabase mode
+      // Fetch user auth, role, and map permissions in Supabase mode
       React.useEffect(() => {
-        if (!isSupabaseMode || !supabase) return;
+        if (!isSupabaseMode || !supabase) {
+          setAuthChecked(true);
+          return;
+        }
         
         const fetchUserAuth = async () => {
           try {
             const { data: { session } } = await supabase.auth.getSession();
-            if (session?.user) {
-              setCurrentUser(session.user);
-              console.log('✅ Editor: User authenticated:', session.user.id);
+            
+            if (!session?.user) {
+              console.log('⚠️ Editor: No authenticated user - redirecting to login');
+              setAuthChecked(true);
+              // Redirect to dashboard with return URL
+              const returnUrl = encodeURIComponent(window.location.href);
+              window.location.href = `dashboard.html?login=required&return=${returnUrl}`;
+              return;
+            }
+            
+            setCurrentUser(session.user);
+            console.log('✅ Editor: User authenticated:', session.user.id);
+            
+            // Fetch user's role and org from profile
+            const { data: profile } = await supabase
+              .from('users')
+              .select('role, organisation_id')
+              .eq('id', session.user.id)
+              .single();
+            
+            if (profile) {
+              setUserRole(profile.role);
+              console.log('✅ Editor: User role:', profile.role);
               
-              // Fetch user's role from profile
-              const { data: profile } = await supabase
-                .from('users')
-                .select('role')
-                .eq('id', session.user.id)
+              // Now check permission for this specific map
+              // First, get the map details
+              const { data: mapData, error: mapError } = await supabase
+                .from('journey_maps')
+                .select('created_by, organisation_id')
+                .eq('id', mapId)
                 .single();
               
-              if (profile) {
-                setUserRole(profile.role);
-                console.log('✅ Editor: User role:', profile.role);
+              if (mapError) {
+                console.error('Failed to fetch map details:', mapError);
+                setAuthChecked(true);
+                return;
               }
-            } else {
-              console.log('⚠️ Editor: No authenticated user');
+              
+              setMapOrgId(mapData.organisation_id);
+              
+              // Check if user is the creator
+              if (mapData.created_by === session.user.id) {
+                setMapPermission('owner');
+                console.log('✅ Editor: User is map creator (owner)');
+                setAuthChecked(true);
+                return;
+              }
+              
+              // Check if user is in the same organisation
+              if (mapData.organisation_id === profile.organisation_id) {
+                // Same org - permission based on role
+                if (profile.role === 'owner' || profile.role === 'admin') {
+                  setMapPermission('owner');
+                  console.log('✅ Editor: User is org owner/admin');
+                } else if (profile.role === 'member') {
+                  setMapPermission('edit');
+                  console.log('✅ Editor: User is org member (can edit)');
+                } else {
+                  setMapPermission('view');
+                  console.log('✅ Editor: User is org viewer');
+                }
+                setAuthChecked(true);
+                return;
+              }
+              
+              // Not in same org - check for explicit share
+              const { data: shareData } = await supabase
+                .from('journey_map_shares')
+                .select('permission')
+                .eq('journey_map_id', mapId)
+                .eq('shared_with_user_id', session.user.id)
+                .single();
+              
+              if (shareData) {
+                setMapPermission(shareData.permission);
+                console.log('✅ Editor: User has shared permission:', shareData.permission);
+              } else {
+                // No share found - check by email
+                const { data: emailShare } = await supabase
+                  .from('journey_map_shares')
+                  .select('permission')
+                  .eq('journey_map_id', mapId)
+                  .eq('shared_with_email', session.user.email.toLowerCase())
+                  .single();
+                
+                if (emailShare) {
+                  setMapPermission(emailShare.permission);
+                  console.log('✅ Editor: User has email share:', emailShare.permission);
+                  
+                  // Update the share record with the user ID
+                  await supabase
+                    .from('journey_map_shares')
+                    .update({ shared_with_user_id: session.user.id })
+                    .eq('journey_map_id', mapId)
+                    .eq('shared_with_email', session.user.email.toLowerCase());
+                } else {
+                  console.log('⚠️ Editor: User has no access to this map');
+                  setMapPermission(null);
+                  // Optionally redirect or show error
+                }
+              }
             }
+            
+            setAuthChecked(true);
           } catch (err) {
             console.error('Auth check failed:', err);
+            setAuthChecked(true);
           }
         };
         
@@ -5509,6 +5625,12 @@ FATHOM - Journey intelligence for modern operations`);
       useEffect(() => {
         if (!isSupabaseMode || !supabase || configLoading) return;
         
+        // Don't auto-save if user doesn't have edit permission
+        if (!canEdit) {
+          console.log('⚠️ Auto-save skipped: read-only mode');
+          return;
+        }
+        
         // Clear any pending save
         if (autoSaveTimerRef.current) {
           clearTimeout(autoSaveTimerRef.current);
@@ -5538,12 +5660,19 @@ FATHOM - Journey intelligence for modern operations`);
             clearTimeout(autoSaveTimerRef.current);
           }
         };
-      }, [config, isSupabaseMode, mapId, configLoading]);
+      }, [config, isSupabaseMode, mapId, configLoading, canEdit]);
 
       // Supabase save function
       const saveToSupabase = useCallback(async () => {
         if (!isSupabaseMode || !supabase) {
           console.warn('Not in Supabase mode or Supabase not initialized');
+          return;
+        }
+        
+        // Don't save if user doesn't have edit permission
+        if (!canEdit) {
+          console.warn('Cannot save: read-only mode');
+          setGitHubStatus({ loading: false, message: 'View only - changes not saved', error: true });
           return;
         }
         
@@ -6472,7 +6601,7 @@ FATHOM - Journey intelligence for modern operations`);
                 {!isMobile && <div className="header-divider" style={{ width: '1px', height: '32px', background: 'rgba(255,255,255,0.2)', flexShrink: 0 }} />}
                 
                 {/* Title */}
-                <div className="header-title-wrapper" style={{ minWidth: 0, flex: 1 }}>
+                <div className="header-title-wrapper" style={{ minWidth: 0, flex: 1, display: 'flex', alignItems: 'center', gap: '12px' }}>
                   <h1 style={{ margin: 0, fontSize: isMobile ? '16px' : '18px', fontWeight: 500, letterSpacing: '-0.3px', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>
                     {editMode ? (
                       <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
@@ -6515,6 +6644,20 @@ FATHOM - Journey intelligence for modern operations`);
                       </div>
                     ) : config.meta.title}
                   </h1>
+                  {/* Read-only badge */}
+                  {isSupabaseMode && authChecked && !canEdit && (
+                    <span style={{
+                      background: 'rgba(255,255,255,0.15)',
+                      color: 'rgba(255,255,255,0.8)',
+                      padding: '3px 10px',
+                      borderRadius: '12px',
+                      fontSize: '11px',
+                      fontWeight: 600,
+                      textTransform: 'uppercase',
+                      letterSpacing: '0.5px',
+                      flexShrink: 0
+                    }}>View Only</span>
+                  )}
                 </div>
               </div>
               
@@ -6678,18 +6821,27 @@ FATHOM - Journey intelligence for modern operations`);
                       {showSettingsMenu && (isSupabaseMode ? canAccessSettings : isSettingsUnlocked) && (
                         <div onClick={(e) => e.stopPropagation()} style={{ position: 'absolute', top: '100%', right: 0, marginTop: '8px', background: 'var(--navy-800, #15243A)', borderRadius: '16px', boxShadow: '0 8px 32px rgba(0,0,0,0.3)', overflow: 'hidden', zIndex: 9999, minWidth: '200px', padding: '12px' }}>
                           <div style={{ color: 'rgba(255,255,255,0.4)', fontSize: '10px', fontWeight: 600, textTransform: 'uppercase', letterSpacing: '0.5px', padding: '8px 16px 8px' }}>Configuration</div>
-                          <button onClick={enterEditMode} style={{ display: 'flex', alignItems: 'center', gap: '12px', width: '100%', padding: '12px 16px', border: 'none', background: 'rgba(255,255,255,0.05)', cursor: 'pointer', textAlign: 'left', fontFamily: "'Interstate', sans-serif", fontSize: '14px', color: 'rgba(255,255,255,0.9)', borderRadius: '12px', marginBottom: '6px', transition: 'background 0.15s' }} onMouseOver={(e) => e.currentTarget.style.background = 'rgba(255,255,255,0.15)'} onMouseOut={(e) => e.currentTarget.style.background = 'rgba(255,255,255,0.05)'}>
-                            <span>✏️</span> Edit Mode
-                          </button>
-                          <button onClick={() => { setShowSalarySettings(true); setShowSettingsMenu(false); }} style={{ display: 'flex', alignItems: 'center', gap: '12px', width: '100%', padding: '12px 16px', border: 'none', background: 'rgba(255,255,255,0.05)', cursor: 'pointer', textAlign: 'left', fontFamily: "'Interstate', sans-serif", fontSize: '14px', color: 'rgba(255,255,255,0.9)', borderRadius: '12px', marginBottom: '6px', transition: 'background 0.15s' }} onMouseOver={(e) => e.currentTarget.style.background = 'rgba(255,255,255,0.15)'} onMouseOut={(e) => e.currentTarget.style.background = 'rgba(255,255,255,0.05)'}>
-                            <span>👥</span> Manage Roles
-                          </button>
-                          <button onClick={() => { setShowStructurePanel(true); setShowSettingsMenu(false); }} style={{ display: 'flex', alignItems: 'center', gap: '12px', width: '100%', padding: '12px 16px', border: 'none', background: 'rgba(255,255,255,0.05)', cursor: 'pointer', textAlign: 'left', fontFamily: "'Interstate', sans-serif", fontSize: '14px', color: 'rgba(255,255,255,0.9)', borderRadius: '12px', marginBottom: '6px', transition: 'background 0.15s' }} onMouseOver={(e) => e.currentTarget.style.background = 'rgba(255,255,255,0.15)'} onMouseOut={(e) => e.currentTarget.style.background = 'rgba(255,255,255,0.05)'}>
-                            <span>🏗️</span> Configure Structure
-                          </button>
-                          <button onClick={() => { setShowFunnelSettings(true); setShowSettingsMenu(false); }} style={{ display: 'flex', alignItems: 'center', gap: '12px', width: '100%', padding: '12px 16px', border: 'none', background: 'rgba(255,255,255,0.05)', cursor: 'pointer', textAlign: 'left', fontFamily: "'Interstate', sans-serif", fontSize: '14px', color: 'rgba(255,255,255,0.9)', borderRadius: '12px', marginBottom: '6px', transition: 'background 0.15s' }} onMouseOver={(e) => e.currentTarget.style.background = 'rgba(255,255,255,0.15)'} onMouseOut={(e) => e.currentTarget.style.background = 'rgba(255,255,255,0.05)'}>
-                            <span>🔻</span> Funnel Settings
-                          </button>
+                          {/* Only show Edit Mode if user can edit */}
+                          {canEdit && (
+                            <button onClick={enterEditMode} style={{ display: 'flex', alignItems: 'center', gap: '12px', width: '100%', padding: '12px 16px', border: 'none', background: 'rgba(255,255,255,0.05)', cursor: 'pointer', textAlign: 'left', fontFamily: "'Interstate', sans-serif", fontSize: '14px', color: 'rgba(255,255,255,0.9)', borderRadius: '12px', marginBottom: '6px', transition: 'background 0.15s' }} onMouseOver={(e) => e.currentTarget.style.background = 'rgba(255,255,255,0.15)'} onMouseOut={(e) => e.currentTarget.style.background = 'rgba(255,255,255,0.05)'}>
+                              <span>✏️</span> Edit Mode
+                            </button>
+                          )}
+                          {canEdit && (
+                            <button onClick={() => { setShowSalarySettings(true); setShowSettingsMenu(false); }} style={{ display: 'flex', alignItems: 'center', gap: '12px', width: '100%', padding: '12px 16px', border: 'none', background: 'rgba(255,255,255,0.05)', cursor: 'pointer', textAlign: 'left', fontFamily: "'Interstate', sans-serif", fontSize: '14px', color: 'rgba(255,255,255,0.9)', borderRadius: '12px', marginBottom: '6px', transition: 'background 0.15s' }} onMouseOver={(e) => e.currentTarget.style.background = 'rgba(255,255,255,0.15)'} onMouseOut={(e) => e.currentTarget.style.background = 'rgba(255,255,255,0.05)'}>
+                              <span>👥</span> Manage Roles
+                            </button>
+                          )}
+                          {canEdit && (
+                            <button onClick={() => { setShowStructurePanel(true); setShowSettingsMenu(false); }} style={{ display: 'flex', alignItems: 'center', gap: '12px', width: '100%', padding: '12px 16px', border: 'none', background: 'rgba(255,255,255,0.05)', cursor: 'pointer', textAlign: 'left', fontFamily: "'Interstate', sans-serif", fontSize: '14px', color: 'rgba(255,255,255,0.9)', borderRadius: '12px', marginBottom: '6px', transition: 'background 0.15s' }} onMouseOver={(e) => e.currentTarget.style.background = 'rgba(255,255,255,0.15)'} onMouseOut={(e) => e.currentTarget.style.background = 'rgba(255,255,255,0.05)'}>
+                              <span>🏗️</span> Configure Structure
+                            </button>
+                          )}
+                          {canEdit && (
+                            <button onClick={() => { setShowFunnelSettings(true); setShowSettingsMenu(false); }} style={{ display: 'flex', alignItems: 'center', gap: '12px', width: '100%', padding: '12px 16px', border: 'none', background: 'rgba(255,255,255,0.05)', cursor: 'pointer', textAlign: 'left', fontFamily: "'Interstate', sans-serif", fontSize: '14px', color: 'rgba(255,255,255,0.9)', borderRadius: '12px', marginBottom: '6px', transition: 'background 0.15s' }} onMouseOver={(e) => e.currentTarget.style.background = 'rgba(255,255,255,0.15)'} onMouseOut={(e) => e.currentTarget.style.background = 'rgba(255,255,255,0.05)'}>
+                              <span>🔻</span> Funnel Settings
+                            </button>
+                          )}
                           {!isSupabaseMode && (
                             <>
                               <div style={{ color: 'rgba(255,255,255,0.4)', fontSize: '10px', fontWeight: 600, textTransform: 'uppercase', letterSpacing: '0.5px', padding: '12px 16px 8px' }}>Data</div>
@@ -6852,18 +7004,26 @@ FATHOM - Journey intelligence for modern operations`);
                     {showSettingsMenu && (isSupabaseMode ? canAccessSettings : isSettingsUnlocked) && (
                       <div onClick={(e) => e.stopPropagation()} style={{ position: 'absolute', top: '100%', right: 0, marginTop: '8px', background: 'var(--navy-800, #15243A)', borderRadius: '16px', boxShadow: '0 8px 32px rgba(0,0,0,0.3)', overflow: 'hidden', zIndex: 9999, minWidth: '200px', padding: '12px' }}>
                         <div style={{ color: 'rgba(255,255,255,0.4)', fontSize: '10px', fontWeight: 600, textTransform: 'uppercase', letterSpacing: '0.5px', padding: '8px 16px 8px' }}>Configuration</div>
-                        <button onClick={enterEditMode} style={{ display: 'flex', alignItems: 'center', gap: '12px', width: '100%', padding: '12px 16px', border: 'none', background: 'rgba(255,255,255,0.05)', cursor: 'pointer', textAlign: 'left', fontFamily: "'Interstate', sans-serif", fontSize: '14px', color: 'rgba(255,255,255,0.9)', borderRadius: '12px', marginBottom: '6px', transition: 'background 0.15s' }} onMouseOver={(e) => e.currentTarget.style.background = 'rgba(255,255,255,0.15)'} onMouseOut={(e) => e.currentTarget.style.background = 'rgba(255,255,255,0.05)'}>
-                          <span>✏️</span> Edit Mode
-                        </button>
-                        <button onClick={() => { setShowSalarySettings(true); setShowSettingsMenu(false); }} style={{ display: 'flex', alignItems: 'center', gap: '12px', width: '100%', padding: '12px 16px', border: 'none', background: 'rgba(255,255,255,0.05)', cursor: 'pointer', textAlign: 'left', fontFamily: "'Interstate', sans-serif", fontSize: '14px', color: 'rgba(255,255,255,0.9)', borderRadius: '12px', marginBottom: '6px', transition: 'background 0.15s' }} onMouseOver={(e) => e.currentTarget.style.background = 'rgba(255,255,255,0.15)'} onMouseOut={(e) => e.currentTarget.style.background = 'rgba(255,255,255,0.05)'}>
-                          <span>👥</span> Manage Roles
-                        </button>
-                        <button onClick={() => { setShowStructurePanel(true); setShowSettingsMenu(false); }} style={{ display: 'flex', alignItems: 'center', gap: '12px', width: '100%', padding: '12px 16px', border: 'none', background: 'rgba(255,255,255,0.05)', cursor: 'pointer', textAlign: 'left', fontFamily: "'Interstate', sans-serif", fontSize: '14px', color: 'rgba(255,255,255,0.9)', borderRadius: '12px', marginBottom: '6px', transition: 'background 0.15s' }} onMouseOver={(e) => e.currentTarget.style.background = 'rgba(255,255,255,0.15)'} onMouseOut={(e) => e.currentTarget.style.background = 'rgba(255,255,255,0.05)'}>
-                          <span>🏗️</span> Configure Structure
-                        </button>
-                        <button onClick={() => { setShowFunnelSettings(true); setShowSettingsMenu(false); }} style={{ display: 'flex', alignItems: 'center', gap: '12px', width: '100%', padding: '12px 16px', border: 'none', background: 'rgba(255,255,255,0.05)', cursor: 'pointer', textAlign: 'left', fontFamily: "'Interstate', sans-serif", fontSize: '14px', color: 'rgba(255,255,255,0.9)', borderRadius: '12px', marginBottom: '6px', transition: 'background 0.15s' }} onMouseOver={(e) => e.currentTarget.style.background = 'rgba(255,255,255,0.15)'} onMouseOut={(e) => e.currentTarget.style.background = 'rgba(255,255,255,0.05)'}>
-                          <span>🔻</span> Funnel Settings
-                        </button>
+                        {canEdit && (
+                          <button onClick={enterEditMode} style={{ display: 'flex', alignItems: 'center', gap: '12px', width: '100%', padding: '12px 16px', border: 'none', background: 'rgba(255,255,255,0.05)', cursor: 'pointer', textAlign: 'left', fontFamily: "'Interstate', sans-serif", fontSize: '14px', color: 'rgba(255,255,255,0.9)', borderRadius: '12px', marginBottom: '6px', transition: 'background 0.15s' }} onMouseOver={(e) => e.currentTarget.style.background = 'rgba(255,255,255,0.15)'} onMouseOut={(e) => e.currentTarget.style.background = 'rgba(255,255,255,0.05)'}>
+                            <span>✏️</span> Edit Mode
+                          </button>
+                        )}
+                        {canEdit && (
+                          <button onClick={() => { setShowSalarySettings(true); setShowSettingsMenu(false); }} style={{ display: 'flex', alignItems: 'center', gap: '12px', width: '100%', padding: '12px 16px', border: 'none', background: 'rgba(255,255,255,0.05)', cursor: 'pointer', textAlign: 'left', fontFamily: "'Interstate', sans-serif", fontSize: '14px', color: 'rgba(255,255,255,0.9)', borderRadius: '12px', marginBottom: '6px', transition: 'background 0.15s' }} onMouseOver={(e) => e.currentTarget.style.background = 'rgba(255,255,255,0.15)'} onMouseOut={(e) => e.currentTarget.style.background = 'rgba(255,255,255,0.05)'}>
+                            <span>👥</span> Manage Roles
+                          </button>
+                        )}
+                        {canEdit && (
+                          <button onClick={() => { setShowStructurePanel(true); setShowSettingsMenu(false); }} style={{ display: 'flex', alignItems: 'center', gap: '12px', width: '100%', padding: '12px 16px', border: 'none', background: 'rgba(255,255,255,0.05)', cursor: 'pointer', textAlign: 'left', fontFamily: "'Interstate', sans-serif", fontSize: '14px', color: 'rgba(255,255,255,0.9)', borderRadius: '12px', marginBottom: '6px', transition: 'background 0.15s' }} onMouseOver={(e) => e.currentTarget.style.background = 'rgba(255,255,255,0.15)'} onMouseOut={(e) => e.currentTarget.style.background = 'rgba(255,255,255,0.05)'}>
+                            <span>🏗️</span> Configure Structure
+                          </button>
+                        )}
+                        {canEdit && (
+                          <button onClick={() => { setShowFunnelSettings(true); setShowSettingsMenu(false); }} style={{ display: 'flex', alignItems: 'center', gap: '12px', width: '100%', padding: '12px 16px', border: 'none', background: 'rgba(255,255,255,0.05)', cursor: 'pointer', textAlign: 'left', fontFamily: "'Interstate', sans-serif", fontSize: '14px', color: 'rgba(255,255,255,0.9)', borderRadius: '12px', marginBottom: '6px', transition: 'background 0.15s' }} onMouseOver={(e) => e.currentTarget.style.background = 'rgba(255,255,255,0.15)'} onMouseOut={(e) => e.currentTarget.style.background = 'rgba(255,255,255,0.05)'}>
+                            <span>🔻</span> Funnel Settings
+                          </button>
+                        )}
                         {!isSupabaseMode && (
                           <>
                             <div style={{ color: 'rgba(255,255,255,0.4)', fontSize: '10px', fontWeight: 600, textTransform: 'uppercase', letterSpacing: '0.5px', padding: '12px 16px 8px' }}>Data</div>
