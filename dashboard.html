@@ -1786,6 +1786,40 @@
         }
       };
 
+      // Calculate hourly rate from annual salary
+      const calculateHourlyRate = (salary, burdenMultiplier = 1.4) => {
+        return (salary * burdenMultiplier) / (52 * 37.5);
+      };
+
+      // Calculate step cost - handles both legacy (owner) and new (roleInvolvement) formats
+      const calculateStepCost = (step, personas) => {
+        if (!personas) return 0;
+        
+        // New format: roleInvolvement object
+        if (step.roleInvolvement && Object.keys(step.roleInvolvement).length > 0) {
+          return Object.entries(step.roleInvolvement).reduce((total, [personaId, inv]) => {
+            const persona = personas.find(p => p.id === personaId);
+            if (!persona) return total;
+            const salary = persona.salary || persona.annualSalary;
+            if (!salary) return total;
+            const hourlyRate = calculateHourlyRate(salary, persona.burdenMultiplier);
+            return total + (inv.timeMinutes / 60) * hourlyRate * (inv.headcount || 1);
+          }, 0);
+        }
+        
+        // Legacy format: owner + timeMinutes
+        if (step.owner && step.timeMinutes) {
+          const persona = personas.find(p => p.id === step.owner);
+          if (!persona) return 0;
+          const salary = persona.salary || persona.annualSalary;
+          if (!salary || persona.isExternal) return 0;
+          const hourlyRate = calculateHourlyRate(salary, persona.burdenMultiplier || 1.3);
+          return (step.timeMinutes / 60) * hourlyRate;
+        }
+        
+        return 0;
+      };
+
       const getMapMetrics = (map) => {
         const config = map.config;
         if (!config?.stages) return null;
@@ -1796,18 +1830,15 @@
         const highImprovements = allSteps.filter(s => s.automationOpportunity === 'high').length;
         
         const frictionMap = { none: 1, low: 2, medium: 3, high: 4, extreme: 5 };
-        const frictionValues = allSteps.map(s => s.frictionScore || frictionMap[s.friction]).filter(Boolean);
+        const frictionValues = allSteps.map(s => s.frictionLevel || s.frictionScore || frictionMap[s.friction]).filter(Boolean);
         const avgFriction = frictionValues.length ? (frictionValues.reduce((a, b) => a + b, 0) / frictionValues.length).toFixed(1) : null;
         
         let totalCost = null;
         if (config.personas?.length) {
           totalCost = 0;
           allSteps.forEach(step => {
-            const persona = config.personas.find(p => p.id === (step.owner || step.personaId));
-            if (persona?.salary) {
-              const hourlyRate = (persona.salary * (persona.burdenMultiplier || 1.4)) / (52 * 37.5);
-              totalCost += ((step.timeMinutes || step.duration || 0) / 60) * hourlyRate;
-            }
+            // Use calculateStepCost for consistent cost calculation
+            totalCost += calculateStepCost(step, config.personas);
           });
         }
         
@@ -1816,22 +1847,6 @@
 
       // Helper for map configs (now embedded in map)
       const mapConfigs = maps.reduce((acc, m) => { acc[m.id] = m.config; return acc; }, {});
-
-      // Calculate hourly rate from annual salary
-      const calculateHourlyRate = (salary, burdenMultiplier = 1.4) => {
-        return (salary * burdenMultiplier) / (52 * 37.5);
-      };
-
-      // Calculate step cost
-      const calculateStepCost = (step, personas) => {
-        if (!personas || !step.roleInvolvement) return 0;
-        return Object.entries(step.roleInvolvement).reduce((total, [personaId, inv]) => {
-          const persona = personas.find(p => p.id === personaId);
-          if (!persona || !persona.salary) return total;
-          const hourlyRate = calculateHourlyRate(persona.salary || persona.annualSalary, persona.burdenMultiplier);
-          return total + (inv.timeMinutes / 60) * hourlyRate * (inv.headcount || 1);
-        }, 0);
-      };
 
       // Generate comprehensive report
       const generateReport = (mapId) => {
@@ -1857,7 +1872,7 @@
         const totalPainPoints = allSteps.reduce((acc, s) => acc + (s.painPoints?.length || 0), 0);
         const highAutomationCount = allSteps.filter(s => s.automationOpportunity === 'high').length;
         const frictionMap = { none: 1, low: 2, medium: 3, high: 4, extreme: 5 };
-        const frictionValues = allSteps.map(s => s.frictionScore || frictionMap[s.friction]).filter(Boolean);
+        const frictionValues = allSteps.map(s => s.frictionLevel || s.frictionScore || frictionMap[s.friction]).filter(Boolean);
         const avgFriction = frictionValues.length ? (frictionValues.reduce((a, b) => a + b, 0) / frictionValues.length).toFixed(1) : 'N/A';
 
         // Calculate costs
@@ -1884,21 +1899,29 @@
           const stageTime = stageSteps.reduce((acc, s) => acc + (s.timeMinutes || 0), 0);
           const stageCost = stageSteps.reduce((acc, s) => acc + calculateStepCost(s, config.personas), 0);
           const stagePainPoints = stageSteps.reduce((acc, s) => acc + (s.painPoints?.length || 0), 0);
-          const stageFrictionValues = stageSteps.map(s => s.frictionScore || frictionMap[s.friction]).filter(Boolean);
+          const stageFrictionValues = stageSteps.map(s => s.frictionLevel || s.frictionScore || frictionMap[s.friction]).filter(Boolean);
           const avgStageFriction = stageFrictionValues.length ? (stageFrictionValues.reduce((a, b) => a + b, 0) / stageFrictionValues.length).toFixed(1) : 'N/A';
           return { name: stage.name, stepCount: stageSteps.length, time: stageTime, cost: stageCost, painPoints: stagePainPoints, avgFriction: avgStageFriction, dropOffCount: stage.dropOffCount || 0 };
         });
 
-        // Role costs
+        // Role costs - handles both roleInvolvement and legacy owner format
         const roleCosts = (config.personas || []).filter(p => !p.isExternal && (p.salary || p.annualSalary)).map(persona => {
           let roleTime = 0;
           let roleCost = 0;
+          const salary = persona.salary || persona.annualSalary;
+          const hourlyRate = calculateHourlyRate(salary, persona.burdenMultiplier || 1.3);
+          
           allSteps.forEach(step => {
+            // New format: roleInvolvement
             const inv = step.roleInvolvement?.[persona.id];
             if (inv) {
               roleTime += inv.timeMinutes || 0;
-              const hourlyRate = calculateHourlyRate(persona.salary || persona.annualSalary, persona.burdenMultiplier);
               roleCost += (inv.timeMinutes / 60) * hourlyRate * (inv.headcount || 1);
+            }
+            // Legacy format: owner
+            else if (step.owner === persona.id && step.timeMinutes) {
+              roleTime += step.timeMinutes;
+              roleCost += (step.timeMinutes / 60) * hourlyRate;
             }
           });
           return { label: persona.label || persona.name, color: persona.color, totalMinutes: roleTime, totalCost: roleCost };
