@@ -943,6 +943,11 @@
       const [inviteRole, setInviteRole] = useState('member');
       const [inviting, setInviting] = useState(false);
       
+      // Workspace name editing
+      const [editingOrgName, setEditingOrgName] = useState(false);
+      const [newOrgName, setNewOrgName] = useState('');
+      const [savingOrgName, setSavingOrgName] = useState(false);
+      
       // Messages
       const [error, setError] = useState(null);
       const [success, setSuccess] = useState(null);
@@ -1055,7 +1060,7 @@
       const loadMembers = async (orgId) => {
         const { data, error } = await supabase
           .from('users')
-          .select('id, email, display_name, role, created_at')
+          .select('id, email, display_name, role, created_at, avatar_url')
           .eq('organisation_id', orgId)
           .order('created_at', { ascending: true });
         
@@ -1227,6 +1232,36 @@ ${senderName}`);
           console.error('Role update error:', err);
           setError('Failed to update role');
         }
+      };
+      
+      // Update workspace name
+      const updateOrgName = async () => {
+        if (!canManageTeam || !newOrgName.trim()) return;
+        
+        setSavingOrgName(true);
+        setError(null);
+        
+        try {
+          const { error } = await supabase
+            .from('organisations')
+            .update({ 
+              name: newOrgName.trim(),
+              updated_at: new Date().toISOString()
+            })
+            .eq('id', organisation.id);
+          
+          if (error) throw error;
+          
+          setOrganisation(prev => ({ ...prev, name: newOrgName.trim() }));
+          setEditingOrgName(false);
+          setSuccess('Workspace name updated');
+          setTimeout(() => setSuccess(null), 3000);
+        } catch (err) {
+          console.error('Org name update error:', err);
+          setError('Failed to update workspace name');
+        }
+        
+        setSavingOrgName(false);
       };
       
       // Remove member
@@ -1460,8 +1495,54 @@ ${senderName}`);
                       organisation.name?.charAt(0)?.toUpperCase() || 'O'
                     )}
                   </div>
-                  <div>
-                    <div className="org-name">{organisation.name}</div>
+                  <div style={{ flex: 1 }}>
+                    {editingOrgName ? (
+                      <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+                        <input
+                          type="text"
+                          value={newOrgName}
+                          onChange={(e) => setNewOrgName(e.target.value)}
+                          className="input"
+                          style={{ flex: 1, padding: '8px 12px', fontSize: '16px', fontWeight: 600 }}
+                          placeholder="Workspace name"
+                          autoFocus
+                          onKeyDown={(e) => {
+                            if (e.key === 'Enter') updateOrgName();
+                            if (e.key === 'Escape') setEditingOrgName(false);
+                          }}
+                        />
+                        <button 
+                          className="btn btn-primary btn-sm"
+                          onClick={updateOrgName}
+                          disabled={savingOrgName || !newOrgName.trim()}
+                        >
+                          {savingOrgName ? 'Saving...' : 'Save'}
+                        </button>
+                        <button 
+                          className="btn btn-ghost btn-sm"
+                          onClick={() => setEditingOrgName(false)}
+                        >
+                          Cancel
+                        </button>
+                      </div>
+                    ) : (
+                      <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+                        <div className="org-name">{organisation.name}</div>
+                        {canManageTeam && (
+                          <button 
+                            className="btn btn-ghost btn-sm"
+                            onClick={() => {
+                              setNewOrgName(organisation.name);
+                              setEditingOrgName(true);
+                            }}
+                            style={{ padding: '4px 8px', fontSize: '12px' }}
+                            title="Edit workspace name"
+                          >
+                            ✏️
+                          </button>
+                        )}
+                      </div>
+                    )}
                     <div className="org-meta">
                       {members.length} member{members.length !== 1 ? 's' : ''} • 
                       Created {formatDate(organisation.created_at)}
@@ -1568,8 +1649,12 @@ ${senderName}`);
                   {members.map(member => (
                     <div key={member.id} className="member-item">
                       <div className="member-info">
-                        <div className="member-avatar">
-                          {getInitials(member.display_name || member.email)}
+                        <div className="member-avatar" style={{ overflow: 'hidden' }}>
+                          {member.avatar_url ? (
+                            <img src={member.avatar_url} alt="" style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
+                          ) : (
+                            getInitials(member.display_name || member.email)
+                          )}
                         </div>
                         <div className="member-details">
                           <div className="member-name">
