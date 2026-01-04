@@ -2772,7 +2772,7 @@
 
     function CreateMapModal({ maps, onClose, onCreated }) {
       const { profile } = useAuth();
-      // Modal mode: 'select', 'wizard', 'customize', 'generating'
+      // Modal mode: 'select', 'wizard', 'customize', 'generating', 'import'
       const [mode, setMode] = useState('select');
       const [wizardStep, setWizardStep] = useState(1);
       
@@ -2791,6 +2791,12 @@
       const [apiKey, setApiKey] = useState('');
       const [newRoleName, setNewRoleName] = useState('');
       const [newRoleExternal, setNewRoleExternal] = useState(false);
+      
+      // Import state
+      const [importJson, setImportJson] = useState('');
+      const [importTitle, setImportTitle] = useState('');
+      const [importPreview, setImportPreview] = useState(null);
+      const fileInputRef = useRef(null);
       
       // Shared state
       const [isCreating, setIsCreating] = useState(false);
@@ -2837,7 +2843,156 @@
           } else {
             setMode('select');
           }
+        } else if (mode === 'import') {
+          setMode('select');
+          setImportJson('');
+          setImportTitle('');
+          setImportPreview(null);
         }
+      };
+      
+      // Import handlers
+      const handleStartImport = () => {
+        setMode('import');
+        setError('');
+      };
+      
+      const handleFileUpload = (e) => {
+        const file = e.target.files?.[0];
+        if (!file) return;
+        
+        const reader = new FileReader();
+        reader.onload = (event) => {
+          setImportJson(event.target.result);
+          parseImportJson(event.target.result);
+        };
+        reader.onerror = () => setError('Failed to read file');
+        reader.readAsText(file);
+      };
+      
+      const parseImportJson = (jsonString) => {
+        try {
+          const parsed = JSON.parse(jsonString);
+          
+          // Detect format and extract preview info
+          let preview = { stages: 0, steps: 0, personas: 0, title: '' };
+          
+          if (parsed.meta?.title) {
+            // New format
+            preview.title = parsed.meta.title;
+            preview.stages = parsed.stages?.length || 0;
+            preview.steps = parsed.stages?.reduce((acc, s) => acc + (s.steps?.length || 0), 0) || 0;
+            preview.personas = parsed.personas?.length || 0;
+            preview.format = 'current';
+          } else if (parsed.title) {
+            // Legacy format
+            preview.title = parsed.title;
+            preview.stages = parsed.stages?.length || 0;
+            preview.steps = parsed.stages?.reduce((acc, s) => acc + (s.steps?.length || 0), 0) || 0;
+            preview.personas = parsed.personas?.length || 0;
+            preview.format = 'legacy';
+          } else {
+            throw new Error('Unrecognized JSON format');
+          }
+          
+          setImportPreview(preview);
+          setImportTitle(preview.title);
+          setError('');
+        } catch (err) {
+          setError('Invalid JSON: ' + err.message);
+          setImportPreview(null);
+        }
+      };
+      
+      const handleImportCreate = async () => {
+        if (!importJson.trim() || !importTitle.trim()) return;
+        if (!profile?.organisation_id) {
+          setError('Profile not loaded. Please refresh and try again.');
+          return;
+        }
+        
+        setIsCreating(true);
+        setError('');
+        
+        try {
+          const parsed = JSON.parse(importJson);
+          let mapConfig;
+          
+          if (parsed.meta?.title) {
+            // Already in current format - use directly
+            mapConfig = {
+              ...parsed,
+              meta: { ...parsed.meta, title: importTitle.trim() }
+            };
+          } else {
+            // Convert legacy format to current format
+            mapConfig = {
+              meta: { 
+                title: importTitle.trim(), 
+                version: '1.0', 
+                template: 'imported' 
+              },
+              funnel: parsed.funnelConfig ? {
+                enabled: parsed.funnelConfig.enabled || false,
+                initialVolume: parsed.funnelConfig.startVolume || 100,
+                periodLabel: parsed.funnelConfig.periodLabel || 'per month'
+              } : { 
+                enabled: false, 
+                initialVolume: 100, 
+                periodLabel: 'per month' 
+              },
+              personas: (parsed.personas || []).map(p => ({
+                id: p.id,
+                label: p.label || p.name,
+                annualSalary: p.annualSalary || p.salary || 0,
+                isExternal: p.isExternal || false,
+                burdenMultiplier: p.burdenMultiplier || 1.3,
+                workspaceHourlyCost: p.workspaceHourlyCost || 6,
+                color: p.color || (p.isExternal ? '#2D8A6E' : '#5B8A9A')
+              })),
+              stages: (parsed.stages || []).map(stage => ({
+                id: stage.id,
+                name: stage.name,
+                dropOffCount: stage.dropOffCount || parsed.funnelConfig?.stages?.[stage.id]?.dropOff || 0,
+                steps: (stage.steps || []).map(step => ({
+                  id: step.id,
+                  name: step.name,
+                  description: step.description || '',
+                  owner: step.owner || step.personaId,
+                  timeMinutes: step.timeMinutes || step.time || 30,
+                  frictionLevel: typeof step.frictionLevel === 'number' ? step.frictionLevel : 
+                    (step.friction === 'high' ? 4 : step.friction === 'medium' ? 3 : step.friction === 'low' ? 2 : 1),
+                  painPoints: step.painPoints || [],
+                  automationOpportunity: step.automationOpportunity || 'none',
+                  notes: step.notes || '',
+                  clientTouchpoint: step.clientTouchpoint || false,
+                  isHardCheckpoint: step.isHardCheckpoint || false,
+                  clientSentiment: step.clientSentiment || 'neutral',
+                  thirdPartyCosts: step.thirdPartyCosts || [],
+                  roleInvolvement: step.roleInvolvement || [],
+                  actions: step.actions || {}
+                }))
+              }))
+            };
+          }
+          
+          await createMapInSupabase({
+            organisation_id: profile.organisation_id,
+            title: importTitle.trim(),
+            description: 'Imported from JSON',
+            journey_type: mapConfig.meta?.journeyType || 'Imported',
+            config: mapConfig,
+            created_by: profile.id,
+            template_source: 'imported'
+          });
+          
+          onCreated();
+        } catch (err) {
+          console.error('Import error:', err);
+          setError(err.message || 'Failed to import journey');
+        }
+        
+        setIsCreating(false);
       };
       
       const addRole = (name, salary, isExternal) => {
@@ -3100,6 +3255,7 @@ RULES:
         if (mode === 'select') return 'Choose a Template';
         if (mode === 'customize') return 'Customise Your Map';
         if (mode === 'generating') return 'Creating Your Journey';
+        if (mode === 'import') return 'Import from JSON';
         if (mode === 'wizard') {
           if (wizardStep === 1) return 'Describe Your Process';
           if (wizardStep === 2) return 'Context & Roles';
@@ -3114,7 +3270,7 @@ RULES:
             <div className="modal-content" style={{ padding: '32px' }}>
               {/* Header */}
               <div style={{ display: 'flex', alignItems: 'center', gap: '12px', marginBottom: '24px' }}>
-                {(mode === 'customize' || mode === 'wizard') && (
+                {(mode === 'customize' || mode === 'wizard' || mode === 'import') && (
                   <button onClick={handleBack} style={{ background: 'none', border: 'none', cursor: 'pointer', fontSize: '18px', color: 'var(--slate-400)', padding: '4px' }}>←</button>
                 )}
                 <h2 className="modal-title" style={{ margin: 0, fontFamily: 'var(--font-display)' }}>{getTitle()}</h2>
@@ -3187,6 +3343,25 @@ RULES:
                     <div style={{ color: 'var(--slate-400)', fontSize: '16px' }}>→</div>
                   </button>
                   
+                  {/* Import from JSON */}
+                  <button
+                    onClick={handleStartImport}
+                    style={{
+                      display: 'flex', alignItems: 'center', gap: '16px', width: '100%', padding: '14px 18px',
+                      background: 'var(--slate-50)', border: '1px solid var(--slate-200)', borderRadius: '10px',
+                      cursor: 'pointer', textAlign: 'left', marginBottom: '20px', transition: 'all 0.15s', fontFamily: 'inherit'
+                    }}
+                    onMouseOver={(e) => { e.currentTarget.style.borderColor = 'var(--steel-400)'; e.currentTarget.style.background = 'var(--steel-100)'; }}
+                    onMouseOut={(e) => { e.currentTarget.style.borderColor = 'var(--slate-200)'; e.currentTarget.style.background = 'var(--slate-50)'; }}
+                  >
+                    <div style={{ fontSize: '24px' }}>📥</div>
+                    <div style={{ flex: 1 }}>
+                      <div style={{ fontWeight: 600, color: 'var(--navy-700)', fontSize: '14px' }}>Import from JSON</div>
+                      <div style={{ fontSize: '12px', color: 'var(--slate-500)' }}>Migrate from legacy system or restore backup</div>
+                    </div>
+                    <div style={{ color: 'var(--slate-400)', fontSize: '16px' }}>→</div>
+                  </button>
+                  
                   {/* Template List */}
                   <div style={{ maxHeight: '340px', overflowY: 'auto', marginRight: '-8px', paddingRight: '8px' }}>
                     {Object.entries(templatesByIndustry).filter(([ind]) => ind !== 'Any').map(([ind, templates]) => (
@@ -3208,6 +3383,120 @@ RULES:
                         </div>
                       </div>
                     ))}
+                  </div>
+                </>
+              )}
+              
+              {/* IMPORT MODE */}
+              {mode === 'import' && (
+                <>
+                  <p style={{ color: 'var(--slate-500)', marginBottom: '20px', fontSize: '14px' }}>
+                    Paste your journey JSON or upload a file to import an existing map.
+                  </p>
+                  
+                  {/* File Upload */}
+                  <input 
+                    type="file" 
+                    ref={fileInputRef}
+                    accept=".json,application/json"
+                    onChange={handleFileUpload}
+                    style={{ display: 'none' }}
+                  />
+                  <button
+                    onClick={() => fileInputRef.current?.click()}
+                    style={{
+                      display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '8px',
+                      width: '100%', padding: '12px 16px', marginBottom: '16px',
+                      background: 'var(--slate-50)', border: '2px dashed var(--slate-300)', borderRadius: '8px',
+                      cursor: 'pointer', fontFamily: 'inherit', fontSize: '14px', color: 'var(--slate-600)',
+                      transition: 'all 0.15s'
+                    }}
+                    onMouseOver={(e) => { e.currentTarget.style.borderColor = 'var(--steel-400)'; e.currentTarget.style.background = 'var(--steel-100)'; }}
+                    onMouseOut={(e) => { e.currentTarget.style.borderColor = 'var(--slate-300)'; e.currentTarget.style.background = 'var(--slate-50)'; }}
+                  >
+                    📁 Upload JSON File
+                  </button>
+                  
+                  <div style={{ textAlign: 'center', color: 'var(--slate-400)', fontSize: '12px', marginBottom: '16px' }}>or paste JSON below</div>
+                  
+                  {/* JSON Textarea */}
+                  <textarea
+                    value={importJson}
+                    onChange={(e) => {
+                      setImportJson(e.target.value);
+                      if (e.target.value.trim()) {
+                        parseImportJson(e.target.value);
+                      } else {
+                        setImportPreview(null);
+                      }
+                    }}
+                    placeholder='{"meta": {"title": "..."}, "stages": [...], "personas": [...]}'
+                    style={{
+                      width: '100%', minHeight: '120px', padding: '12px', marginBottom: '16px',
+                      border: '1px solid var(--slate-200)', borderRadius: '8px', fontFamily: 'monospace',
+                      fontSize: '12px', resize: 'vertical', background: '#FFF'
+                    }}
+                  />
+                  
+                  {/* Preview */}
+                  {importPreview && (
+                    <div style={{ 
+                      padding: '16px', background: 'var(--success-light)', borderRadius: '8px', 
+                      marginBottom: '16px', border: '1px solid var(--success)'
+                    }}>
+                      <div style={{ fontWeight: 600, color: 'var(--success-dark)', marginBottom: '8px', display: 'flex', alignItems: 'center', gap: '8px' }}>
+                        ✓ Valid JSON detected
+                        <span style={{ fontSize: '11px', background: 'var(--success)', color: '#FFF', padding: '2px 8px', borderRadius: '10px' }}>
+                          {importPreview.format === 'legacy' ? 'Legacy Format' : 'Current Format'}
+                        </span>
+                      </div>
+                      <div style={{ fontSize: '13px', color: 'var(--slate-600)' }}>
+                        <strong>{importPreview.stages}</strong> stages, <strong>{importPreview.steps}</strong> steps, <strong>{importPreview.personas}</strong> personas
+                      </div>
+                    </div>
+                  )}
+                  
+                  {/* Title input */}
+                  {importPreview && (
+                    <div style={{ marginBottom: '16px' }}>
+                      <label style={{ display: 'block', marginBottom: '6px', fontWeight: 500, fontSize: '13px', color: 'var(--slate-700)' }}>
+                        Journey Title
+                      </label>
+                      <input
+                        type="text"
+                        value={importTitle}
+                        onChange={(e) => setImportTitle(e.target.value)}
+                        placeholder="Enter journey title"
+                        style={{
+                          width: '100%', padding: '10px 12px', border: '1px solid var(--slate-200)',
+                          borderRadius: '8px', fontSize: '14px'
+                        }}
+                      />
+                    </div>
+                  )}
+                  
+                  {/* Import Button */}
+                  <button
+                    onClick={handleImportCreate}
+                    disabled={!importPreview || !importTitle.trim() || isCreating}
+                    style={{
+                      width: '100%', padding: '14px', background: importPreview && importTitle.trim() ? 'var(--navy-700)' : 'var(--slate-200)',
+                      color: importPreview && importTitle.trim() ? '#FFF' : 'var(--slate-400)',
+                      border: 'none', borderRadius: '8px', fontSize: '15px', fontWeight: 600,
+                      cursor: importPreview && importTitle.trim() && !isCreating ? 'pointer' : 'not-allowed',
+                      fontFamily: 'inherit', transition: 'all 0.15s'
+                    }}
+                  >
+                    {isCreating ? 'Importing...' : 'Import Journey'}
+                  </button>
+                  
+                  {/* Help text */}
+                  <div style={{ marginTop: '16px', padding: '12px', background: 'var(--slate-50)', borderRadius: '8px', fontSize: '12px', color: 'var(--slate-500)' }}>
+                    <strong>How to export from legacy system:</strong><br/>
+                    Open your journey in the editor, then in browser DevTools Console run:<br/>
+                    <code style={{ background: 'var(--slate-100)', padding: '2px 6px', borderRadius: '4px', fontFamily: 'monospace' }}>
+                      copy(JSON.stringify(journeyConfig))
+                    </code>
                   </div>
                 </>
               )}
