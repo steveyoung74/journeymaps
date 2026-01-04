@@ -6822,7 +6822,8 @@ FATHOM - Journey intelligence for modern operations`);
                       </button>
                     )}
                     
-                    {/* Settings Dropdown */}
+                    {/* Settings Dropdown - hidden for view-only users in Supabase mode */}
+                    {(!isSupabaseMode || canAccessSettings) && (
                     <div style={{ position: 'relative' }}>
                       <button onClick={(e) => { 
                         e.stopPropagation(); 
@@ -6833,8 +6834,8 @@ FATHOM - Journey intelligence for modern operations`);
                         } else if (!isSupabaseMode) {
                           setShowPasswordPrompt(true);
                         }
-                      }} style={{ padding: '6px 10px', background: showSettingsMenu ? '#556275' : 'transparent', color: '#F4F5F7', border: '1px solid rgba(255,255,255,0.4)', borderRadius: '4px', cursor: 'pointer', fontFamily: "'Interstate', sans-serif", fontSize: '11px', display: 'flex', alignItems: 'center', gap: '4px', opacity: (isSupabaseMode && !canAccessSettings) ? 0.5 : 1 }} title={(isSupabaseMode && !canAccessSettings) ? 'View-only mode' : 'Settings'}>
-                        {(isSupabaseMode ? canAccessSettings : isSettingsUnlocked) ? '⚙️' : '👁️'} <span style={{ fontSize: '8px' }}>▼</span>
+                      }} style={{ padding: '6px 10px', background: showSettingsMenu ? '#556275' : 'transparent', color: '#F4F5F7', border: '1px solid rgba(255,255,255,0.4)', borderRadius: '4px', cursor: 'pointer', fontFamily: "'Interstate', sans-serif", fontSize: '11px', display: 'flex', alignItems: 'center', gap: '4px' }} title="Settings">
+                        {(isSupabaseMode ? canAccessSettings : isSettingsUnlocked) ? '⚙️' : '🔒'} <span style={{ fontSize: '8px' }}>▼</span>
                       </button>
                       {showSettingsMenu && (isSupabaseMode ? canAccessSettings : isSettingsUnlocked) && (
                         <div onClick={(e) => e.stopPropagation()} style={{ position: 'absolute', top: '100%', right: 0, marginTop: '8px', background: '#FFF', borderRadius: '12px', boxShadow: '0 8px 32px rgba(0,0,0,0.2)', overflow: 'hidden', zIndex: 9999, minWidth: '220px', padding: '8px 0' }}>
@@ -6906,6 +6907,7 @@ FATHOM - Journey intelligence for modern operations`);
                         </div>
                       )}
                     </div>
+                    )}
                     
                     {/* Profile Dropdown (Supabase mode only) */}
                     {isSupabaseMode && currentUser && (
@@ -6915,33 +6917,46 @@ FATHOM - Journey intelligence for modern operations`);
                           style={{ 
                             display: 'flex', 
                             alignItems: 'center', 
-                            gap: '8px',
-                            padding: '4px 10px 4px 4px',
-                            background: showProfileMenu ? 'rgba(255,255,255,0.15)' : 'rgba(255,255,255,0.08)',
-                            border: '1px solid rgba(255,255,255,0.2)',
-                            borderRadius: '20px',
+                            padding: '3px',
+                            background: 'transparent',
+                            border: 'none',
+                            borderRadius: '50%',
                             cursor: 'pointer',
-                            transition: 'all 0.15s'
+                            transition: 'all 0.15s',
+                            position: 'relative'
                           }}
                         >
                           <div style={{ 
-                            width: '28px', 
-                            height: '28px', 
+                            width: '36px', 
+                            height: '36px', 
                             borderRadius: '50%', 
                             background: 'var(--steel-500, #5B8A9A)', 
                             display: 'flex', 
                             alignItems: 'center', 
                             justifyContent: 'center', 
                             color: '#FFF', 
-                            fontSize: '11px', 
-                            fontWeight: 600 
+                            fontSize: '14px', 
+                            fontWeight: 600,
+                            border: '2px solid rgba(255,255,255,0.2)',
+                            transition: 'border-color 0.15s'
                           }}>
                             {getInitials(currentUser?.email)}
                           </div>
-                          <span style={{ color: 'rgba(255,255,255,0.9)', fontSize: '12px', fontWeight: 500, maxWidth: '80px', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
-                            {currentUser?.email?.split('@')[0]}
-                          </span>
-                          <span style={{ color: 'rgba(255,255,255,0.5)', fontSize: '8px' }}>▼</span>
+                          <span style={{ 
+                            position: 'absolute',
+                            bottom: '2px',
+                            right: '0',
+                            width: '14px',
+                            height: '14px',
+                            background: 'var(--navy-700, #1A2332)',
+                            borderRadius: '50%',
+                            display: 'flex',
+                            alignItems: 'center',
+                            justifyContent: 'center',
+                            color: 'rgba(255,255,255,0.8)',
+                            fontSize: '8px',
+                            border: '2px solid var(--navy-800, #15243A)'
+                          }}>▼</span>
                         </button>
                         
                         {showProfileMenu && (
@@ -7120,7 +7135,8 @@ FATHOM - Journey intelligence for modern operations`);
                 
                 {/* Settings - pushed to right */}
                 <div style={{ display: 'flex', gap: '6px', alignItems: 'center', marginLeft: 'auto' }}>
-                  {/* Settings Dropdown */}
+                  {/* Settings Dropdown - hidden for view-only users in Supabase mode */}
+                  {(!isSupabaseMode || canAccessSettings) && (
                   <div style={{ position: 'relative' }}>
                     <button onClick={(e) => { 
                       e.stopPropagation(); 
@@ -7131,8 +7147,8 @@ FATHOM - Journey intelligence for modern operations`);
                       } else if (!isSupabaseMode) {
                         setShowPasswordPrompt(true);
                       }
-                    }} style={{ padding: '7px 10px', background: showSettingsMenu ? '#556275' : 'transparent', color: '#F4F5F7', border: '1px solid rgba(255,255,255,0.35)', borderRadius: '5px', cursor: 'pointer', fontFamily: "'Interstate', sans-serif", fontSize: '11px', display: 'flex', alignItems: 'center', gap: '4px', opacity: (isSupabaseMode && !canAccessSettings) ? 0.5 : 1 }} title={(isSupabaseMode && !canAccessSettings) ? 'View-only mode' : 'Settings'}>
-                      {(isSupabaseMode ? canAccessSettings : isSettingsUnlocked) ? '⚙️' : '👁️'} <span style={{ fontSize: '8px' }}>▼</span>
+                    }} style={{ padding: '7px 10px', background: showSettingsMenu ? '#556275' : 'transparent', color: '#F4F5F7', border: '1px solid rgba(255,255,255,0.35)', borderRadius: '5px', cursor: 'pointer', fontFamily: "'Interstate', sans-serif", fontSize: '11px', display: 'flex', alignItems: 'center', gap: '4px' }} title="Settings">
+                      {(isSupabaseMode ? canAccessSettings : isSettingsUnlocked) ? '⚙️' : '🔒'} <span style={{ fontSize: '8px' }}>▼</span>
                     </button>
                     {showSettingsMenu && (isSupabaseMode ? canAccessSettings : isSettingsUnlocked) && (
                       <div onClick={(e) => e.stopPropagation()} style={{ position: 'absolute', top: '100%', right: 0, marginTop: '8px', background: '#FFF', borderRadius: '12px', boxShadow: '0 8px 32px rgba(0,0,0,0.2)', overflow: 'hidden', zIndex: 9999, minWidth: '220px', padding: '8px 0' }}>
@@ -7203,6 +7219,7 @@ FATHOM - Journey intelligence for modern operations`);
                       </div>
                     )}
                   </div>
+                  )}
                 </div>
               </div>
             )}

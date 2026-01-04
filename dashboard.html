@@ -300,50 +300,55 @@
     .profile-trigger {
       display: flex;
       align-items: center;
-      gap: 10px;
-      padding: 6px 12px 6px 6px;
-      background: rgba(255,255,255,0.08);
-      border: 1px solid rgba(255,255,255,0.15);
-      border-radius: 24px;
+      gap: 6px;
+      padding: 3px;
+      background: transparent;
+      border: none;
+      border-radius: 50%;
       cursor: pointer;
       transition: all 0.15s;
+      position: relative;
     }
     .profile-trigger:hover {
-      background: rgba(255,255,255,0.15);
-      border-color: rgba(255,255,255,0.25);
+      background: rgba(255,255,255,0.1);
     }
     .profile-avatar {
-      width: 32px;
-      height: 32px;
+      width: 36px;
+      height: 36px;
       border-radius: 50%;
       background: var(--steel-500);
       display: flex;
       align-items: center;
       justify-content: center;
       color: #FFF;
-      font-size: 13px;
+      font-size: 14px;
       font-weight: 600;
       text-transform: uppercase;
       overflow: hidden;
+      border: 2px solid rgba(255,255,255,0.2);
+    }
+    .profile-trigger:hover .profile-avatar {
+      border-color: rgba(255,255,255,0.4);
     }
     .profile-avatar img {
       width: 100%;
       height: 100%;
       object-fit: cover;
     }
-    .profile-name {
-      color: rgba(255,255,255,0.9);
-      font-size: 14px;
-      font-weight: 500;
-      max-width: 120px;
-      overflow: hidden;
-      text-overflow: ellipsis;
-      white-space: nowrap;
-    }
     .profile-chevron {
-      color: rgba(255,255,255,0.5);
-      font-size: 10px;
-      transition: transform 0.2s;
+      position: absolute;
+      bottom: 2px;
+      right: 0;
+      width: 14px;
+      height: 14px;
+      background: var(--navy-700);
+      border-radius: 50%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      color: rgba(255,255,255,0.8);
+      font-size: 8px;
+      border: 2px solid var(--navy-800);
     }
     .profile-trigger.open .profile-chevron {
       transform: rotate(180deg);
@@ -2210,7 +2215,6 @@
                     <div className="profile-avatar">
                       {getInitials(profile?.display_name || profile?.email)}
                     </div>
-                    <span className="profile-name">{profile?.display_name || profile?.email?.split('@')[0]}</span>
                     <span className="profile-chevron">▼</span>
                   </button>
                   
