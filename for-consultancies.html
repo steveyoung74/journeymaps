@@ -136,9 +136,9 @@
       content: '';
       position: absolute;
       inset: 0;
-      background-image: url("data:image/svg+xml,%3Csvg width='800' height='600' xmlns='http://www.w3.org/2000/svg'%3E%3Cpath d='M0 300 Q200 280 400 300 T800 300' fill='none' stroke='%235B8A9A' stroke-width='1' opacity='0.15'/%3E%3Cpath d='M0 340 Q200 320 400 340 T800 340' fill='none' stroke='%235B8A9A' stroke-width='1' opacity='0.12'/%3E%3Cpath d='M0 380 Q200 360 400 380 T800 380' fill='none' stroke='%235B8A9A' stroke-width='1' opacity='0.09'/%3E%3Cpath d='M0 420 Q200 400 400 420 T800 420' fill='none' stroke='%235B8A9A' stroke-width='1' opacity='0.06'/%3E%3Cpath d='M0 460 Q200 440 400 460 T800 460' fill='none' stroke='%235B8A9A' stroke-width='1' opacity='0.04'/%3E%3C/svg%3E");
-      background-size: cover;
-      background-position: center bottom;
+      background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='600' height='600' viewBox='0 0 600 600'%3E%3Cg fill='none' stroke='%235B8A9A' stroke-width='1.5'%3E%3Cpath opacity='0.12' d='M0 150 Q150 120 300 150 T600 150'/%3E%3Cpath opacity='0.10' d='M0 180 Q150 150 300 180 T600 180'/%3E%3Cpath opacity='0.08' d='M0 210 Q150 180 300 210 T600 210'/%3E%3Cpath opacity='0.06' d='M0 240 Q150 210 300 240 T600 240'/%3E%3Cpath opacity='0.04' d='M0 270 Q150 240 300 270 T600 270'/%3E%3Cpath opacity='0.12' d='M0 350 Q150 380 300 350 T600 350'/%3E%3Cpath opacity='0.10' d='M0 380 Q150 410 300 380 T600 380'/%3E%3Cpath opacity='0.08' d='M0 410 Q150 440 300 410 T600 410'/%3E%3Cpath opacity='0.06' d='M0 440 Q150 470 300 440 T600 440'/%3E%3Cpath opacity='0.04' d='M0 470 Q150 500 300 470 T600 470'/%3E%3C/g%3E%3C/svg%3E");
+      background-size: 600px 600px;
+      background-position: center;
       pointer-events: none;
     }
     .hero-inner {
@@ -471,10 +471,23 @@
       background: linear-gradient(180deg, var(--navy-700) 0%, var(--navy-900) 100%);
       color: #FFF;
       text-align: center;
+      position: relative;
+      overflow: hidden;
+    }
+    .cta::before {
+      content: '';
+      position: absolute;
+      inset: 0;
+      background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='600' height='600' viewBox='0 0 600 600'%3E%3Cg fill='none' stroke='%235B8A9A' stroke-width='1.5'%3E%3Cpath opacity='0.12' d='M0 150 Q150 120 300 150 T600 150'/%3E%3Cpath opacity='0.10' d='M0 180 Q150 150 300 180 T600 180'/%3E%3Cpath opacity='0.08' d='M0 210 Q150 180 300 210 T600 210'/%3E%3Cpath opacity='0.06' d='M0 240 Q150 210 300 240 T600 240'/%3E%3Cpath opacity='0.04' d='M0 270 Q150 240 300 270 T600 270'/%3E%3Cpath opacity='0.12' d='M0 350 Q150 380 300 350 T600 350'/%3E%3Cpath opacity='0.10' d='M0 380 Q150 410 300 380 T600 380'/%3E%3Cpath opacity='0.08' d='M0 410 Q150 440 300 410 T600 410'/%3E%3Cpath opacity='0.06' d='M0 440 Q150 470 300 440 T600 440'/%3E%3Cpath opacity='0.04' d='M0 470 Q150 500 300 470 T600 470'/%3E%3C/g%3E%3C/svg%3E");
+      background-size: 600px 600px;
+      background-position: center;
+      pointer-events: none;
     }
     .cta-inner {
       max-width: 700px;
       margin: 0 auto;
+      position: relative;
+      z-index: 1;
     }
     .cta h2 {
       font-size: clamp(28px, 4vw, 40px);
@@ -776,7 +789,7 @@
       <p>You'll be showing clients exactly where their money goes — and exactly how to get it back.</p>
       <div class="cta-buttons">
         <a href="/dashboard.html" class="cta-primary">Get Started Free</a>
-        <a href="mailto:hello@canfathom.co.uk" class="cta-secondary">Request a Demo</a>
+        <a href="/cdn-cgi/l/email-protection#026a676e6e6d4261636c6463766a6d6f2c616d2c7769" class="cta-secondary">Request a Demo</a>
       </div>
     </div>
   </section>
@@ -785,8 +798,4 @@
   <footer class="footer">
     <div class="footer-inner">
       <img src="https://steveyoung74.github.io/journeymaps/fathom-logo.svg" alt="FATHOM" class="footer-logo">
-      <div class="footer-tagline">"See what your journeys really cost"</div>
-    </div>
-  </footer>
-</body>
-</html>
+      <div class="footer-tagline">"See what your journeys really cost"</
