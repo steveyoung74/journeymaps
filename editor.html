@@ -420,6 +420,22 @@
       }
     }
     
+    /* Improvement Plan Mobile Responsive */
+    @media (max-width: 900px) {
+      .plan-phase-cards {
+        grid-template-columns: 1fr !important;
+      }
+      .plan-item-grid {
+        grid-template-columns: 1fr !important;
+        gap: 12px !important;
+      }
+      .plan-item-controls {
+        display: flex !important;
+        flex-wrap: wrap !important;
+        gap: 8px !important;
+      }
+    }
+    
     /* Mobile Responsive Styles */
     @media (max-width: 768px) {
       /* Perspective filter: show dropdown, hide buttons */
@@ -758,7 +774,7 @@
       meta: {
         title: "Client Onboarding Journey Digital Twin",
         version: "2.0",
-        product: "FATHOM v9.4.0",
+        product: "FATHOM v9.5.0",
         lastUpdated: new Date().toISOString(),
         audience: "Internal Operations",
         perspective: "client",
@@ -4367,6 +4383,458 @@ FATHOM - Journey intelligence for modern operations`);
               </div>
             </div>
           </div>
+        </div>
+      );
+    }
+
+    // Improvement Plan Component
+    function ImprovementPlan({ config, stages, personas, formatTime, updateConfig }) {
+      const formatCurrency = (amount) => {
+        if (amount >= 1000) return `£${(amount / 1000).toFixed(1)}k`;
+        return `£${Math.round(amount)}`;
+      };
+      
+      // Get all steps with opportunity data
+      const allSteps = stages.flatMap((stage, stageIndex) => 
+        stage.steps.map(step => ({ ...step, stageName: stage.name, stageIndex }))
+      );
+      
+      // Calculate cost per step (simplified version)
+      const getStepCost = (step) => {
+        let cost = 0;
+        const timeMinutes = step.timeMinutes || 0;
+        
+        if (step.roleInvolvement && step.roleInvolvement.length > 0) {
+          step.roleInvolvement.forEach(ri => {
+            const persona = personas.find(p => p.id === ri.roleId);
+            if (persona && ri.timeMinutes) {
+              const baseSalary = persona.salary || 0;
+              const burdenMultiplier = config.costSettings?.burdenMultiplier || 1.4;
+              const hoursPerYear = config.costSettings?.hoursPerYear || 1820;
+              const workspaceCost = config.costSettings?.workspaceCostPerYear || 5000;
+              const fullyLoadedSalary = (baseSalary * burdenMultiplier) + workspaceCost;
+              const hourlyRate = fullyLoadedSalary / hoursPerYear;
+              cost += (ri.timeMinutes / 60) * hourlyRate;
+            }
+          });
+        } else if (step.owner) {
+          const persona = personas.find(p => p.id === step.owner);
+          if (persona) {
+            const baseSalary = persona.salary || 0;
+            const burdenMultiplier = config.costSettings?.burdenMultiplier || 1.4;
+            const hoursPerYear = config.costSettings?.hoursPerYear || 1820;
+            const workspaceCost = config.costSettings?.workspaceCostPerYear || 5000;
+            const fullyLoadedSalary = (baseSalary * burdenMultiplier) + workspaceCost;
+            const hourlyRate = fullyLoadedSalary / hoursPerYear;
+            cost = (timeMinutes / 60) * hourlyRate;
+          }
+        }
+        
+        if (step.thirdPartyCost) {
+          cost += step.thirdPartyCost;
+        }
+        
+        return cost;
+      };
+      
+      // Build opportunities list
+      const opportunities = allSteps
+        .filter(step => step.automationOpportunity && step.automationOpportunity !== 'none')
+        .map(step => {
+          const cost = getStepCost(step);
+          const savingsPercent = step.automationOpportunity === 'high' ? 0.7 
+            : step.automationOpportunity === 'medium' ? 0.4 
+            : 0.1;
+          const savings = cost * savingsPercent;
+          
+          // Get existing plan data from config or defaults
+          const planData = config.improvementPlan?.items?.find(item => item.stepId === step.id) || {};
+          
+          return {
+            stepId: step.id,
+            stepName: step.name,
+            stageName: step.stageName,
+            opportunity: step.automationOpportunity,
+            cost,
+            savings,
+            savingsPercent: Math.round(savingsPercent * 100),
+            painPoints: step.painPoints?.length || 0,
+            effort: planData.effort || (step.automationOpportunity === 'high' ? 'M' : step.automationOpportunity === 'medium' ? 'S' : 'S'),
+            phase: planData.phase || (step.automationOpportunity === 'high' && savings > 100 ? 2 : step.automationOpportunity === 'high' ? 1 : 3),
+            owner: planData.owner || '',
+            status: planData.status || 'not-started'
+          };
+        })
+        .sort((a, b) => b.savings - a.savings);
+      
+      // Group by phase
+      const phases = [
+        { id: 1, name: 'Quick Wins', description: 'Low effort, high impact', color: '#2D8A6E' },
+        { id: 2, name: 'Core Improvements', description: 'Medium effort, significant value', color: '#C4942A' },
+        { id: 3, name: 'Strategic Initiatives', description: 'Higher effort, transformational', color: '#5B8A9A' }
+      ];
+      
+      const getPhaseItems = (phaseId) => opportunities.filter(o => o.phase === phaseId);
+      
+      const updateOpportunity = (stepId, field, value) => {
+        const existingPlan = config.improvementPlan || { items: [] };
+        const existingItems = existingPlan.items || [];
+        const itemIndex = existingItems.findIndex(item => item.stepId === stepId);
+        
+        let newItems;
+        if (itemIndex >= 0) {
+          newItems = existingItems.map((item, i) => 
+            i === itemIndex ? { ...item, [field]: value } : item
+          );
+        } else {
+          newItems = [...existingItems, { stepId, [field]: value }];
+        }
+        
+        updateConfig({
+          ...config,
+          improvementPlan: { ...existingPlan, items: newItems }
+        });
+      };
+      
+      const totalSavings = opportunities.reduce((acc, o) => acc + o.savings, 0);
+      const phaseSavings = phases.map(p => ({
+        ...p,
+        savings: getPhaseItems(p.id).reduce((acc, o) => acc + o.savings, 0),
+        count: getPhaseItems(p.id).length
+      }));
+      
+      const effortLabels = { S: 'Small', M: 'Medium', L: 'Large', XL: 'Extra Large' };
+      const effortColors = { S: '#2D8A6E', M: '#5B8A9A', L: '#C4942A', XL: '#B84A5A' };
+      const statusLabels = { 'not-started': 'Not Started', 'in-progress': 'In Progress', 'complete': 'Complete' };
+      const statusColors = { 'not-started': '#8A95A5', 'in-progress': '#C4942A', 'complete': '#2D8A6E' };
+      
+      // Export functions
+      const exportToExcel = () => {
+        let csv = 'Phase,Step,Stage,Opportunity Level,Effort,Owner,Status,Current Cost,Potential Savings,Savings %\n';
+        phases.forEach(phase => {
+          getPhaseItems(phase.id).forEach(item => {
+            csv += `"${phase.name}","${item.stepName}","${item.stageName}","${item.opportunity}","${effortLabels[item.effort]}","${item.owner}","${statusLabels[item.status]}","${item.cost.toFixed(2)}","${item.savings.toFixed(2)}","${item.savingsPercent}%"\n`;
+          });
+        });
+        
+        const blob = new Blob([csv], { type: 'text/csv' });
+        const url = URL.createObjectURL(blob);
+        const a = document.createElement('a');
+        a.href = url;
+        a.download = `${config.meta?.title || 'journey'}-improvement-plan.csv`;
+        a.click();
+        URL.revokeObjectURL(url);
+      };
+      
+      const exportToPDF = () => {
+        // Create printable HTML
+        const printWindow = window.open('', '_blank');
+        printWindow.document.write(`
+          <!DOCTYPE html>
+          <html>
+          <head>
+            <title>Improvement Plan - ${config.meta?.title || 'Journey'}</title>
+            <style>
+              body { font-family: 'Segoe UI', Arial, sans-serif; padding: 40px; color: #1A2332; line-height: 1.6; }
+              h1 { color: #192B45; margin-bottom: 8px; }
+              .subtitle { color: #556275; margin-bottom: 32px; }
+              .summary { display: flex; gap: 24px; margin-bottom: 40px; }
+              .summary-card { background: #F4F5F7; padding: 20px; border-radius: 8px; flex: 1; }
+              .summary-card h3 { margin: 0 0 8px; font-size: 14px; color: #556275; text-transform: uppercase; }
+              .summary-card .value { font-size: 28px; font-weight: 700; color: #192B45; }
+              .phase { margin-bottom: 32px; }
+              .phase-header { display: flex; align-items: center; gap: 12px; margin-bottom: 16px; padding-bottom: 8px; border-bottom: 2px solid #E4E7EB; }
+              .phase-dot { width: 12px; height: 12px; border-radius: 50%; }
+              .phase-name { font-size: 18px; font-weight: 600; }
+              .phase-savings { margin-left: auto; font-weight: 600; color: #2D8A6E; }
+              table { width: 100%; border-collapse: collapse; font-size: 13px; }
+              th { text-align: left; padding: 10px 12px; background: #F4F5F7; font-weight: 600; }
+              td { padding: 10px 12px; border-bottom: 1px solid #E4E7EB; }
+              .badge { display: inline-block; padding: 2px 8px; border-radius: 4px; font-size: 11px; font-weight: 600; }
+              @media print { body { padding: 20px; } }
+            </style>
+          </head>
+          <body>
+            <h1>Improvement Plan</h1>
+            <p class="subtitle">${config.meta?.title || 'Journey Map'} · Generated ${new Date().toLocaleDateString('en-GB')}</p>
+            
+            <div class="summary">
+              <div class="summary-card">
+                <h3>Total Opportunities</h3>
+                <div class="value">${opportunities.length}</div>
+              </div>
+              <div class="summary-card">
+                <h3>Total Potential Savings</h3>
+                <div class="value" style="color: #2D8A6E;">${formatCurrency(totalSavings)}</div>
+              </div>
+            </div>
+            
+            ${phases.map(phase => {
+              const items = getPhaseItems(phase.id);
+              if (items.length === 0) return '';
+              const phaseSaving = items.reduce((acc, o) => acc + o.savings, 0);
+              return `
+                <div class="phase">
+                  <div class="phase-header">
+                    <div class="phase-dot" style="background: ${phase.color}"></div>
+                    <div class="phase-name">${phase.name}</div>
+                    <div style="color: #8A95A5; font-size: 13px;">${phase.description}</div>
+                    <div class="phase-savings">${formatCurrency(phaseSaving)}</div>
+                  </div>
+                  <table>
+                    <thead>
+                      <tr>
+                        <th>Step</th>
+                        <th>Stage</th>
+                        <th>Effort</th>
+                        <th>Owner</th>
+                        <th>Savings</th>
+                      </tr>
+                    </thead>
+                    <tbody>
+                      ${items.map(item => `
+                        <tr>
+                          <td><strong>${item.stepName}</strong></td>
+                          <td>${item.stageName}</td>
+                          <td><span class="badge" style="background: ${effortColors[item.effort]}20; color: ${effortColors[item.effort]}">${effortLabels[item.effort]}</span></td>
+                          <td>${item.owner || '—'}</td>
+                          <td style="font-weight: 600; color: #2D8A6E;">${formatCurrency(item.savings)}</td>
+                        </tr>
+                      `).join('')}
+                    </tbody>
+                  </table>
+                </div>
+              `;
+            }).join('')}
+          </body>
+          </html>
+        `);
+        printWindow.document.close();
+        setTimeout(() => printWindow.print(), 250);
+      };
+      
+      return (
+        <div style={{ padding: '24px', maxWidth: '1200px', margin: '0 auto' }}>
+          {/* Header */}
+          <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '24px', flexWrap: 'wrap', gap: '16px' }}>
+            <div>
+              <h3 style={{ margin: 0, fontSize: '20px', fontFamily: "'Interstate', sans-serif", color: '#192B45' }}>
+                📋 Improvement Plan
+              </h3>
+              <p style={{ margin: '4px 0 0', fontSize: '14px', color: '#556275' }}>
+                {opportunities.length} opportunities identified · {formatCurrency(totalSavings)} potential savings
+              </p>
+            </div>
+            <div style={{ display: 'flex', gap: '8px' }}>
+              <button
+                onClick={exportToExcel}
+                style={{
+                  padding: '8px 16px',
+                  background: '#FFF',
+                  border: '1px solid #C8CED6',
+                  borderRadius: '6px',
+                  cursor: 'pointer',
+                  fontSize: '13px',
+                  fontFamily: "'Interstate', sans-serif",
+                  display: 'flex',
+                  alignItems: 'center',
+                  gap: '6px'
+                }}
+              >
+                📊 Export Excel
+              </button>
+              <button
+                onClick={exportToPDF}
+                style={{
+                  padding: '8px 16px',
+                  background: '#FFF',
+                  border: '1px solid #C8CED6',
+                  borderRadius: '6px',
+                  cursor: 'pointer',
+                  fontSize: '13px',
+                  fontFamily: "'Interstate', sans-serif",
+                  display: 'flex',
+                  alignItems: 'center',
+                  gap: '6px'
+                }}
+              >
+                📄 Export PDF
+              </button>
+            </div>
+          </div>
+          
+          {/* Phase Summary Cards */}
+          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: '16px', marginBottom: '32px' }}>
+            {phaseSavings.map(phase => (
+              <div key={phase.id} style={{
+                background: '#FFF',
+                border: `2px solid ${phase.color}20`,
+                borderRadius: '12px',
+                padding: '20px',
+                borderLeft: `4px solid ${phase.color}`
+              }}>
+                <div style={{ display: 'flex', alignItems: 'center', gap: '8px', marginBottom: '8px' }}>
+                  <span style={{ fontSize: '14px' }}>{phase.id === 1 ? '🚀' : phase.id === 2 ? '🔧' : '🎯'}</span>
+                  <span style={{ fontFamily: "'Interstate', sans-serif", fontWeight: 600, fontSize: '14px', color: '#192B45' }}>{phase.name}</span>
+                </div>
+                <div style={{ fontSize: '12px', color: '#8A95A5', marginBottom: '12px' }}>{phase.description}</div>
+                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'baseline' }}>
+                  <span style={{ fontSize: '24px', fontWeight: 700, color: phase.color }}>{formatCurrency(phase.savings)}</span>
+                  <span style={{ fontSize: '12px', color: '#556275' }}>{phase.count} items</span>
+                </div>
+              </div>
+            ))}
+          </div>
+          
+          {/* Phase Lists */}
+          {phases.map(phase => {
+            const items = getPhaseItems(phase.id);
+            if (items.length === 0) return null;
+            
+            return (
+              <div key={phase.id} style={{ marginBottom: '32px' }}>
+                <div style={{ 
+                  display: 'flex', 
+                  alignItems: 'center', 
+                  gap: '12px', 
+                  marginBottom: '16px',
+                  paddingBottom: '12px',
+                  borderBottom: `2px solid ${phase.color}30`
+                }}>
+                  <div style={{ width: '10px', height: '10px', borderRadius: '50%', background: phase.color }} />
+                  <h4 style={{ margin: 0, fontFamily: "'Interstate', sans-serif", fontSize: '16px', color: '#192B45' }}>
+                    {phase.name}
+                  </h4>
+                  <span style={{ fontSize: '13px', color: '#8A95A5' }}>{phase.description}</span>
+                  <span style={{ marginLeft: 'auto', fontWeight: 600, color: phase.color }}>
+                    {formatCurrency(items.reduce((acc, o) => acc + o.savings, 0))}
+                  </span>
+                </div>
+                
+                <div style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
+                  {items.map((item, index) => (
+                    <div key={item.stepId} style={{
+                      background: '#FFF',
+                      border: '1px solid #E4E7EB',
+                      borderRadius: '8px',
+                      padding: '16px',
+                      display: 'grid',
+                      gridTemplateColumns: '1fr auto auto auto auto',
+                      gap: '16px',
+                      alignItems: 'center'
+                    }}>
+                      {/* Step Info */}
+                      <div style={{ minWidth: 0 }}>
+                        <div style={{ fontWeight: 600, fontSize: '14px', color: '#192B45', marginBottom: '2px' }}>
+                          {item.stepName}
+                        </div>
+                        <div style={{ fontSize: '12px', color: '#8A95A5' }}>
+                          {item.stageName}
+                          {item.painPoints > 0 && <span style={{ color: '#B84A5A', marginLeft: '8px' }}>⚠️ {item.painPoints} pain points</span>}
+                        </div>
+                      </div>
+                      
+                      {/* Effort Dropdown */}
+                      <div>
+                        <label style={{ fontSize: '10px', color: '#8A95A5', display: 'block', marginBottom: '4px', fontFamily: "'Interstate', sans-serif" }}>EFFORT</label>
+                        <select
+                          value={item.effort}
+                          onChange={(e) => updateOpportunity(item.stepId, 'effort', e.target.value)}
+                          style={{
+                            padding: '6px 24px 6px 8px',
+                            border: '1px solid #C8CED6',
+                            borderRadius: '4px',
+                            fontSize: '12px',
+                            background: `${effortColors[item.effort]}15`,
+                            color: effortColors[item.effort],
+                            fontWeight: 600,
+                            cursor: 'pointer',
+                            appearance: 'none',
+                            backgroundImage: `url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 24 24' fill='none' stroke='%238A95A5' stroke-width='2'%3E%3Cpath d='M6 9l6 6 6-6'/%3E%3C/svg%3E")`,
+                            backgroundRepeat: 'no-repeat',
+                            backgroundPosition: 'right 6px center'
+                          }}
+                        >
+                          <option value="S">Small</option>
+                          <option value="M">Medium</option>
+                          <option value="L">Large</option>
+                          <option value="XL">X-Large</option>
+                        </select>
+                      </div>
+                      
+                      {/* Phase Dropdown */}
+                      <div>
+                        <label style={{ fontSize: '10px', color: '#8A95A5', display: 'block', marginBottom: '4px', fontFamily: "'Interstate', sans-serif" }}>PHASE</label>
+                        <select
+                          value={item.phase}
+                          onChange={(e) => updateOpportunity(item.stepId, 'phase', parseInt(e.target.value))}
+                          style={{
+                            padding: '6px 24px 6px 8px',
+                            border: '1px solid #C8CED6',
+                            borderRadius: '4px',
+                            fontSize: '12px',
+                            cursor: 'pointer',
+                            appearance: 'none',
+                            backgroundImage: `url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 24 24' fill='none' stroke='%238A95A5' stroke-width='2'%3E%3Cpath d='M6 9l6 6 6-6'/%3E%3C/svg%3E")`,
+                            backgroundRepeat: 'no-repeat',
+                            backgroundPosition: 'right 6px center'
+                          }}
+                        >
+                          {phases.map(p => (
+                            <option key={p.id} value={p.id}>{p.name}</option>
+                          ))}
+                        </select>
+                      </div>
+                      
+                      {/* Owner Input */}
+                      <div>
+                        <label style={{ fontSize: '10px', color: '#8A95A5', display: 'block', marginBottom: '4px', fontFamily: "'Interstate', sans-serif" }}>OWNER</label>
+                        <input
+                          type="text"
+                          value={item.owner}
+                          onChange={(e) => updateOpportunity(item.stepId, 'owner', e.target.value)}
+                          placeholder="Assign..."
+                          style={{
+                            padding: '6px 8px',
+                            border: '1px solid #C8CED6',
+                            borderRadius: '4px',
+                            fontSize: '12px',
+                            width: '100px'
+                          }}
+                        />
+                      </div>
+                      
+                      {/* Savings */}
+                      <div style={{ textAlign: 'right' }}>
+                        <div style={{ fontWeight: 700, fontSize: '16px', color: '#2D8A6E' }}>
+                          {formatCurrency(item.savings)}
+                        </div>
+                        <div style={{ fontSize: '11px', color: '#8A95A5' }}>
+                          {item.savingsPercent}% savings
+                        </div>
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              </div>
+            );
+          })}
+          
+          {opportunities.length === 0 && (
+            <div style={{ 
+              textAlign: 'center', 
+              padding: '60px 24px', 
+              background: '#F4F5F7', 
+              borderRadius: '12px',
+              color: '#556275'
+            }}>
+              <div style={{ fontSize: '48px', marginBottom: '16px' }}>🎯</div>
+              <h4 style={{ margin: '0 0 8px', color: '#192B45' }}>No improvement opportunities identified</h4>
+              <p style={{ margin: 0, fontSize: '14px' }}>
+                Mark steps with automation/improvement potential in the editor to see them here
+              </p>
+            </div>
+          )}
         </div>
       );
     }
@@ -8942,6 +9410,26 @@ FATHOM - Journey intelligence for modern operations`);
                         🔻 Funnel
                       </button>
                     )}
+                    <button 
+                      onClick={() => setDashboardTab('plan')}
+                      style={{ 
+                        padding: '8px 14px', 
+                        background: dashboardTab === 'plan' ? '#FFF' : 'transparent',
+                        color: dashboardTab === 'plan' ? '#192B45' : 'rgba(255,255,255,0.7)',
+                        border: 'none',
+                        borderRadius: '6px',
+                        cursor: 'pointer',
+                        fontFamily: "'Interstate', sans-serif",
+                        fontSize: '12px',
+                        fontWeight: 500,
+                        display: 'flex',
+                        alignItems: 'center',
+                        gap: '5px',
+                        transition: 'all 0.15s'
+                      }}
+                    >
+                      📋 Plan
+                    </button>
                   </div>
                   {/* Right: Close button */}
                   <button 
@@ -8974,6 +9462,9 @@ FATHOM - Journey intelligence for modern operations`);
                   )}
                   {dashboardTab === 'funnel' && config.funnel?.enabled && (
                     <FunnelDashboard config={config} formatTime={formatTime} />
+                  )}
+                  {dashboardTab === 'plan' && (
+                    <ImprovementPlan config={config} stages={config.stages} personas={config.personas} formatTime={formatTime} updateConfig={setConfig} />
                   )}
                 </div>
               </div>
