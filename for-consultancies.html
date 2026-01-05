@@ -8,6 +8,9 @@
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Open+Sans:wght@400;500;600;700&display=swap" rel="stylesheet">
+  <script src="https://unpkg.com/react@18/umd/react.production.min.js"></script>
+  <script src="https://unpkg.com/react-dom@18/umd/react-dom.production.min.js"></script>
+  <script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
   <style>
     /* Interstate Font Family - Brand/Display Font */
     @font-face {
@@ -80,59 +83,57 @@
       line-height: 1.2;
     }
     
-    /* Navigation */
-    .nav {
-      background: var(--navy-700);
-      padding: 16px 24px;
-      position: sticky;
-      top: 0;
-      z-index: 100;
+    /* Hero logo entrance animation */
+    .hero-logo {
+      animation: heroLogoIn 0.8s ease-out forwards;
+      opacity: 0;
     }
-    .nav-inner {
-      max-width: 1200px;
-      margin: 0 auto;
-      display: flex;
-      justify-content: space-between;
-      align-items: center;
-    }
-    .nav-logo {
-      height: 28px;
-    }
-    .nav-links {
-      display: flex;
-      gap: 32px;
-      align-items: center;
-    }
-    .nav-links a {
-      color: rgba(255,255,255,0.8);
-      text-decoration: none;
-      font-size: 14px;
-      font-family: var(--font-display);
-      transition: color 0.15s;
-    }
-    .nav-links a:hover {
-      color: #FFF;
-    }
-    .nav-cta {
-      background: var(--success) !important;
-      color: #FFF !important;
-      padding: 10px 20px;
-      border-radius: 6px;
-      font-weight: 500;
-    }
-    .nav-cta:hover {
-      background: #257A5E !important;
+    @keyframes heroLogoIn {
+      0% {
+        opacity: 0;
+        transform: translateY(-20px);
+      }
+      100% {
+        opacity: 1;
+        transform: translateY(0);
+      }
     }
     
-    /* Hero Section */
-    .hero {
-      background: linear-gradient(180deg, var(--navy-700) 0%, var(--navy-900) 100%);
-      color: #FFF;
-      padding: 100px 24px 120px;
+    /* Hero content staggered entrance */
+    .hero-badge {
+      animation: heroContentIn 0.7s ease-out 0.2s forwards;
+      opacity: 0;
+    }
+    .hero-headline {
+      animation: heroContentIn 0.7s ease-out 0.35s forwards;
+      opacity: 0;
+    }
+    .hero-subhead {
+      animation: heroContentIn 0.7s ease-out 0.5s forwards;
+      opacity: 0;
+    }
+    .hero-buttons {
+      animation: heroContentIn 0.7s ease-out 0.65s forwards;
+      opacity: 0;
+    }
+    @keyframes heroContentIn {
+      0% {
+        opacity: 0;
+        transform: translateY(20px);
+      }
+      100% {
+        opacity: 1;
+        transform: translateY(0);
+      }
+    }
+    
+    /* Hero gradient background with topographic pattern */
+    .hero-bg {
+      background: linear-gradient(135deg, var(--navy-700) 0%, var(--navy-950) 100%);
       position: relative;
       overflow: hidden;
     }
-    .hero::before {
+    .hero-bg::before {
       content: '';
       position: absolute;
       inset: 0;
@@ -140,7 +141,7 @@
       opacity: 1;
       pointer-events: none;
     }
-    .hero::after {
+    .hero-bg::after {
       content: '';
       position: absolute;
       top: -50%;
@@ -150,65 +151,13 @@
       background: radial-gradient(ellipse at center, rgba(91, 138, 154, 0.1) 0%, transparent 60%);
       pointer-events: none;
     }
-    .hero-inner {
-      max-width: 900px;
-      margin: 0 auto;
-      text-align: center;
-      position: relative;
-      z-index: 1;
-    }
-    .hero-badge {
-      display: inline-block;
-      background: rgba(255,255,255,0.1);
-      border: 1px solid rgba(255,255,255,0.2);
-      padding: 8px 16px;
-      border-radius: 20px;
-      font-size: 13px;
-      font-family: var(--font-display);
-      margin-bottom: 32px;
-      color: var(--steel-300);
-    }
-    .hero h1 {
-      font-size: clamp(36px, 6vw, 56px);
-      font-weight: 700;
-      margin-bottom: 24px;
-      letter-spacing: -1px;
-    }
-    .hero h1 span {
-      color: var(--steel-400);
-    }
-    .hero p {
-      font-size: 20px;
-      color: rgba(255,255,255,0.8);
-      max-width: 700px;
-      margin: 0 auto 40px;
-    }
-    .hero-cta {
-      display: inline-flex;
-      align-items: center;
-      gap: 8px;
-      background: var(--success);
-      color: #FFF;
-      padding: 16px 32px;
-      border-radius: 8px;
-      text-decoration: none;
-      font-family: var(--font-display);
-      font-size: 16px;
-      font-weight: 500;
-      transition: all 0.2s;
-    }
-    .hero-cta:hover {
-      background: #257A5E;
-      transform: translateY(-2px);
-    }
     
-    /* Problem Section */
-    .problem {
-      padding: 100px 24px;
+    /* Section with light topographic pattern */
+    .section-alt {
       background: var(--slate-50);
       position: relative;
     }
-    .problem::before {
+    .section-alt::before {
       content: '';
       position: absolute;
       inset: 0;
@@ -217,285 +166,14 @@
       pointer-events: none;
       z-index: 0;
     }
-    .problem-inner {
-      max-width: 800px;
-      margin: 0 auto;
-      position: relative;
-      z-index: 1;
-    }
-    .section-label {
-      font-family: var(--font-display);
-      font-size: 12px;
-      font-weight: 600;
-      text-transform: uppercase;
-      letter-spacing: 1.5px;
-      color: var(--steel-500);
-      margin-bottom: 16px;
-    }
-    .problem h2 {
-      font-size: clamp(28px, 4vw, 40px);
-      color: var(--navy-700);
-      margin-bottom: 32px;
-    }
-    .problem p {
-      font-size: 18px;
-      color: var(--slate-600);
-      margin-bottom: 24px;
-    }
-    .problem-list {
-      list-style: none;
-      margin-top: 40px;
-    }
-    .problem-list li {
-      display: flex;
-      align-items: flex-start;
-      gap: 16px;
-      padding: 20px 0;
-      border-bottom: 1px solid var(--slate-200);
-    }
-    .problem-list li:last-child {
-      border-bottom: none;
-    }
-    .problem-icon {
-      width: 40px;
-      height: 40px;
-      background: #FFF;
-      border-radius: 8px;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      font-size: 20px;
-      flex-shrink: 0;
-      box-shadow: 0 2px 8px rgba(0,0,0,0.06);
-    }
-    .problem-list strong {
-      display: block;
-      font-family: var(--font-display);
-      color: var(--slate-900);
-      margin-bottom: 4px;
-    }
-    .problem-list span {
-      color: var(--slate-500);
-      font-size: 15px;
-    }
     
-    /* Solution Section */
-    .solution {
-      padding: 100px 24px;
-      background: #FFF;
-    }
-    .solution-inner {
-      max-width: 1100px;
-      margin: 0 auto;
-    }
-    .solution-header {
-      text-align: center;
-      max-width: 700px;
-      margin: 0 auto 60px;
-    }
-    .solution h2 {
-      font-size: clamp(28px, 4vw, 40px);
-      color: var(--navy-700);
-      margin-bottom: 20px;
-    }
-    .solution-header p {
-      font-size: 18px;
-      color: var(--slate-600);
-    }
-    .metrics-grid {
-      display: grid;
-      grid-template-columns: repeat(3, 1fr);
-      gap: 24px;
-      margin-bottom: 60px;
-    }
-    .metric-card {
-      background: var(--navy-700);
-      color: #FFF;
-      padding: 32px;
-      border-radius: 12px;
-      text-align: center;
-    }
-    .metric-value {
-      font-family: var(--font-display);
-      font-size: 36px;
-      font-weight: 700;
-      margin-bottom: 8px;
-    }
-    .metric-card:nth-child(1) .metric-value { color: var(--steel-300); }
-    .metric-card:nth-child(2) .metric-value { color: var(--amber-500); }
-    .metric-card:nth-child(3) .metric-value { color: var(--success); }
-    .metric-label {
-      font-size: 14px;
-      opacity: 0.8;
-    }
-    .output-example {
-      background: var(--slate-50);
-      border-radius: 12px;
-      padding: 40px;
-      border: 1px solid var(--slate-200);
-    }
-    .output-example h3 {
-      font-size: 18px;
-      color: var(--navy-700);
-      margin-bottom: 24px;
-    }
-    .output-list {
-      display: grid;
-      grid-template-columns: repeat(2, 1fr);
-      gap: 16px;
-    }
-    .output-item {
-      display: flex;
-      align-items: center;
-      gap: 12px;
-      background: #FFF;
-      padding: 16px 20px;
-      border-radius: 8px;
-      font-size: 15px;
-      color: var(--slate-700);
-      box-shadow: 0 2px 8px rgba(0,0,0,0.04);
-    }
-    .output-item span {
-      font-size: 20px;
-    }
-    
-    /* Benefits Section */
-    .benefits {
-      padding: 100px 24px;
-      background: var(--navy-900);
-      color: #FFF;
-    }
-    .benefits-inner {
-      max-width: 1100px;
-      margin: 0 auto;
-    }
-    .benefits-header {
-      text-align: center;
-      margin-bottom: 60px;
-    }
-    .benefits h2 {
-      font-size: clamp(28px, 4vw, 40px);
-      margin-bottom: 16px;
-    }
-    .benefits-header p {
-      font-size: 18px;
-      opacity: 0.7;
-    }
-    .benefits-grid {
-      display: grid;
-      grid-template-columns: repeat(2, 1fr);
-      gap: 32px;
-    }
-    .benefit-card {
-      background: rgba(255,255,255,0.05);
-      border: 1px solid rgba(255,255,255,0.1);
-      border-radius: 12px;
-      padding: 32px;
-    }
-    .benefit-number {
-      display: inline-flex;
-      align-items: center;
-      justify-content: center;
-      width: 36px;
-      height: 36px;
-      background: var(--success);
-      border-radius: 50%;
-      font-family: var(--font-display);
-      font-weight: 700;
-      font-size: 16px;
-      margin-bottom: 20px;
-    }
-    .benefit-card h3 {
-      font-size: 20px;
-      margin-bottom: 12px;
-    }
-    .benefit-card p {
-      font-size: 15px;
-      opacity: 0.7;
-      line-height: 1.6;
-    }
-    
-    /* Comparison Section */
-    .comparison {
-      padding: 100px 24px;
-      background: #FFF;
-    }
-    .comparison-inner {
-      max-width: 900px;
-      margin: 0 auto;
-    }
-    .comparison h2 {
-      font-size: clamp(28px, 4vw, 40px);
-      color: var(--navy-700);
-      text-align: center;
-      margin-bottom: 60px;
-    }
-    .comparison-table {
-      display: grid;
-      grid-template-columns: 1fr 1fr;
-      gap: 32px;
-    }
-    .comparison-col {
-      padding: 32px;
-      border-radius: 12px;
-    }
-    .comparison-col.excel {
-      background: var(--slate-50);
-      border: 1px solid var(--slate-200);
-    }
-    .comparison-col.fathom {
-      background: var(--success-light);
-      border: 2px solid var(--success);
-    }
-    .comparison-col h3 {
-      font-size: 18px;
-      margin-bottom: 24px;
-      display: flex;
-      align-items: center;
-      gap: 10px;
-    }
-    .comparison-col.excel h3 { color: var(--slate-600); }
-    .comparison-col.fathom h3 { color: var(--success); }
-    .comparison-list {
-      list-style: none;
-    }
-    .comparison-list li {
-      padding: 12px 0;
-      font-size: 15px;
-      display: flex;
-      align-items: flex-start;
-      gap: 10px;
-    }
-    .comparison-col.excel .comparison-list li {
-      color: var(--slate-600);
-    }
-    .comparison-col.fathom .comparison-list li {
-      color: var(--slate-700);
-    }
-    .comparison-list li::before {
-      flex-shrink: 0;
-      margin-top: 2px;
-    }
-    .comparison-col.excel .comparison-list li::before {
-      content: '✗';
-      color: var(--error);
-    }
-    .comparison-col.fathom .comparison-list li::before {
-      content: '✓';
-      color: var(--success);
-      font-weight: 700;
-    }
-    
-    /* CTA Section */
-    .cta {
-      padding: 100px 24px;
-      background: linear-gradient(180deg, var(--navy-700) 0%, var(--navy-900) 100%);
-      color: #FFF;
-      text-align: center;
+    /* CTA with dark topographic pattern */
+    .cta-bg {
+      background: linear-gradient(135deg, var(--navy-700) 0%, var(--navy-950) 100%);
       position: relative;
       overflow: hidden;
     }
-    .cta::before {
+    .cta-bg::before {
       content: '';
       position: absolute;
       inset: 0;
@@ -503,319 +181,458 @@
       opacity: 1;
       pointer-events: none;
     }
-    .cta-inner {
-      max-width: 700px;
-      margin: 0 auto;
-      position: relative;
-      z-index: 1;
-    }
-    .cta h2 {
-      font-size: clamp(28px, 4vw, 40px);
-      margin-bottom: 20px;
-    }
-    .cta p {
-      font-size: 18px;
-      opacity: 0.8;
-      margin-bottom: 40px;
-    }
-    .cta-buttons {
-      display: flex;
-      gap: 16px;
-      justify-content: center;
-      flex-wrap: wrap;
-    }
-    .cta-primary {
-      background: var(--success);
-      color: #FFF;
-      padding: 16px 32px;
-      border-radius: 8px;
-      text-decoration: none;
-      font-family: var(--font-display);
-      font-size: 16px;
-      font-weight: 500;
-      transition: all 0.2s;
-    }
-    .cta-primary:hover {
-      background: #257A5E;
-      transform: translateY(-2px);
-    }
-    .cta-secondary {
-      background: transparent;
-      color: #FFF;
-      padding: 16px 32px;
-      border-radius: 8px;
-      text-decoration: none;
-      font-family: var(--font-display);
-      font-size: 16px;
-      font-weight: 500;
-      border: 1px solid rgba(255,255,255,0.3);
-      transition: all 0.2s;
-    }
-    .cta-secondary:hover {
-      background: rgba(255,255,255,0.1);
-      border-color: rgba(255,255,255,0.5);
-    }
     
-    /* Footer */
-    .footer {
-      background: var(--navy-950);
-      color: rgba(255,255,255,0.5);
-      padding: 40px 24px;
-    }
-    .footer-inner {
-      max-width: 1100px;
-      margin: 0 auto;
-      display: flex;
-      justify-content: space-between;
+    /* Buttons */
+    .btn {
+      display: inline-flex;
       align-items: center;
+      justify-content: center;
+      gap: 8px;
+      padding: 14px 28px;
+      border-radius: 8px;
+      font-size: 15px;
+      font-weight: 500;
+      cursor: pointer;
+      transition: all 0.2s;
+      border: none;
+      font-family: inherit;
+      text-decoration: none;
     }
-    .footer-logo {
-      height: 24px;
-      opacity: 0.5;
-    }
-    .footer-tagline {
-      font-family: var(--font-display);
-      font-size: 14px;
-      font-style: italic;
-    }
+    .btn-primary { background: var(--success); color: #FFF; }
+    .btn-primary:hover { background: #257A5E; transform: translateY(-1px); }
+    .btn-light { background: rgba(255,255,255,0.15); color: #FFF; border: 1px solid rgba(255,255,255,0.3); }
+    .btn-light:hover { background: rgba(255,255,255,0.25); }
+    .btn-secondary { background: transparent; color: #FFF; border: 1px solid rgba(255,255,255,0.3); }
+    .btn-secondary:hover { background: rgba(255,255,255,0.1); }
     
-    /* Responsive */
-    @media (max-width: 900px) {
-      .metrics-grid {
-        grid-template-columns: 1fr;
-      }
-      .output-list {
-        grid-template-columns: 1fr;
-      }
-      .benefits-grid {
-        grid-template-columns: 1fr;
-      }
-      .comparison-table {
-        grid-template-columns: 1fr;
-      }
-    }
+    /* Hide nav links on mobile */
     @media (max-width: 768px) {
-      .nav-links {
-        display: none;
-      }
-      .hero {
-        padding: 60px 24px 80px;
-      }
-      .hero p {
-        font-size: 17px;
-      }
-      .problem, .solution, .benefits, .comparison, .cta {
-        padding: 60px 24px;
-      }
-      .footer-inner {
-        flex-direction: column;
-        gap: 16px;
-        text-align: center;
-      }
+      .nav-links { display: none !important; }
+      .hero-headline { font-size: 36px !important; }
     }
   </style>
 </head>
 <body>
-  <!-- Navigation -->
-  <nav class="nav">
-    <div class="nav-inner">
-      <a href="/">
-        <img src="logo_light.png" alt="FATHOM" class="nav-logo">
-      </a>
-      <div class="nav-links">
-        <a href="/about.html">About</a>
-        <a href="/whats-new.html">What's New</a>
-        <a href="/dashboard.html" class="nav-cta">Get Started</a>
-      </div>
-    </div>
-  </nav>
-
-  <!-- Hero -->
-  <section class="hero">
-    <div class="hero-inner">
-      <div class="hero-badge">For Consultancies & Advisory Firms</div>
-      <h1>Stop selling time.<br><span>Start selling clarity.</span></h1>
-      <p>Turn operational process analysis into a repeatable, visual, quantified product that wins clients and expands engagements.</p>
-      <a href="/dashboard.html" class="hero-cta">
-        Try FATHOM Free
-        <svg width="20" height="20" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M5 12h14M12 5l7 7-7 7"/></svg>
-      </a>
-    </div>
-  </section>
-
-  <!-- Problem -->
-  <section class="problem">
-    <div class="problem-inner">
-      <div class="section-label">The Problem</div>
-      <h2>Your consultants are brilliant. But Excel isn't helping them shine.</h2>
-      <p>Right now your team spends days building bespoke spreadsheets for every engagement — manually calculating process costs, drawing journey maps in PowerPoint, and hoping the formulas don't break when the client asks "what if we automated step 7?"</p>
+  <div id="root"></div>
+  
+  <script type="text/babel">
+    const { useState, useEffect } = React;
+    
+    function ConsultanciesPage() {
+      const [scrolled, setScrolled] = useState(false);
+      const [logoVisible, setLogoVisible] = useState(false);
       
-      <ul class="problem-list">
-        <li>
-          <div class="problem-icon">📊</div>
-          <div>
-            <strong>The deliverable looks different every time</strong>
-            <span>No consistent methodology means no scalable product</span>
-          </div>
-        </li>
-        <li>
-          <div class="problem-icon">🧠</div>
-          <div>
-            <strong>The approach lives in someone's head</strong>
-            <span>When that consultant leaves, so does your methodology</span>
-          </div>
-        </li>
-        <li>
-          <div class="problem-icon">⏱️</div>
-          <div>
-            <strong>Discovery takes weeks, not days</strong>
-            <span>Manual data gathering and spreadsheet wrangling kills momentum</span>
-          </div>
-        </li>
-        <li>
-          <div class="problem-icon">💸</div>
-          <div>
-            <strong>"We think there are inefficiencies" doesn't close deals</strong>
-            <span>Vague findings mean CFOs don't sign off</span>
-          </div>
-        </li>
-      </ul>
-    </div>
-  </section>
-
-  <!-- Solution -->
-  <section class="solution">
-    <div class="solution-inner">
-      <div class="solution-header">
-        <div class="section-label">The Solution</div>
-        <h2>FATHOM quantifies what spreadsheets can't</h2>
-        <p>In one afternoon, map a client's end-to-end process — who does what, how long it takes, what it costs, where it hurts — and show them exactly where their money goes.</p>
-      </div>
+      useEffect(() => {
+        const handleScroll = () => {
+          const scrollY = window.scrollY;
+          setScrolled(scrollY > 50);
+          setLogoVisible(scrollY > 200);
+        };
+        window.addEventListener('scroll', handleScroll);
+        return () => window.removeEventListener('scroll', handleScroll);
+      }, []);
       
-      <div class="metrics-grid">
-        <div class="metric-card">
-          <div class="metric-value">£2,549</div>
-          <div class="metric-label">Cost per client onboarding</div>
-        </div>
-        <div class="metric-card">
-          <div class="metric-value">28%</div>
-          <div class="metric-label">Of time in highest-friction stage</div>
-        </div>
-        <div class="metric-card">
-          <div class="metric-value">£1,273</div>
-          <div class="metric-label">Potential savings identified</div>
-        </div>
-      </div>
+      const formatCurrency = (amount) => {
+        if (amount >= 1000) return `£${(amount / 1000).toFixed(0)}k`;
+        return `£${Math.round(amount)}`;
+      };
       
-      <div class="output-example">
-        <h3>What you can tell clients in real-time:</h3>
-        <div class="output-list">
-          <div class="output-item">
-            <span>📍</span>
-            "Stage 3 is 40% of your pain points"
-          </div>
-          <div class="output-item">
-            <span>💰</span>
-            "These 5 steps cost £340k annually"
-          </div>
-          <div class="output-item">
-            <span>🎯</span>
-            "Automation here saves 50-70%"
-          </div>
-          <div class="output-item">
-            <span>📉</span>
-            "Your funnel drops 23% at KYC"
-          </div>
+      return (
+        <div>
+          {/* Navigation */}
+          <nav style={{
+            position: 'fixed',
+            top: 0,
+            left: 0,
+            right: 0,
+            zIndex: 100,
+            padding: '16px 32px',
+            display: 'flex',
+            justifyContent: 'space-between',
+            alignItems: 'center',
+            background: scrolled ? 'rgba(25, 43, 69, 0.98)' : 'transparent',
+            backdropFilter: scrolled ? 'blur(12px)' : 'none',
+            transition: 'all 0.3s',
+            borderBottom: scrolled ? '1px solid rgba(255,255,255,0.1)' : 'none'
+          }}>
+            <img 
+              src="logo_light.png" 
+              alt="FATHOM" 
+              style={{ 
+                height: '28px',
+                opacity: logoVisible ? 1 : 0,
+                transform: logoVisible ? 'translateY(0)' : 'translateY(-8px)',
+                transition: 'opacity 0.4s ease, transform 0.4s ease'
+              }} 
+            />
+            <div className="nav-links" style={{ display: 'flex', gap: '40px', alignItems: 'center' }}>
+              <a href="/" style={{ color: 'rgba(255,255,255,0.8)', textDecoration: 'none', fontSize: '14px', fontWeight: 500 }}>Home</a>
+              <a href="#benefits" style={{ color: 'rgba(255,255,255,0.8)', textDecoration: 'none', fontSize: '14px', fontWeight: 500 }}>Benefits</a>
+              <a href="#comparison" style={{ color: 'rgba(255,255,255,0.8)', textDecoration: 'none', fontSize: '14px', fontWeight: 500 }}>Why FATHOM</a>
+              <a href="/dashboard.html" className="btn btn-light" style={{ padding: '10px 24px' }}>
+                Get Started
+              </a>
+            </div>
+          </nav>
+          
+          {/* Hero Section */}
+          <section className="hero-bg" style={{ minHeight: '100vh', display: 'flex', flexDirection: 'column', justifyContent: 'center', padding: '120px 24px 80px' }}>
+            <div style={{ maxWidth: '800px', margin: '0 auto', position: 'relative', zIndex: 1 }}>
+              {/* Large Hero Logo */}
+              <img 
+                src="logo_light.png" 
+                alt="FATHOM" 
+                className="hero-logo"
+                style={{ height: '80px', marginBottom: '48px' }} 
+              />
+              
+              <div className="hero-badge" style={{ 
+                display: 'inline-block',
+                padding: '10px 20px', 
+                background: 'rgba(91, 138, 154, 0.2)', 
+                borderRadius: '24px', 
+                marginBottom: '28px',
+                fontSize: '13px',
+                color: 'var(--steel-300)',
+                fontWeight: 500,
+                letterSpacing: '0.5px'
+              }}>
+                FOR CONSULTANCIES & ADVISORY FIRMS
+              </div>
+              
+              <h1 className="hero-headline" style={{ 
+                fontSize: '56px', 
+                fontWeight: 300, 
+                color: '#FFF', 
+                marginBottom: '24px',
+                lineHeight: 1.1,
+                letterSpacing: '-1.5px'
+              }}>
+                Stop selling time.<br/>
+                <span style={{ color: 'var(--steel-400)', fontWeight: 600 }}>Start selling clarity.</span>
+              </h1>
+              
+              <p className="hero-subhead" style={{ 
+                fontSize: '20px', 
+                color: 'var(--slate-300)', 
+                marginBottom: '40px',
+                lineHeight: 1.7,
+                maxWidth: '600px'
+              }}>
+                Turn operational process analysis into a repeatable, visual, quantified product that wins clients and expands engagements.
+              </p>
+              
+              <div className="hero-buttons" style={{ display: 'flex', gap: '16px', flexWrap: 'wrap' }}>
+                <a href="/dashboard.html" className="btn btn-primary" style={{ padding: '18px 36px', fontSize: '16px' }}>
+                  Try FATHOM Free
+                  <svg width="20" height="20" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24"><path d="M5 12h14M12 5l7 7-7 7"/></svg>
+                </a>
+                <a href="mailto:hello@canfathom.co.uk" className="btn btn-secondary" style={{ padding: '18px 36px', fontSize: '16px' }}>
+                  Request a Demo
+                </a>
+              </div>
+            </div>
+          </section>
+          
+          {/* Problem Section */}
+          <section className="section-alt" style={{ padding: '100px 24px' }}>
+            <div style={{ maxWidth: '800px', margin: '0 auto', position: 'relative', zIndex: 1 }}>
+              <div style={{ 
+                fontFamily: 'var(--font-display)', 
+                fontSize: '12px', 
+                fontWeight: 600, 
+                textTransform: 'uppercase', 
+                letterSpacing: '1.5px', 
+                color: 'var(--steel-500)', 
+                marginBottom: '16px' 
+              }}>
+                The Problem
+              </div>
+              <h2 style={{ fontSize: 'clamp(28px, 4vw, 40px)', color: 'var(--navy-700)', marginBottom: '32px' }}>
+                Your consultants are brilliant. But Excel isn't helping them shine.
+              </h2>
+              <p style={{ fontSize: '18px', color: 'var(--slate-600)', marginBottom: '24px' }}>
+                Right now your team spends days building bespoke spreadsheets for every engagement — manually calculating process costs, drawing journey maps in PowerPoint, and hoping the formulas don't break when the client asks "what if we automated step 7?"
+              </p>
+              
+              <div style={{ marginTop: '40px', display: 'flex', flexDirection: 'column', gap: '0' }}>
+                {[
+                  { icon: '📊', title: 'The deliverable looks different every time', desc: 'No consistent methodology means no scalable product' },
+                  { icon: '🧠', title: "The approach lives in someone's head", desc: 'When that consultant leaves, so does your methodology' },
+                  { icon: '⏱️', title: 'Discovery takes weeks, not days', desc: 'Manual data gathering and spreadsheet wrangling kills momentum' },
+                  { icon: '💸', title: '"We think there are inefficiencies" doesn\'t close deals', desc: "Vague findings mean CFOs don't sign off" }
+                ].map((item, i) => (
+                  <div key={i} style={{ 
+                    display: 'flex', 
+                    alignItems: 'flex-start', 
+                    gap: '16px', 
+                    padding: '20px 0',
+                    borderBottom: i < 3 ? '1px solid var(--slate-200)' : 'none'
+                  }}>
+                    <div style={{ 
+                      width: '44px', 
+                      height: '44px', 
+                      background: '#FFF', 
+                      borderRadius: '10px', 
+                      display: 'flex', 
+                      alignItems: 'center', 
+                      justifyContent: 'center', 
+                      fontSize: '20px',
+                      flexShrink: 0,
+                      boxShadow: '0 2px 8px rgba(0,0,0,0.06)'
+                    }}>
+                      {item.icon}
+                    </div>
+                    <div>
+                      <strong style={{ display: 'block', fontFamily: 'var(--font-display)', color: 'var(--slate-900)', marginBottom: '4px' }}>{item.title}</strong>
+                      <span style={{ color: 'var(--slate-500)', fontSize: '15px' }}>{item.desc}</span>
+                    </div>
+                  </div>
+                ))}
+              </div>
+            </div>
+          </section>
+          
+          {/* Solution Section */}
+          <section style={{ padding: '100px 24px', background: '#FFF' }}>
+            <div style={{ maxWidth: '1100px', margin: '0 auto' }}>
+              <div style={{ textAlign: 'center', maxWidth: '700px', margin: '0 auto 60px' }}>
+                <div style={{ 
+                  fontFamily: 'var(--font-display)', 
+                  fontSize: '12px', 
+                  fontWeight: 600, 
+                  textTransform: 'uppercase', 
+                  letterSpacing: '1.5px', 
+                  color: 'var(--steel-500)', 
+                  marginBottom: '16px' 
+                }}>
+                  The Solution
+                </div>
+                <h2 style={{ fontSize: 'clamp(28px, 4vw, 40px)', color: 'var(--navy-700)', marginBottom: '20px' }}>
+                  FATHOM quantifies what spreadsheets can't
+                </h2>
+                <p style={{ fontSize: '18px', color: 'var(--slate-600)' }}>
+                  In one afternoon, map a client's end-to-end process — who does what, how long it takes, what it costs, where it hurts — and show them exactly where their money goes.
+                </p>
+              </div>
+              
+              {/* Metrics Grid */}
+              <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(200px, 1fr))', gap: '24px', marginBottom: '60px' }}>
+                {[
+                  { value: '£2,549', label: 'Cost per client onboarding', color: 'var(--steel-300)' },
+                  { value: '28%', label: 'Of time in highest-friction stage', color: 'var(--amber-500)' },
+                  { value: '£1,273', label: 'Potential savings identified', color: 'var(--success)' }
+                ].map((metric, i) => (
+                  <div key={i} style={{ 
+                    background: 'var(--navy-700)', 
+                    color: '#FFF', 
+                    padding: '32px', 
+                    borderRadius: '12px', 
+                    textAlign: 'center' 
+                  }}>
+                    <div style={{ fontFamily: 'var(--font-display)', fontSize: '36px', fontWeight: 700, marginBottom: '8px', color: metric.color }}>
+                      {metric.value}
+                    </div>
+                    <div style={{ fontSize: '14px', opacity: 0.8 }}>{metric.label}</div>
+                  </div>
+                ))}
+              </div>
+              
+              {/* Output Examples */}
+              <div style={{ background: 'var(--slate-50)', borderRadius: '12px', padding: '40px', border: '1px solid var(--slate-200)' }}>
+                <h3 style={{ fontSize: '18px', color: 'var(--navy-700)', marginBottom: '24px' }}>
+                  What you can tell clients in real-time:
+                </h3>
+                <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(250px, 1fr))', gap: '16px' }}>
+                  {[
+                    { icon: '📍', text: '"Stage 3 is 40% of your pain points"' },
+                    { icon: '💰', text: '"These 5 steps cost £340k annually"' },
+                    { icon: '🎯', text: '"Automation here saves 50-70%"' },
+                    { icon: '📉', text: '"Your funnel drops 23% at KYC"' }
+                  ].map((item, i) => (
+                    <div key={i} style={{ 
+                      display: 'flex', 
+                      alignItems: 'center', 
+                      gap: '12px', 
+                      background: '#FFF', 
+                      padding: '16px 20px', 
+                      borderRadius: '8px',
+                      fontSize: '15px',
+                      color: 'var(--slate-700)',
+                      boxShadow: '0 2px 8px rgba(0,0,0,0.04)'
+                    }}>
+                      <span style={{ fontSize: '20px' }}>{item.icon}</span>
+                      {item.text}
+                    </div>
+                  ))}
+                </div>
+              </div>
+            </div>
+          </section>
+          
+          {/* Benefits Section */}
+          <section id="benefits" style={{ padding: '100px 24px', background: 'var(--navy-900)', color: '#FFF' }}>
+            <div style={{ maxWidth: '1100px', margin: '0 auto' }}>
+              <div style={{ textAlign: 'center', marginBottom: '60px' }}>
+                <div style={{ 
+                  fontFamily: 'var(--font-display)', 
+                  fontSize: '12px', 
+                  fontWeight: 600, 
+                  textTransform: 'uppercase', 
+                  letterSpacing: '1.5px', 
+                  color: 'var(--steel-400)', 
+                  marginBottom: '16px' 
+                }}>
+                  Why Consultancies Choose FATHOM
+                </div>
+                <h2 style={{ fontSize: 'clamp(28px, 4vw, 40px)', marginBottom: '16px' }}>
+                  Five ways to transform your practice
+                </h2>
+                <p style={{ fontSize: '18px', opacity: 0.7 }}>
+                  FATHOM isn't just a tool — it's a new way to deliver value
+                </p>
+              </div>
+              
+              <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(300px, 1fr))', gap: '32px' }}>
+                {[
+                  { num: 1, title: 'Productise your methodology', desc: 'Stop selling time. Start selling a diagnostic. FATHOM becomes your "Process Health Check" — a fixed-fee, repeatable offering you can train juniors to deliver.' },
+                  { num: 2, title: 'Accelerate discovery', desc: 'What used to take 2 weeks of interviews and spreadsheet wrangling becomes a 2-day workshop with a live, interactive output. Clients see their process quantified in real-time.' },
+                  { num: 3, title: 'Make the business case undeniable', desc: '"We think there are inefficiencies" becomes "This process costs £847,000 annually — here are the 8 steps where automation saves you £340,000." CFOs sign off faster.' },
+                  { num: 4, title: 'Differentiate your pitch', desc: "Walk into a bid with a FATHOM demo of a similar journey. Show them what the output looks like before they've spent a penny. No competitor is doing this." },
+                  { num: 5, title: 'Expand the engagement', desc: "The diagnostic leads to implementation. Implementation needs monitoring. FATHOM gives you the baseline and the tracking — that's a multi-phase relationship, not a one-off report." }
+                ].map((item, i) => (
+                  <div key={i} style={{ 
+                    background: 'rgba(255,255,255,0.05)', 
+                    border: '1px solid rgba(255,255,255,0.1)', 
+                    borderRadius: '12px', 
+                    padding: '32px' 
+                  }}>
+                    <div style={{ 
+                      display: 'inline-flex', 
+                      alignItems: 'center', 
+                      justifyContent: 'center', 
+                      width: '36px', 
+                      height: '36px', 
+                      background: 'var(--success)', 
+                      borderRadius: '50%', 
+                      fontFamily: 'var(--font-display)', 
+                      fontWeight: 700, 
+                      fontSize: '16px', 
+                      marginBottom: '20px' 
+                    }}>
+                      {item.num}
+                    </div>
+                    <h3 style={{ fontSize: '20px', marginBottom: '12px' }}>{item.title}</h3>
+                    <p style={{ fontSize: '15px', opacity: 0.7, lineHeight: 1.6 }}>{item.desc}</p>
+                  </div>
+                ))}
+              </div>
+            </div>
+          </section>
+          
+          {/* Comparison Section */}
+          <section id="comparison" style={{ padding: '100px 24px', background: '#FFF' }}>
+            <div style={{ maxWidth: '900px', margin: '0 auto' }}>
+              <h2 style={{ fontSize: 'clamp(28px, 4vw, 40px)', color: 'var(--navy-700)', textAlign: 'center', marginBottom: '60px' }}>
+                Excel is a tool. FATHOM is a product.
+              </h2>
+              
+              <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(300px, 1fr))', gap: '32px' }}>
+                {/* Excel Column */}
+                <div style={{ background: 'var(--slate-50)', border: '1px solid var(--slate-200)', borderRadius: '12px', padding: '32px' }}>
+                  <h3 style={{ fontSize: '18px', marginBottom: '24px', display: 'flex', alignItems: 'center', gap: '10px', color: 'var(--slate-600)' }}>
+                    📊 The spreadsheet approach
+                  </h3>
+                  <ul style={{ listStyle: 'none' }}>
+                    {[
+                      'Rebuilt from scratch every engagement',
+                      'Formulas break when assumptions change',
+                      "Static output that's hard to update",
+                      "Methodology locked in one person's head",
+                      'Difficult to visualise for stakeholders',
+                      'No standard way to compare processes'
+                    ].map((item, i) => (
+                      <li key={i} style={{ 
+                        padding: '12px 0', 
+                        fontSize: '15px', 
+                        display: 'flex', 
+                        alignItems: 'flex-start', 
+                        gap: '10px',
+                        color: 'var(--slate-600)'
+                      }}>
+                        <span style={{ color: 'var(--error)', flexShrink: 0 }}>✗</span>
+                        {item}
+                      </li>
+                    ))}
+                  </ul>
+                </div>
+                
+                {/* FATHOM Column */}
+                <div style={{ background: 'var(--success-light)', border: '2px solid var(--success)', borderRadius: '12px', padding: '32px' }}>
+                  <h3 style={{ fontSize: '18px', marginBottom: '24px', display: 'flex', alignItems: 'center', gap: '10px', color: 'var(--success)' }}>
+                    🌊 The FATHOM approach
+                  </h3>
+                  <ul style={{ listStyle: 'none' }}>
+                    {[
+                      'Templates for common journey types',
+                      'Dynamic "what-if" scenario modelling',
+                      'Interactive, shareable outputs',
+                      'Consistent methodology across team',
+                      'Visual journey maps clients understand',
+                      'Benchmarking against similar processes'
+                    ].map((item, i) => (
+                      <li key={i} style={{ 
+                        padding: '12px 0', 
+                        fontSize: '15px', 
+                        display: 'flex', 
+                        alignItems: 'flex-start', 
+                        gap: '10px',
+                        color: 'var(--slate-700)'
+                      }}>
+                        <span style={{ color: 'var(--success)', fontWeight: 700, flexShrink: 0 }}>✓</span>
+                        {item}
+                      </li>
+                    ))}
+                  </ul>
+                </div>
+              </div>
+            </div>
+          </section>
+          
+          {/* CTA Section */}
+          <section className="cta-bg" style={{ padding: '100px 24px', color: '#FFF', textAlign: 'center' }}>
+            <div style={{ maxWidth: '700px', margin: '0 auto', position: 'relative', zIndex: 1 }}>
+              <h2 style={{ fontSize: 'clamp(28px, 4vw, 40px)', marginBottom: '20px' }}>
+                Your competitors are still copy-pasting process maps into PowerPoint.
+              </h2>
+              <p style={{ fontSize: '18px', opacity: 0.8, marginBottom: '40px' }}>
+                You'll be showing clients exactly where their money goes — and exactly how to get it back.
+              </p>
+              <div style={{ display: 'flex', gap: '16px', justifyContent: 'center', flexWrap: 'wrap' }}>
+                <a href="/dashboard.html" className="btn btn-primary" style={{ padding: '16px 32px' }}>
+                  Get Started Free
+                </a>
+                <a href="mailto:hello@canfathom.co.uk" className="btn btn-secondary" style={{ padding: '16px 32px' }}>
+                  Request a Demo
+                </a>
+              </div>
+            </div>
+          </section>
+          
+          {/* Footer */}
+          <footer style={{ background: 'var(--navy-950)', color: 'rgba(255,255,255,0.5)', padding: '40px 24px' }}>
+            <div style={{ maxWidth: '1100px', margin: '0 auto', display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexWrap: 'wrap', gap: '16px' }}>
+              <img src="logo_light.png" alt="FATHOM" style={{ height: '24px', opacity: 0.5 }} />
+              <div style={{ fontFamily: 'var(--font-display)', fontSize: '14px', fontStyle: 'italic' }}>
+                "See what your journeys really cost"
+              </div>
+            </div>
+          </footer>
         </div>
-      </div>
-    </div>
-  </section>
-
-  <!-- Benefits -->
-  <section class="benefits">
-    <div class="benefits-inner">
-      <div class="benefits-header">
-        <div class="section-label" style="color: var(--steel-400);">Why Consultancies Choose FATHOM</div>
-        <h2>Five ways to transform your practice</h2>
-        <p>FATHOM isn't just a tool — it's a new way to deliver value</p>
-      </div>
-      
-      <div class="benefits-grid">
-        <div class="benefit-card">
-          <div class="benefit-number">1</div>
-          <h3>Productise your methodology</h3>
-          <p>Stop selling time. Start selling a diagnostic. FATHOM becomes your "Process Health Check" — a fixed-fee, repeatable offering you can train juniors to deliver.</p>
-        </div>
-        <div class="benefit-card">
-          <div class="benefit-number">2</div>
-          <h3>Accelerate discovery</h3>
-          <p>What used to take 2 weeks of interviews and spreadsheet wrangling becomes a 2-day workshop with a live, interactive output. Clients see their process quantified in real-time.</p>
-        </div>
-        <div class="benefit-card">
-          <div class="benefit-number">3</div>
-          <h3>Make the business case undeniable</h3>
-          <p>"We think there are inefficiencies" becomes "This process costs £847,000 annually — here are the 8 steps where automation saves you £340,000." CFOs sign off faster.</p>
-        </div>
-        <div class="benefit-card">
-          <div class="benefit-number">4</div>
-          <h3>Differentiate your pitch</h3>
-          <p>Walk into a bid with a FATHOM demo of a similar journey. Show them what the output looks like before they've spent a penny. No competitor is doing this.</p>
-        </div>
-        <div class="benefit-card">
-          <div class="benefit-number">5</div>
-          <h3>Expand the engagement</h3>
-          <p>The diagnostic leads to implementation. Implementation needs monitoring. FATHOM gives you the baseline and the tracking — that's a multi-phase relationship, not a one-off report.</p>
-        </div>
-      </div>
-    </div>
-  </section>
-
-  <!-- Comparison -->
-  <section class="comparison">
-    <div class="comparison-inner">
-      <h2>Excel is a tool. FATHOM is a product.</h2>
-      
-      <div class="comparison-table">
-        <div class="comparison-col excel">
-          <h3>📊 The spreadsheet approach</h3>
-          <ul class="comparison-list">
-            <li>Rebuilt from scratch every engagement</li>
-            <li>Formulas break when assumptions change</li>
-            <li>Static output that's hard to update</li>
-            <li>Methodology locked in one person's head</li>
-            <li>Difficult to visualise for stakeholders</li>
-            <li>No standard way to compare processes</li>
-          </ul>
-        </div>
-        <div class="comparison-col fathom">
-          <h3>🌊 The FATHOM approach</h3>
-          <ul class="comparison-list">
-            <li>Templates for common journey types</li>
-            <li>Dynamic "what-if" scenario modelling</li>
-            <li>Interactive, shareable outputs</li>
-            <li>Consistent methodology across team</li>
-            <li>Visual journey maps clients understand</li>
-            <li>Benchmarking against similar processes</li>
-          </ul>
-        </div>
-      </div>
-    </div>
-  </section>
-
-  <!-- CTA -->
-  <section class="cta">
-    <div class="cta-inner">
-      <h2>Your competitors are still copy-pasting process maps into PowerPoint.</h2>
-      <p>You'll be showing clients exactly where their money goes — and exactly how to get it back.</p>
-      <div class="cta-buttons">
-        <a href="/dashboard.html" class="cta-primary">Get Started Free</a>
-        <a href="/cdn-cgi/l/email-protection#026a676e6e6d4261636c6463766a6d6f2c616d2c7769" class="cta-secondary">Request a Demo</a>
-      </div>
-    </div>
-  </section>
-
-  <!-- Footer -->
-  <footer class="footer">
-    <div class="footer-inner">
-      <img src="logo_light.png" alt="FATHOM" class="footer-logo">
-      <div class="footer-tagline">"See what your journeys really cost"</
+      );
+    }
+    
+    ReactDOM.render(<ConsultanciesPage />, document.getElementById('root'));
+  </script>
+</body>
+</html>
