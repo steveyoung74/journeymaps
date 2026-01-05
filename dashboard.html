@@ -705,6 +705,135 @@
       top: 16px;
       right: 16px;
     }
+    
+    /* Miro-style star on hover */
+    .journey-card-star {
+      position: absolute;
+      top: 12px;
+      right: 48px;
+      width: 32px;
+      height: 32px;
+      border-radius: 6px;
+      background: rgba(255, 255, 255, 0.15);
+      border: none;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 16px;
+      opacity: 0;
+      transition: opacity 0.15s, background 0.15s, transform 0.15s;
+      z-index: 5;
+    }
+    .journey-card-star:hover {
+      background: rgba(255, 255, 255, 0.25);
+      transform: scale(1.1);
+    }
+    .journey-card-star.starred {
+      opacity: 1;
+    }
+    .journey-card:hover .journey-card-star {
+      opacity: 1;
+    }
+    
+    /* Miro-style options button */
+    .journey-card-options {
+      position: absolute;
+      top: 12px;
+      right: 12px;
+      width: 32px;
+      height: 32px;
+      border-radius: 6px;
+      background: rgba(255, 255, 255, 0.15);
+      border: none;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 18px;
+      font-weight: bold;
+      color: #FFF;
+      opacity: 0;
+      transition: opacity 0.15s, background 0.15s;
+      z-index: 5;
+    }
+    .journey-card-options:hover {
+      background: rgba(255, 255, 255, 0.25);
+    }
+    .journey-card:hover .journey-card-options {
+      opacity: 1;
+    }
+    
+    /* Options dropdown menu */
+    .card-options-dropdown {
+      position: absolute;
+      top: 48px;
+      right: 12px;
+      background: #FFF;
+      border-radius: 12px;
+      box-shadow: 0 4px 24px rgba(0, 0, 0, 0.15), 0 0 0 1px rgba(0, 0, 0, 0.05);
+      min-width: 200px;
+      z-index: 100;
+      padding: 8px 0;
+      animation: dropdownFadeIn 0.15s ease;
+    }
+    @keyframes dropdownFadeIn {
+      from { opacity: 0; transform: translateY(-8px); }
+      to { opacity: 1; transform: translateY(0); }
+    }
+    .card-options-item {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      padding: 10px 16px;
+      font-size: 14px;
+      color: var(--slate-700);
+      cursor: pointer;
+      transition: background 0.1s;
+      border: none;
+      background: none;
+      width: 100%;
+      text-align: left;
+      font-family: inherit;
+    }
+    .card-options-item:hover {
+      background: var(--slate-50);
+    }
+    .card-options-item.danger {
+      color: var(--error);
+    }
+    .card-options-item.danger:hover {
+      background: var(--error-light);
+    }
+    .card-options-item.disabled {
+      color: var(--slate-300);
+      cursor: not-allowed;
+    }
+    .card-options-item.disabled:hover {
+      background: transparent;
+    }
+    .card-options-item-icon {
+      width: 18px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 15px;
+    }
+    .card-options-divider {
+      height: 1px;
+      background: var(--slate-100);
+      margin: 6px 0;
+    }
+    
+    /* On touch devices, always show if starred */
+    @media (hover: none) {
+      .journey-card-star.starred {
+        opacity: 1;
+      }
+      .journey-card-options {
+        opacity: 1;
+      }
+    }
     .journey-card-body {
       padding: 16px 20px;
     }
@@ -1646,8 +1775,8 @@
       const [activeTab, setActiveTab] = useState('my-maps');
       const [showMobileMenu, setShowMobileMenu] = useState(false);
       const [showProfileMenu, setShowProfileMenu] = useState(false);
-      const [manageMode, setManageMode] = useState(false);
-      const [selectedMaps, setSelectedMaps] = useState(new Set());
+      const [openOptionsMenu, setOpenOptionsMenu] = useState(null); // mapId of open menu
+      const [showRenameModal, setShowRenameModal] = useState(null); // mapId for rename
       const [viewMode, setViewMode] = useState('cards'); // 'cards' or 'list'
       const [isMobile, setIsMobile] = useState(window.innerWidth < 768);
       
@@ -1664,16 +1793,19 @@
         return name.split(' ').map(n => n[0]).join('').toUpperCase().slice(0, 2);
       };
       
-      // Close profile menu when clicking outside
+      // Close profile menu and options menu when clicking outside
       useEffect(() => {
         const handleClickOutside = (e) => {
           if (showProfileMenu && !e.target.closest('.profile-container')) {
             setShowProfileMenu(false);
           }
+          if (openOptionsMenu && !e.target.closest('.card-options-container')) {
+            setOpenOptionsMenu(null);
+          }
         };
         document.addEventListener('click', handleClickOutside);
         return () => document.removeEventListener('click', handleClickOutside);
-      }, [showProfileMenu]);
+      }, [showProfileMenu, openOptionsMenu]);
 
       useEffect(() => {
         window.scrollTo(0, 0);
@@ -2127,31 +2259,17 @@
       // sharedMaps is now loaded from state via fetchSharedMaps()
       
       const openMap = (mapId) => {
-        if (manageMode) return; // Don't open in manage mode
         const map = maps.find(m => m.id === mapId);
         const title = map?.config?.meta?.title || map?.title || 'Journey Map';
         window.location.href = `editor.html?id=${mapId}&title=${encodeURIComponent(title)}`;
       };
 
-      // Manage mode functions
-      const toggleSelectMap = (mapId) => {
-        const map = maps.find(m => m.id === mapId);
-        // Prevent selecting locked maps
-        if (map?.locked) {
-          alert('This map is locked and cannot be selected for deletion. Unlock it first.');
-          return;
+      // Toggle favourite/star
+      const toggleFavourite = async (mapId, e) => {
+        if (e) {
+          e.stopPropagation();
+          e.preventDefault();
         }
-        
-        const newSelected = new Set(selectedMaps);
-        if (newSelected.has(mapId)) {
-          newSelected.delete(mapId);
-        } else {
-          newSelected.add(mapId);
-        }
-        setSelectedMaps(newSelected);
-      };
-
-      const toggleFavourite = async (mapId) => {
         const map = maps.find(m => m.id === mapId);
         if (!map) return;
         try {
@@ -2166,59 +2284,93 @@
         }
       };
 
-      const toggleLock = async (mapId) => {
-        const map = maps.find(m => m.id === mapId);
-        if (!map) return;
-        try {
-          const updatedConfig = { ...map.config, locked: !map.locked };
-          await supabase
-            .from('journey_maps')
-            .update({ config: updatedConfig })
-            .eq('id', mapId);
-          setMaps(maps.map(m => m.id === mapId ? { ...m, locked: !m.locked, config: updatedConfig } : m));
-        } catch (err) {
-          console.error('Failed to toggle lock:', err);
-        }
+      // Options menu handlers
+      const handleOptionsClick = (mapId, e) => {
+        e.stopPropagation();
+        e.preventDefault();
+        setOpenOptionsMenu(openOptionsMenu === mapId ? null : mapId);
       };
 
-      const deleteSelectedMaps = async () => {
-        if (selectedMaps.size === 0) return;
-        
-        // Check for locked maps
-        const lockedMaps = [...selectedMaps].filter(mapId => {
-          const map = maps.find(m => m.id === mapId);
-          return map?.locked;
+      const handleCopyLink = (mapId, e) => {
+        e.stopPropagation();
+        const map = maps.find(m => m.id === mapId);
+        const title = map?.config?.meta?.title || map?.title || 'Journey Map';
+        const link = `${window.location.origin}/editor.html?id=${mapId}&title=${encodeURIComponent(title)}`;
+        navigator.clipboard.writeText(link).then(() => {
+          alert('Link copied to clipboard!');
         });
+        setOpenOptionsMenu(null);
+      };
+
+      const handleOpenNewTab = (mapId, e) => {
+        e.stopPropagation();
+        const map = maps.find(m => m.id === mapId);
+        const title = map?.config?.meta?.title || map?.title || 'Journey Map';
+        window.open(`editor.html?id=${mapId}&title=${encodeURIComponent(title)}`, '_blank');
+        setOpenOptionsMenu(null);
+      };
+
+      const handleRename = (mapId, e) => {
+        e.stopPropagation();
+        setShowRenameModal(mapId);
+        setOpenOptionsMenu(null);
+      };
+
+      const handleDownloadBackup = (mapId, e) => {
+        e.stopPropagation();
+        const map = maps.find(m => m.id === mapId);
+        if (!map) return;
         
-        if (lockedMaps.length > 0) {
-          const lockedTitles = lockedMaps.map(mapId => {
-            const map = maps.find(m => m.id === mapId);
-            return map?.config?.meta?.title || map?.title || mapId;
-          }).join(', ');
-          alert(`Cannot delete locked maps. Please unlock these maps first:\n\n${lockedTitles}`);
+        const config = map.config || mapConfigs[mapId];
+        const exportData = {
+          ...config,
+          exportedAt: new Date().toISOString(),
+          exportedFrom: 'FATHOM Dashboard'
+        };
+        
+        const blob = new Blob([JSON.stringify(exportData, null, 2)], { type: 'application/json' });
+        const url = URL.createObjectURL(blob);
+        const a = document.createElement('a');
+        a.href = url;
+        a.download = `${(config?.meta?.title || map.title || 'journey-map').replace(/[^a-z0-9]/gi, '-').toLowerCase()}-backup.json`;
+        document.body.appendChild(a);
+        a.click();
+        document.body.removeChild(a);
+        URL.revokeObjectURL(url);
+        setOpenOptionsMenu(null);
+      };
+
+      const handleDeleteMap = async (mapId, e) => {
+        e.stopPropagation();
+        const map = maps.find(m => m.id === mapId);
+        if (!map) return;
+        
+        if (map.favourite) {
+          alert('Cannot delete a starred map. Please unstar it first.');
+          setOpenOptionsMenu(null);
           return;
         }
         
-        if (!confirm(`Delete ${selectedMaps.size} map(s)? This cannot be undone.`)) return;
+        const title = map?.config?.meta?.title || map?.title || 'this map';
+        if (!confirm(`Delete "${title}"? This cannot be undone.`)) {
+          setOpenOptionsMenu(null);
+          return;
+        }
         
         try {
-          // Soft delete from Supabase
-          for (const mapId of selectedMaps) {
-            await deleteMapFromSupabase(mapId);
-          }
-          
-          setMaps(maps.filter(m => !selectedMaps.has(m.id)));
-          setSelectedMaps(new Set());
-          setManageMode(false);
+          await deleteMapFromSupabase(mapId);
+          setMaps(maps.filter(m => m.id !== mapId));
+          setOpenOptionsMenu(null);
         } catch (err) {
-          console.error('Failed to delete maps:', err);
-          alert('Failed to delete maps. Please try again.');
+          console.error('Failed to delete map:', err);
+          alert('Failed to delete map. Please try again.');
         }
       };
 
-      const exitManageMode = () => {
-        setManageMode(false);
-        setSelectedMaps(new Set());
+      const handleShareFromMenu = (mapId, e) => {
+        e.stopPropagation();
+        setShowShareModal(mapId);
+        setOpenOptionsMenu(null);
       };
 
       const displayMaps = activeTab === 'my-maps' ? myMaps : sharedMaps;
@@ -2424,42 +2576,8 @@
                       </button>
                     </div>
                   )}
-                  {activeTab === 'my-maps' && !manageMode && (
-                    <button onClick={() => setManageMode(true)} className="btn btn-ghost" style={{ fontSize: '13px' }}>
-                      ⚙️ Manage
-                    </button>
-                  )}
-                  {manageMode && (
-                    <button onClick={exitManageMode} className="btn btn-ghost" style={{ fontSize: '13px' }}>
-                      ✕ Done
-                    </button>
-                  )}
                 </div>
               </div>
-
-              {/* Manage Mode Bar */}
-              {manageMode && (
-                <div style={{ 
-                  background: 'var(--slate-100)', 
-                  padding: '12px 16px', 
-                  borderRadius: '8px', 
-                  marginBottom: '20px',
-                  display: 'flex',
-                  justifyContent: 'space-between',
-                  alignItems: 'center'
-                }}>
-                  <span style={{ fontSize: '14px', color: 'var(--slate-600)' }}>
-                    {selectedMaps.size} selected
-                  </span>
-                  <div style={{ display: 'flex', gap: '8px' }}>
-                    {selectedMaps.size > 0 && (
-                      <button onClick={deleteSelectedMaps} className="btn" style={{ background: 'var(--error)', color: '#FFF', fontSize: '13px', padding: '8px 16px' }}>
-                        🗑️ Delete Selected
-                      </button>
-                    )}
-                  </div>
-                </div>
-              )}
 
               {/* Content */}
               {loading ? (
@@ -2476,7 +2594,7 @@
                   {/* Table Header */}
                   <div style={{ 
                     display: 'grid', 
-                    gridTemplateColumns: manageMode ? '40px 1fr 100px 100px 80px 80px 100px 120px' : '1fr 100px 100px 80px 80px 100px 120px',
+                    gridTemplateColumns: '1fr 100px 100px 80px 80px 100px 120px',
                     padding: '12px 16px', 
                     background: 'var(--slate-50)', 
                     borderBottom: '1px solid var(--slate-200)',
@@ -2486,7 +2604,6 @@
                     textTransform: 'uppercase',
                     letterSpacing: '0.5px'
                   }}>
-                    {manageMode && <div></div>}
                     <div>Name</div>
                     <div style={{ textAlign: 'right' }}>Time</div>
                     <div style={{ textAlign: 'right' }}>Cost</div>
@@ -2499,48 +2616,26 @@
                   {displayMaps.map(map => {
                     const metrics = getMapMetrics(map);
                     const isOwner = map.createdBy === profile?.id || map.created_by === profile?.id || true;
-                    const isSelected = selectedMaps.has(map.id);
-                    const isLocked = map.locked;
-                    const canSelect = isOwner && !isLocked;
                     return (
                       <div 
                         key={map.id}
-                        onClick={() => manageMode && canSelect ? toggleSelectMap(map.id) : !manageMode ? openMap(map.id) : null}
+                        onClick={() => openMap(map.id)}
                         style={{ 
                           display: 'grid', 
-                          gridTemplateColumns: manageMode ? '40px 1fr 100px 100px 80px 80px 100px 120px' : '1fr 100px 100px 80px 80px 100px 120px',
+                          gridTemplateColumns: '1fr 100px 100px 80px 80px 100px 120px',
                           padding: '14px 16px', 
                           borderBottom: '1px solid var(--slate-100)',
                           alignItems: 'center',
-                          cursor: manageMode ? (canSelect ? 'pointer' : 'not-allowed') : 'pointer',
-                          background: isSelected ? 'var(--amber-50)' : '#FFF',
-                          opacity: manageMode && (!isOwner || isLocked) ? 0.5 : 1,
+                          cursor: 'pointer',
+                          background: '#FFF',
                           transition: 'background 0.15s'
                         }}
-                        onMouseEnter={e => { if (!isSelected) e.currentTarget.style.background = 'var(--slate-50)'; }}
-                        onMouseLeave={e => { if (!isSelected) e.currentTarget.style.background = '#FFF'; }}
+                        onMouseEnter={e => { e.currentTarget.style.background = 'var(--slate-50)'; }}
+                        onMouseLeave={e => { e.currentTarget.style.background = '#FFF'; }}
                       >
-                        {manageMode && (
-                          <div style={{ 
-                            width: '20px',
-                            height: '20px',
-                            borderRadius: '4px',
-                            border: isSelected ? 'none' : isLocked ? '2px solid var(--slate-300)' : '2px solid var(--slate-300)',
-                            background: isSelected ? 'var(--amber-500)' : isLocked ? 'var(--slate-100)' : '#FFF',
-                            display: 'flex',
-                            alignItems: 'center',
-                            justifyContent: 'center',
-                            color: '#FFF',
-                            fontSize: '12px'
-                          }}>
-                            {isSelected && '✓'}
-                            {isLocked && !isSelected && '🔒'}
-                          </div>
-                        )}
                         <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
                           <span style={{ fontWeight: '500', color: 'var(--slate-800)' }}>
                             {map.favourite && <span style={{ marginRight: '4px' }}>⭐</span>}
-                            {map.locked && <span style={{ marginRight: '4px' }}>🔒</span>}
                             {map.config?.meta?.title || map.title || 'Untitled'}
                           </span>
                           {map.config?.meta?.description && (
@@ -2565,18 +2660,12 @@
                           {map.updated_at ? new Date(map.updated_at).toLocaleDateString('en-GB', { day: '2-digit', month: '2-digit', year: '2-digit' }) : '-'}
                         </div>
                         <div style={{ textAlign: 'center' }} onClick={e => e.stopPropagation()}>
-                          {!manageMode && (
-                            <div style={{ display: 'flex', gap: '4px', justifyContent: 'center' }}>
-                              <button onClick={() => generateReport(map.id)} className="btn btn-ghost" style={{ padding: '4px 8px', fontSize: '12px' }} title="Report">📄</button>
-                              <button onClick={() => setShowShareModal(map.id)} className="btn btn-ghost" style={{ padding: '4px 8px', fontSize: '12px' }} title="Share">🔗</button>
-                            </div>
-                          )}
-                          {manageMode && isOwner && (
-                            <div style={{ display: 'flex', gap: '4px', justifyContent: 'center' }}>
-                              <button onClick={() => toggleFavourite(map.id)} className="btn btn-ghost" style={{ padding: '4px 8px', fontSize: '12px' }}>{map.favourite ? '⭐' : '☆'}</button>
-                              <button onClick={() => toggleLock(map.id)} className="btn btn-ghost" style={{ padding: '4px 8px', fontSize: '12px' }}>{map.locked ? '🔓' : '🔒'}</button>
-                            </div>
-                          )}
+                          <div style={{ display: 'flex', gap: '4px', justifyContent: 'center' }}>
+                            <button onClick={(e) => toggleFavourite(map.id, e)} className="btn btn-ghost" style={{ padding: '4px 8px', fontSize: '12px' }} title={map.favourite ? 'Unstar' : 'Star'}>{map.favourite ? '⭐' : '☆'}</button>
+                            <button onClick={() => generateReport(map.id)} className="btn btn-ghost" style={{ padding: '4px 8px', fontSize: '12px' }} title="Report">📄</button>
+                            <button onClick={(e) => handleShareFromMenu(map.id, e)} className="btn btn-ghost" style={{ padding: '4px 8px', fontSize: '12px' }} title="Share">🔗</button>
+                            <button onClick={(e) => handleDeleteMap(map.id, e)} className="btn btn-ghost" style={{ padding: '4px 8px', fontSize: '12px', color: map.favourite ? 'var(--slate-300)' : 'var(--error)' }} title={map.favourite ? 'Unstar to delete' : 'Delete'} disabled={map.favourite}>🗑️</button>
+                          </div>
                         </div>
                       </div>
                     );
@@ -2588,51 +2677,80 @@
                   {displayMaps.map(map => {
                     const metrics = getMapMetrics(map);
                     const isOwner = map.createdBy === profile?.id || map.created_by === profile?.id || true; // User can edit all org maps
-                    const isSelected = selectedMaps.has(map.id);
-                    const isLocked = map.locked;
-                    const canSelect = isOwner && !isLocked;
                     return (
                       <div 
                         key={map.id} 
                         className="card journey-card" 
-                        onClick={() => manageMode && canSelect ? toggleSelectMap(map.id) : !manageMode ? openMap(map.id) : null}
+                        onClick={() => openMap(map.id)}
                         style={{ 
-                          cursor: manageMode ? (canSelect ? 'pointer' : 'not-allowed') : 'pointer',
-                          border: isSelected ? '2px solid var(--amber-500)' : '1px solid var(--slate-200)',
-                          opacity: manageMode && (!isOwner || isLocked) ? 0.5 : 1
+                          cursor: 'pointer',
+                          border: '1px solid var(--slate-200)'
                         }}
                       >
                         {/* Colored header with gradient */}
                         <div className={`journey-card-header ${map.favourite ? 'favourite' : ''}`}>
-                          {/* Manage mode checkbox */}
-                          {manageMode && isOwner && (
-                            <div style={{ 
-                              position: 'absolute', 
-                              top: '14px', 
-                              left: '14px',
-                              width: '20px',
-                              height: '20px',
-                              borderRadius: '4px',
-                              border: isSelected ? 'none' : isLocked ? '2px solid rgba(255,255,255,0.3)' : '2px solid rgba(255,255,255,0.5)',
-                              background: isSelected ? 'var(--amber-500)' : isLocked ? 'rgba(255,255,255,0.1)' : 'rgba(255,255,255,0.2)',
-                              display: 'flex',
-                              alignItems: 'center',
-                              justifyContent: 'center',
-                              color: '#FFF',
-                              fontSize: '14px',
-                              zIndex: 2
-                            }}>
-                              {isSelected && '✓'}
-                              {isLocked && !isSelected && '🔒'}
-                            </div>
-                          )}
+                          {/* Miro-style star button - appears on hover */}
+                          <button 
+                            className={`journey-card-star ${map.favourite ? 'starred' : ''}`}
+                            onClick={(e) => toggleFavourite(map.id, e)}
+                            title={map.favourite ? 'Remove from favourites' : 'Add to favourites'}
+                          >
+                            {map.favourite ? '⭐' : '☆'}
+                          </button>
                           
-                          <div className="journey-card-icons">
-                            {map.favourite && <span title="Favourite">⭐</span>}
-                            {map.locked && <span title="Locked">🔒</span>}
+                          {/* Options menu button */}
+                          <div className="card-options-container" onClick={e => e.stopPropagation()}>
+                            <button 
+                              className="journey-card-options"
+                              onClick={(e) => handleOptionsClick(map.id, e)}
+                              title="Options"
+                            >
+                              ···
+                            </button>
+                            
+                            {/* Dropdown menu */}
+                            {openOptionsMenu === map.id && (
+                              <div className="card-options-dropdown">
+                                <button className="card-options-item" onClick={(e) => handleShareFromMenu(map.id, e)}>
+                                  <span className="card-options-item-icon">↗</span>
+                                  Share
+                                </button>
+                                <button className="card-options-item" onClick={(e) => handleCopyLink(map.id, e)}>
+                                  <span className="card-options-item-icon">🔗</span>
+                                  Copy map link
+                                </button>
+                                <button className="card-options-item" onClick={(e) => handleOpenNewTab(map.id, e)}>
+                                  <span className="card-options-item-icon">↗️</span>
+                                  Open in new tab
+                                </button>
+                                <div className="card-options-divider"></div>
+                                <button className="card-options-item" onClick={(e) => toggleFavourite(map.id, e)}>
+                                  <span className="card-options-item-icon">{map.favourite ? '★' : '☆'}</span>
+                                  {map.favourite ? 'Unstar this map' : 'Star this map'}
+                                </button>
+                                <button className="card-options-item" onClick={(e) => handleRename(map.id, e)}>
+                                  <span className="card-options-item-icon">✏️</span>
+                                  Rename
+                                </button>
+                                <div className="card-options-divider"></div>
+                                <button className="card-options-item" onClick={(e) => handleDownloadBackup(map.id, e)}>
+                                  <span className="card-options-item-icon">⬇️</span>
+                                  Download map backup
+                                </button>
+                                <div className="card-options-divider"></div>
+                                <button 
+                                  className={`card-options-item ${map.favourite ? 'disabled' : 'danger'}`}
+                                  onClick={(e) => !map.favourite && handleDeleteMap(map.id, e)}
+                                  title={map.favourite ? 'Unstar to delete' : ''}
+                                >
+                                  <span className="card-options-item-icon">🗑️</span>
+                                  {map.favourite ? 'Unstar to delete' : 'Delete'}
+                                </button>
+                              </div>
+                            )}
                           </div>
                           
-                          <h3 className="journey-card-title" style={{ paddingLeft: manageMode && isOwner ? '32px' : 0 }}>
+                          <h3 className="journey-card-title">
                             {mapConfigs[map.id]?.meta?.title || map.title}
                           </h3>
                         </div>
@@ -2696,35 +2814,6 @@
                               Updated {formatDate(map.updatedAt)}
                               {map.sharedWith?.length > 0 && <span> · 👥 {map.sharedWith.length}</span>}
                             </span>
-                            
-                            {/* Normal mode actions */}
-                            {!manageMode && isOwner && (
-                              <div className="journey-card-actions" onClick={e => e.stopPropagation()}>
-                                <button onClick={() => generateReport(map.id)} className="btn btn-ghost">📄 Report</button>
-                                <button onClick={() => window.location.href = `responses.html?map=${map.id}`} className="btn btn-ghost">📊 Responses</button>
-                                <button onClick={() => setShowShareModal(map.id)} className="btn btn-ghost">Share</button>
-                              </div>
-                            )}
-                          
-                            {/* Manage mode actions */}
-                            {manageMode && isOwner && (
-                              <div className="journey-card-actions" onClick={e => e.stopPropagation()}>
-                                <button 
-                                  onClick={() => toggleFavourite(map.id)} 
-                                  className="btn btn-ghost"
-                                  title={map.favourite ? 'Remove favourite' : 'Add favourite'}
-                                >
-                                  {map.favourite ? '⭐' : '☆'}
-                                </button>
-                                <button 
-                                  onClick={() => toggleLock(map.id)} 
-                                  className="btn btn-ghost"
-                                  title={map.locked ? 'Unlock' : 'Lock'}
-                                >
-                                  {map.locked ? '🔓' : '🔒'}
-                                </button>
-                              </div>
-                            )}
                           </div>
                         </div>{/* end journey-card-body */}
                       </div>
@@ -2740,7 +2829,7 @@
             <div className="footer-inner">
               <div className="footer-brand">
                 <img src="https://steveyoung74.github.io/journeymaps/logo_light.png" alt="Fathom" className="footer-logo" />
-                <span className="footer-version">v9.4.0</span>
+                <span className="footer-version">v9.6.0</span>
               </div>
               <div className="footer-copy">© 2025 Fathom · Journey intelligence for modern operations</div>
             </div>
@@ -2764,6 +2853,124 @@
               onUpdated={fetchMaps}
             />
           )}
+          
+          {/* Rename Modal */}
+          {showRenameModal && (
+            <RenameModal
+              mapId={showRenameModal}
+              maps={maps}
+              mapConfigs={mapConfigs}
+              onClose={() => setShowRenameModal(null)}
+              onSaved={fetchMaps}
+            />
+          )}
+        </div>
+      );
+    }
+
+    // ============================================
+    // RENAME MODAL
+    // ============================================
+    function RenameModal({ mapId, maps, mapConfigs, onClose, onSaved }) {
+      const map = maps.find(m => m.id === mapId);
+      const config = map?.config || mapConfigs[mapId] || {};
+      const [title, setTitle] = useState(config?.meta?.title || map?.title || '');
+      const [description, setDescription] = useState(config?.meta?.description || map?.description || '');
+      const [saving, setSaving] = useState(false);
+      const [error, setError] = useState('');
+      
+      const handleSave = async () => {
+        if (!title.trim()) {
+          setError('Title is required');
+          return;
+        }
+        
+        setSaving(true);
+        setError('');
+        
+        try {
+          const updatedConfig = {
+            ...config,
+            meta: {
+              ...config.meta,
+              title: title.trim(),
+              description: description.trim()
+            }
+          };
+          
+          await supabase
+            .from('journey_maps')
+            .update({ 
+              title: title.trim(),
+              description: description.trim(),
+              config: updatedConfig 
+            })
+            .eq('id', mapId);
+          
+          onSaved();
+          onClose();
+        } catch (err) {
+          console.error('Failed to rename map:', err);
+          setError('Failed to save. Please try again.');
+        } finally {
+          setSaving(false);
+        }
+      };
+      
+      return (
+        <div className="modal-overlay" onClick={onClose}>
+          <div className="modal" onClick={e => e.stopPropagation()} style={{ maxWidth: '480px' }}>
+            <div className="modal-content">
+              <div className="modal-header">
+                <h2 className="modal-title">Rename Map</h2>
+                <button className="modal-close" onClick={onClose}>×</button>
+              </div>
+              
+              {error && (
+                <div style={{ 
+                  padding: '10px 14px', 
+                  background: 'var(--error-light)', 
+                  color: 'var(--error)', 
+                  borderRadius: '6px', 
+                  marginBottom: '16px',
+                  fontSize: '13px'
+                }}>
+                  {error}
+                </div>
+              )}
+              
+              <div style={{ marginBottom: '16px' }}>
+                <label className="label">Title</label>
+                <input
+                  type="text"
+                  className="input"
+                  value={title}
+                  onChange={(e) => setTitle(e.target.value)}
+                  placeholder="Journey map title"
+                  autoFocus
+                />
+              </div>
+              
+              <div style={{ marginBottom: '24px' }}>
+                <label className="label">Description</label>
+                <textarea
+                  className="input"
+                  value={description}
+                  onChange={(e) => setDescription(e.target.value)}
+                  placeholder="Brief description of this journey map"
+                  rows={3}
+                  style={{ resize: 'vertical' }}
+                />
+              </div>
+              
+              <div style={{ display: 'flex', gap: '12px', justifyContent: 'flex-end' }}>
+                <button onClick={onClose} className="btn btn-secondary">Cancel</button>
+                <button onClick={handleSave} className="btn btn-primary" disabled={saving || !title.trim()}>
+                  {saving ? 'Saving...' : 'Save Changes'}
+                </button>
+              </div>
+            </div>
+          </div>
         </div>
       );
     }
