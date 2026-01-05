@@ -707,11 +707,18 @@
       right: 16px;
     }
     
-    /* Miro-style options button - LEFT side */
-    .journey-card-options {
+    /* Card header buttons container - top right */
+    .journey-card-header-buttons {
       position: absolute;
       top: 12px;
-      left: 12px;
+      right: 12px;
+      display: flex;
+      gap: 4px;
+      z-index: 5;
+    }
+    
+    /* Miro-style options button */
+    .journey-card-options {
       width: 32px;
       height: 32px;
       border-radius: 6px;
@@ -726,7 +733,6 @@
       color: #FFF;
       opacity: 0;
       transition: opacity 0.15s, background 0.15s;
-      z-index: 5;
     }
     .journey-card-options:hover {
       background: rgba(255, 255, 255, 0.25);
@@ -735,11 +741,8 @@
       opacity: 1;
     }
     
-    /* Miro-style star on hover - RIGHT side */
+    /* Miro-style star button */
     .journey-card-star {
-      position: absolute;
-      top: 12px;
-      right: 12px;
       width: 32px;
       height: 32px;
       border-radius: 6px;
@@ -752,7 +755,6 @@
       font-size: 16px;
       opacity: 0;
       transition: opacity 0.15s, background 0.15s, transform 0.15s;
-      z-index: 5;
     }
     .journey-card-star:hover {
       background: rgba(255, 255, 255, 0.25);
@@ -765,14 +767,14 @@
       opacity: 1;
     }
     
-    /* Options dropdown menu - allow overflow */
+    /* Options dropdown menu */
     .card-options-container {
-      position: static;
+      position: relative;
     }
     .card-options-dropdown {
       position: absolute;
-      top: 48px;
-      left: 12px;
+      top: 40px;
+      right: 0;
       background: #FFF;
       border-radius: 12px;
       box-shadow: 0 4px 24px rgba(0, 0, 0, 0.15), 0 0 0 1px rgba(0, 0, 0, 0.05);
@@ -829,7 +831,7 @@
       margin: 6px 0;
     }
     
-    /* On touch devices, always show if starred */
+    /* On touch devices, always show buttons */
     @media (hover: none) {
       .journey-card-star.starred {
         opacity: 1;
@@ -2679,7 +2681,8 @@
                 <div className="cards-grid">
                   {displayMaps.map(map => {
                     const metrics = getMapMetrics(map);
-                    const isOwner = map.createdBy === profile?.id || map.created_by === profile?.id || true; // User can edit all org maps
+                    const isOwner = map.createdBy === profile?.id || map.created_by === profile?.id || true;
+                    const responseCount = map.responseCount || 0; // TODO: fetch from survey_responses
                     return (
                       <div 
                         key={map.id} 
@@ -2692,65 +2695,70 @@
                       >
                         {/* Colored header with gradient */}
                         <div className={`journey-card-header ${map.favourite ? 'favourite' : ''}`}>
-                          {/* Miro-style star button - appears on hover */}
-                          <button 
-                            className={`journey-card-star ${map.favourite ? 'starred' : ''}`}
-                            onClick={(e) => toggleFavourite(map.id, e)}
-                            title={map.favourite ? 'Remove from favourites' : 'Add to favourites'}
-                          >
-                            {map.favourite ? '⭐' : '☆'}
-                          </button>
-                          
-                          {/* Options menu button */}
-                          <div className="card-options-container" onClick={e => e.stopPropagation()}>
-                            <button 
-                              className="journey-card-options"
-                              onClick={(e) => handleOptionsClick(map.id, e)}
-                              title="Options"
-                            >
-                              ···
-                            </button>
+                          {/* Header buttons - options and star side by side */}
+                          <div className="journey-card-header-buttons" onClick={e => e.stopPropagation()}>
+                            <div className="card-options-container">
+                              <button 
+                                className="journey-card-options"
+                                onClick={(e) => handleOptionsClick(map.id, e)}
+                                title="Options"
+                              >
+                                ···
+                              </button>
+                              
+                              {/* Dropdown menu */}
+                              {openOptionsMenu === map.id && (
+                                <div className="card-options-dropdown">
+                                  <button className="card-options-item" onClick={(e) => handleShareFromMenu(map.id, e)}>
+                                    <span className="card-options-item-icon">↗</span>
+                                    Share
+                                  </button>
+                                  <button className="card-options-item" onClick={(e) => handleCopyLink(map.id, e)}>
+                                    <span className="card-options-item-icon">🔗</span>
+                                    Copy map link
+                                  </button>
+                                  <button className="card-options-item" onClick={(e) => handleOpenNewTab(map.id, e)}>
+                                    <span className="card-options-item-icon">↗️</span>
+                                    Open in new tab
+                                  </button>
+                                  <div className="card-options-divider"></div>
+                                  <button className="card-options-item" onClick={(e) => toggleFavourite(map.id, e)}>
+                                    <span className="card-options-item-icon">{map.favourite ? '★' : '☆'}</span>
+                                    {map.favourite ? 'Unstar this map' : 'Star this map'}
+                                  </button>
+                                  <button className="card-options-item" onClick={(e) => handleRename(map.id, e)}>
+                                    <span className="card-options-item-icon">✏️</span>
+                                    Rename
+                                  </button>
+                                  <div className="card-options-divider"></div>
+                                  <button className="card-options-item" onClick={(e) => handleDownloadBackup(map.id, e)}>
+                                    <span className="card-options-item-icon">⬇️</span>
+                                    Download map backup
+                                  </button>
+                                  <div className="card-options-divider"></div>
+                                  <button 
+                                    className={`card-options-item ${map.favourite ? 'disabled' : 'danger'}`}
+                                    onClick={(e) => !map.favourite && handleDeleteMap(map.id, e)}
+                                    title={map.favourite ? 'Unstar to delete' : ''}
+                                  >
+                                    <span className="card-options-item-icon">🗑️</span>
+                                    {map.favourite ? 'Unstar to delete' : 'Delete'}
+                                  </button>
+                                </div>
+                              )}
+                            </div>
                             
-                            {/* Dropdown menu */}
-                            {openOptionsMenu === map.id && (
-                              <div className="card-options-dropdown">
-                                <button className="card-options-item" onClick={(e) => handleShareFromMenu(map.id, e)}>
-                                  <span className="card-options-item-icon">↗</span>
-                                  Share
-                                </button>
-                                <button className="card-options-item" onClick={(e) => handleCopyLink(map.id, e)}>
-                                  <span className="card-options-item-icon">🔗</span>
-                                  Copy map link
-                                </button>
-                                <button className="card-options-item" onClick={(e) => handleOpenNewTab(map.id, e)}>
-                                  <span className="card-options-item-icon">↗️</span>
-                                  Open in new tab
-                                </button>
-                                <div className="card-options-divider"></div>
-                                <button className="card-options-item" onClick={(e) => toggleFavourite(map.id, e)}>
-                                  <span className="card-options-item-icon">{map.favourite ? '★' : '☆'}</span>
-                                  {map.favourite ? 'Unstar this map' : 'Star this map'}
-                                </button>
-                                <button className="card-options-item" onClick={(e) => handleRename(map.id, e)}>
-                                  <span className="card-options-item-icon">✏️</span>
-                                  Rename
-                                </button>
-                                <div className="card-options-divider"></div>
-                                <button className="card-options-item" onClick={(e) => handleDownloadBackup(map.id, e)}>
-                                  <span className="card-options-item-icon">⬇️</span>
-                                  Download map backup
-                                </button>
-                                <div className="card-options-divider"></div>
-                                <button 
-                                  className={`card-options-item ${map.favourite ? 'disabled' : 'danger'}`}
-                                  onClick={(e) => !map.favourite && handleDeleteMap(map.id, e)}
-                                  title={map.favourite ? 'Unstar to delete' : ''}
-                                >
-                                  <span className="card-options-item-icon">🗑️</span>
-                                  {map.favourite ? 'Unstar to delete' : 'Delete'}
-                                </button>
-                              </div>
-                            )}
+                            <button 
+                              className={`journey-card-star ${map.favourite ? 'starred' : ''}`}
+                              onClick={(e) => toggleFavourite(map.id, e)}
+                              title={map.favourite ? 'Remove from favourites' : 'Add to favourites'}
+                            >
+                              {map.favourite ? '⭐' : (
+                                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="rgba(255,255,255,0.8)" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                                  <polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"></polygon>
+                                </svg>
+                              )}
+                            </button>
                           </div>
                           
                           <h3 className="journey-card-title">
@@ -2817,6 +2825,38 @@
                               Updated {formatDate(map.updatedAt)}
                               {map.sharedWith?.length > 0 && <span> · 👥 {map.sharedWith.length}</span>}
                             </span>
+                            
+                            {/* Action buttons */}
+                            <div className="journey-card-actions" onClick={e => e.stopPropagation()}>
+                              <button onClick={() => generateReport(map.id)} className="btn btn-ghost" title="Generate Report">
+                                📄 Report
+                              </button>
+                              <button 
+                                onClick={() => window.location.href = `responses.html?map=${map.id}`} 
+                                className="btn btn-ghost"
+                                title="View Responses"
+                                style={{ position: 'relative' }}
+                              >
+                                📊 Responses
+                                {responseCount > 0 && (
+                                  <span style={{
+                                    position: 'absolute',
+                                    top: '-4px',
+                                    right: '-4px',
+                                    background: 'var(--error)',
+                                    color: '#FFF',
+                                    fontSize: '10px',
+                                    fontWeight: '600',
+                                    padding: '2px 5px',
+                                    borderRadius: '10px',
+                                    minWidth: '16px',
+                                    textAlign: 'center'
+                                  }}>
+                                    {responseCount}
+                                  </span>
+                                )}
+                              </button>
+                            </div>
                           </div>
                         </div>{/* end journey-card-body */}
                       </div>
