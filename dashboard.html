@@ -102,20 +102,20 @@
       display: flex;
       align-items: center;
       justify-content: center;
-      /* Very smooth gradient with many stops to reduce banding */
+      /* Smooth gradient using brand navy blues */
       background: linear-gradient(
         180deg, 
-        #2B4358 0%,
-        #28404F 10%,
-        #253D49 20%,
-        #233A44 30%,
-        #20373F 40%,
-        #1E343A 50%,
-        #1C3136 60%,
-        #1A2E32 70%,
-        #182B2E 80%,
-        #16282A 90%,
-        #142526 100%
+        #243D5C 0%,
+        #213857 10%,
+        #1E3351 20%,
+        #1C2F4B 30%,
+        #192B45 40%,
+        #17273F 50%,
+        #152339 60%,
+        #131F33 70%,
+        #111C2E 80%,
+        #0F1928 90%,
+        #0C1620 100%
       );
       position: relative;
       overflow: hidden;
@@ -133,7 +133,7 @@
       content: '';
       position: absolute;
       inset: 0;
-      opacity: 0.15;
+      opacity: 0.12;
       pointer-events: none;
       background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='300' height='300'%3E%3Cfilter id='n' x='0' y='0'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.75' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='300' height='300' filter='url(%23n)' opacity='1'/%3E%3C/svg%3E");
     }
