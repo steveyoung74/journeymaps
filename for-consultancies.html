@@ -136,9 +136,18 @@
       content: '';
       position: absolute;
       inset: 0;
-      background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='600' height='600' viewBox='0 0 600 600'%3E%3Cg fill='none' stroke='%235B8A9A' stroke-width='1.5'%3E%3Cpath opacity='0.12' d='M0 150 Q150 120 300 150 T600 150'/%3E%3Cpath opacity='0.10' d='M0 180 Q150 150 300 180 T600 180'/%3E%3Cpath opacity='0.08' d='M0 210 Q150 180 300 210 T600 210'/%3E%3Cpath opacity='0.06' d='M0 240 Q150 210 300 240 T600 240'/%3E%3Cpath opacity='0.04' d='M0 270 Q150 240 300 270 T600 270'/%3E%3Cpath opacity='0.12' d='M0 350 Q150 380 300 350 T600 350'/%3E%3Cpath opacity='0.10' d='M0 380 Q150 410 300 380 T600 380'/%3E%3Cpath opacity='0.08' d='M0 410 Q150 440 300 410 T600 410'/%3E%3Cpath opacity='0.06' d='M0 440 Q150 470 300 440 T600 440'/%3E%3Cpath opacity='0.04' d='M0 470 Q150 500 300 470 T600 470'/%3E%3C/g%3E%3C/svg%3E");
-      background-size: 600px 600px;
-      background-position: center;
+      background: url('topography-dark.svg') center/600px 600px repeat;
+      opacity: 1;
+      pointer-events: none;
+    }
+    .hero::after {
+      content: '';
+      position: absolute;
+      top: -50%;
+      right: 0;
+      width: 60%;
+      height: 200%;
+      background: radial-gradient(ellipse at center, rgba(91, 138, 154, 0.1) 0%, transparent 60%);
       pointer-events: none;
     }
     .hero-inner {
@@ -197,10 +206,22 @@
     .problem {
       padding: 100px 24px;
       background: var(--slate-50);
+      position: relative;
+    }
+    .problem::before {
+      content: '';
+      position: absolute;
+      inset: 0;
+      background: url('topography-light.svg') center/600px 600px repeat;
+      opacity: 1;
+      pointer-events: none;
+      z-index: 0;
     }
     .problem-inner {
       max-width: 800px;
       margin: 0 auto;
+      position: relative;
+      z-index: 1;
     }
     .section-label {
       font-family: var(--font-display);
@@ -478,9 +499,8 @@
       content: '';
       position: absolute;
       inset: 0;
-      background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='600' height='600' viewBox='0 0 600 600'%3E%3Cg fill='none' stroke='%235B8A9A' stroke-width='1.5'%3E%3Cpath opacity='0.12' d='M0 150 Q150 120 300 150 T600 150'/%3E%3Cpath opacity='0.10' d='M0 180 Q150 150 300 180 T600 180'/%3E%3Cpath opacity='0.08' d='M0 210 Q150 180 300 210 T600 210'/%3E%3Cpath opacity='0.06' d='M0 240 Q150 210 300 240 T600 240'/%3E%3Cpath opacity='0.04' d='M0 270 Q150 240 300 270 T600 270'/%3E%3Cpath opacity='0.12' d='M0 350 Q150 380 300 350 T600 350'/%3E%3Cpath opacity='0.10' d='M0 380 Q150 410 300 380 T600 380'/%3E%3Cpath opacity='0.08' d='M0 410 Q150 440 300 410 T600 410'/%3E%3Cpath opacity='0.06' d='M0 440 Q150 470 300 440 T600 440'/%3E%3Cpath opacity='0.04' d='M0 470 Q150 500 300 470 T600 470'/%3E%3C/g%3E%3C/svg%3E");
-      background-size: 600px 600px;
-      background-position: center;
+      background: url('topography-dark.svg') center/600px 600px repeat;
+      opacity: 1;
       pointer-events: none;
     }
     .cta-inner {
