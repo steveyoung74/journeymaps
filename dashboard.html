@@ -675,7 +675,7 @@
       cursor: pointer;
       transition: all 0.2s;
       position: relative;
-      overflow: hidden;
+      overflow: visible;
     }
     .journey-card:hover {
       box-shadow: 0 4px 20px rgba(25, 43, 69, 0.1);
@@ -685,6 +685,7 @@
       padding: 16px 20px;
       position: relative;
       border-radius: 12px 12px 0 0;
+      overflow: visible;
     }
     .journey-card-header.favourite {
       background: linear-gradient(135deg, var(--amber-500) 0%, var(--amber-600) 100%);
@@ -706,11 +707,39 @@
       right: 16px;
     }
     
-    /* Miro-style star on hover */
+    /* Miro-style options button - LEFT side */
+    .journey-card-options {
+      position: absolute;
+      top: 12px;
+      left: 12px;
+      width: 32px;
+      height: 32px;
+      border-radius: 6px;
+      background: rgba(255, 255, 255, 0.15);
+      border: none;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 18px;
+      font-weight: bold;
+      color: #FFF;
+      opacity: 0;
+      transition: opacity 0.15s, background 0.15s;
+      z-index: 5;
+    }
+    .journey-card-options:hover {
+      background: rgba(255, 255, 255, 0.25);
+    }
+    .journey-card:hover .journey-card-options {
+      opacity: 1;
+    }
+    
+    /* Miro-style star on hover - RIGHT side */
     .journey-card-star {
       position: absolute;
       top: 12px;
-      right: 48px;
+      right: 12px;
       width: 32px;
       height: 32px;
       border-radius: 6px;
@@ -736,44 +765,19 @@
       opacity: 1;
     }
     
-    /* Miro-style options button */
-    .journey-card-options {
-      position: absolute;
-      top: 12px;
-      right: 12px;
-      width: 32px;
-      height: 32px;
-      border-radius: 6px;
-      background: rgba(255, 255, 255, 0.15);
-      border: none;
-      cursor: pointer;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      font-size: 18px;
-      font-weight: bold;
-      color: #FFF;
-      opacity: 0;
-      transition: opacity 0.15s, background 0.15s;
-      z-index: 5;
+    /* Options dropdown menu - allow overflow */
+    .card-options-container {
+      position: static;
     }
-    .journey-card-options:hover {
-      background: rgba(255, 255, 255, 0.25);
-    }
-    .journey-card:hover .journey-card-options {
-      opacity: 1;
-    }
-    
-    /* Options dropdown menu */
     .card-options-dropdown {
       position: absolute;
       top: 48px;
-      right: 12px;
+      left: 12px;
       background: #FFF;
       border-radius: 12px;
       box-shadow: 0 4px 24px rgba(0, 0, 0, 0.15), 0 0 0 1px rgba(0, 0, 0, 0.05);
       min-width: 200px;
-      z-index: 100;
+      z-index: 1000;
       padding: 8px 0;
       animation: dropdownFadeIn 0.15s ease;
     }
@@ -2251,9 +2255,8 @@
       };
 
       // With Supabase, maps are filtered by organisation via RLS
-      // For now, all maps user can access are considered "their" maps
-      const myMaps = maps.sort((a, b) => {
-        if (a.favourite !== b.favourite) return a.favourite ? -1 : 1;
+      // Sort by updated date only - don't reorder on star (too disorienting)
+      const myMaps = [...maps].sort((a, b) => {
         return new Date(b.updatedAt || b.updated_at) - new Date(a.updatedAt || a.updated_at);
       });
       // sharedMaps is now loaded from state via fetchSharedMaps()
