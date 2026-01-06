@@ -1207,10 +1207,7 @@
                 .insert({
                   name: displayName + "'s Workspace",
                   slug: orgSlug,
-                  owner_id: userId,
-                  settings: {},
-                  onboarding_completed: true,
-                  starter_content_created: true
+                  settings: {}
                 })
                 .select()
                 .single();
@@ -1230,8 +1227,7 @@
                   email: email,
                   display_name: displayName,
                   organisation_id: newOrg.id,
-                  role: 'owner',
-                  onboarding_step: 'complete'
+                  role: 'owner'
                 })
                 .select('*, organisations(*)')
                 .single();
@@ -1243,14 +1239,19 @@
                 return;
               }
               
-              // Create starter example maps for new workspace
-              console.log('Creating starter content for new workspace...');
-              await createStarterMaps(newOrg.id, userId);
-              
               console.log('Profile created with new org:', newProfile);
               setProfile(newProfile);
               setLoading(false);
               fetchingRef.current = false;
+              
+              // Create starter example maps for new workspace (non-blocking)
+              // Do this AFTER setting profile so user isn't stuck waiting
+              console.log('Creating starter content for new workspace...');
+              createStarterMaps(newOrg.id, userId).then(() => {
+                console.log('Starter content created successfully');
+              }).catch(err => {
+                console.error('Failed to create starter content (non-fatal):', err);
+              });
             })(),
             timeoutPromise
           ]);
@@ -1409,10 +1410,10 @@
           description: 'Example: A typical customer journey from entering to leaving a coffee shop',
           journey_type: 'Customer Experience',
           template_source: 'starter-example',
-          is_example: true,
           created_by: userId,
           config: {
             meta: { title: '☕ Coffee Shop Customer Journey', description: 'Example: A typical customer journey', journeyType: 'Customer Experience', isExample: true },
+            isExample: true,
             stages: [
               { id: 'stage-1', name: 'Arrival', steps: [
                 { id: 's1-1', name: 'Enter shop', persona: 'customer', timeMinutes: 1, friction: 1 },
@@ -1449,10 +1450,10 @@
           description: 'Example: From offer acceptance to full productivity for a new hire',
           journey_type: 'Employee Onboarding',
           template_source: 'starter-example',
-          is_example: true,
           created_by: userId,
           config: {
             meta: { title: '🏢 Employee Onboarding Journey', description: 'Example: From offer acceptance to full productivity', journeyType: 'Employee Onboarding', isExample: true },
+            isExample: true,
             stages: [
               { id: 'stage-1', name: 'Pre-boarding', steps: [
                 { id: 's1-1', name: 'Send offer letter', persona: 'hr', timeMinutes: 30, friction: 1 },
@@ -1504,10 +1505,10 @@
           description: 'Example: High-net-worth client onboarding with full KYC and compliance',
           journey_type: 'Client Onboarding',
           template_source: 'starter-example',
-          is_example: true,
           created_by: userId,
           config: {
             meta: { title: '🏦 Wealth Management Client Onboarding', description: 'Example: High-net-worth client onboarding with full KYC and compliance', journeyType: 'Client Onboarding', isExample: true },
+            isExample: true,
             stages: [
               { id: 'stage-1', name: 'Initial Engagement', steps: [
                 { id: 's1-1', name: 'Enquiry received', persona: 'admin', timeMinutes: 15, friction: 1 },
@@ -2900,7 +2901,7 @@
                     const metrics = getMapMetrics(map);
                     const isOwner = map.createdBy === profile?.id || map.created_by === profile?.id || true;
                     const responseCount = map.responseCount || 0;
-                    const isExample = map.isExample || map.is_example || map.config?.meta?.isExample;
+                    const isExample = map.config?.isExample || map.config?.meta?.isExample || map.template_source === 'starter-example';
                     return (
                       <div 
                         key={map.id} 
@@ -3095,7 +3096,7 @@
             <div className="footer-inner">
               <div className="footer-brand">
                 <img src="https://steveyoung74.github.io/journeymaps/logo_light.png" alt="Fathom" className="footer-logo" />
-                <span className="footer-version">v9.7.1</span>
+                <span className="footer-version">v9.7.2</span>
               </div>
               <div className="footer-copy">© 2025 Fathom · Journey intelligence for modern operations</div>
             </div>
