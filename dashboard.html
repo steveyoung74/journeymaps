@@ -690,6 +690,9 @@
     .journey-card-header.favourite {
       background: linear-gradient(135deg, var(--amber-500) 0%, var(--amber-600) 100%);
     }
+    .journey-card-header.example {
+      background: linear-gradient(135deg, #8B5CF6 0%, #7C3AED 100%);
+    }
     .journey-card-title {
       font-size: 16px;
       font-weight: 600;
@@ -705,6 +708,20 @@
       position: absolute;
       top: 16px;
       right: 16px;
+    }
+    
+    /* Example badge */
+    .example-badge {
+      display: inline-flex;
+      align-items: center;
+      gap: 4px;
+      padding: 3px 8px;
+      background: rgba(255, 255, 255, 0.2);
+      border-radius: 4px;
+      font-size: 11px;
+      font-weight: 500;
+      color: #FFF;
+      margin-bottom: 8px;
     }
     
     /* Card header buttons container - top right */
@@ -1841,6 +1858,7 @@
             updatedAt: m.updated_at,
             lastOpenedAt: m.last_opened_at,
             createdBy: m.created_by,
+            isExample: m.is_example || false,
             // Config is stored directly in the map
             config: m.config,
             // Legacy compatibility
@@ -2700,7 +2718,8 @@
                   {displayMaps.map(map => {
                     const metrics = getMapMetrics(map);
                     const isOwner = map.createdBy === profile?.id || map.created_by === profile?.id || true;
-                    const responseCount = map.responseCount || 0; // TODO: fetch from survey_responses
+                    const responseCount = map.responseCount || 0;
+                    const isExample = map.isExample || map.is_example || map.config?.meta?.isExample;
                     return (
                       <div 
                         key={map.id} 
@@ -2712,7 +2731,12 @@
                         }}
                       >
                         {/* Colored header with gradient */}
-                        <div className={`journey-card-header ${map.favourite ? 'favourite' : ''}`}>
+                        <div className={`journey-card-header ${map.favourite ? 'favourite' : isExample ? 'example' : ''}`}>
+                          {/* Example badge */}
+                          {isExample && (
+                            <div className="example-badge">📘 Example</div>
+                          )}
+                          
                           {/* Header buttons - options and star side by side */}
                           <div className="journey-card-header-buttons" onClick={e => e.stopPropagation()}>
                             <div className="card-options-container">
@@ -2890,7 +2914,7 @@
             <div className="footer-inner">
               <div className="footer-brand">
                 <img src="https://steveyoung74.github.io/journeymaps/logo_light.png" alt="Fathom" className="footer-logo" />
-                <span className="footer-version">v9.6.0</span>
+                <span className="footer-version">v9.7.0</span>
               </div>
               <div className="footer-copy">© 2025 Fathom · Journey intelligence for modern operations</div>
             </div>
