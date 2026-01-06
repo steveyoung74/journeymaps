@@ -1336,7 +1336,7 @@
         .select('*')
         .eq('organisation_id', organisationId)
         .is('archived_at', null)
-        .order('updated_at', { ascending: false });
+        .order('last_opened_at', { ascending: false, nullsFirst: false });
       
       if (error) throw error;
       return data || [];
@@ -1839,6 +1839,7 @@
             template: m.template_source,
             createdAt: m.created_at,
             updatedAt: m.updated_at,
+            lastOpenedAt: m.last_opened_at,
             createdBy: m.created_by,
             // Config is stored directly in the map
             config: m.config,
@@ -2256,16 +2257,33 @@
         printWindow.document.close();
       };
 
-      // With Supabase, maps are filtered by organisation via RLS
-      // Sort by updated date only - don't reorder on star (too disorienting)
+      // Sort by last opened (most recent first), falling back to updated_at
       const myMaps = [...maps].sort((a, b) => {
-        return new Date(b.updatedAt || b.updated_at) - new Date(a.updatedAt || a.updated_at);
+        const aTime = new Date(a.lastOpenedAt || a.last_opened_at || a.updatedAt || a.updated_at);
+        const bTime = new Date(b.lastOpenedAt || b.last_opened_at || b.updatedAt || b.updated_at);
+        return bTime - aTime;
       });
       // sharedMaps is now loaded from state via fetchSharedMaps()
       
-      const openMap = (mapId) => {
+      const openMap = async (mapId) => {
         const map = maps.find(m => m.id === mapId);
         const title = map?.config?.meta?.title || map?.title || 'Journey Map';
+        
+        // Update last_opened_at in Supabase
+        try {
+          const now = new Date().toISOString();
+          await supabase
+            .from('journey_maps')
+            .update({ last_opened_at: now })
+            .eq('id', mapId);
+          
+          // Also update local state so if user comes back, order is correct
+          setMaps(maps.map(m => m.id === mapId ? { ...m, lastOpenedAt: now, last_opened_at: now } : m));
+        } catch (err) {
+          console.error('Failed to update last_opened_at:', err);
+          // Continue anyway - don't block navigation
+        }
+        
         window.location.href = `editor.html?id=${mapId}&title=${encodeURIComponent(title)}`;
       };
 
