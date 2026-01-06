@@ -1110,7 +1110,7 @@
         
         // Add timeout for entire profile fetch operation
         const timeoutPromise = new Promise((_, reject) => 
-          setTimeout(() => reject(new Error('Profile fetch timeout')), 5000)
+          setTimeout(() => reject(new Error('Profile fetch timeout')), 15000)
         );
         
         try {
@@ -1148,15 +1148,23 @@
                 return;
               }
               
-              // Check for pending invitation
-              const { data: invitation, error: inviteError } = await supabase
-                .from('org_invitations')
-                .select('*, organisations(*)')
-                .eq('email', email.toLowerCase())
-                .eq('status', 'pending')
-                .single();
-              
-              console.log('Invitation check:', { invitation: !!invitation, error: inviteError?.message });
+              // Check for pending invitation (optional - table may not exist)
+              let invitation = null;
+              try {
+                const { data: inviteData, error: inviteError } = await supabase
+                  .from('workspace_invites')
+                  .select('*, organisations(*)')
+                  .eq('email', email.toLowerCase())
+                  .is('accepted_at', null)
+                  .single();
+                
+                if (!inviteError && inviteData) {
+                  invitation = inviteData;
+                }
+                console.log('Invitation check:', { invitation: !!invitation, error: inviteError?.message });
+              } catch (e) {
+                console.log('Invitation check skipped (table may not exist):', e.message);
+              }
               
               if (invitation && invitation.organisation_id) {
                 // Accept invitation - join existing organisation
@@ -1279,7 +1287,7 @@
             console.log('Auth timeout - showing login screen');
             setLoading(false);
           }
-        }, 3000);
+        }, 10000);
         
         // Set up auth state change listener FIRST
         const { data: { subscription } } = supabase.auth.onAuthStateChange(async (event, session) => {
@@ -3096,7 +3104,7 @@
             <div className="footer-inner">
               <div className="footer-brand">
                 <img src="https://steveyoung74.github.io/journeymaps/logo_light.png" alt="Fathom" className="footer-logo" />
-                <span className="footer-version">v9.7.2</span>
+                <span className="footer-version">v9.7.3</span>
               </div>
               <div className="footer-copy">© 2025 Fathom · Journey intelligence for modern operations</div>
             </div>
