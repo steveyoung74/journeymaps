@@ -693,6 +693,59 @@
     .journey-card-header.example {
       background: linear-gradient(135deg, #8B5CF6 0%, #7C3AED 100%);
     }
+    
+    /* Custom card colours */
+    .journey-card-header.color-steel { background: linear-gradient(135deg, #5B8A9A 0%, #4A7485 100%); }
+    .journey-card-header.color-navy { background: linear-gradient(135deg, #243D5C 0%, #192B45 100%); }
+    .journey-card-header.color-teal { background: linear-gradient(135deg, #2D8A6E 0%, #236B56 100%); }
+    .journey-card-header.color-amber { background: linear-gradient(135deg, #C4942A 0%, #A67C1A 100%); }
+    .journey-card-header.color-slate { background: linear-gradient(135deg, #6E7B8C 0%, #556275 100%); }
+    .journey-card-header.color-rose { background: linear-gradient(135deg, #B84A5A 0%, #9A3D4A 100%); }
+    .journey-card-header.color-indigo { background: linear-gradient(135deg, #5A5B8A 0%, #484970 100%); }
+    .journey-card-header.color-copper { background: linear-gradient(135deg, #9A6B5B 0%, #7D5649 100%); }
+    
+    /* Colour picker swatches */
+    .color-picker {
+      display: flex;
+      gap: 8px;
+      flex-wrap: wrap;
+      margin-top: 8px;
+    }
+    .color-swatch {
+      width: 36px;
+      height: 36px;
+      border-radius: 8px;
+      cursor: pointer;
+      border: 3px solid transparent;
+      transition: all 0.15s ease;
+      position: relative;
+    }
+    .color-swatch:hover {
+      transform: scale(1.1);
+    }
+    .color-swatch.selected {
+      border-color: var(--navy-700);
+      box-shadow: 0 0 0 2px white, 0 0 0 4px var(--navy-700);
+    }
+    .color-swatch.selected::after {
+      content: '✓';
+      position: absolute;
+      top: 50%;
+      left: 50%;
+      transform: translate(-50%, -50%);
+      color: white;
+      font-size: 16px;
+      font-weight: bold;
+      text-shadow: 0 1px 2px rgba(0,0,0,0.3);
+    }
+    .color-swatch-steel { background: linear-gradient(135deg, #5B8A9A 0%, #4A7485 100%); }
+    .color-swatch-navy { background: linear-gradient(135deg, #243D5C 0%, #192B45 100%); }
+    .color-swatch-teal { background: linear-gradient(135deg, #2D8A6E 0%, #236B56 100%); }
+    .color-swatch-amber { background: linear-gradient(135deg, #C4942A 0%, #A67C1A 100%); }
+    .color-swatch-slate { background: linear-gradient(135deg, #6E7B8C 0%, #556275 100%); }
+    .color-swatch-rose { background: linear-gradient(135deg, #B84A5A 0%, #9A3D4A 100%); }
+    .color-swatch-indigo { background: linear-gradient(135deg, #5A5B8A 0%, #484970 100%); }
+    .color-swatch-copper { background: linear-gradient(135deg, #9A6B5B 0%, #7D5649 100%); }
     .journey-card-title {
       font-size: 16px;
       font-weight: 600;
@@ -1370,7 +1423,7 @@
         .select('*')
         .eq('organisation_id', organisationId)
         .is('archived_at', null)
-        .order('last_opened_at', { ascending: false, nullsFirst: false });
+        .order('updated_at', { ascending: false });
       
       if (error) throw error;
       return data || [];
@@ -2465,10 +2518,19 @@
         printWindow.document.close();
       };
 
-      // Sort by last opened (most recent first), falling back to updated_at
+      // Sort by updated_at (most recent first), with examples always at bottom
       const myMaps = [...maps].sort((a, b) => {
-        const aTime = new Date(a.lastOpenedAt || a.last_opened_at || a.updatedAt || a.updated_at);
-        const bTime = new Date(b.lastOpenedAt || b.last_opened_at || b.updatedAt || b.updated_at);
+        // Check if either is an example map
+        const aIsExample = a.config?.isExample || a.config?.meta?.isExample || a.template_source === 'starter-example';
+        const bIsExample = b.config?.isExample || b.config?.meta?.isExample || b.template_source === 'starter-example';
+        
+        // Examples always go to bottom
+        if (aIsExample && !bIsExample) return 1;
+        if (!aIsExample && bIsExample) return -1;
+        
+        // Both examples or both regular - sort by updated_at (when saved)
+        const aTime = new Date(a.updatedAt || a.updated_at || a.created_at);
+        const bTime = new Date(b.updatedAt || b.updated_at || b.created_at);
         return bTime - aTime;
       });
       // sharedMaps is now loaded from state via fetchSharedMaps()
@@ -2477,21 +2539,7 @@
         const map = maps.find(m => m.id === mapId);
         const title = map?.config?.meta?.title || map?.title || 'Journey Map';
         
-        // Update last_opened_at in Supabase
-        try {
-          const now = new Date().toISOString();
-          await supabase
-            .from('journey_maps')
-            .update({ last_opened_at: now })
-            .eq('id', mapId);
-          
-          // Also update local state so if user comes back, order is correct
-          setMaps(maps.map(m => m.id === mapId ? { ...m, lastOpenedAt: now, last_opened_at: now } : m));
-        } catch (err) {
-          console.error('Failed to update last_opened_at:', err);
-          // Continue anyway - don't block navigation
-        }
-        
+        // Navigate to editor (no need to update last_opened_at since we sort by updated_at)
         window.location.href = `editor.html?id=${mapId}&title=${encodeURIComponent(title)}`;
       };
 
@@ -2910,6 +2958,16 @@
                     const isOwner = map.createdBy === profile?.id || map.created_by === profile?.id || true;
                     const responseCount = map.responseCount || 0;
                     const isExample = map.config?.isExample || map.config?.meta?.isExample || map.template_source === 'starter-example';
+                    const cardColor = map.config?.cardColor || map.config?.meta?.cardColor || 'steel';
+                    
+                    // Determine header class: favourite trumps custom color, example trumps both if no custom set
+                    const getHeaderClass = () => {
+                      if (map.favourite) return 'favourite';
+                      if (map.config?.cardColor || map.config?.meta?.cardColor) return `color-${cardColor}`;
+                      if (isExample) return 'example';
+                      return '';
+                    };
+                    
                     return (
                       <div 
                         key={map.id} 
@@ -2921,7 +2979,7 @@
                         }}
                       >
                         {/* Colored header with gradient */}
-                        <div className={`journey-card-header ${map.favourite ? 'favourite' : isExample ? 'example' : ''}`}>
+                        <div className={`journey-card-header ${getHeaderClass()}`}>
                           {/* Example badge */}
                           {isExample && (
                             <div className="example-badge">📘 Example</div>
@@ -2960,7 +3018,7 @@
                                   </button>
                                   <button className="card-options-item" onClick={(e) => handleRename(map.id, e)}>
                                     <span className="card-options-item-icon">✏️</span>
-                                    Rename
+                                    Edit Details
                                   </button>
                                   <div className="card-options-divider"></div>
                                   <button className="card-options-item" onClick={(e) => handleDownloadBackup(map.id, e)}>
@@ -3104,7 +3162,7 @@
             <div className="footer-inner">
               <div className="footer-brand">
                 <img src="https://steveyoung74.github.io/journeymaps/logo_light.png" alt="Fathom" className="footer-logo" />
-                <span className="footer-version">v9.7.3</span>
+                <span className="footer-version">v9.8.0</span>
               </div>
               <div className="footer-copy">© 2025 Fathom · Journey intelligence for modern operations</div>
             </div>
@@ -3146,11 +3204,24 @@
     // ============================================
     // RENAME MODAL
     // ============================================
+    // Card colour options
+    const CARD_COLORS = [
+      { id: 'steel', label: 'Steel Blue', class: 'color-swatch-steel' },
+      { id: 'navy', label: 'Navy', class: 'color-swatch-navy' },
+      { id: 'teal', label: 'Teal', class: 'color-swatch-teal' },
+      { id: 'amber', label: 'Amber', class: 'color-swatch-amber' },
+      { id: 'slate', label: 'Slate', class: 'color-swatch-slate' },
+      { id: 'rose', label: 'Rose', class: 'color-swatch-rose' },
+      { id: 'indigo', label: 'Indigo', class: 'color-swatch-indigo' },
+      { id: 'copper', label: 'Copper', class: 'color-swatch-copper' },
+    ];
+
     function RenameModal({ mapId, maps, mapConfigs, onClose, onSaved }) {
       const map = maps.find(m => m.id === mapId);
       const config = map?.config || mapConfigs[mapId] || {};
       const [title, setTitle] = useState(config?.meta?.title || map?.title || '');
       const [description, setDescription] = useState(config?.meta?.description || map?.description || '');
+      const [cardColor, setCardColor] = useState(config?.cardColor || config?.meta?.cardColor || 'steel');
       const [saving, setSaving] = useState(false);
       const [error, setError] = useState('');
       
@@ -3166,10 +3237,12 @@
         try {
           const updatedConfig = {
             ...config,
+            cardColor: cardColor,
             meta: {
               ...config.meta,
               title: title.trim(),
-              description: description.trim()
+              description: description.trim(),
+              cardColor: cardColor
             }
           };
           
@@ -3185,7 +3258,7 @@
           onSaved();
           onClose();
         } catch (err) {
-          console.error('Failed to rename map:', err);
+          console.error('Failed to save map details:', err);
           setError('Failed to save. Please try again.');
         } finally {
           setSaving(false);
@@ -3197,7 +3270,7 @@
           <div className="modal" onClick={e => e.stopPropagation()} style={{ maxWidth: '480px' }}>
             <div className="modal-content">
               <div className="modal-header">
-                <h2 className="modal-title">Rename Map</h2>
+                <h2 className="modal-title">Edit Details</h2>
                 <button className="modal-close" onClick={onClose}>×</button>
               </div>
               
@@ -3226,16 +3299,48 @@
                 />
               </div>
               
-              <div style={{ marginBottom: '24px' }}>
+              <div style={{ marginBottom: '20px' }}>
                 <label className="label">Description</label>
                 <textarea
                   className="input"
                   value={description}
                   onChange={(e) => setDescription(e.target.value)}
                   placeholder="Brief description of this journey map"
-                  rows={3}
+                  rows={2}
                   style={{ resize: 'vertical' }}
                 />
+              </div>
+              
+              <div style={{ marginBottom: '24px' }}>
+                <label className="label">Card Colour</label>
+                <div className="color-picker">
+                  {CARD_COLORS.map(color => (
+                    <div
+                      key={color.id}
+                      className={`color-swatch ${color.class} ${cardColor === color.id ? 'selected' : ''}`}
+                      onClick={() => setCardColor(color.id)}
+                      title={color.label}
+                    />
+                  ))}
+                </div>
+                
+                {/* Preview */}
+                <div style={{ marginTop: '16px' }}>
+                  <label className="label" style={{ fontSize: '11px', color: 'var(--slate-500)' }}>Preview</label>
+                  <div style={{ 
+                    borderRadius: '8px', 
+                    overflow: 'hidden', 
+                    boxShadow: '0 2px 8px rgba(0,0,0,0.1)',
+                    maxWidth: '200px'
+                  }}>
+                    <div className={`journey-card-header color-${cardColor}`} style={{ padding: '12px 16px', borderRadius: '8px 8px 0 0' }}>
+                      <div style={{ color: 'white', fontSize: '13px', fontWeight: '600' }}>{title || 'Journey Title'}</div>
+                    </div>
+                    <div style={{ padding: '8px 16px', background: 'white', fontSize: '11px', color: 'var(--slate-500)' }}>
+                      Card preview
+                    </div>
+                  </div>
+                </div>
               </div>
               
               <div style={{ display: 'flex', gap: '12px', justifyContent: 'flex-end' }}>
