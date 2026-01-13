@@ -4399,7 +4399,7 @@
       
       // Send email notification via mailto
       const sendShareEmail = (recipientEmail, title, permissionLevel) => {
-        const shareLink = `${window.location.origin}${window.location.pathname}?id=${mapId}`;
+        const shareLink = `https://steveyoung74.github.io/journeymaps/editor.html?id=${mapId}`;
         const senderName = currentUser?.email?.split('@')[0] || 'Someone';
         const permissionText = permissionLevel === 'edit' ? 'edit' : 'view';
         
@@ -4517,7 +4517,7 @@ FATHOM - Journey intelligence for modern operations`);
       };
       
       const copyLink = () => {
-        const link = `${window.location.origin}${window.location.pathname}?id=${mapId}`;
+        const link = `https://steveyoung74.github.io/journeymaps/editor.html?id=${mapId}`;
         navigator.clipboard.writeText(link);
         setCopySuccess(true);
         setTimeout(() => setCopySuccess(false), 2000);
@@ -4569,7 +4569,7 @@ FATHOM - Journey intelligence for modern operations`);
               <input
                 type="text"
                 readOnly
-                value={`${window.location.origin}${window.location.pathname}?id=${mapId}`}
+                value={`https://steveyoung74.github.io/journeymaps/editor.html?id=${mapId}`}
                 style={{ 
                   flex: 1, 
                   padding: '8px 12px', 
