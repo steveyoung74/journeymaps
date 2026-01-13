@@ -669,7 +669,7 @@
     const { useState, useCallback, useMemo, useEffect, useRef } = React;
     
     // Current app version - always displayed in footer
-    const APP_VERSION = "9.13.0";
+    const APP_VERSION = "9.14.0";
     
     // ============================================
     // SUPABASE CONFIGURATION
@@ -3343,6 +3343,128 @@
                 <div style={{ fontSize: '10px', color: '#8A95A5' }}>Avg cost per staff member</div>
               </div>
             </div>
+          </div>
+
+          {/* Step-Level Cost Attribution */}
+          <div style={{ marginTop: '24px', background: '#FFF', borderRadius: '12px', padding: '20px', border: '1px solid #E4E7EB' }}>
+            <h4 style={{ margin: '0 0 16px', fontSize: '14px', fontWeight: 600, color: '#192B45' }}>
+              📋 Step-Level Cost Attribution
+            </h4>
+            <div style={{ overflowX: 'auto' }}>
+              <table style={{ width: '100%', borderCollapse: 'collapse', fontFamily: "'Interstate', sans-serif", fontSize: '12px' }}>
+                <thead>
+                  <tr style={{ background: '#F4F5F7' }}>
+                    <th style={{ padding: '10px 12px', textAlign: 'left', fontWeight: 600, color: '#556275', borderBottom: '2px solid #E4E7EB' }}>Step</th>
+                    <th style={{ padding: '10px 12px', textAlign: 'center', fontWeight: 600, color: '#556275', borderBottom: '2px solid #E4E7EB' }}>Peak Load</th>
+                    <th style={{ padding: '10px 12px', textAlign: 'center', fontWeight: 600, color: '#556275', borderBottom: '2px solid #E4E7EB' }}>Active Roles</th>
+                    <th style={{ padding: '10px 12px', textAlign: 'right', fontWeight: 600, color: '#556275', borderBottom: '2px solid #E4E7EB' }}>Fixed</th>
+                    <th style={{ padding: '10px 12px', textAlign: 'right', fontWeight: 600, color: '#556275', borderBottom: '2px solid #E4E7EB' }}>Variable</th>
+                    <th style={{ padding: '10px 12px', textAlign: 'right', fontWeight: 600, color: '#8B6914', borderBottom: '2px solid #E4E7EB' }}>Step Total</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {stages.flatMap((stage, stageIdx) => 
+                    stage.steps.map((step, stepIdx) => {
+                      const eventCosts = step.eventCosts || {};
+                      const peakFactor = eventCosts.peakLoadFactor || 1.0;
+                      const activeRoles = eventCosts.activeRoles || [];
+                      const fixedCost = eventCosts.fixedCosts || 0;
+                      const variableCost = (eventCosts.variableCostPerHead || 0) * (eventConfig.capacity || 0);
+                      const stepTotal = fixedCost + variableCost;
+                      
+                      const peakLabel = peakFactor >= 2.0 ? '🔥 Extreme' : peakFactor >= 1.5 ? '😰 High' : peakFactor >= 1.25 ? '😅 Busy' : '😊 Normal';
+                      
+                      return (
+                        <tr key={step.id} style={{ borderBottom: '1px solid #E4E7EB' }}>
+                          <td style={{ padding: '10px 12px' }}>
+                            <div style={{ fontWeight: 500, color: '#192B45' }}>{step.name}</div>
+                            <div style={{ fontSize: '10px', color: '#8A95A5' }}>{stage.name}</div>
+                          </td>
+                          <td style={{ padding: '10px 12px', textAlign: 'center' }}>
+                            <span style={{ 
+                              padding: '4px 8px', 
+                              borderRadius: '12px', 
+                              fontSize: '11px',
+                              background: peakFactor >= 1.5 ? '#FAF0D6' : '#F4F5F7',
+                              color: peakFactor >= 1.5 ? '#8B6914' : '#6E7B8C'
+                            }}>
+                              {peakLabel}
+                            </span>
+                          </td>
+                          <td style={{ padding: '10px 12px', textAlign: 'center' }}>
+                            {activeRoles.length > 0 ? (
+                              <div style={{ display: 'flex', gap: '4px', justifyContent: 'center', flexWrap: 'wrap' }}>
+                                {activeRoles.slice(0, 3).map(roleId => {
+                                  const persona = personas.find(p => p.id === roleId);
+                                  return persona ? (
+                                    <span key={roleId} style={{ 
+                                      width: '20px', 
+                                      height: '20px', 
+                                      borderRadius: '50%', 
+                                      background: persona.color,
+                                      display: 'inline-block',
+                                      border: '2px solid #FFF',
+                                      boxShadow: '0 1px 2px rgba(0,0,0,0.1)'
+                                    }} title={persona.label} />
+                                  ) : null;
+                                })}
+                                {activeRoles.length > 3 && (
+                                  <span style={{ fontSize: '10px', color: '#6E7B8C' }}>+{activeRoles.length - 3}</span>
+                                )}
+                              </div>
+                            ) : (
+                              <span style={{ color: '#A9B2BE', fontSize: '11px' }}>—</span>
+                            )}
+                          </td>
+                          <td style={{ padding: '10px 12px', textAlign: 'right', color: fixedCost > 0 ? '#192B45' : '#A9B2BE' }}>
+                            {fixedCost > 0 ? formatCurrency(fixedCost) : '—'}
+                          </td>
+                          <td style={{ padding: '10px 12px', textAlign: 'right', color: variableCost > 0 ? '#192B45' : '#A9B2BE' }}>
+                            {variableCost > 0 ? formatCurrency(variableCost) : '—'}
+                          </td>
+                          <td style={{ padding: '10px 12px', textAlign: 'right', fontWeight: 600, color: stepTotal > 0 ? '#8B6914' : '#A9B2BE' }}>
+                            {stepTotal > 0 ? formatCurrency(stepTotal) : '—'}
+                          </td>
+                        </tr>
+                      );
+                    })
+                  )}
+                </tbody>
+                <tfoot>
+                  <tr style={{ background: '#FAF0D6' }}>
+                    <td colSpan="3" style={{ padding: '12px', fontWeight: 600, color: '#8B6914' }}>
+                      Total Step Costs
+                    </td>
+                    <td style={{ padding: '12px', textAlign: 'right', fontWeight: 600, color: '#8B6914' }}>
+                      {formatCurrency(stages.flatMap(s => s.steps).reduce((sum, step) => sum + (step.eventCosts?.fixedCosts || 0), 0))}
+                    </td>
+                    <td style={{ padding: '12px', textAlign: 'right', fontWeight: 600, color: '#8B6914' }}>
+                      {formatCurrency(stages.flatMap(s => s.steps).reduce((sum, step) => sum + ((step.eventCosts?.variableCostPerHead || 0) * (eventConfig.capacity || 0)), 0))}
+                    </td>
+                    <td style={{ padding: '12px', textAlign: 'right', fontWeight: 700, color: '#8B6914', fontSize: '14px' }}>
+                      {formatCurrency(stages.flatMap(s => s.steps).reduce((sum, step) => {
+                        const ec = step.eventCosts || {};
+                        return sum + (ec.fixedCosts || 0) + ((ec.variableCostPerHead || 0) * (eventConfig.capacity || 0));
+                      }, 0))}
+                    </td>
+                  </tr>
+                </tfoot>
+              </table>
+            </div>
+            
+            {/* High Peak Load Warning */}
+            {stages.flatMap(s => s.steps).some(step => (step.eventCosts?.peakLoadFactor || 1.0) >= 1.5) && (
+              <div style={{ marginTop: '16px', padding: '12px', background: '#FAF0D6', borderRadius: '8px', border: '1px solid #E4C87A', display: 'flex', alignItems: 'flex-start', gap: '12px' }}>
+                <span style={{ fontSize: '18px' }}>⚠️</span>
+                <div>
+                  <div style={{ fontWeight: 600, color: '#8B6914', marginBottom: '4px', fontSize: '13px' }}>High Peak Load Steps Detected</div>
+                  <div style={{ fontSize: '12px', color: '#A67C1A' }}>
+                    {stages.flatMap(s => s.steps).filter(step => (step.eventCosts?.peakLoadFactor || 1.0) >= 1.5).map(s => s.name).join(', ')} 
+                    — Consider additional staffing or queue management during these periods.
+                  </div>
+                </div>
+              </div>
+            )}
           </div>
         </div>
       );
@@ -9820,6 +9942,205 @@ FATHOM - Journey intelligence for modern operations`);
                             ))}
                           </div>
                         )}
+                      </div>
+                    </div>
+                    )}
+
+                    {/* Event Step Costs - only show in event mode */}
+                    {showCosts && config.meta?.costModel === 'event' && (
+                    <div style={{ padding: '16px', background: 'linear-gradient(135deg, #FAF0D6 0%, #F0DDA8 100%)', borderRadius: '8px', marginBottom: '16px', border: '1px solid #E4C87A' }}>
+                      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: '16px' }}>
+                        <label style={{
+                          display: 'block',
+                          fontFamily: "'Interstate', sans-serif",
+                          fontSize: '11px',
+                          color: '#8B6914',
+                          textTransform: 'uppercase',
+                          letterSpacing: '0.5px',
+                          fontWeight: 600
+                        }}>
+                          🎪 Event Step Configuration
+                        </label>
+                      </div>
+                      
+                      {/* Peak Load Factor */}
+                      <div style={{ marginBottom: '16px' }}>
+                        <div style={{ fontFamily: "'Interstate', sans-serif", fontSize: '10px', color: '#8B6914', textTransform: 'uppercase', letterSpacing: '0.5px', marginBottom: '8px', fontWeight: 600 }}>
+                          ⚡ Peak Load Factor
+                        </div>
+                        <div style={{ display: 'flex', gap: '8px', flexWrap: 'wrap' }}>
+                          {[
+                            { value: 1.0, label: 'Normal', emoji: '😊', desc: 'Standard staffing' },
+                            { value: 1.25, label: 'Busy', emoji: '😅', desc: '+25% demand' },
+                            { value: 1.5, label: 'High', emoji: '😰', desc: '+50% demand' },
+                            { value: 2.0, label: 'Extreme', emoji: '🔥', desc: '2× demand' }
+                          ].map(level => {
+                            const currentFactor = selectedStep.eventCosts?.peakLoadFactor || 1.0;
+                            const isSelected = Math.abs(currentFactor - level.value) < 0.01;
+                            return (
+                              <button
+                                key={level.value}
+                                onClick={() => {
+                                  if (editMode) {
+                                    const newEventCosts = { ...(selectedStep.eventCosts || {}), peakLoadFactor: level.value };
+                                    updateStep(selectedStep.stageId, selectedStep.id, { eventCosts: newEventCosts });
+                                    setSelectedStep(prev => ({ ...prev, eventCosts: newEventCosts }));
+                                  }
+                                }}
+                                disabled={!editMode}
+                                style={{
+                                  padding: '10px 14px',
+                                  border: `2px solid ${isSelected ? '#8B6914' : '#E4C87A'}`,
+                                  borderRadius: '8px',
+                                  background: isSelected ? '#FFF' : 'rgba(255,255,255,0.5)',
+                                  cursor: editMode ? 'pointer' : 'default',
+                                  fontFamily: "'Interstate', sans-serif",
+                                  fontSize: '12px',
+                                  display: 'flex',
+                                  flexDirection: 'column',
+                                  alignItems: 'center',
+                                  gap: '4px',
+                                  minWidth: '70px',
+                                  transition: 'all 0.15s'
+                                }}
+                              >
+                                <span style={{ fontSize: '18px' }}>{level.emoji}</span>
+                                <span style={{ fontWeight: 600, color: isSelected ? '#8B6914' : '#A67C1A' }}>{level.label}</span>
+                                <span style={{ fontSize: '10px', color: '#8A95A5' }}>{level.value}×</span>
+                              </button>
+                            );
+                          })}
+                        </div>
+                        <div style={{ fontFamily: "'Interstate', sans-serif", fontSize: '11px', color: '#A67C1A', marginTop: '8px' }}>
+                          Peak load affects staffing requirements during this step (e.g., half-time rush)
+                        </div>
+                      </div>
+                      
+                      {/* Active Roles during this step */}
+                      <div style={{ marginBottom: '16px' }}>
+                        <div style={{ fontFamily: "'Interstate', sans-serif", fontSize: '10px', color: '#8B6914', textTransform: 'uppercase', letterSpacing: '0.5px', marginBottom: '8px', fontWeight: 600 }}>
+                          👥 Active Roles During Step
+                        </div>
+                        <div style={{ display: 'flex', flexWrap: 'wrap', gap: '8px' }}>
+                          {config.personas.filter(p => !p.isExternal).map(persona => {
+                            const activeRoles = selectedStep.eventCosts?.activeRoles || [];
+                            const isActive = activeRoles.includes(persona.id);
+                            return (
+                              <button
+                                key={persona.id}
+                                onClick={() => {
+                                  if (editMode) {
+                                    const newActiveRoles = isActive 
+                                      ? activeRoles.filter(id => id !== persona.id)
+                                      : [...activeRoles, persona.id];
+                                    const newEventCosts = { ...(selectedStep.eventCosts || {}), activeRoles: newActiveRoles };
+                                    updateStep(selectedStep.stageId, selectedStep.id, { eventCosts: newEventCosts });
+                                    setSelectedStep(prev => ({ ...prev, eventCosts: newEventCosts }));
+                                  }
+                                }}
+                                disabled={!editMode}
+                                style={{
+                                  padding: '8px 12px',
+                                  border: `2px solid ${isActive ? persona.color : '#E4C87A'}`,
+                                  borderRadius: '20px',
+                                  background: isActive ? persona.color : 'rgba(255,255,255,0.5)',
+                                  color: isActive ? '#FFF' : '#6E7B8C',
+                                  cursor: editMode ? 'pointer' : 'default',
+                                  fontFamily: "'Interstate', sans-serif",
+                                  fontSize: '12px',
+                                  fontWeight: 500,
+                                  transition: 'all 0.15s',
+                                  display: 'flex',
+                                  alignItems: 'center',
+                                  gap: '6px'
+                                }}
+                              >
+                                {isActive && <span>✓</span>}
+                                {persona.label}
+                              </button>
+                            );
+                          })}
+                        </div>
+                        <div style={{ fontFamily: "'Interstate', sans-serif", fontSize: '11px', color: '#A67C1A', marginTop: '8px' }}>
+                          Select which roles are actively engaged during this step
+                        </div>
+                      </div>
+                      
+                      {/* Fixed Step Costs */}
+                      <div style={{ marginBottom: '16px' }}>
+                        <div style={{ fontFamily: "'Interstate', sans-serif", fontSize: '10px', color: '#8B6914', textTransform: 'uppercase', letterSpacing: '0.5px', marginBottom: '8px', fontWeight: 600 }}>
+                          💷 Fixed Step Costs
+                        </div>
+                        <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '12px' }}>
+                          <div>
+                            <label style={{ display: 'block', fontFamily: "'Interstate', sans-serif", fontSize: '10px', color: '#8A95A5', marginBottom: '4px' }}>Fixed Cost (£)</label>
+                            {editMode ? (
+                              <input
+                                type="number"
+                                step="10"
+                                value={selectedStep.eventCosts?.fixedCosts || ''}
+                                onChange={(e) => {
+                                  const newEventCosts = { ...(selectedStep.eventCosts || {}), fixedCosts: parseFloat(e.target.value) || 0 };
+                                  updateStep(selectedStep.stageId, selectedStep.id, { eventCosts: newEventCosts });
+                                  setSelectedStep(prev => ({ ...prev, eventCosts: newEventCosts }));
+                                }}
+                                placeholder="0"
+                                style={{ width: '100%', padding: '8px', border: '1px solid #E4C87A', borderRadius: '6px', fontSize: '13px', background: '#FFF' }}
+                              />
+                            ) : (
+                              <div style={{ fontFamily: "'Interstate', sans-serif", fontSize: '16px', fontWeight: 600, color: '#8B6914' }}>
+                                {formatCurrency(selectedStep.eventCosts?.fixedCosts || 0)}
+                              </div>
+                            )}
+                            <div style={{ fontFamily: "'Interstate', sans-serif", fontSize: '10px', color: '#8A95A5', marginTop: '2px' }}>
+                              Consumables, wastage, etc.
+                            </div>
+                          </div>
+                          <div>
+                            <label style={{ display: 'block', fontFamily: "'Interstate', sans-serif", fontSize: '10px', color: '#8A95A5', marginBottom: '4px' }}>Variable Cost/Head (£)</label>
+                            {editMode ? (
+                              <input
+                                type="number"
+                                step="0.10"
+                                value={selectedStep.eventCosts?.variableCostPerHead || ''}
+                                onChange={(e) => {
+                                  const newEventCosts = { ...(selectedStep.eventCosts || {}), variableCostPerHead: parseFloat(e.target.value) || 0 };
+                                  updateStep(selectedStep.stageId, selectedStep.id, { eventCosts: newEventCosts });
+                                  setSelectedStep(prev => ({ ...prev, eventCosts: newEventCosts }));
+                                }}
+                                placeholder="0"
+                                style={{ width: '100%', padding: '8px', border: '1px solid #E4C87A', borderRadius: '6px', fontSize: '13px', background: '#FFF' }}
+                              />
+                            ) : (
+                              <div style={{ fontFamily: "'Interstate', sans-serif", fontSize: '16px', fontWeight: 600, color: '#8B6914' }}>
+                                {formatCurrency(selectedStep.eventCosts?.variableCostPerHead || 0)}
+                              </div>
+                            )}
+                            <div style={{ fontFamily: "'Interstate', sans-serif", fontSize: '10px', color: '#8A95A5', marginTop: '2px' }}>
+                              Per attendee (food, materials)
+                            </div>
+                          </div>
+                        </div>
+                      </div>
+                      
+                      {/* Step Cost Summary */}
+                      <div style={{ background: '#FFF', borderRadius: '8px', padding: '12px', border: '1px solid #E4C87A' }}>
+                        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                          <div style={{ fontFamily: "'Interstate', sans-serif", fontSize: '12px', color: '#8B6914' }}>
+                            Estimated Step Cost
+                          </div>
+                          <div style={{ textAlign: 'right' }}>
+                            <div style={{ fontFamily: "'Interstate', sans-serif", fontSize: '18px', fontWeight: 700, color: '#8B6914' }}>
+                              {formatCurrency(
+                                (selectedStep.eventCosts?.fixedCosts || 0) + 
+                                ((selectedStep.eventCosts?.variableCostPerHead || 0) * (config.meta?.eventConfig?.capacity || 0))
+                              )}
+                            </div>
+                            <div style={{ fontFamily: "'Interstate', sans-serif", fontSize: '10px', color: '#A67C1A' }}>
+                              Fixed + ({formatCurrency(selectedStep.eventCosts?.variableCostPerHead || 0)} × {(config.meta?.eventConfig?.capacity || 0).toLocaleString()} attendees)
+                            </div>
+                          </div>
+                        </div>
                       </div>
                     </div>
                     )}
