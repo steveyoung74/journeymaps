@@ -669,7 +669,7 @@
     const { useState, useCallback, useMemo, useEffect, useRef } = React;
     
     // Current app version - always displayed in footer
-    const APP_VERSION = "9.11.0";
+    const APP_VERSION = "9.12.0";
     
     // ============================================
     // SUPABASE CONFIGURATION
@@ -3420,16 +3420,50 @@
     }
 
     // Role Management Modal
-    function SalarySettingsModal({ personas, onUpdate, onClose }) {
+    function SalarySettingsModal({ personas, config, onUpdate, onClose }) {
       const [localPersonas, setLocalPersonas] = useState(JSON.parse(JSON.stringify(personas)));
       const [editingId, setEditingId] = useState(null);
       const [showAddForm, setShowAddForm] = useState(false);
-      const [newRole, setNewRole] = useState({ label: '', color: '#556275666', annualSalary: 0, burdenMultiplier: 1.35, workspaceHourlyCost: 6.00, isExternal: false });
+      const [newRole, setNewRole] = useState({ label: '', color: '#556275666', annualSalary: 0, burdenMultiplier: 1.35, workspaceHourlyCost: 6.00, isExternal: false, eventDeployment: { headcount: 1, hoursPerEvent: 4, rateType: 'hourly' } });
+      
+      // Check if we're in event mode
+      const isEventMode = config?.meta?.costModel === 'event';
+      const eventConfig = config?.meta?.eventConfig || {};
       
       const colorOptions = ['#2D8A6E', '#9A6B5B', '#456A8A', '#5A5B8A', '#B84A5A', '#2D8A6E', '#C4942A', '#556275', '#5A5B8A', '#0369A1'];
 
+      // Calculate event cost for a persona
+      const calculateEventCost = (persona) => {
+        if (!persona || persona.isExternal) return 0;
+        const deployment = persona.eventDeployment || { headcount: 1, hoursPerEvent: 4, rateType: 'hourly' };
+        const hourlyRate = calculateFullyLoadedRate(persona);
+        
+        if (deployment.rateType === 'fixed') {
+          return (deployment.fixedFeePerEvent || 0) * (deployment.headcount || 1);
+        } else if (deployment.rateType === 'external') {
+          return deployment.externalRecharge || 0;
+        } else {
+          // hourly or salary - both use hourly rate
+          return hourlyRate * (deployment.hoursPerEvent || 0) * (deployment.headcount || 1);
+        }
+      };
+
       const handleUpdatePersona = (id, field, value) => {
-        setLocalPersonas(prev => prev.map(p => p.id === id ? { ...p, [field]: value } : p));
+        setLocalPersonas(prev => prev.map(p => {
+          if (p.id !== id) return p;
+          // Handle nested eventDeployment updates
+          if (field.startsWith('eventDeployment.')) {
+            const subField = field.replace('eventDeployment.', '');
+            return { 
+              ...p, 
+              eventDeployment: { 
+                ...(p.eventDeployment || { headcount: 1, hoursPerEvent: 4, rateType: 'hourly' }),
+                [subField]: value 
+              } 
+            };
+          }
+          return { ...p, [field]: value };
+        }));
       };
 
       const handleDeletePersona = (id) => {
@@ -3464,14 +3498,74 @@
             overflow: 'auto'
           }} onClick={e => e.stopPropagation()}>
             <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '8px' }}>
-              <h3 style={{ margin: 0, fontSize: '20px' }}>👥 Role Management</h3>
+              <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
+                <h3 style={{ margin: 0, fontSize: '20px' }}>👥 Role Management</h3>
+                {isEventMode && (
+                  <span style={{ padding: '4px 10px', background: '#FAF0D6', color: '#8B6914', borderRadius: '4px', fontSize: '11px', fontWeight: 600, fontFamily: "'Interstate', sans-serif" }}>
+                    🎪 EVENT MODE
+                  </span>
+                )}
+              </div>
               <button onClick={() => setShowAddForm(!showAddForm)} style={{ padding: '8px 16px', background: showAddForm ? '#F4F5F7' : '#2D8A6E', color: showAddForm ? '#556275' : '#FFF', border: 'none', borderRadius: '6px', cursor: 'pointer', fontFamily: "'Interstate', sans-serif", fontSize: '13px' }}>
                 {showAddForm ? 'Cancel' : '+ Add Role'}
               </button>
             </div>
-            <p style={{ margin: '0 0 24px', color: '#556275', fontFamily: "'Interstate', sans-serif", fontSize: '14px' }}>
-              Manage roles and fully-loaded costs. Based on {WORKING_HOURS_PER_YEAR} working hours/year.
+            <p style={{ margin: '0 0 16px', color: '#556275', fontFamily: "'Interstate', sans-serif", fontSize: '14px' }}>
+              {isEventMode 
+                ? `Configure staff deployment for events (${eventConfig.capacity?.toLocaleString() || 0} capacity, ${eventConfig.durationMinutes || 0} mins).`
+                : `Manage roles and fully-loaded costs. Based on ${WORKING_HOURS_PER_YEAR} working hours/year.`
+              }
             </p>
+
+            {/* Event Staffing Summary - only in event mode */}
+            {isEventMode && (
+              <div style={{ marginBottom: '20px', padding: '16px', background: '#FAF0D6', borderRadius: '8px', border: '1px solid #E4C87A' }}>
+                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: '12px' }}>
+                  <div style={{ fontFamily: "'Interstate', sans-serif", fontSize: '13px', fontWeight: 600, color: '#8B6914' }}>
+                    📊 Event Staffing Summary
+                  </div>
+                </div>
+                <div style={{ display: 'grid', gridTemplateColumns: 'repeat(4, 1fr)', gap: '16px' }}>
+                  <div style={{ textAlign: 'center' }}>
+                    <div style={{ fontFamily: "'Interstate', sans-serif", fontSize: '24px', fontWeight: 700, color: '#8B6914' }}>
+                      {localPersonas.filter(p => !p.isExternal).reduce((sum, p) => sum + (p.eventDeployment?.headcount || 1), 0)}
+                    </div>
+                    <div style={{ fontFamily: "'Interstate', sans-serif", fontSize: '11px', color: '#A67C1A' }}>Total Staff</div>
+                  </div>
+                  <div style={{ textAlign: 'center' }}>
+                    <div style={{ fontFamily: "'Interstate', sans-serif", fontSize: '24px', fontWeight: 700, color: '#8B6914' }}>
+                      {formatCurrency(localPersonas.filter(p => !p.isExternal).reduce((sum, p) => sum + calculateEventCost(p), 0))}
+                    </div>
+                    <div style={{ fontFamily: "'Interstate', sans-serif", fontSize: '11px', color: '#A67C1A' }}>Event Cost</div>
+                  </div>
+                  <div style={{ textAlign: 'center' }}>
+                    <div style={{ fontFamily: "'Interstate', sans-serif", fontSize: '24px', fontWeight: 700, color: '#8B6914' }}>
+                      {eventConfig.capacity > 0 
+                        ? formatCurrency(localPersonas.filter(p => !p.isExternal).reduce((sum, p) => sum + calculateEventCost(p), 0) / eventConfig.capacity)
+                        : '—'
+                      }
+                    </div>
+                    <div style={{ fontFamily: "'Interstate', sans-serif", fontSize: '11px', color: '#A67C1A' }}>Per Attendee</div>
+                  </div>
+                  <div style={{ textAlign: 'center' }}>
+                    <div style={{ fontFamily: "'Interstate', sans-serif", fontSize: '24px', fontWeight: 700, color: '#8B6914' }}>
+                      1:{eventConfig.capacity > 0 && localPersonas.filter(p => !p.isExternal).reduce((sum, p) => sum + (p.eventDeployment?.headcount || 1), 0) > 0
+                        ? Math.round(eventConfig.capacity / localPersonas.filter(p => !p.isExternal).reduce((sum, p) => sum + (p.eventDeployment?.headcount || 1), 0))
+                        : '—'
+                      }
+                    </div>
+                    <div style={{ fontFamily: "'Interstate', sans-serif", fontSize: '11px', color: '#A67C1A' }}>Staff:Attendee</div>
+                  </div>
+                </div>
+                {eventConfig.frequency !== 'single' && eventConfig.eventsPerPeriod > 1 && (
+                  <div style={{ marginTop: '12px', paddingTop: '12px', borderTop: '1px solid #E4C87A', textAlign: 'center' }}>
+                    <span style={{ fontFamily: "'Interstate', sans-serif", fontSize: '12px', color: '#8B6914' }}>
+                      Season Total ({eventConfig.eventsPerPeriod} events): <strong>{formatCurrency(localPersonas.filter(p => !p.isExternal).reduce((sum, p) => sum + calculateEventCost(p), 0) * eventConfig.eventsPerPeriod)}</strong>
+                    </span>
+                  </div>
+                )}
+              </div>
+            )}
 
             {/* Add New Role Form */}
             {showAddForm && (
@@ -3695,6 +3789,104 @@
                           {formatCurrencyDetailed(calculateFullyLoadedRate(persona))}/hr
                         </div>
                       </div>
+                    </div>
+                  )}
+
+                  {/* Event Deployment Fields - only for internal roles in event mode */}
+                  {!persona.isExternal && isEventMode && (
+                    <div style={{ marginTop: '12px', paddingTop: '12px', borderTop: '1px dashed #E4C87A', background: 'rgba(250, 240, 214, 0.3)', margin: '12px -16px -16px', padding: '12px 16px 16px', borderRadius: '0 0 4px 4px' }}>
+                      <div style={{ fontFamily: "'Interstate', sans-serif", fontSize: '11px', fontWeight: 600, color: '#8B6914', marginBottom: '12px', display: 'flex', alignItems: 'center', gap: '6px' }}>
+                        🎪 Event Deployment
+                      </div>
+                      <div style={{ display: 'grid', gridTemplateColumns: 'repeat(4, 1fr)', gap: '12px' }}>
+                        {/* Headcount */}
+                        <div>
+                          <label style={{ display: 'block', fontFamily: "'Interstate', sans-serif", fontSize: '10px', color: '#8A95A5', marginBottom: '4px' }}>Headcount</label>
+                          <input
+                            type="number"
+                            value={persona.eventDeployment?.headcount || 1}
+                            onChange={(e) => handleUpdatePersona(persona.id, 'eventDeployment.headcount', parseInt(e.target.value) || 1)}
+                            min="1"
+                            style={{ width: '100%', padding: '6px 8px', border: '1px solid #E4C87A', borderRadius: '4px', fontSize: '13px', textAlign: 'right', background: '#FFF' }}
+                          />
+                          <div style={{ fontFamily: "'Interstate', sans-serif", fontSize: '10px', color: '#8A95A5', marginTop: '2px' }}>
+                            Staff per event
+                          </div>
+                        </div>
+
+                        {/* Hours per Event */}
+                        <div>
+                          <label style={{ display: 'block', fontFamily: "'Interstate', sans-serif", fontSize: '10px', color: '#8A95A5', marginBottom: '4px' }}>Hours/Event</label>
+                          <input
+                            type="number"
+                            step="0.5"
+                            value={persona.eventDeployment?.hoursPerEvent || 4}
+                            onChange={(e) => handleUpdatePersona(persona.id, 'eventDeployment.hoursPerEvent', parseFloat(e.target.value) || 0)}
+                            style={{ width: '100%', padding: '6px 8px', border: '1px solid #E4C87A', borderRadius: '4px', fontSize: '13px', textAlign: 'right', background: '#FFF' }}
+                          />
+                          <div style={{ fontFamily: "'Interstate', sans-serif", fontSize: '10px', color: '#8A95A5', marginTop: '2px' }}>
+                            Working hours
+                          </div>
+                        </div>
+
+                        {/* Rate Type */}
+                        <div>
+                          <label style={{ display: 'block', fontFamily: "'Interstate', sans-serif", fontSize: '10px', color: '#8A95A5', marginBottom: '4px' }}>Rate Type</label>
+                          <select
+                            value={persona.eventDeployment?.rateType || 'hourly'}
+                            onChange={(e) => handleUpdatePersona(persona.id, 'eventDeployment.rateType', e.target.value)}
+                            style={{ width: '100%', padding: '6px 8px', border: '1px solid #E4C87A', borderRadius: '4px', fontSize: '12px', background: '#FFF', fontFamily: "'Interstate', sans-serif" }}
+                          >
+                            <option value="hourly">Hourly Rate</option>
+                            <option value="salary">Pro-rata Salary</option>
+                            <option value="fixed">Fixed Fee/Event</option>
+                            <option value="external">External Recharge</option>
+                          </select>
+                        </div>
+
+                        {/* Event Cost */}
+                        <div style={{ background: '#FAF0D6', borderRadius: '6px', padding: '8px', display: 'flex', flexDirection: 'column', justifyContent: 'center', border: '1px solid #E4C87A' }}>
+                          <div style={{ fontFamily: "'Interstate', sans-serif", fontSize: '10px', color: '#8B6914', marginBottom: '2px' }}>Event Cost</div>
+                          <div style={{ fontFamily: "'Interstate', sans-serif", fontSize: '16px', fontWeight: 700, color: '#8B6914' }}>
+                            {formatCurrency(calculateEventCost(persona))}
+                          </div>
+                        </div>
+                      </div>
+
+                      {/* Additional fields for fixed/external rate types */}
+                      {(persona.eventDeployment?.rateType === 'fixed' || persona.eventDeployment?.rateType === 'external') && (
+                        <div style={{ marginTop: '12px', display: 'grid', gridTemplateColumns: 'repeat(2, 1fr)', gap: '12px' }}>
+                          {persona.eventDeployment?.rateType === 'fixed' && (
+                            <div>
+                              <label style={{ display: 'block', fontFamily: "'Interstate', sans-serif", fontSize: '10px', color: '#8A95A5', marginBottom: '4px' }}>Fixed Fee per Person/Event (£)</label>
+                              <input
+                                type="number"
+                                step="10"
+                                value={persona.eventDeployment?.fixedFeePerEvent || ''}
+                                onChange={(e) => handleUpdatePersona(persona.id, 'eventDeployment.fixedFeePerEvent', parseFloat(e.target.value) || 0)}
+                                placeholder="150"
+                                style={{ width: '100%', padding: '6px 8px', border: '1px solid #E4C87A', borderRadius: '4px', fontSize: '13px', background: '#FFF' }}
+                              />
+                            </div>
+                          )}
+                          {persona.eventDeployment?.rateType === 'external' && (
+                            <div>
+                              <label style={{ display: 'block', fontFamily: "'Interstate', sans-serif", fontSize: '10px', color: '#8A95A5', marginBottom: '4px' }}>External Recharge (£)</label>
+                              <input
+                                type="number"
+                                step="100"
+                                value={persona.eventDeployment?.externalRecharge || ''}
+                                onChange={(e) => handleUpdatePersona(persona.id, 'eventDeployment.externalRecharge', parseFloat(e.target.value) || 0)}
+                                placeholder="5000"
+                                style={{ width: '100%', padding: '6px 8px', border: '1px solid #E4C87A', borderRadius: '4px', fontSize: '13px', background: '#FFF' }}
+                              />
+                              <div style={{ fontFamily: "'Interstate', sans-serif", fontSize: '10px', color: '#8A95A5', marginTop: '2px' }}>
+                                Total recharge amount (e.g., police, security contractor)
+                              </div>
+                            </div>
+                          )}
+                        </div>
+                      )}
                     </div>
                   )}
                 </div>
@@ -9715,7 +9907,7 @@ FATHOM - Journey intelligence for modern operations`);
           
           {showAddStage && <AddStageModal onAdd={addStage} onClose={() => setShowAddStage(false)} />}
           {addStepTo && <AddStepModal stageId={addStepTo.id} stageName={addStepTo.name} personas={config.personas} onAdd={addStep} onClose={() => setAddStepTo(null)} />}
-          {showSalarySettings && <SalarySettingsModal personas={config.personas} onUpdate={updateSalaries} onClose={() => setShowSalarySettings(false)} />}
+          {showSalarySettings && <SalarySettingsModal personas={config.personas} config={config} onUpdate={updateSalaries} onClose={() => setShowSalarySettings(false)} />}
           {showShareModal && isSupabaseMode && (
             <ShareModal 
               mapId={mapId}
