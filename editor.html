@@ -669,7 +669,7 @@
     const { useState, useCallback, useMemo, useEffect, useRef } = React;
     
     // Current app version - always displayed in footer
-    const APP_VERSION = "8.8.0";
+    const APP_VERSION = "9.11.0";
     
     // ============================================
     // SUPABASE CONFIGURATION
@@ -778,7 +778,9 @@
         lastUpdated: new Date().toISOString(),
         audience: "Internal Operations",
         perspective: "client",
-        owner: ""
+        owner: "",
+        costModel: "per-journey",
+        eventConfig: null
       },
       funnel: {
         enabled: true,
@@ -2794,6 +2796,233 @@
             <div style={{ marginTop: '24px', display: 'flex', gap: '12px', justifyContent: 'flex-end' }}>
               <button onClick={onClose} style={{ padding: '10px 20px', background: '#F4F5F7', border: 'none', borderRadius: '8px', cursor: 'pointer', fontFamily: "'Interstate', sans-serif", fontSize: '14px', fontWeight: 500 }}>Cancel</button>
               <button onClick={handleSave} style={{ padding: '10px 20px', background: '#1A2332', color: '#FFF', border: 'none', borderRadius: '8px', cursor: 'pointer', fontFamily: "'Interstate', sans-serif", fontSize: '14px', fontWeight: 500 }}>Save Changes</button>
+            </div>
+          </div>
+        </div>
+      );
+    }
+
+    // Journey Settings Panel - Configure cost model and event settings
+    function JourneySettingsPanel({ config, setConfig, onClose }) {
+      const isEventMode = config.meta?.costModel === 'event';
+      const [localEventConfig, setLocalEventConfig] = useState(config.meta?.eventConfig || {
+        capacity: 1000,
+        durationMinutes: 180,
+        frequency: 'single',
+        eventsPerPeriod: 1,
+        periodLabel: ''
+      });
+
+      const handleSave = () => {
+        setConfig(prev => ({
+          ...prev,
+          meta: {
+            ...prev.meta,
+            eventConfig: isEventMode ? localEventConfig : null
+          }
+        }));
+        onClose();
+      };
+
+      const toggleCostModel = (model) => {
+        if (config.meta?.eventConfig && model !== config.meta?.costModel) {
+          if (!confirm('Changing the cost model will affect all cost calculations. Continue?')) {
+            return;
+          }
+        }
+        setConfig(prev => ({
+          ...prev,
+          meta: {
+            ...prev.meta,
+            costModel: model,
+            eventConfig: model === 'event' ? localEventConfig : null
+          }
+        }));
+      };
+
+      return (
+        <div style={{
+          position: 'fixed',
+          inset: 0,
+          background: 'rgba(0,0,0,0.5)',
+          display: 'flex',
+          alignItems: 'center',
+          justifyContent: 'center',
+          zIndex: 1000
+        }} onClick={onClose}>
+          <div style={{
+            background: '#FFF',
+            borderRadius: '12px',
+            padding: '32px',
+            width: '640px',
+            maxWidth: '95vw',
+            maxHeight: '90vh',
+            overflow: 'auto'
+          }} onClick={e => e.stopPropagation()}>
+            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '8px' }}>
+              <h3 style={{ margin: 0, fontSize: '20px' }}>⚙️ Journey Settings</h3>
+              <button onClick={onClose} style={{ background: 'none', border: 'none', fontSize: '24px', cursor: 'pointer', color: '#6E7B8C' }}>×</button>
+            </div>
+            <p style={{ margin: '0 0 24px', color: '#556275', fontSize: '14px', fontFamily: "'Interstate', sans-serif" }}>
+              Configure how costs are calculated for this journey.
+            </p>
+
+            {/* Cost Model Selection */}
+            <div style={{ marginBottom: '24px' }}>
+              <label style={{ display: 'block', fontSize: '12px', fontWeight: 600, color: '#3D4A5C', marginBottom: '12px', textTransform: 'uppercase', letterSpacing: '0.5px', fontFamily: "'Interstate', sans-serif" }}>
+                Cost Model
+              </label>
+              <div style={{ display: 'flex', gap: '12px' }}>
+                <button
+                  onClick={() => toggleCostModel('per-journey')}
+                  style={{
+                    flex: 1,
+                    padding: '16px',
+                    border: `2px solid ${!isEventMode ? '#2D8A6E' : '#E4E7EB'}`,
+                    borderRadius: '8px',
+                    background: !isEventMode ? 'rgba(45, 138, 110, 0.08)' : '#FFF',
+                    cursor: 'pointer',
+                    textAlign: 'left',
+                    fontFamily: "'Interstate', sans-serif"
+                  }}
+                >
+                  <div style={{ fontSize: '16px', fontWeight: 600, color: '#1A2332', marginBottom: '4px' }}>
+                    🚶 Per-Journey
+                  </div>
+                  <div style={{ fontSize: '12px', color: '#6E7B8C', lineHeight: 1.4 }}>
+                    Sequential process where one client flows through. Staff time directly attributed per journey.
+                  </div>
+                  {!isEventMode && (
+                    <div style={{ marginTop: '8px', fontSize: '11px', color: '#2D8A6E', fontWeight: 600 }}>✓ SELECTED</div>
+                  )}
+                </button>
+                <button
+                  onClick={() => toggleCostModel('event')}
+                  style={{
+                    flex: 1,
+                    padding: '16px',
+                    border: `2px solid ${isEventMode ? '#C4942A' : '#E4E7EB'}`,
+                    borderRadius: '8px',
+                    background: isEventMode ? 'rgba(196, 148, 42, 0.08)' : '#FFF',
+                    cursor: 'pointer',
+                    textAlign: 'left',
+                    fontFamily: "'Interstate', sans-serif"
+                  }}
+                >
+                  <div style={{ fontSize: '16px', fontWeight: 600, color: '#1A2332', marginBottom: '4px' }}>
+                    🎪 Event/Batch
+                  </div>
+                  <div style={{ fontSize: '12px', color: '#6E7B8C', lineHeight: 1.4 }}>
+                    Fixed capacity event where many participants experience simultaneously. Staff deployed regardless of attendance.
+                  </div>
+                  {isEventMode && (
+                    <div style={{ marginTop: '8px', fontSize: '11px', color: '#C4942A', fontWeight: 600 }}>✓ SELECTED</div>
+                  )}
+                </button>
+              </div>
+            </div>
+
+            {/* Event Configuration (only shown in event mode) */}
+            {isEventMode && (
+              <div style={{ background: '#FAF0D6', borderRadius: '8px', padding: '20px', border: '1px solid #E4C87A' }}>
+                <div style={{ fontSize: '14px', fontWeight: 600, color: '#8B6914', marginBottom: '16px', fontFamily: "'Interstate', sans-serif" }}>
+                  🎪 Event Configuration
+                </div>
+                
+                <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '16px' }}>
+                  <div>
+                    <label style={{ display: 'block', fontSize: '11px', color: '#556275', marginBottom: '6px', fontFamily: "'Interstate', sans-serif" }}>Event Capacity</label>
+                    <input
+                      type="number"
+                      value={localEventConfig.capacity || ''}
+                      onChange={(e) => setLocalEventConfig(prev => ({ ...prev, capacity: parseInt(e.target.value) || 0 }))}
+                      placeholder="e.g. 40000"
+                      style={{ width: '100%', padding: '10px 12px', border: '2px solid #E4E7EB', borderRadius: '6px', fontSize: '14px', boxSizing: 'border-box', fontFamily: "'Interstate', sans-serif" }}
+                    />
+                    <div style={{ fontSize: '10px', color: '#8A95A5', marginTop: '4px', fontFamily: "'Interstate', sans-serif" }}>Max attendees per event</div>
+                  </div>
+                  
+                  <div>
+                    <label style={{ display: 'block', fontSize: '11px', color: '#556275', marginBottom: '6px', fontFamily: "'Interstate', sans-serif" }}>Event Duration (mins)</label>
+                    <input
+                      type="number"
+                      value={localEventConfig.durationMinutes || ''}
+                      onChange={(e) => setLocalEventConfig(prev => ({ ...prev, durationMinutes: parseInt(e.target.value) || 0 }))}
+                      placeholder="e.g. 360"
+                      style={{ width: '100%', padding: '10px 12px', border: '2px solid #E4E7EB', borderRadius: '6px', fontSize: '14px', boxSizing: 'border-box', fontFamily: "'Interstate', sans-serif" }}
+                    />
+                    <div style={{ fontSize: '10px', color: '#8A95A5', marginTop: '4px', fontFamily: "'Interstate', sans-serif" }}>Total event duration</div>
+                  </div>
+                  
+                  <div>
+                    <label style={{ display: 'block', fontSize: '11px', color: '#556275', marginBottom: '6px', fontFamily: "'Interstate', sans-serif" }}>Frequency</label>
+                    <select
+                      value={localEventConfig.frequency || 'single'}
+                      onChange={(e) => setLocalEventConfig(prev => ({ ...prev, frequency: e.target.value }))}
+                      style={{ width: '100%', padding: '10px 12px', border: '2px solid #E4E7EB', borderRadius: '6px', fontSize: '14px', boxSizing: 'border-box', background: '#FFF', fontFamily: "'Interstate', sans-serif" }}
+                    >
+                      <option value="single">Single Event</option>
+                      <option value="season">Season/Series</option>
+                      <option value="annual">Annual</option>
+                    </select>
+                  </div>
+                  
+                  {localEventConfig.frequency !== 'single' && (
+                    <div>
+                      <label style={{ display: 'block', fontSize: '11px', color: '#556275', marginBottom: '6px', fontFamily: "'Interstate', sans-serif" }}>Events per Period</label>
+                      <input
+                        type="number"
+                        value={localEventConfig.eventsPerPeriod || ''}
+                        onChange={(e) => setLocalEventConfig(prev => ({ ...prev, eventsPerPeriod: parseInt(e.target.value) || 1 }))}
+                        placeholder="e.g. 19"
+                        style={{ width: '100%', padding: '10px 12px', border: '2px solid #E4E7EB', borderRadius: '6px', fontSize: '14px', boxSizing: 'border-box', fontFamily: "'Interstate', sans-serif" }}
+                      />
+                    </div>
+                  )}
+                  
+                  <div style={{ gridColumn: localEventConfig.frequency === 'single' ? '2' : '1 / -1' }}>
+                    <label style={{ display: 'block', fontSize: '11px', color: '#556275', marginBottom: '6px', fontFamily: "'Interstate', sans-serif" }}>Period Label (optional)</label>
+                    <input
+                      type="text"
+                      value={localEventConfig.periodLabel || ''}
+                      onChange={(e) => setLocalEventConfig(prev => ({ ...prev, periodLabel: e.target.value }))}
+                      placeholder="e.g. 2025-26 Season"
+                      style={{ width: '100%', padding: '10px 12px', border: '2px solid #E4E7EB', borderRadius: '6px', fontSize: '14px', boxSizing: 'border-box', fontFamily: "'Interstate', sans-serif" }}
+                    />
+                  </div>
+                </div>
+
+                {/* Summary */}
+                {localEventConfig.capacity > 0 && (
+                  <div style={{ marginTop: '16px', padding: '12px', background: '#FFF', borderRadius: '6px', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                    <span style={{ fontSize: '12px', color: '#8B6914', fontFamily: "'Interstate', sans-serif" }}>
+                      {localEventConfig.frequency === 'single' ? 'Single event' : `${localEventConfig.eventsPerPeriod || 1} events`}
+                      {localEventConfig.periodLabel && ` · ${localEventConfig.periodLabel}`}
+                    </span>
+                    <span style={{ fontSize: '14px', fontWeight: 700, color: '#8B6914', fontFamily: "'Interstate', sans-serif" }}>
+                      {((localEventConfig.eventsPerPeriod || 1) * (localEventConfig.capacity || 0)).toLocaleString()} total capacity
+                    </span>
+                  </div>
+                )}
+              </div>
+            )}
+
+            {/* Info note */}
+            <div style={{ marginTop: '20px', padding: '12px', background: '#E1EEF2', borderRadius: '6px', fontSize: '12px', color: '#3A6070', fontFamily: "'Interstate', sans-serif" }}>
+              <strong>💡 Tip:</strong> {isEventMode 
+                ? " In Event mode, configure each role's deployment (headcount & hours) in the Role Management panel. Per-attendee costs will be calculated automatically."
+                : " Per-Journey mode calculates costs based on time spent by each role per individual journey."
+              }
+            </div>
+
+            <div style={{ marginTop: '24px', display: 'flex', justifyContent: 'flex-end', gap: '12px' }}>
+              <button onClick={onClose} style={{ padding: '10px 20px', background: '#F4F5F7', border: 'none', borderRadius: '6px', cursor: 'pointer', fontSize: '14px', fontWeight: 500, fontFamily: "'Interstate', sans-serif" }}>Cancel</button>
+              <button
+                onClick={handleSave}
+                style={{ padding: '10px 24px', background: '#2D8A6E', color: '#FFF', border: 'none', borderRadius: '6px', cursor: 'pointer', fontSize: '14px', fontWeight: 500, fontFamily: "'Interstate', sans-serif" }}
+              >
+                Save Changes
+              </button>
             </div>
           </div>
         </div>
@@ -5871,6 +6100,7 @@ FATHOM - Journey intelligence for modern operations`);
       const [showGitHubSettings, setShowGitHubSettings] = useState(false);
       const [showPasswordPrompt, setShowPasswordPrompt] = useState(false);
       const [showShareModal, setShowShareModal] = useState(false);
+      const [showJourneySettings, setShowJourneySettings] = useState(false);
       const [showProfileMenu, setShowProfileMenu] = useState(false);
       const [shares, setShares] = useState([]);
       const [isMobile, setIsMobile] = useState(() => window.innerWidth < 768);
@@ -7377,6 +7607,12 @@ FATHOM - Journey intelligence for modern operations`);
                               <span style={{ width: '18px', textAlign: 'center' }}>🔻</span> Funnel Settings
                             </button>
                           )}
+                          {canEdit && (
+                            <button onClick={() => { setShowJourneySettings(true); setShowSettingsMenu(false); }} style={{ display: 'flex', alignItems: 'center', gap: '12px', width: '100%', padding: '10px 16px', border: 'none', background: 'transparent', cursor: 'pointer', textAlign: 'left', fontFamily: "'Interstate', sans-serif", fontSize: '14px', color: '#3D4A5C', transition: 'background 0.1s' }} onMouseOver={(e) => e.currentTarget.style.background = '#F4F5F7'} onMouseOut={(e) => e.currentTarget.style.background = 'transparent'}>
+                              <span style={{ width: '18px', textAlign: 'center' }}>⚙️</span> Journey Settings
+                              {config.meta?.costModel === 'event' && <span style={{ marginLeft: 'auto', padding: '2px 6px', background: '#FAF0D6', color: '#8B6914', borderRadius: '4px', fontSize: '9px', fontWeight: 600 }}>EVENT</span>}
+                            </button>
+                          )}
                           {!isSupabaseMode && (
                             <>
                               <div style={{ height: '1px', background: '#E4E7EB', margin: '4px 0' }} />
@@ -7696,6 +7932,12 @@ FATHOM - Journey intelligence for modern operations`);
                         {canEdit && (
                           <button onClick={() => { setShowFunnelSettings(true); setShowSettingsMenu(false); }} style={{ display: 'flex', alignItems: 'center', gap: '12px', width: '100%', padding: '10px 16px', border: 'none', background: 'transparent', cursor: 'pointer', textAlign: 'left', fontFamily: "'Interstate', sans-serif", fontSize: '14px', color: '#3D4A5C', transition: 'background 0.1s' }} onMouseOver={(e) => e.currentTarget.style.background = '#F4F5F7'} onMouseOut={(e) => e.currentTarget.style.background = 'transparent'}>
                             <span style={{ width: '18px', textAlign: 'center' }}>🔻</span> Funnel Settings
+                          </button>
+                        )}
+                        {canEdit && (
+                          <button onClick={() => { setShowJourneySettings(true); setShowSettingsMenu(false); }} style={{ display: 'flex', alignItems: 'center', gap: '12px', width: '100%', padding: '10px 16px', border: 'none', background: 'transparent', cursor: 'pointer', textAlign: 'left', fontFamily: "'Interstate', sans-serif", fontSize: '14px', color: '#3D4A5C', transition: 'background 0.1s' }} onMouseOver={(e) => e.currentTarget.style.background = '#F4F5F7'} onMouseOut={(e) => e.currentTarget.style.background = 'transparent'}>
+                            <span style={{ width: '18px', textAlign: 'center' }}>⚙️</span> Journey Settings
+                            {config.meta?.costModel === 'event' && <span style={{ marginLeft: 'auto', padding: '2px 6px', background: '#FAF0D6', color: '#8B6914', borderRadius: '4px', fontSize: '9px', fontWeight: 600 }}>EVENT</span>}
                           </button>
                         )}
                         {!isSupabaseMode && (
@@ -9513,6 +9755,9 @@ FATHOM - Journey intelligence for modern operations`);
           
           {/* Funnel Settings Modal */}
           {showFunnelSettings && <FunnelSettingsModal config={config} onUpdate={updateFunnelSettings} onClose={() => setShowFunnelSettings(false)} />}
+          
+          {/* Journey Settings Modal */}
+          {showJourneySettings && <JourneySettingsPanel config={config} setConfig={setConfig} onClose={() => setShowJourneySettings(false)} />}
           
           {/* Password Prompt Modal - only in legacy (non-Supabase) mode */}
           {showPasswordPrompt && !isSupabaseMode && (
