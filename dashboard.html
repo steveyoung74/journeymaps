@@ -2704,7 +2704,7 @@
         e.stopPropagation();
         const map = maps.find(m => m.id === mapId);
         const title = map?.config?.meta?.title || map?.title || 'Journey Map';
-        const link = `${window.location.origin}/editor.html?id=${mapId}&title=${encodeURIComponent(title)}`;
+        const link = `https://steveyoung74.github.io/journeymaps/editor.html?id=${mapId}&title=${encodeURIComponent(title)}`;
         navigator.clipboard.writeText(link).then(() => {
           alert('Link copied to clipboard!');
         });
@@ -4743,7 +4743,7 @@ RULES:
       
       // Send email notification via mailto
       const sendShareEmail = (recipientEmail, mapTitle, permissionLevel) => {
-        const shareLink = `${window.location.origin}/journeymaps/editor.html?id=${mapId}`;
+        const shareLink = `https://steveyoung74.github.io/journeymaps/editor.html?id=${mapId}`;
         const senderName = profile?.display_name || user?.email?.split('@')[0] || 'Someone';
         const permissionText = permissionLevel === 'edit' ? 'edit' : 'view';
         
@@ -4856,7 +4856,7 @@ FATHOM - Journey intelligence for modern operations`);
       };
       
       const copyLink = () => {
-        const link = `${window.location.origin}/journeymaps/editor.html?id=${mapId}`;
+        const link = `https://steveyoung74.github.io/journeymaps/editor.html?id=${mapId}`;
         navigator.clipboard.writeText(link);
         setCopySuccess(true);
         setTimeout(() => setCopySuccess(false), 2000);
@@ -4888,7 +4888,7 @@ FATHOM - Journey intelligence for modern operations`);
                 <input
                   type="text"
                   readOnly
-                  value={`${window.location.origin}/journeymaps/editor.html?id=${mapId}`}
+                  value={`https://steveyoung74.github.io/journeymaps/editor.html?id=${mapId}`}
                   style={{ 
                     flex: 1, 
                     padding: '8px 12px', 
