@@ -8438,20 +8438,9 @@ FATHOM - Journey intelligence for modern operations`);
                       {showSettingsMenu && (isSupabaseMode ? canAccessSettings : isSettingsUnlocked) && (
                         <div onClick={(e) => e.stopPropagation()} style={{ position: 'absolute', top: '100%', right: 0, marginTop: '8px', background: '#FFF', borderRadius: '12px', boxShadow: '0 8px 32px rgba(0,0,0,0.2)', overflow: 'hidden', zIndex: 9999, minWidth: '220px', padding: '8px 0' }}>
                           <div style={{ color: '#6E7B8C', fontSize: '10px', fontWeight: 600, textTransform: 'uppercase', letterSpacing: '0.5px', padding: '8px 16px 4px' }}>Configuration</div>
-                          {/* Only show Edit Mode if user can edit */}
-                          {canEdit && (
-                            <button onClick={enterEditMode} style={{ display: 'flex', alignItems: 'center', gap: '12px', width: '100%', padding: '10px 16px', border: 'none', background: 'transparent', cursor: 'pointer', textAlign: 'left', fontFamily: "'Interstate', sans-serif", fontSize: '14px', color: '#3D4A5C', transition: 'background 0.1s' }} onMouseOver={(e) => e.currentTarget.style.background = '#F4F5F7'} onMouseOut={(e) => e.currentTarget.style.background = 'transparent'}>
-                              <span style={{ width: '18px', textAlign: 'center' }}>✏️</span> Edit Mode
-                            </button>
-                          )}
                           {canEdit && (
                             <button onClick={() => { setShowSalarySettings(true); setShowSettingsMenu(false); }} style={{ display: 'flex', alignItems: 'center', gap: '12px', width: '100%', padding: '10px 16px', border: 'none', background: 'transparent', cursor: 'pointer', textAlign: 'left', fontFamily: "'Interstate', sans-serif", fontSize: '14px', color: '#3D4A5C', transition: 'background 0.1s' }} onMouseOver={(e) => e.currentTarget.style.background = '#F4F5F7'} onMouseOut={(e) => e.currentTarget.style.background = 'transparent'}>
                               <span style={{ width: '18px', textAlign: 'center' }}>👥</span> Manage Roles
-                            </button>
-                          )}
-                          {canEdit && (
-                            <button onClick={() => { setShowStructurePanel(true); setShowSettingsMenu(false); }} style={{ display: 'flex', alignItems: 'center', gap: '12px', width: '100%', padding: '10px 16px', border: 'none', background: 'transparent', cursor: 'pointer', textAlign: 'left', fontFamily: "'Interstate', sans-serif", fontSize: '14px', color: '#3D4A5C', transition: 'background 0.1s' }} onMouseOver={(e) => e.currentTarget.style.background = '#F4F5F7'} onMouseOut={(e) => e.currentTarget.style.background = 'transparent'}>
-                              <span style={{ width: '18px', textAlign: 'center' }}>🏗️</span> Configure Structure
                             </button>
                           )}
                           {canEdit && (
@@ -8787,18 +8776,8 @@ FATHOM - Journey intelligence for modern operations`);
                       <div onClick={(e) => e.stopPropagation()} style={{ position: 'absolute', top: '100%', right: 0, marginTop: '8px', background: '#FFF', borderRadius: '12px', boxShadow: '0 8px 32px rgba(0,0,0,0.2)', overflow: 'hidden', zIndex: 9999, minWidth: '220px', padding: '8px 0' }}>
                         <div style={{ color: '#6E7B8C', fontSize: '10px', fontWeight: 600, textTransform: 'uppercase', letterSpacing: '0.5px', padding: '8px 16px 4px' }}>Configuration</div>
                         {canEdit && (
-                          <button onClick={enterEditMode} style={{ display: 'flex', alignItems: 'center', gap: '12px', width: '100%', padding: '10px 16px', border: 'none', background: 'transparent', cursor: 'pointer', textAlign: 'left', fontFamily: "'Interstate', sans-serif", fontSize: '14px', color: '#3D4A5C', transition: 'background 0.1s' }} onMouseOver={(e) => e.currentTarget.style.background = '#F4F5F7'} onMouseOut={(e) => e.currentTarget.style.background = 'transparent'}>
-                            <span style={{ width: '18px', textAlign: 'center' }}>✏️</span> Edit Mode
-                          </button>
-                        )}
-                        {canEdit && (
                           <button onClick={() => { setShowSalarySettings(true); setShowSettingsMenu(false); }} style={{ display: 'flex', alignItems: 'center', gap: '12px', width: '100%', padding: '10px 16px', border: 'none', background: 'transparent', cursor: 'pointer', textAlign: 'left', fontFamily: "'Interstate', sans-serif", fontSize: '14px', color: '#3D4A5C', transition: 'background 0.1s' }} onMouseOver={(e) => e.currentTarget.style.background = '#F4F5F7'} onMouseOut={(e) => e.currentTarget.style.background = 'transparent'}>
                             <span style={{ width: '18px', textAlign: 'center' }}>👥</span> Manage Roles
-                          </button>
-                        )}
-                        {canEdit && (
-                          <button onClick={() => { setShowStructurePanel(true); setShowSettingsMenu(false); }} style={{ display: 'flex', alignItems: 'center', gap: '12px', width: '100%', padding: '10px 16px', border: 'none', background: 'transparent', cursor: 'pointer', textAlign: 'left', fontFamily: "'Interstate', sans-serif", fontSize: '14px', color: '#3D4A5C', transition: 'background 0.1s' }} onMouseOver={(e) => e.currentTarget.style.background = '#F4F5F7'} onMouseOut={(e) => e.currentTarget.style.background = 'transparent'}>
-                            <span style={{ width: '18px', textAlign: 'center' }}>🏗️</span> Configure Structure
                           </button>
                         )}
                         {canEdit && (
