@@ -1,0 +1,1462 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Response Review | FATHOM</title>
+  
+  <!-- Fonts -->
+  <link href="https://fonts.googleapis.com/css2?family=Open+Sans:wght@400;500;600;700&display=swap" rel="stylesheet">
+  
+  <!-- Supabase -->
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+  
+  <style>
+    /* Interstate Font */
+    @font-face {
+      font-family: 'Interstate';
+      src: url('https://steveyoung74.github.io/journeymaps/fonts/Interstate-regular.ttf') format('truetype');
+      font-weight: 400;
+    }
+    @font-face {
+      font-family: 'Interstate';
+      src: url('https://steveyoung74.github.io/journeymaps/fonts/Interstate-bold.ttf') format('truetype');
+      font-weight: 700;
+    }
+    
+    :root {
+      --font-display: 'Interstate', -apple-system, sans-serif;
+      --font-body: 'Open Sans', -apple-system, sans-serif;
+      --navy-700: #192B45;
+      --navy-900: #111E2E;
+      --steel-500: #5B8A9A;
+      --steel-400: #74A0AE;
+      --steel-100: #E1EEF2;
+      --amber-500: #C4942A;
+      --amber-100: #FAF0D6;
+      --slate-900: #1A2332;
+      --slate-600: #556275;
+      --slate-500: #6E7B8C;
+      --slate-400: #8A95A5;
+      --slate-300: #A9B2BE;
+      --slate-200: #C8CED6;
+      --slate-100: #E4E7EB;
+      --slate-50: #F4F5F7;
+      --success: #2D8A6E;
+      --success-light: #D4EDE5;
+      --error: #B84A5A;
+      --error-light: #F5E0E3;
+    }
+    
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    
+    body {
+      font-family: var(--font-body);
+      background: var(--slate-50);
+      color: var(--slate-900);
+      line-height: 1.6;
+      min-height: 100vh;
+    }
+    
+    h1, h2, h3 { font-family: var(--font-display); }
+    
+    /* Navigation */
+    .nav {
+      background: linear-gradient(135deg, var(--navy-700), var(--navy-900));
+      position: sticky;
+      top: 0;
+      z-index: 999;
+      border-bottom: 1px solid rgba(255,255,255,0.1);
+    }
+    
+    .nav-inner {
+      max-width: 1600px;
+      margin: 0 auto;
+      padding: 0 24px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      height: 64px;
+    }
+    
+    .nav-logo {
+      height: 32px;
+    }
+    
+    .nav-links {
+      display: flex;
+      gap: 24px;
+      align-items: center;
+    }
+    
+    .nav-link {
+      color: rgba(255,255,255,0.7);
+      text-decoration: none;
+      font-size: 14px;
+      font-weight: 500;
+      padding: 8px 16px;
+      border-radius: 6px;
+      transition: all 0.2s;
+    }
+    
+    .nav-link:hover {
+      color: #FFF;
+      background: rgba(255,255,255,0.1);
+    }
+    
+    .nav-link.active {
+      color: #FFF;
+      background: rgba(255,255,255,0.15);
+    }
+    
+    /* Container */
+    .container {
+      max-width: 1600px;
+      margin: 0 auto;
+      padding: 32px 24px;
+    }
+    
+    /* Header */
+    .page-header {
+      margin-bottom: 32px;
+      display: flex;
+      justify-content: space-between;
+      align-items: flex-start;
+    }
+    
+    .page-title-section h1 {
+      font-size: 28px;
+      font-weight: 700;
+      color: var(--navy-700);
+      margin-bottom: 8px;
+    }
+    
+    .page-subtitle {
+      color: var(--slate-500);
+      font-size: 15px;
+    }
+    
+    .page-actions {
+      display: flex;
+      gap: 12px;
+    }
+    
+    .btn {
+      padding: 10px 20px;
+      border-radius: 8px;
+      font-size: 14px;
+      font-weight: 600;
+      cursor: pointer;
+      border: none;
+      transition: all 0.2s;
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      text-decoration: none;
+    }
+    
+    .btn-primary {
+      background: var(--steel-500);
+      color: #FFF;
+    }
+    
+    .btn-primary:hover {
+      background: var(--steel-400);
+    }
+    
+    .btn-secondary {
+      background: #FFF;
+      color: var(--slate-900);
+      border: 1px solid var(--slate-200);
+    }
+    
+    .btn-secondary:hover {
+      background: var(--slate-50);
+    }
+    
+    .btn-success {
+      background: var(--success);
+      color: #FFF;
+    }
+    
+    .btn-success:hover {
+      background: #248A6E;
+    }
+    
+    /* Stats Grid */
+    .stats-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+      gap: 20px;
+      margin-bottom: 32px;
+    }
+    
+    .stat-card {
+      background: #FFF;
+      border-radius: 12px;
+      padding: 20px;
+      border: 1px solid var(--slate-100);
+    }
+    
+    .stat-label {
+      font-size: 11px;
+      font-weight: 600;
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+      color: var(--slate-500);
+      margin-bottom: 8px;
+    }
+    
+    .stat-value {
+      font-size: 32px;
+      font-weight: 700;
+      color: var(--navy-700);
+      font-family: var(--font-display);
+    }
+    
+    .stat-detail {
+      font-size: 13px;
+      color: var(--slate-500);
+      margin-top: 4px;
+    }
+    
+    /* Filters */
+    .filters {
+      background: #FFF;
+      border-radius: 12px;
+      padding: 20px 24px;
+      margin-bottom: 24px;
+      border: 1px solid var(--slate-100);
+      display: flex;
+      gap: 16px;
+      align-items: center;
+      flex-wrap: wrap;
+    }
+    
+    .filter-group {
+      display: flex;
+      flex-direction: column;
+      gap: 6px;
+    }
+    
+    .filter-label {
+      font-size: 11px;
+      font-weight: 600;
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+      color: var(--slate-600);
+    }
+    
+    .filter-select {
+      padding: 8px 12px;
+      border: 1px solid var(--slate-200);
+      border-radius: 6px;
+      font-size: 14px;
+      color: var(--slate-900);
+      background: #FFF;
+      cursor: pointer;
+      min-width: 150px;
+    }
+    
+    .filter-select:focus {
+      outline: none;
+      border-color: var(--steel-500);
+    }
+    
+    /* Response Cards */
+    .responses-container {
+      display: grid;
+      gap: 20px;
+    }
+    
+    .response-card {
+      background: #FFF;
+      border-radius: 12px;
+      border: 1px solid var(--slate-100);
+      overflow: hidden;
+      transition: all 0.2s;
+    }
+    
+    .response-card.selected {
+      border-color: var(--steel-500);
+      box-shadow: 0 4px 12px rgba(91, 138, 154, 0.15);
+    }
+    
+    .response-header {
+      padding: 20px 24px;
+      border-bottom: 1px solid var(--slate-100);
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      background: var(--slate-50);
+    }
+    
+    .response-title {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+    }
+    
+    .response-checkbox {
+      width: 20px;
+      height: 20px;
+      cursor: pointer;
+    }
+    
+    .response-step-info h3 {
+      font-size: 16px;
+      font-weight: 600;
+      color: var(--navy-700);
+      margin-bottom: 4px;
+    }
+    
+    .response-meta {
+      font-size: 13px;
+      color: var(--slate-500);
+    }
+    
+    .response-badges {
+      display: flex;
+      gap: 8px;
+      align-items: center;
+    }
+    
+    .badge {
+      padding: 4px 12px;
+      border-radius: 12px;
+      font-size: 11px;
+      font-weight: 600;
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+    }
+    
+    .badge-persona {
+      background: var(--steel-100);
+      color: var(--navy-700);
+    }
+    
+    .badge-status {
+      padding: 6px 12px;
+      border-radius: 6px;
+      font-size: 12px;
+      font-weight: 600;
+    }
+    
+    .badge-pending {
+      background: var(--amber-100);
+      color: #8B6914;
+    }
+    
+    .badge-reviewed {
+      background: var(--steel-100);
+      color: var(--steel-500);
+    }
+    
+    .badge-approved {
+      background: var(--success-light);
+      color: var(--success);
+    }
+    
+    .badge-applied {
+      background: var(--navy-700);
+      color: #FFF;
+    }
+    
+    .badge-rejected {
+      background: var(--error-light);
+      color: var(--error);
+    }
+    
+    .response-content {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 24px;
+      padding: 24px;
+    }
+    
+    .response-column h4 {
+      font-size: 13px;
+      font-weight: 600;
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+      color: var(--slate-600);
+      margin-bottom: 16px;
+    }
+    
+    .response-field {
+      margin-bottom: 16px;
+    }
+    
+    .response-field:last-child {
+      margin-bottom: 0;
+    }
+    
+    .field-label {
+      font-size: 12px;
+      font-weight: 600;
+      color: var(--slate-500);
+      margin-bottom: 6px;
+    }
+    
+    .field-value {
+      font-size: 14px;
+      color: var(--slate-900);
+      line-height: 1.6;
+    }
+    
+    .field-value.empty {
+      color: var(--slate-300);
+      font-style: italic;
+    }
+    
+    .time-comparison {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+    }
+    
+    .time-badge {
+      padding: 8px 12px;
+      border-radius: 6px;
+      font-weight: 600;
+      font-size: 14px;
+    }
+    
+    .time-original {
+      background: var(--slate-100);
+      color: var(--slate-600);
+    }
+    
+    .time-feedback {
+      background: var(--steel-100);
+      color: var(--steel-500);
+    }
+    
+    .time-variance {
+      font-size: 13px;
+      font-weight: 600;
+    }
+    
+    .time-variance.higher {
+      color: var(--error);
+    }
+    
+    .time-variance.lower {
+      color: var(--success);
+    }
+    
+    .time-variance.same {
+      color: var(--slate-400);
+    }
+    
+    .response-actions {
+      padding: 16px 24px;
+      border-top: 1px solid var(--slate-100);
+      display: flex;
+      gap: 12px;
+      justify-content: flex-end;
+      background: var(--slate-50);
+    }
+    
+    .btn-approve {
+      background: var(--success);
+      color: #FFF;
+    }
+    
+    .btn-approve:hover {
+      background: #248A6E;
+    }
+    
+    .btn-reject {
+      background: var(--error);
+      color: #FFF;
+    }
+    
+    .btn-reject:hover {
+      background: #A03848;
+    }
+    
+    .btn-notes {
+      background: var(--amber-500);
+      color: #FFF;
+    }
+    
+    .btn-notes:hover {
+      background: #A67D1D;
+    }
+    
+    /* Bulk Actions Bar */
+    .bulk-actions {
+      position: fixed;
+      bottom: 24px;
+      left: 50%;
+      transform: translateX(-50%);
+      background: var(--navy-700);
+      color: #FFF;
+      padding: 16px 24px;
+      border-radius: 12px;
+      box-shadow: 0 8px 24px rgba(25, 43, 69, 0.3);
+      display: none;
+      align-items: center;
+      gap: 16px;
+      z-index: 1000;
+    }
+    
+    .bulk-actions.show {
+      display: flex;
+    }
+    
+    .bulk-actions-count {
+      font-weight: 600;
+      padding-right: 16px;
+      border-right: 1px solid rgba(255,255,255,0.2);
+    }
+    
+    .bulk-actions-buttons {
+      display: flex;
+      gap: 8px;
+    }
+    
+    .bulk-actions .btn {
+      font-size: 13px;
+      padding: 8px 16px;
+    }
+    
+    /* Modal */
+    .modal {
+      display: none;
+      position: fixed;
+      top: 0;
+      left: 0;
+      right: 0;
+      bottom: 0;
+      background: rgba(0,0,0,0.5);
+      z-index: 10000;
+      align-items: center;
+      justify-content: center;
+    }
+    
+    .modal.show {
+      display: flex;
+    }
+    
+    .modal-content {
+      background: #FFF;
+      border-radius: 12px;
+      max-width: 600px;
+      width: 90%;
+      max-height: 80vh;
+      overflow-y: auto;
+    }
+    
+    .modal-header {
+      padding: 24px;
+      border-bottom: 1px solid var(--slate-100);
+    }
+    
+    .modal-header h2 {
+      font-size: 20px;
+      font-weight: 600;
+      color: var(--navy-700);
+    }
+    
+    .modal-body {
+      padding: 24px;
+    }
+    
+    .modal-footer {
+      padding: 16px 24px;
+      border-top: 1px solid var(--slate-100);
+      display: flex;
+      gap: 12px;
+      justify-content: flex-end;
+    }
+    
+    .form-group {
+      margin-bottom: 20px;
+    }
+    
+    .form-label {
+      display: block;
+      font-size: 13px;
+      font-weight: 600;
+      color: var(--slate-700);
+      margin-bottom: 8px;
+    }
+    
+    .form-textarea {
+      width: 100%;
+      padding: 12px;
+      border: 1px solid var(--slate-200);
+      border-radius: 6px;
+      font-family: var(--font-body);
+      font-size: 14px;
+      resize: vertical;
+      min-height: 120px;
+    }
+    
+    .form-textarea:focus {
+      outline: none;
+      border-color: var(--steel-500);
+    }
+    
+    /* Empty State */
+    .empty-state {
+      text-align: center;
+      padding: 80px 20px;
+      background: #FFF;
+      border-radius: 12px;
+      border: 1px solid var(--slate-100);
+    }
+    
+    .empty-icon {
+      font-size: 64px;
+      margin-bottom: 16px;
+      opacity: 0.3;
+    }
+    
+    .empty-title {
+      font-size: 20px;
+      font-weight: 600;
+      color: var(--navy-700);
+      margin-bottom: 8px;
+    }
+    
+    .empty-text {
+      color: var(--slate-500);
+      font-size: 14px;
+    }
+    
+    /* Loading */
+    .loading {
+      text-align: center;
+      padding: 60px 20px;
+    }
+    
+    .spinner {
+      width: 40px;
+      height: 40px;
+      border: 3px solid var(--slate-100);
+      border-top-color: var(--steel-500);
+      border-radius: 50%;
+      animation: spin 0.8s linear infinite;
+      margin: 0 auto 16px;
+    }
+    
+    @keyframes spin {
+      to { transform: rotate(360deg); }
+    }
+  </style>
+</head>
+<body>
+
+  <!-- Navigation -->
+  <nav class="nav">
+    <div class="nav-inner">
+      <a href="index.html">
+        <img src="https://steveyoung74.github.io/journeymaps/logo_light.png" alt="FATHOM" class="nav-logo" />
+      </a>
+      <div class="nav-links">
+        <a href="dashboard.html" class="nav-link">Dashboard</a>
+        <a href="responses-review.html" class="nav-link active">Review Responses</a>
+      </div>
+      <div id="userMenu"></div>
+    </div>
+  </nav>
+
+  <!-- Main Content -->
+  <div class="container">
+    <!-- Page Header -->
+    <div class="page-header">
+      <div class="page-title-section">
+        <h1>Response Review Queue</h1>
+        <p class="page-subtitle">Review, approve, and apply survey feedback to journey maps</p>
+      </div>
+      <div class="page-actions">
+        <button class="btn btn-secondary" onclick="exportResponses()">
+          📊 Export Report
+        </button>
+        <button class="btn btn-primary" onclick="showAISynthesis()">
+          🤖 AI Synthesis
+        </button>
+      </div>
+    </div>
+    
+    <!-- Stats Grid -->
+    <div class="stats-grid" id="statsGrid">
+      <div class="stat-card">
+        <div class="stat-label">Total Responses</div>
+        <div class="stat-value">-</div>
+      </div>
+      <div class="stat-card">
+        <div class="stat-label">Pending Review</div>
+        <div class="stat-value">-</div>
+      </div>
+      <div class="stat-card">
+        <div class="stat-label">Approved</div>
+        <div class="stat-value">-</div>
+      </div>
+      <div class="stat-card">
+        <div class="stat-label">Applied to Maps</div>
+        <div class="stat-value">-</div>
+      </div>
+    </div>
+    
+    <!-- Filters -->
+    <div class="filters">
+      <div class="filter-group">
+        <label class="filter-label">Status</label>
+        <select class="filter-select" id="filterStatus" onchange="applyFilters()">
+          <option value="all">All Statuses</option>
+          <option value="pending" selected>Pending Review</option>
+          <option value="reviewed">Reviewed</option>
+          <option value="approved">Approved</option>
+          <option value="rejected">Rejected</option>
+          <option value="applied">Applied</option>
+        </select>
+      </div>
+      
+      <div class="filter-group">
+        <label class="filter-label">Persona</label>
+        <select class="filter-select" id="filterPersona" onchange="applyFilters()">
+          <option value="all">All Personas</option>
+        </select>
+      </div>
+      
+      <div class="filter-group">
+        <label class="filter-label">Step</label>
+        <select class="filter-select" id="filterStep" onchange="applyFilters()">
+          <option value="all">All Steps</option>
+        </select>
+      </div>
+    </div>
+    
+    <!-- Responses Container -->
+    <div id="responsesContainer">
+      <div class="loading">
+        <div class="spinner"></div>
+        <p>Loading responses...</p>
+      </div>
+    </div>
+  </div>
+
+  <!-- Bulk Actions Bar -->
+  <div class="bulk-actions" id="bulkActions">
+    <span class="bulk-actions-count"><span id="selectedCount">0</span> selected</span>
+    <div class="bulk-actions-buttons">
+      <button class="btn btn-approve" onclick="bulkApprove()">✓ Approve All</button>
+      <button class="btn btn-success" onclick="bulkApplyToMap()">→ Apply to Map</button>
+      <button class="btn btn-reject" onclick="bulkReject()">✗ Reject All</button>
+    </div>
+  </div>
+
+  <!-- Notes Modal -->
+  <div class="modal" id="notesModal">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h2>Add Review Notes</h2>
+      </div>
+      <div class="modal-body">
+        <div class="form-group">
+          <label class="form-label">Notes</label>
+          <textarea class="form-textarea" id="reviewNotes" placeholder="Add context, reasoning, or instructions..."></textarea>
+        </div>
+      </div>
+      <div class="modal-footer">
+        <button class="btn btn-secondary" onclick="closeNotesModal()">Cancel</button>
+        <button class="btn btn-primary" onclick="saveNotes()">Save Notes</button>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    // ============================================
+    // INITIALIZATION
+    // ============================================
+    
+    const SUPABASE_URL = 'https://ktctvaeulualihczwnrl.supabase.co';
+    const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Imt0Y3R2YWV1bHVhbGloY3p3bnJsIiwicm9sZSI6ImFub24iLCJpYXQiOjE3MzY3Nzg5OTEsImV4cCI6MjA1MjM1NDk5MX0.pKt5n12XVQr8SLKpOoZl35m2OTbh8wGjTfmL_BH-Ozs';
+    
+    const { createClient } = supabase;
+    const supabaseClient = createClient(SUPABASE_URL, SUPABASE_ANON_KEY, {
+      auth: {
+        persistSession: true,
+        autoRefreshToken: true,
+        detectSessionInUrl: true,
+        storage: window.localStorage
+      }
+    });
+    
+    let allResponses = [];
+    let filteredResponses = [];
+    let selectedResponses = new Set();
+    let currentMapId = null;
+    let currentMapConfig = null;
+    let currentNotesResponseId = null;
+    
+    // ============================================
+    // INIT
+    // ============================================
+    
+    async function init() {
+      // Get map ID from URL if provided
+      const urlParams = new URLSearchParams(window.location.search);
+      currentMapId = urlParams.get('id');
+      
+      // Check auth
+      const { data: { user } } = await supabaseClient.auth.getUser();
+      
+      if (!user) {
+        document.getElementById('userMenu').innerHTML = '<a href="index.html" class="nav-link">Sign In</a>';
+      } else {
+        document.getElementById('userMenu').innerHTML = `<span class="nav-link">${user.email}</span>`;
+      }
+      
+      // Load data
+      await loadResponses();
+      await loadMapConfig();
+      populateFilters();
+      renderStats();
+      applyFilters();
+    }
+    
+    // ============================================
+    // LOAD DATA
+    // ============================================
+    
+    async function loadResponses() {
+      try {
+        let query = supabaseClient
+          .from('survey_responses')
+          .select('*')
+          .order('submitted_at', { ascending: false });
+        
+        if (currentMapId) {
+          query = query.eq('map_id', currentMapId);
+        }
+        
+        const { data, error } = await query;
+        
+        if (error) throw error;
+        
+        allResponses = data || [];
+        
+      } catch (err) {
+        console.error('Error loading responses:', err);
+        alert('Failed to load responses: ' + err.message);
+      }
+    }
+    
+    async function loadMapConfig() {
+      if (!currentMapId) return;
+      
+      try {
+        const { data, error } = await supabaseClient
+          .from('journey_maps')
+          .select('config')
+          .eq('id', currentMapId)
+          .single();
+        
+        if (error) throw error;
+        
+        currentMapConfig = data?.config;
+        
+      } catch (err) {
+        console.error('Error loading map config:', err);
+      }
+    }
+    
+    // ============================================
+    // FILTERS
+    // ============================================
+    
+    function populateFilters() {
+      // Get unique personas
+      const personas = new Set(allResponses.map(r => r.persona_id));
+      const personaSelect = document.getElementById('filterPersona');
+      personas.forEach(persona => {
+        const option = document.createElement('option');
+        option.value = persona;
+        option.textContent = formatPersonaName(persona);
+        personaSelect.appendChild(option);
+      });
+      
+      // Get unique steps
+      const steps = new Set(allResponses.map(r => r.step_id));
+      const stepSelect = document.getElementById('filterStep');
+      steps.forEach(step => {
+        const option = document.createElement('option');
+        option.value = step;
+        option.textContent = formatStepName(step);
+        stepSelect.appendChild(option);
+      });
+    }
+    
+    function applyFilters() {
+      const statusFilter = document.getElementById('filterStatus').value;
+      const personaFilter = document.getElementById('filterPersona').value;
+      const stepFilter = document.getElementById('filterStep').value;
+      
+      filteredResponses = allResponses.filter(r => {
+        if (statusFilter !== 'all' && r.review_status !== statusFilter) return false;
+        if (personaFilter !== 'all' && r.persona_id !== personaFilter) return false;
+        if (stepFilter !== 'all' && r.step_id !== stepFilter) return false;
+        return true;
+      });
+      
+      renderResponses();
+    }
+    
+    // ============================================
+    // RENDER
+    // ============================================
+    
+    function renderStats() {
+      const total = allResponses.length;
+      const pending = allResponses.filter(r => r.review_status === 'pending').length;
+      const approved = allResponses.filter(r => r.review_status === 'approved').length;
+      const applied = allResponses.filter(r => r.applied_to_map === true).length;
+      
+      const statCards = document.querySelectorAll('.stat-card .stat-value');
+      statCards[0].textContent = total;
+      statCards[1].textContent = pending;
+      statCards[2].textContent = approved;
+      statCards[3].textContent = applied;
+    }
+    
+    function renderResponses() {
+      const container = document.getElementById('responsesContainer');
+      
+      if (filteredResponses.length === 0) {
+        container.innerHTML = `
+          <div class="empty-state">
+            <div class="empty-icon">📭</div>
+            <h3 class="empty-title">No Responses Found</h3>
+            <p class="empty-text">Try adjusting your filters or check back later for new survey responses.</p>
+          </div>
+        `;
+        return;
+      }
+      
+      const html = `
+        <div class="responses-container">
+          ${filteredResponses.map(response => renderResponseCard(response)).join('')}
+        </div>
+      `;
+      
+      container.innerHTML = html;
+    }
+    
+    function renderResponseCard(response) {
+      const isSelected = selectedResponses.has(response.id);
+      
+      // Get original step data for comparison
+      let originalStep = null;
+      if (currentMapConfig) {
+        originalStep = currentMapConfig.stages
+          ?.flatMap(s => s.steps || [])
+          ?.find(s => s.id === response.step_id);
+      }
+      
+      // Calculate time variance
+      let timeVariance = null;
+      let varianceClass = 'same';
+      if (response.time_estimate && originalStep?.time) {
+        timeVariance = response.time_estimate - originalStep.time;
+        varianceClass = timeVariance > 0 ? 'higher' : timeVariance < 0 ? 'lower' : 'same';
+      }
+      
+      const statusClass = `badge-${response.review_status || 'pending'}`;
+      const statusLabel = (response.review_status || 'pending').charAt(0).toUpperCase() + (response.review_status || 'pending').slice(1);
+      
+      return `
+        <div class="response-card ${isSelected ? 'selected' : ''}" data-id="${response.id}">
+          <div class="response-header">
+            <div class="response-title">
+              <input 
+                type="checkbox" 
+                class="response-checkbox" 
+                ${isSelected ? 'checked' : ''}
+                onchange="toggleSelection('${response.id}')"
+              />
+              <div class="response-step-info">
+                <h3>${formatStepName(response.step_id)}</h3>
+                <div class="response-meta">
+                  ${maskEmail(response.respondent_email)} · ${formatTimeAgo(new Date(response.submitted_at))}
+                </div>
+              </div>
+            </div>
+            <div class="response-badges">
+              <span class="badge badge-persona">${formatPersonaName(response.persona_id)}</span>
+              <span class="badge-status ${statusClass}">${statusLabel}</span>
+            </div>
+          </div>
+          
+          <div class="response-content">
+            <!-- Original Data -->
+            <div class="response-column">
+              <h4>Current Journey Data</h4>
+              
+              <div class="response-field">
+                <div class="field-label">Time Estimate</div>
+                <div class="field-value">
+                  ${originalStep?.time ? `
+                    <span class="time-badge time-original">${originalStep.time} min</span>
+                  ` : '<span class="empty">No estimate set</span>'}
+                </div>
+              </div>
+              
+              <div class="response-field">
+                <div class="field-label">Current Notes</div>
+                <div class="field-value ${!originalStep?.notes ? 'empty' : ''}">
+                  ${originalStep?.notes || 'No notes'}
+                </div>
+              </div>
+            </div>
+            
+            <!-- Feedback Data -->
+            <div class="response-column">
+              <h4>Survey Feedback</h4>
+              
+              ${response.time_estimate ? `
+                <div class="response-field">
+                  <div class="field-label">Actual Time Reported</div>
+                  <div class="time-comparison">
+                    <span class="time-badge time-feedback">${response.time_estimate} min</span>
+                    ${timeVariance !== null ? `
+                      <span class="time-variance ${varianceClass}">
+                        ${timeVariance > 0 ? '+' : ''}${timeVariance} min
+                      </span>
+                    ` : ''}
+                  </div>
+                </div>
+              ` : ''}
+              
+              ${response.description ? `
+                <div class="response-field">
+                  <div class="field-label">Description</div>
+                  <div class="field-value">${response.description}</div>
+                </div>
+              ` : ''}
+              
+              ${response.pain_points ? `
+                <div class="response-field">
+                  <div class="field-label">Pain Points</div>
+                  <div class="field-value">${response.pain_points}</div>
+                </div>
+              ` : ''}
+              
+              ${response.improvements ? `
+                <div class="response-field">
+                  <div class="field-label">Improvements</div>
+                  <div class="field-value">${response.improvements}</div>
+                </div>
+              ` : ''}
+            </div>
+          </div>
+          
+          ${response.review_notes ? `
+            <div style="padding: 16px 24px; background: var(--amber-100); border-top: 1px solid var(--amber-500);">
+              <div style="font-size: 12px; font-weight: 600; color: #8B6914; margin-bottom: 4px;">REVIEW NOTES</div>
+              <div style="font-size: 14px; color: #8B6914;">${response.review_notes}</div>
+            </div>
+          ` : ''}
+          
+          <div class="response-actions">
+            ${response.review_status === 'pending' || response.review_status === 'reviewed' ? `
+              <button class="btn btn-notes" onclick="openNotesModal('${response.id}')">💬 Add Notes</button>
+              <button class="btn btn-reject" onclick="rejectResponse('${response.id}')">✗ Reject</button>
+              <button class="btn btn-approve" onclick="approveResponse('${response.id}')">✓ Approve</button>
+            ` : ''}
+            ${response.review_status === 'approved' && !response.applied_to_map ? `
+              <button class="btn btn-success" onclick="applyToMap('${response.id}')">→ Apply to Map</button>
+            ` : ''}
+            ${response.applied_to_map ? `
+              <span style="color: var(--success); font-weight: 600; font-size: 14px;">✓ Applied to journey map</span>
+            ` : ''}
+          </div>
+        </div>
+      `;
+    }
+    
+    // ============================================
+    // SELECTION
+    // ============================================
+    
+    function toggleSelection(responseId) {
+      if (selectedResponses.has(responseId)) {
+        selectedResponses.delete(responseId);
+      } else {
+        selectedResponses.add(responseId);
+      }
+      
+      updateBulkActions();
+      renderResponses();
+    }
+    
+    function updateBulkActions() {
+      const bulkActions = document.getElementById('bulkActions');
+      const count = document.getElementById('selectedCount');
+      
+      count.textContent = selectedResponses.size;
+      
+      if (selectedResponses.size > 0) {
+        bulkActions.classList.add('show');
+      } else {
+        bulkActions.classList.remove('show');
+      }
+    }
+    
+    // ============================================
+    // ACTIONS
+    // ============================================
+    
+    async function approveResponse(responseId) {
+      try {
+        const { error } = await supabaseClient
+          .from('survey_responses')
+          .update({
+            review_status: 'approved',
+            reviewed_at: new Date().toISOString()
+          })
+          .eq('id', responseId);
+        
+        if (error) throw error;
+        
+        await loadResponses();
+        renderStats();
+        applyFilters();
+        
+      } catch (err) {
+        alert('Failed to approve: ' + err.message);
+      }
+    }
+    
+    async function rejectResponse(responseId) {
+      if (!confirm('Reject this response? This can be undone later.')) return;
+      
+      try {
+        const { error } = await supabaseClient
+          .from('survey_responses')
+          .update({
+            review_status: 'rejected',
+            reviewed_at: new Date().toISOString()
+          })
+          .eq('id', responseId);
+        
+        if (error) throw error;
+        
+        await loadResponses();
+        renderStats();
+        applyFilters();
+        
+      } catch (err) {
+        alert('Failed to reject: ' + err.message);
+      }
+    }
+    
+    async function applyToMap(responseId) {
+      if (!currentMapId || !currentMapConfig) {
+        alert('No journey map loaded. Please access this page from a specific journey map.');
+        return;
+      }
+      
+      const response = allResponses.find(r => r.id === responseId);
+      if (!response) return;
+      
+      try {
+        // Find and update the step in the config
+        let updated = false;
+        currentMapConfig.stages.forEach(stage => {
+          stage.steps?.forEach(step => {
+            if (step.id === response.step_id) {
+              // Apply time estimate
+              if (response.time_estimate) {
+                step.time = response.time_estimate;
+              }
+              
+              // Append notes
+              if (response.pain_points || response.improvements) {
+                const feedbackNotes = [];
+                if (response.pain_points) feedbackNotes.push(`Pain points: ${response.pain_points}`);
+                if (response.improvements) feedbackNotes.push(`Improvements: ${response.improvements}`);
+                
+                step.notes = (step.notes || '') + '\n\n[From survey feedback]:\n' + feedbackNotes.join('\n');
+              }
+              
+              step.lastUpdatedFromFeedback = new Date().toISOString();
+              updated = true;
+            }
+          });
+        });
+        
+        if (!updated) {
+          alert('Step not found in journey map');
+          return;
+        }
+        
+        // Save updated config
+        const { error: saveError } = await supabaseClient
+          .from('journey_maps')
+          .update({ 
+            config: currentMapConfig,
+            updated_at: new Date().toISOString()
+          })
+          .eq('id', currentMapId);
+        
+        if (saveError) throw saveError;
+        
+        // Mark response as applied
+        const { error: updateError } = await supabaseClient
+          .from('survey_responses')
+          .update({
+            review_status: 'applied',
+            applied_to_map: true,
+            applied_at: new Date().toISOString()
+          })
+          .eq('id', responseId);
+        
+        if (updateError) throw updateError;
+        
+        alert('✓ Changes applied to journey map!');
+        
+        await loadResponses();
+        renderStats();
+        applyFilters();
+        
+      } catch (err) {
+        alert('Failed to apply changes: ' + err.message);
+      }
+    }
+    
+    // ============================================
+    // BULK ACTIONS
+    // ============================================
+    
+    async function bulkApprove() {
+      if (selectedResponses.size === 0) return;
+      
+      try {
+        const { error } = await supabaseClient
+          .from('survey_responses')
+          .update({
+            review_status: 'approved',
+            reviewed_at: new Date().toISOString()
+          })
+          .in('id', Array.from(selectedResponses));
+        
+        if (error) throw error;
+        
+        selectedResponses.clear();
+        updateBulkActions();
+        await loadResponses();
+        renderStats();
+        applyFilters();
+        
+      } catch (err) {
+        alert('Failed to approve responses: ' + err.message);
+      }
+    }
+    
+    async function bulkReject() {
+      if (selectedResponses.size === 0) return;
+      if (!confirm(`Reject ${selectedResponses.size} responses?`)) return;
+      
+      try {
+        const { error } = await supabaseClient
+          .from('survey_responses')
+          .update({
+            review_status: 'rejected',
+            reviewed_at: new Date().toISOString()
+          })
+          .in('id', Array.from(selectedResponses));
+        
+        if (error) throw error;
+        
+        selectedResponses.clear();
+        updateBulkActions();
+        await loadResponses();
+        renderStats();
+        applyFilters();
+        
+      } catch (err) {
+        alert('Failed to reject responses: ' + err.message);
+      }
+    }
+    
+    async function bulkApplyToMap() {
+      if (selectedResponses.size === 0) return;
+      if (!currentMapId || !currentMapConfig) {
+        alert('No journey map loaded');
+        return;
+      }
+      
+      if (!confirm(`Apply ${selectedResponses.size} approved responses to the journey map?`)) return;
+      
+      try {
+        // Get selected responses that are approved
+        const responsesToApply = allResponses.filter(r => 
+          selectedResponses.has(r.id) && r.review_status === 'approved'
+        );
+        
+        if (responsesToApply.length === 0) {
+          alert('No approved responses selected');
+          return;
+        }
+        
+        // Apply each response
+        responsesToApply.forEach(response => {
+          currentMapConfig.stages.forEach(stage => {
+            stage.steps?.forEach(step => {
+              if (step.id === response.step_id) {
+                if (response.time_estimate) {
+                  step.time = response.time_estimate;
+                }
+                
+                if (response.pain_points || response.improvements) {
+                  const feedbackNotes = [];
+                  if (response.pain_points) feedbackNotes.push(`Pain points: ${response.pain_points}`);
+                  if (response.improvements) feedbackNotes.push(`Improvements: ${response.improvements}`);
+                  
+                  step.notes = (step.notes || '') + '\n\n[From survey feedback]:\n' + feedbackNotes.join('\n');
+                }
+                
+                step.lastUpdatedFromFeedback = new Date().toISOString();
+              }
+            });
+          });
+        });
+        
+        // Save updated config
+        const { error: saveError } = await supabaseClient
+          .from('journey_maps')
+          .update({ 
+            config: currentMapConfig,
+            updated_at: new Date().toISOString()
+          })
+          .eq('id', currentMapId);
+        
+        if (saveError) throw saveError;
+        
+        // Mark all as applied
+        const { error: updateError } = await supabaseClient
+          .from('survey_responses')
+          .update({
+            review_status: 'applied',
+            applied_to_map: true,
+            applied_at: new Date().toISOString()
+          })
+          .in('id', Array.from(selectedResponses));
+        
+        if (updateError) throw updateError;
+        
+        alert(`✓ ${responsesToApply.length} responses applied to journey map!`);
+        
+        selectedResponses.clear();
+        updateBulkActions();
+        await loadResponses();
+        renderStats();
+        applyFilters();
+        
+      } catch (err) {
+        alert('Failed to apply changes: ' + err.message);
+      }
+    }
+    
+    // ============================================
+    // NOTES MODAL
+    // ============================================
+    
+    function openNotesModal(responseId) {
+      currentNotesResponseId = responseId;
+      const response = allResponses.find(r => r.id === responseId);
+      document.getElementById('reviewNotes').value = response?.review_notes || '';
+      document.getElementById('notesModal').classList.add('show');
+    }
+    
+    function closeNotesModal() {
+      document.getElementById('notesModal').classList.remove('show');
+      currentNotesResponseId = null;
+    }
+    
+    async function saveNotes() {
+      if (!currentNotesResponseId) return;
+      
+      const notes = document.getElementById('reviewNotes').value;
+      
+      try {
+        const { error } = await supabaseClient
+          .from('survey_responses')
+          .update({
+            review_notes: notes,
+            review_status: 'reviewed'
+          })
+          .eq('id', currentNotesResponseId);
+        
+        if (error) throw error;
+        
+        closeNotesModal();
+        await loadResponses();
+        renderStats();
+        applyFilters();
+        
+      } catch (err) {
+        alert('Failed to save notes: ' + err.message);
+      }
+    }
+    
+    // ============================================
+    // UTILITIES
+    // ============================================
+    
+    function formatStepName(stepId) {
+      return stepId.split('-').map(w => w.charAt(0).toUpperCase() + w.slice(1)).join(' ');
+    }
+    
+    function formatPersonaName(personaId) {
+      return personaId.split('-').map(w => w.charAt(0).toUpperCase() + w.slice(1)).join(' ');
+    }
+    
+    function maskEmail(email) {
+      const [name, domain] = email.split('@');
+      if (name.length <= 3) return email;
+      return `${name.substring(0, 2)}***@${domain}`;
+    }
+    
+    function formatTimeAgo(date) {
+      const seconds = Math.floor((new Date() - date) / 1000);
+      const intervals = {
+        year: 31536000,
+        month: 2592000,
+        week: 604800,
+        day: 86400,
+        hour: 3600,
+        minute: 60
+      };
+      
+      for (const [unit, secondsInUnit] of Object.entries(intervals)) {
+        const interval = Math.floor(seconds / secondsInUnit);
+        if (interval >= 1) {
+          return `${interval} ${unit}${interval !== 1 ? 's' : ''} ago`;
+        }
+      }
+      return 'just now';
+    }
+    
+    function exportResponses() {
+      alert('Export feature coming soon!');
+    }
+    
+    function showAISynthesis() {
+      alert('AI Synthesis feature coming soon!');
+    }
+    
+    // ============================================
+    // INITIALIZE
+    // ============================================
+    
+    init();
+  </script>
+
+</body>
+</html>
