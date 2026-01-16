@@ -778,7 +778,14 @@
     const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Imt0Y3R2YWV1bHVhbGloY3p3bnJsIiwicm9sZSI6ImFub24iLCJpYXQiOjE3MzY3Nzg5OTEsImV4cCI6MjA1MjM1NDk5MX0.pKt5n12XVQr8SLKpOoZl35m2OTbh8wGjTfmL_BH-Ozs';
     
     const { createClient } = supabase;
-    const supabaseClient = createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+    const supabaseClient = createClient(SUPABASE_URL, SUPABASE_ANON_KEY, {
+      auth: {
+        persistSession: true,
+        autoRefreshToken: true,
+        detectSessionInUrl: true,
+        storage: window.localStorage
+      }
+    });
     
     let allResponses = [];
     let filteredResponses = [];
