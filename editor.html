@@ -6712,6 +6712,7 @@ FATHOM - Journey intelligence for modern operations`);
       }, [isMultiUserMode, isSupabaseMode, mapTitle]);
       
       const [selectedStep, setSelectedStep] = useState(null);
+      const [editingStep, setEditingStep] = useState(null);
       const [activePerspective, setActivePerspective] = useState('all');
       const [showJson, setShowJson] = useState(false);
       const [editMode, setEditMode] = useState(false);
@@ -7317,6 +7318,30 @@ FATHOM - Journey intelligence for modern operations`);
           setTimeout(() => saveToSupabase(), 100);
         } else if (gitHubConfig.token) {
           setTimeout(() => saveToGitHub(), 100);
+        }
+      }, [preEditState, isSupabaseMode, gitHubConfig.token]);
+
+      // Step-level edit handlers
+      const startStepEdit = useCallback(() => {
+        if (selectedStep && userPermission === 'edit') {
+          setEditingStep({ ...selectedStep });
+        }
+      }, [selectedStep, userPermission]);
+
+      const cancelStepEdit = useCallback(() => {
+        setEditingStep(null);
+      }, []);
+
+      const saveStepEdit = useCallback(() => {
+        if (editingStep) {
+          // Update the step in the config
+          updateStep(editingStep.stageId, editingStep.id, editingStep);
+          // Update the selected step display
+          setSelectedStep(editingStep);
+          // Close edit mode
+          setEditingStep(null);
+        }
+      }, [editingStep]);
         }
       }, [preEditState, isSupabaseMode, gitHubConfig.token, saveToGitHub, saveToSupabase]);
 
@@ -9519,19 +9544,112 @@ FATHOM - Journey intelligence for modern operations`);
                   overflow: 'hidden'
                 }}>
                 <div style={{ background: getStageColor(selectedStep.stageIndex || 0, 'dark'), color: '#FFF', padding: isMobile ? '20px 24px' : '24px 32px', display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexShrink: 0 }}>
-                  <div>
-                    <h2 style={{ margin: 0, fontSize: isMobile ? '20px' : '24px', fontWeight: 400 }}>{selectedStep.name}</h2>
-                    <p style={{ margin: '8px 0 0', opacity: 0.7, fontFamily: "'Interstate', sans-serif", fontSize: '14px' }}>{selectedStep.description}</p>
+                  <div style={{ flex: 1 }}>
+                    <h2 style={{ margin: 0, fontSize: isMobile ? '20px' : '24px', fontWeight: 400 }}>{editingStep ? editingStep.name : selectedStep.name}</h2>
+                    <p style={{ margin: '8px 0 0', opacity: 0.7, fontFamily: "'Interstate', sans-serif", fontSize: '14px' }}>{editingStep ? editingStep.description || 'No description' : selectedStep.description || 'No description'}</p>
                   </div>
-                  <button onClick={() => setSelectedStep(null)} style={{ background: 'transparent', border: 'none', color: '#FFF', fontSize: '28px', cursor: 'pointer', opacity: 0.7, padding: '0 8px' }}>×</button>
+                  <div style={{ display: 'flex', gap: '12px', alignItems: 'center' }}>
+                    {editingStep ? (
+                      <>
+                        <button 
+                          onClick={cancelStepEdit}
+                          style={{ 
+                            padding: '8px 16px', 
+                            background: 'rgba(255,255,255,0.2)', 
+                            color: '#FFF', 
+                            border: '1px solid rgba(255,255,255,0.3)', 
+                            borderRadius: '6px', 
+                            cursor: 'pointer',
+                            fontFamily: "'Interstate', sans-serif",
+                            fontSize: '13px',
+                            fontWeight: 500
+                          }}
+                        >
+                          Cancel
+                        </button>
+                        <button 
+                          onClick={saveStepEdit}
+                          style={{ 
+                            padding: '8px 16px', 
+                            background: '#FFF', 
+                            color: getStageColor(selectedStep.stageIndex || 0, 'dark'), 
+                            border: 'none', 
+                            borderRadius: '6px', 
+                            cursor: 'pointer',
+                            fontFamily: "'Interstate', sans-serif",
+                            fontSize: '13px',
+                            fontWeight: 600
+                          }}
+                        >
+                          Save Changes
+                        </button>
+                      </>
+                    ) : (
+                      userPermission === 'edit' && (
+                        <button 
+                          onClick={startStepEdit}
+                          style={{ 
+                            padding: '8px 16px', 
+                            background: 'rgba(255,255,255,0.2)', 
+                            color: '#FFF', 
+                            border: '1px solid rgba(255,255,255,0.3)', 
+                            borderRadius: '6px', 
+                            cursor: 'pointer',
+                            fontFamily: "'Interstate', sans-serif",
+                            fontSize: '13px',
+                            fontWeight: 500,
+                            display: 'flex',
+                            alignItems: 'center',
+                            gap: '6px'
+                          }}
+                        >
+                          ✏️ Edit
+                        </button>
+                      )
+                    )}
+                    <button onClick={() => { setSelectedStep(null); setEditingStep(null); }} style={{ background: 'transparent', border: 'none', color: '#FFF', fontSize: '28px', cursor: 'pointer', opacity: 0.7, padding: '0 8px' }}>×</button>
+                  </div>
                 </div>
                 <div style={{ padding: isMobile ? '24px' : '32px', flex: isMobile ? 'none' : 1, overflowY: isMobile ? 'visible' : 'auto' }}>
                   <div style={{ display: 'flex', flexDirection: 'column', gap: '24px' }}>
+                    {/* Description Field */}
+                    <div style={{ padding: '16px', background: '#F4F5F7', borderRadius: '8px' }}>
+                      <label style={{ display: 'block', fontFamily: "'Interstate', sans-serif", fontSize: '11px', color: '#556275', textTransform: 'uppercase', letterSpacing: '0.5px', marginBottom: '8px' }}>Description</label>
+                      {editingStep ? (
+                        <textarea 
+                          value={editingStep.description || ''} 
+                          onChange={(e) => setEditingStep(prev => ({ ...prev, description: e.target.value }))} 
+                          placeholder="Brief description of this step..." 
+                          style={{ 
+                            width: '100%', 
+                            padding: '10px', 
+                            border: '1px solid #C8CED6', 
+                            borderRadius: '6px', 
+                            fontSize: '14px', 
+                            fontFamily: "'Open Sans', sans-serif", 
+                            resize: 'vertical', 
+                            minHeight: '80px',
+                            lineHeight: 1.5
+                          }} 
+                        />
+                      ) : (
+                        <p style={{ 
+                          margin: 0, 
+                          fontSize: '14px', 
+                          color: '#3D4A5C', 
+                          fontFamily: "'Open Sans', sans-serif", 
+                          lineHeight: 1.6,
+                          minHeight: '40px'
+                        }}>
+                          {selectedStep.description || <span style={{ fontStyle: 'italic', color: '#8A95A5' }}>No description provided</span>}
+                        </p>
+                      )}
+                    </div>
                     <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '16px' }}>
                       <div style={{ padding: '16px', background: '#F4F5F7', borderRadius: '8px' }}>
                         <label style={{ display: 'block', fontFamily: "'Interstate', sans-serif", fontSize: '11px', color: '#556275', textTransform: 'uppercase', letterSpacing: '0.5px', marginBottom: '8px' }}>Time Required</label>
-                        <span style={{ fontSize: '24px', fontWeight: 600 }}>{formatTime(selectedStep.timeMinutes)}</span>
-                        {editMode && (
+                        <span style={{ fontSize: '24px', fontWeight: 600 }}>{formatTime((editingStep || selectedStep).timeMinutes)}</span>
+                        {editingStep && (
                           <div style={{ fontFamily: "'Interstate', sans-serif", fontSize: '10px', color: '#8A95A5', marginTop: '4px' }}>
                             Auto-calculated from roles below
                           </div>
@@ -9539,8 +9657,12 @@ FATHOM - Journey intelligence for modern operations`);
                       </div>
                       <div style={{ padding: '16px', background: '#F4F5F7', borderRadius: '8px' }}>
                         <label style={{ display: 'block', fontFamily: "'Interstate', sans-serif", fontSize: '11px', color: '#556275', textTransform: 'uppercase', letterSpacing: '0.5px', marginBottom: '8px' }}>Primary Owner</label>
-                        {editMode ? (
-                          <select value={selectedStep.owner} onChange={(e) => { updateStep(selectedStep.stageId, selectedStep.id, { owner: e.target.value }); setSelectedStep(prev => ({ ...prev, owner: e.target.value })); }} style={{ width: '100%', padding: '8px', border: '1px solid #C8CED6', borderRadius: '4px', fontSize: '14px', background: '#FFF' }}>
+                        {editingStep ? (
+                          <select 
+                            value={editingStep.owner} 
+                            onChange={(e) => setEditingStep(prev => ({ ...prev, owner: e.target.value }))} 
+                            style={{ width: '100%', padding: '8px', border: '1px solid #C8CED6', borderRadius: '4px', fontSize: '14px', background: '#FFF' }}
+                          >
                             {config.personas.map(p => (<option key={p.id} value={p.id}>{p.label}</option>))}
                           </select>
                         ) : (
@@ -9552,31 +9674,86 @@ FATHOM - Journey intelligence for modern operations`);
                       </div>
                     </div>
                     {/* Friction */}
-                    <div style={{ padding: '16px', background: frictionConfig[selectedStep.frictionScore || 3]?.bg || '#F4F5F7', borderRadius: '8px', marginBottom: '16px', transition: 'background 0.2s' }}>
+                    <div style={{ padding: '16px', background: frictionConfig[(editingStep || selectedStep).frictionScore || 3]?.bg || '#F4F5F7', borderRadius: '8px', marginBottom: '16px', transition: 'background 0.2s' }}>
                       <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '12px' }}>
                         <label style={{ fontFamily: "'Interstate', sans-serif", fontSize: '11px', color: '#556275', textTransform: 'uppercase', letterSpacing: '0.5px' }}>Friction</label>
                         <div style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
-                          <span style={{ fontSize: '18px' }}>{frictionConfig[selectedStep.frictionScore || 3]?.emoji}</span>
-                          <span style={{ fontFamily: "'Interstate', sans-serif", fontSize: '12px', fontWeight: 600, color: frictionConfig[selectedStep.frictionScore || 3]?.color }}>{frictionConfig[selectedStep.frictionScore || 3]?.label}</span>
+                          <span style={{ fontSize: '18px' }}>{frictionConfig[(editingStep || selectedStep).frictionScore || 3]?.emoji}</span>
+                          <span style={{ fontFamily: "'Interstate', sans-serif", fontSize: '12px', fontWeight: 600, color: frictionConfig[(editingStep || selectedStep).frictionScore || 3]?.color }}>{frictionConfig[(editingStep || selectedStep).frictionScore || 3]?.label}</span>
                         </div>
                       </div>
                       <div style={{ display: 'flex', gap: '8px' }}>
                         {[1,2,3,4,5].map(n => (
-                          <button key={n} onClick={() => { if (editMode) { updateStep(selectedStep.stageId, selectedStep.id, { frictionScore: n }); setSelectedStep(prev => ({ ...prev, frictionScore: n })); }}} disabled={!editMode} style={{ width: '40px', height: '40px', border: '2px solid', borderColor: (selectedStep.frictionScore || 3) >= n ? frictionConfig[selectedStep.frictionScore || 3]?.color : '#E4E7EB', borderRadius: '8px', background: (selectedStep.frictionScore || 3) >= n ? frictionConfig[selectedStep.frictionScore || 3]?.color : '#FFF', color: (selectedStep.frictionScore || 3) >= n ? '#FFF' : '#3D4A5C', cursor: editMode ? 'pointer' : 'default', fontWeight: 600, fontSize: '14px', transition: 'all 0.2s' }}>{n}</button>
+                          <button 
+                            key={n} 
+                            onClick={() => { 
+                              if (editingStep) { 
+                                setEditingStep(prev => ({ ...prev, frictionScore: n })); 
+                              }
+                            }} 
+                            disabled={!editingStep} 
+                            style={{ 
+                              width: '40px', 
+                              height: '40px', 
+                              border: '2px solid', 
+                              borderColor: ((editingStep || selectedStep).frictionScore || 3) >= n ? frictionConfig[(editingStep || selectedStep).frictionScore || 3]?.color : '#E4E7EB', 
+                              borderRadius: '8px', 
+                              background: ((editingStep || selectedStep).frictionScore || 3) >= n ? frictionConfig[(editingStep || selectedStep).frictionScore || 3]?.color : '#FFF', 
+                              color: ((editingStep || selectedStep).frictionScore || 3) >= n ? '#FFF' : '#3D4A5C', 
+                              cursor: editingStep ? 'pointer' : 'default', 
+                              fontWeight: 600, 
+                              fontSize: '14px', 
+                              transition: 'all 0.2s' 
+                            }}
+                          >
+                            {n}
+                          </button>
                         ))}
                       </div>
                     </div>
                     {/* Improvement Opportunity */}
                     <div style={{ padding: '16px', background: '#F4F5F7', borderRadius: '8px', marginBottom: '16px' }}>
                       <label style={{ display: 'block', fontFamily: "'Interstate', sans-serif", fontSize: '11px', color: '#556275', textTransform: 'uppercase', letterSpacing: '0.5px', marginBottom: '12px' }}>Improvement Opportunity</label>
-                      {editMode ? (
+                      {editingStep ? (
                         <>
                           <div style={{ display: 'flex', gap: '8px', marginBottom: '12px' }}>
                             {['high', 'medium', 'low', 'none'].map(level => (
-                              <button key={level} onClick={() => { updateStep(selectedStep.stageId, selectedStep.id, { automationOpportunity: level }); setSelectedStep(prev => ({ ...prev, automationOpportunity: level })); }} style={{ padding: '8px 16px', border: '2px solid', borderColor: selectedStep.automationOpportunity === level ? automationColors[level].text : '#E4E7EB', borderRadius: '20px', background: selectedStep.automationOpportunity === level ? automationColors[level].bg : '#FFF', color: selectedStep.automationOpportunity === level ? automationColors[level].text : '#556275', cursor: 'pointer', fontFamily: "'Interstate', sans-serif", fontSize: '12px', fontWeight: 500, textTransform: 'capitalize' }}>{level}</button>
+                              <button 
+                                key={level} 
+                                onClick={() => setEditingStep(prev => ({ ...prev, automationOpportunity: level }))} 
+                                style={{ 
+                                  padding: '8px 16px', 
+                                  border: '2px solid', 
+                                  borderColor: editingStep.automationOpportunity === level ? automationColors[level].text : '#E4E7EB', 
+                                  borderRadius: '20px', 
+                                  background: editingStep.automationOpportunity === level ? automationColors[level].bg : '#FFF', 
+                                  color: editingStep.automationOpportunity === level ? automationColors[level].text : '#556275', 
+                                  cursor: 'pointer', 
+                                  fontFamily: "'Interstate', sans-serif", 
+                                  fontSize: '12px', 
+                                  fontWeight: 500, 
+                                  textTransform: 'capitalize' 
+                                }}
+                              >
+                                {level}
+                              </button>
                             ))}
                           </div>
-                          <textarea value={selectedStep.automationNotes || ''} onChange={(e) => { updateStep(selectedStep.stageId, selectedStep.id, { automationNotes: e.target.value }); setSelectedStep(prev => ({ ...prev, automationNotes: e.target.value })); }} placeholder="Notes on improvement potential..." style={{ width: '100%', padding: '10px', border: '1px solid #C8CED6', borderRadius: '6px', fontSize: '13px', fontFamily: "'Interstate', sans-serif", resize: 'vertical', minHeight: '60px' }} />
+                          <textarea 
+                            value={editingStep.automationNotes || ''} 
+                            onChange={(e) => setEditingStep(prev => ({ ...prev, automationNotes: e.target.value }))} 
+                            placeholder="Notes on improvement potential..." 
+                            style={{ 
+                              width: '100%', 
+                              padding: '10px', 
+                              border: '1px solid #C8CED6', 
+                              borderRadius: '6px', 
+                              fontSize: '13px', 
+                              fontFamily: "'Interstate', sans-serif", 
+                              resize: 'vertical', 
+                              minHeight: '60px' 
+                            }} 
+                          />
                         </>
                       ) : (
                         <>
@@ -9590,30 +9767,26 @@ FATHOM - Journey intelligence for modern operations`);
                     </div>
                     
                     {/* Client Touchpoint */}
-                    <div style={{ padding: '16px', background: selectedStep.clientTouchpoint ? '#D4EDE5' : '#F4F5F7', borderRadius: '8px', marginBottom: '16px', border: selectedStep.clientTouchpoint ? '1px solid #2D8A6E' : '1px solid transparent' }}>
+                    <div style={{ padding: '16px', background: (editingStep || selectedStep).clientTouchpoint ? '#D4EDE5' : '#F4F5F7', borderRadius: '8px', marginBottom: '16px', border: (editingStep || selectedStep).clientTouchpoint ? '1px solid #2D8A6E' : '1px solid transparent' }}>
                       <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
                         <div>
                           <label style={{ display: 'block', fontFamily: "'Interstate', sans-serif", fontSize: '11px', color: '#556275', textTransform: 'uppercase', letterSpacing: '0.5px', marginBottom: '8px' }}>Client Touchpoint</label>
                           <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
-                            <span style={{ fontSize: '16px' }}>{selectedStep.clientTouchpoint ? '👤' : '👤'}</span>
-                            <span style={{ fontFamily: "'Interstate', sans-serif", fontSize: '13px', color: selectedStep.clientTouchpoint ? '#2D8A6E' : '#556275', fontWeight: 500 }}>
-                              {selectedStep.clientTouchpoint ? 'This step has direct client involvement' : 'This step DOES NOT have direct client involvement'}
+                            <span style={{ fontSize: '16px' }}>{(editingStep || selectedStep).clientTouchpoint ? '👤' : '👤'}</span>
+                            <span style={{ fontFamily: "'Interstate', sans-serif", fontSize: '13px', color: (editingStep || selectedStep).clientTouchpoint ? '#2D8A6E' : '#556275', fontWeight: 500 }}>
+                              {(editingStep || selectedStep).clientTouchpoint ? 'This step has direct client involvement' : 'This step DOES NOT have direct client involvement'}
                             </span>
                           </div>
                         </div>
-                        {editMode && (
+                        {editingStep && (
                           <button 
-                            onClick={() => { 
-                              const newValue = !selectedStep.clientTouchpoint;
-                              updateStep(selectedStep.stageId, selectedStep.id, { clientTouchpoint: newValue }); 
-                              setSelectedStep(prev => ({ ...prev, clientTouchpoint: newValue })); 
-                            }} 
+                            onClick={() => setEditingStep(prev => ({ ...prev, clientTouchpoint: !prev.clientTouchpoint }))} 
                             style={{ 
                               width: '60px', 
                               height: '32px', 
                               borderRadius: '16px', 
                               border: 'none',
-                              background: selectedStep.clientTouchpoint ? '#2D8A6E' : '#A9B2BE',
+                              background: editingStep.clientTouchpoint ? '#2D8A6E' : '#A9B2BE',
                               cursor: 'pointer',
                               position: 'relative',
                               transition: 'background 0.2s',
@@ -9622,12 +9795,12 @@ FATHOM - Journey intelligence for modern operations`);
                           >
                             <div style={{
                               width: '26px',
-                              height: '32px',
+                              height: '26px',
                               borderRadius: '50%',
                               background: '#FFF',
                               position: 'absolute',
                               top: '3px',
-                              left: selectedStep.clientTouchpoint ? '31px' : '3px',
+                              left: editingStep.clientTouchpoint ? '31px' : '3px',
                               transition: 'left 0.2s',
                               boxShadow: '0 1px 3px rgba(0,0,0,0.2)'
                             }} />
