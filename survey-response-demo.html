@@ -1,0 +1,449 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Survey Response - FATHOM</title>
+  <style>
+    @font-face {
+      font-family: 'Interstate';
+      src: url('https://steveyoung74.github.io/journeymaps/fonts/Interstate-regular.ttf') format('truetype');
+      font-weight: 400;
+      font-style: normal;
+    }
+    
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    
+    body {
+      font-family: 'Interstate', -apple-system, sans-serif;
+      background: #F4F5F7;
+      padding: 20px;
+      color: #192B45;
+    }
+    
+    .container {
+      max-width: 900px;
+      margin: 0 auto;
+    }
+    
+    .header {
+      background: #192B45;
+      color: #FFF;
+      padding: 24px 32px;
+      border-radius: 12px 12px 0 0;
+    }
+    
+    .header h1 {
+      font-size: 24px;
+      font-weight: 600;
+      letter-spacing: 1px;
+      margin-bottom: 8px;
+    }
+    
+    .header .subtitle {
+      font-size: 14px;
+      opacity: 0.7;
+    }
+    
+    .info-banner {
+      background: #E1EEF2;
+      border: 2px solid #5B8A9A;
+      padding: 20px 32px;
+      border-radius: 0 0 12px 12px;
+      margin-bottom: 24px;
+    }
+    
+    .info-banner h2 {
+      font-size: 16px;
+      color: #3A6070;
+      margin-bottom: 12px;
+    }
+    
+    .info-grid {
+      display: grid;
+      grid-template-columns: repeat(2, 1fr);
+      gap: 16px;
+    }
+    
+    .info-item {
+      font-size: 13px;
+    }
+    
+    .info-label {
+      font-size: 11px;
+      color: #556275;
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+      margin-bottom: 4px;
+    }
+    
+    .info-value {
+      font-weight: 600;
+      color: #192B45;
+    }
+    
+    .message-box {
+      background: #FAF0D6;
+      border-left: 4px solid #C4942A;
+      padding: 16px 20px;
+      border-radius: 6px;
+      margin-bottom: 24px;
+      font-size: 14px;
+      line-height: 1.6;
+      color: #8B6914;
+    }
+    
+    .step-card {
+      background: #FFF;
+      border-radius: 12px;
+      padding: 24px;
+      margin-bottom: 16px;
+      border: 2px solid #E4E7EB;
+      transition: border-color 0.2s;
+    }
+    
+    .step-card.focus {
+      border-color: #5B8A9A;
+      background: #F0F8FA;
+      box-shadow: 0 4px 12px rgba(91, 138, 154, 0.1);
+    }
+    
+    .step-header {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      margin-bottom: 16px;
+    }
+    
+    .step-badge {
+      padding: 4px 10px;
+      background: #E9EEF4;
+      color: #192B45;
+      border-radius: 4px;
+      font-size: 11px;
+      font-weight: 700;
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+    }
+    
+    .step-badge.focus {
+      background: #5B8A9A;
+      color: #FFF;
+    }
+    
+    .step-title {
+      font-size: 18px;
+      font-weight: 600;
+      color: #192B45;
+    }
+    
+    .step-description {
+      font-size: 14px;
+      color: #556275;
+      line-height: 1.6;
+      margin-bottom: 20px;
+    }
+    
+    .feedback-form {
+      display: flex;
+      flex-direction: column;
+      gap: 16px;
+    }
+    
+    .form-group label {
+      display: block;
+      font-size: 12px;
+      font-weight: 600;
+      color: #556275;
+      margin-bottom: 8px;
+    }
+    
+    .form-group textarea,
+    .form-group input {
+      width: 100%;
+      padding: 12px;
+      border: 2px solid #E4E7EB;
+      border-radius: 6px;
+      font-size: 14px;
+      font-family: 'Interstate', sans-serif;
+      resize: vertical;
+    }
+    
+    .form-group textarea:focus,
+    .form-group input:focus {
+      outline: none;
+      border-color: #5B8A9A;
+    }
+    
+    .submit-btn {
+      padding: 14px 28px;
+      background: #2D8A6E;
+      color: #FFF;
+      border: none;
+      border-radius: 8px;
+      font-size: 15px;
+      font-weight: 600;
+      cursor: pointer;
+      font-family: 'Interstate', sans-serif;
+      margin-top: 24px;
+      transition: background 0.2s;
+    }
+    
+    .submit-btn:hover {
+      background: #1E6B54;
+    }
+    
+    .submit-btn:disabled {
+      background: #A9B2BE;
+      cursor: not-allowed;
+    }
+    
+    .error-box {
+      background: #F5E0E3;
+      border: 2px solid #B84A5A;
+      color: #B84A5A;
+      padding: 20px;
+      border-radius: 8px;
+      text-align: center;
+    }
+    
+    .success-box {
+      background: #D4EDE5;
+      border: 2px solid #2D8A6E;
+      color: #1E6B54;
+      padding: 32px;
+      border-radius: 12px;
+      text-align: center;
+    }
+    
+    .success-box h2 {
+      font-size: 24px;
+      margin-bottom: 12px;
+    }
+  </style>
+</head>
+<body>
+  <div class="container" id="app">
+    <div class="header">
+      <h1>FATHOM</h1>
+      <div class="subtitle">Journey Feedback Survey</div>
+    </div>
+    
+    <div id="content">
+      <!-- Content will be injected here -->
+    </div>
+  </div>
+  
+  <script>
+    // Decode survey token from URL
+    function decodeSurveyToken() {
+      const urlParams = new URLSearchParams(window.location.search);
+      const token = urlParams.get('token');
+      
+      if (!token) {
+        return { error: 'No survey token found in URL' };
+      }
+      
+      try {
+        const decoded = JSON.parse(atob(token));
+        
+        // Check if token has expired
+        if (decoded.expires && new Date(decoded.expires) < new Date()) {
+          return { error: 'This survey link has expired' };
+        }
+        
+        return { success: true, data: decoded };
+      } catch (e) {
+        return { error: 'Invalid survey token' };
+      }
+    }
+    
+    // Mock journey data - in production, this would be fetched from the backend
+    const mockJourneyData = {
+      title: 'Stadium Matchday Experience',
+      stages: [
+        {
+          id: 'stage-1',
+          name: 'Arrival',
+          steps: [
+            { id: 'step-1-1', name: 'Park vehicle', persona: 'attendee', description: 'Find parking space and park vehicle' },
+            { id: 'step-1-2', name: 'Walk to stadium', persona: 'attendee', description: 'Navigate from parking to stadium entrance' }
+          ]
+        },
+        {
+          id: 'stage-2',
+          name: 'Stadium Entry',
+          steps: [
+            { id: 'step-2-1', name: 'Approach turnstiles', persona: 'attendee', description: 'Walk towards designated entry point' },
+            { id: 'step-2-2', name: 'Guide fans', persona: 'steward', description: 'Direct fans to correct entry gates based on ticket type' },
+            { id: 'step-2-3', name: 'Scan ticket', persona: 'attendee', description: 'Present ticket or pass for scanning' },
+            { id: 'step-2-4', name: 'Security check', persona: 'security', description: 'Conduct bag checks and security screening' }
+          ]
+        },
+        {
+          id: 'stage-3',
+          name: 'Find Seating',
+          steps: [
+            { id: 'step-3-1', name: 'Navigate concourse', persona: 'attendee', description: 'Move through concourse to correct section' },
+            { id: 'step-3-2', name: 'Direct to section', persona: 'steward', description: 'Help fans find their seating section' }
+          ]
+        }
+      ]
+    };
+    
+    // Render survey
+    function renderSurvey() {
+      const result = decodeSurveyToken();
+      const content = document.getElementById('content');
+      
+      if (result.error) {
+        content.innerHTML = `
+          <div class="error-box" style="margin-top: 24px;">
+            <h2>⚠️ Unable to Load Survey</h2>
+            <p style="margin-top: 12px; font-size: 14px;">${result.error}</p>
+          </div>
+        `;
+        return;
+      }
+      
+      const { mapId, stepId, personaId, scope, recipientEmail, expires } = result.data;
+      
+      // Find the focus step
+      let focusStep = null;
+      let focusStage = null;
+      let focusStepIndex = -1;
+      
+      mockJourneyData.stages.forEach(stage => {
+        stage.steps.forEach((step, index) => {
+          if (step.id === stepId) {
+            focusStep = step;
+            focusStage = stage;
+            focusStepIndex = index;
+          }
+        });
+      });
+      
+      if (!focusStep) {
+        content.innerHTML = `
+          <div class="error-box" style="margin-top: 24px;">
+            <h2>⚠️ Step Not Found</h2>
+            <p style="margin-top: 12px; font-size: 14px;">The requested step could not be found.</p>
+          </div>
+        `;
+        return;
+      }
+      
+      // Get steps to display based on scope
+      let stepsToDisplay = [];
+      const allStepsFlat = mockJourneyData.stages.flatMap(s => s.steps.map(step => ({ ...step, stageName: s.name })));
+      const roleSteps = allStepsFlat.filter(s => s.persona === personaId);
+      
+      if (scope === 'step') {
+        stepsToDisplay = [{ ...focusStep, stageName: focusStage.name }];
+      } else if (scope === 'context') {
+        const focusIndex = roleSteps.findIndex(s => s.id === stepId);
+        const prevStep = focusIndex > 0 ? roleSteps[focusIndex - 1] : null;
+        const nextStep = focusIndex < roleSteps.length - 1 ? roleSteps[focusIndex + 1] : null;
+        
+        stepsToDisplay = [
+          prevStep,
+          { ...focusStep, stageName: focusStage.name, isFocus: true },
+          nextStep
+        ].filter(Boolean);
+      } else if (scope === 'full') {
+        stepsToDisplay = roleSteps.map(s => ({
+          ...s,
+          isFocus: s.id === stepId
+        }));
+      }
+      
+      // Render the survey
+      const infoBannerHTML = `
+        <div class="info-banner">
+          <h2>Survey Information</h2>
+          <div class="info-grid">
+            <div class="info-item">
+              <div class="info-label">Journey</div>
+              <div class="info-value">${mockJourneyData.title}</div>
+            </div>
+            <div class="info-item">
+              <div class="info-label">Your Role</div>
+              <div class="info-value">${personaId === 'steward' ? 'Matchday Steward' : 'Unknown'}</div>
+            </div>
+            <div class="info-item">
+              <div class="info-label">Focus Step</div>
+              <div class="info-value">${focusStage.name} → ${focusStep.name}</div>
+            </div>
+            <div class="info-item">
+              <div class="info-label">Expires</div>
+              <div class="info-value">${new Date(expires).toLocaleDateString()}</div>
+            </div>
+          </div>
+        </div>
+      `;
+      
+      const stepsHTML = stepsToDisplay.map(step => `
+        <div class="step-card ${step.isFocus ? 'focus' : ''}">
+          <div class="step-header">
+            <div class="step-badge ${step.isFocus ? 'focus' : ''}">${step.isFocus ? '→ Focus Step' : step.stageName}</div>
+            <div class="step-title">${step.name}</div>
+          </div>
+          <div class="step-description">${step.description}</div>
+          
+          <div class="feedback-form">
+            <div class="form-group">
+              <label>What actually happens in this step?</label>
+              <textarea rows="3" placeholder="Describe what you do in practice..."></textarea>
+            </div>
+            
+            <div class="form-group">
+              <label>How long does this typically take? (minutes)</label>
+              <input type="number" placeholder="e.g. 5" min="0" />
+            </div>
+            
+            <div class="form-group">
+              <label>What challenges or pain points do you experience?</label>
+              <textarea rows="3" placeholder="Any difficulties, delays, or frustrations..."></textarea>
+            </div>
+            
+            <div class="form-group">
+              <label>How could this step be improved?</label>
+              <textarea rows="2" placeholder="Suggestions for making this easier or faster..."></textarea>
+            </div>
+          </div>
+        </div>
+      `).join('');
+      
+      content.innerHTML = `
+        ${infoBannerHTML}
+        
+        <div style="margin-bottom: 24px;">
+          <p style="font-size: 13px; color: #556275; line-height: 1.6;">
+            Your feedback will help us improve this process. Please complete the form below for ${scope === 'step' ? 'this step' : scope === 'context' ? 'each step shown' : 'all steps for your role'}.
+            ${scope === 'context' ? ' The highlighted step is the focus of this survey.' : ''}
+          </p>
+        </div>
+        
+        ${stepsHTML}
+        
+        <button class="submit-btn" onclick="submitSurvey()">Submit Feedback</button>
+      `;
+    }
+    
+    // Submit survey
+    function submitSurvey() {
+      const content = document.getElementById('content');
+      content.innerHTML = `
+        <div class="success-box" style="margin-top: 24px;">
+          <h2>✅ Thank You!</h2>
+          <p style="font-size: 15px; margin-top: 12px;">Your feedback has been submitted successfully.</p>
+          <p style="font-size: 13px; margin-top: 16px; opacity: 0.8;">In production, this would save to the database and notify the requester.</p>
+        </div>
+      `;
+    }
+    
+    // Initialize
+    renderSurvey();
+  </script>
+</body>
+</html>

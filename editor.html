@@ -691,6 +691,103 @@
       console.log('Supabase client initialized (editor)');
     }
     
+    // ============================================
+    // SURVEY TOKEN & EMAIL UTILITIES
+    // ============================================
+    
+    // Generate a unique survey token
+    const generateSurveyToken = () => {
+      const timestamp = Date.now().toString(36);
+      const random = Math.random().toString(36).substring(2, 15);
+      return `survey_${timestamp}_${random}`;
+    };
+    
+    // Encode survey parameters into a token
+    const encodeSurveyToken = (params) => {
+      try {
+        const jsonString = JSON.stringify(params);
+        return btoa(jsonString); // Base64 encode
+      } catch (e) {
+        console.error('Failed to encode survey token:', e);
+        return null;
+      }
+    };
+    
+    // Generate survey URL with token
+    const generateSurveyUrl = (mapId, stepId, personaId, scope, recipientEmail) => {
+      const token = encodeSurveyToken({
+        mapId,
+        stepId,
+        personaId,
+        scope,
+        recipientEmail,
+        expires: new Date(Date.now() + 14 * 24 * 60 * 60 * 1000).toISOString() // 14 days
+      });
+      
+      const baseUrl = window.location.origin;
+      return `${baseUrl}/survey-response.html?token=${token}`;
+    };
+    
+    // Send survey request emails
+    const sendSurveyEmails = async (surveyRequest, mapId, config) => {
+      const { recipients, stepName, stageName, personaLabel, scope, message, journeyTitle } = surveyRequest;
+      
+      const emailPromises = recipients.map(async (recipient) => {
+        const surveyUrl = generateSurveyUrl(mapId, surveyRequest.stepId, surveyRequest.personaId, scope, recipient.email);
+        
+        // Prepare email content
+        const emailSubject = `Feedback requested: ${journeyTitle} - ${stepName}`;
+        const emailBody = `
+Hi ${recipient.name},
+
+Your feedback has been requested on the following process step:
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+${journeyTitle}
+${stageName} → ${stepName}
+
+Your role: ${personaLabel}
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+${message ? message + '\n\n' : ''}This survey focuses on your experience with this specific step${scope === 'context' ? ', with surrounding steps shown for context' : scope === 'full' ? ', showing all steps for your role' : ''}. Your insights will help improve our processes.
+
+Complete Survey: ${surveyUrl}
+
+This link expires in 14 days.
+
+───────────────────────────────────────────
+Powered by FATHOM
+        `.trim();
+        
+        // For now, we'll use mailto: link to open email client
+        // In production, this would call a backend API to send via Resend/SendGrid
+        return {
+          recipient: recipient.email,
+          subject: emailSubject,
+          body: emailBody,
+          surveyUrl,
+          mailto: `mailto:${recipient.email}?subject=${encodeURIComponent(emailSubject)}&body=${encodeURIComponent(emailBody)}`
+        };
+      });
+      
+      return Promise.all(emailPromises);
+    };
+    
+    // Backend email sending (for future implementation)
+    const sendEmailViaBackend = async (emailData) => {
+      // This would call your Supabase Edge Function or external API
+      // Example:
+      // const response = await fetch('/api/send-survey-email', {
+      //   method: 'POST',
+      //   headers: { 'Content-Type': 'application/json' },
+      //   body: JSON.stringify(emailData)
+      // });
+      // return response.json();
+      
+      console.log('Email would be sent via backend:', emailData);
+      return { success: true, emailData };
+    };
+    
     // Fathom official taglines (per Brand Lock v1.0)
     const FATHOM_TAGLINES = [
       "See what your journeys really cost",
@@ -3908,12 +4005,418 @@
       );
     }
 
+    // Survey Request Modal
+    function SurveyRequestModal({ stepId, personaId, config, onClose, onSend }) {
+      const step = config.stages.flatMap(s => s.steps).find(st => st.id === stepId);
+      const persona = config.personas.find(p => p.id === personaId);
+      const stage = config.stages.find(s => s.steps.some(st => st.id === stepId));
+      
+      if (!step || !persona) {
+        onClose();
+        return null;
+      }
+      
+      const teamMembers = persona.teamMembers || [];
+      const [selectedRecipients, setSelectedRecipients] = useState(teamMembers.map(tm => tm.id));
+      const [scope, setScope] = useState('context'); // 'step', 'context', 'full'
+      const [message, setMessage] = useState('');
+      const [sending, setSending] = useState(false);
+      
+      const toggleRecipient = (memberId) => {
+        setSelectedRecipients(prev => 
+          prev.includes(memberId) 
+            ? prev.filter(id => id !== memberId)
+            : [...prev, memberId]
+        );
+      };
+      
+      const toggleSelectAll = () => {
+        if (selectedRecipients.length === teamMembers.length) {
+          setSelectedRecipients([]);
+        } else {
+          setSelectedRecipients(teamMembers.map(tm => tm.id));
+        }
+      };
+      
+      const handleSend = async () => {
+        if (selectedRecipients.length === 0) {
+          alert('Please select at least one recipient');
+          return;
+        }
+        
+        setSending(true);
+        
+        try {
+          // Prepare survey request data
+          const recipients = teamMembers.filter(tm => selectedRecipients.includes(tm.id));
+          const surveyRequest = {
+            stepId,
+            personaId,
+            stepName: step.name,
+            stageName: stage.name,
+            personaLabel: persona.label,
+            recipients,
+            scope,
+            message: message.trim(),
+            journeyTitle: config.meta?.title || 'Journey Map',
+            requestedAt: new Date().toISOString()
+          };
+          
+          // Get mapId from URL or localStorage
+          const urlParams = new URLSearchParams(window.location.search);
+          const mapId = urlParams.get('map') || localStorage.getItem('lastMapId') || 'unknown';
+          
+          // Generate emails with survey URLs
+          const emails = await sendSurveyEmails(surveyRequest, mapId, config);
+          
+          // Show success modal with email preview
+          const emailList = emails.map(e => `📧 ${e.recipient}`).join('\n');
+          const shouldOpen = confirm(
+            `✅ Survey requests prepared for ${recipients.length} ${recipients.length === 1 ? 'person' : 'people'}!\n\n` +
+            `${emailList}\n\n` +
+            `📬 For now, clicking OK will open your email client.\n` +
+            `🚀 In production, emails would be sent automatically via backend.\n\n` +
+            `Open email client now?`
+          );
+          
+          if (shouldOpen && emails.length > 0) {
+            // Open first email in client (for demo purposes)
+            // In production, all emails would be sent via backend API
+            window.open(emails[0].mailto, '_blank');
+            
+            // Log all survey URLs for testing
+            console.log('Survey URLs generated:');
+            emails.forEach(e => {
+              console.log(`${e.recipient}: ${e.surveyUrl}`);
+            });
+          }
+          
+          // Store survey requests in localStorage for tracking (optional)
+          const existingRequests = JSON.parse(localStorage.getItem('surveyRequests') || '[]');
+          const newRequest = {
+            id: generateSurveyToken(),
+            ...surveyRequest,
+            mapId,
+            emails: emails.map(e => ({ recipient: e.recipient, surveyUrl: e.surveyUrl })),
+            sentAt: new Date().toISOString()
+          };
+          localStorage.setItem('surveyRequests', JSON.stringify([...existingRequests, newRequest]));
+          
+          setSending(false);
+          onClose();
+          
+        } catch (error) {
+          console.error('Error sending survey requests:', error);
+          alert('Failed to send survey requests. Please try again.');
+          setSending(false);
+        }
+      };
+      
+      return (
+        <div 
+          style={{
+            position: 'fixed',
+            inset: 0,
+            background: 'rgba(0,0,0,0.5)',
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'center',
+            zIndex: 10000
+          }}
+          onClick={onClose}
+        >
+          <div 
+            style={{
+              background: '#FFF',
+              borderRadius: '12px',
+              padding: '32px',
+              width: '600px',
+              maxWidth: '95vw',
+              maxHeight: '90vh',
+              overflow: 'auto'
+            }}
+            onClick={e => e.stopPropagation()}
+          >
+            {/* Header */}
+            <div style={{ marginBottom: '8px' }}>
+              <h3 style={{ margin: 0, fontSize: '20px', fontFamily: "'Interstate', sans-serif", color: '#192B45' }}>
+                Request Feedback: {step.name}
+              </h3>
+              <p style={{ margin: '4px 0 0', fontSize: '13px', color: '#8A95A5', fontFamily: "'Interstate', sans-serif" }}>
+                {stage.name} • {persona.label}
+              </p>
+            </div>
+            
+            <div style={{ height: '1px', background: '#E4E7EB', margin: '20px 0' }} />
+            
+            {/* Recipients Selection */}
+            <div style={{ marginBottom: '24px' }}>
+              <label style={{ display: 'block', fontFamily: "'Interstate', sans-serif", fontSize: '12px', fontWeight: 600, color: '#556275', marginBottom: '12px' }}>
+                Who should we ask? ({teamMembers.length} team {teamMembers.length === 1 ? 'member' : 'members'})
+              </label>
+              
+              {/* Select All */}
+              <label style={{ 
+                display: 'flex', 
+                alignItems: 'center', 
+                gap: '10px', 
+                padding: '10px 12px',
+                background: '#F4F5F7',
+                borderRadius: '6px',
+                marginBottom: '12px',
+                cursor: 'pointer',
+                border: '2px solid #E4E7EB'
+              }}>
+                <input
+                  type="checkbox"
+                  checked={selectedRecipients.length === teamMembers.length && teamMembers.length > 0}
+                  onChange={toggleSelectAll}
+                  style={{ width: '16px', height: '16px', cursor: 'pointer' }}
+                />
+                <span style={{ fontFamily: "'Interstate', sans-serif", fontSize: '13px', fontWeight: 600, color: '#192B45' }}>
+                  Select All
+                </span>
+              </label>
+              
+              {/* Individual Recipients */}
+              <div style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
+                {teamMembers.map(member => (
+                  <label 
+                    key={member.id}
+                    style={{ 
+                      display: 'flex', 
+                      alignItems: 'center', 
+                      gap: '10px', 
+                      padding: '12px',
+                      background: selectedRecipients.includes(member.id) ? '#E1EEF2' : '#FFF',
+                      border: `2px solid ${selectedRecipients.includes(member.id) ? '#5B8A9A' : '#E4E7EB'}`,
+                      borderRadius: '6px',
+                      cursor: 'pointer',
+                      transition: 'all 0.2s'
+                    }}
+                  >
+                    <input
+                      type="checkbox"
+                      checked={selectedRecipients.includes(member.id)}
+                      onChange={() => toggleRecipient(member.id)}
+                      style={{ width: '16px', height: '16px', cursor: 'pointer' }}
+                    />
+                    <div style={{ flex: 1 }}>
+                      <div style={{ fontFamily: "'Interstate', sans-serif", fontSize: '13px', fontWeight: 500, color: '#192B45' }}>
+                        {member.name}
+                      </div>
+                      <div style={{ fontFamily: "'Inter', sans-serif", fontSize: '11px', color: '#8A95A5' }}>
+                        {member.email}
+                      </div>
+                    </div>
+                  </label>
+                ))}
+              </div>
+            </div>
+            
+            {/* Survey Scope */}
+            <div style={{ marginBottom: '24px' }}>
+              <label style={{ display: 'block', fontFamily: "'Interstate', sans-serif", fontSize: '12px', fontWeight: 600, color: '#556275', marginBottom: '12px' }}>
+                Survey Scope
+              </label>
+              
+              <div style={{ display: 'flex', flexDirection: 'column', gap: '10px' }}>
+                <label style={{ 
+                  display: 'flex', 
+                  alignItems: 'flex-start', 
+                  gap: '10px', 
+                  padding: '12px',
+                  background: scope === 'step' ? '#E1EEF2' : '#FFF',
+                  border: `2px solid ${scope === 'step' ? '#5B8A9A' : '#E4E7EB'}`,
+                  borderRadius: '6px',
+                  cursor: 'pointer'
+                }}>
+                  <input
+                    type="radio"
+                    name="scope"
+                    value="step"
+                    checked={scope === 'step'}
+                    onChange={(e) => setScope(e.target.value)}
+                    style={{ marginTop: '2px', cursor: 'pointer' }}
+                  />
+                  <div style={{ flex: 1 }}>
+                    <div style={{ fontFamily: "'Interstate', sans-serif", fontSize: '13px', fontWeight: 600, color: '#192B45', marginBottom: '4px' }}>
+                      This step only
+                    </div>
+                    <div style={{ fontFamily: "'Interstate', sans-serif", fontSize: '11px', color: '#8A95A5', lineHeight: 1.4 }}>
+                      Focus on just this step
+                    </div>
+                  </div>
+                </label>
+                
+                <label style={{ 
+                  display: 'flex', 
+                  alignItems: 'flex-start', 
+                  gap: '10px', 
+                  padding: '12px',
+                  background: scope === 'context' ? '#E1EEF2' : '#FFF',
+                  border: `2px solid ${scope === 'context' ? '#5B8A9A' : '#E4E7EB'}`,
+                  borderRadius: '6px',
+                  cursor: 'pointer'
+                }}>
+                  <input
+                    type="radio"
+                    name="scope"
+                    value="context"
+                    checked={scope === 'context'}
+                    onChange={(e) => setScope(e.target.value)}
+                    style={{ marginTop: '2px', cursor: 'pointer' }}
+                  />
+                  <div style={{ flex: 1 }}>
+                    <div style={{ fontFamily: "'Interstate', sans-serif", fontSize: '13px', fontWeight: 600, color: '#192B45', marginBottom: '4px' }}>
+                      This step + surrounding context
+                      <span style={{ 
+                        marginLeft: '8px',
+                        padding: '2px 6px',
+                        background: '#2D8A6E',
+                        color: '#FFF',
+                        borderRadius: '4px',
+                        fontSize: '9px',
+                        fontWeight: 700,
+                        textTransform: 'uppercase',
+                        letterSpacing: '0.5px'
+                      }}>Recommended</span>
+                    </div>
+                    <div style={{ fontFamily: "'Interstate', sans-serif", fontSize: '11px', color: '#8A95A5', lineHeight: 1.4 }}>
+                      Shows previous step → this step → next step for context
+                    </div>
+                  </div>
+                </label>
+                
+                <label style={{ 
+                  display: 'flex', 
+                  alignItems: 'flex-start', 
+                  gap: '10px', 
+                  padding: '12px',
+                  background: scope === 'full' ? '#E1EEF2' : '#FFF',
+                  border: `2px solid ${scope === 'full' ? '#5B8A9A' : '#E4E7EB'}`,
+                  borderRadius: '6px',
+                  cursor: 'pointer'
+                }}>
+                  <input
+                    type="radio"
+                    name="scope"
+                    value="full"
+                    checked={scope === 'full'}
+                    onChange={(e) => setScope(e.target.value)}
+                    style={{ marginTop: '2px', cursor: 'pointer' }}
+                  />
+                  <div style={{ flex: 1 }}>
+                    <div style={{ fontFamily: "'Interstate', sans-serif", fontSize: '13px', fontWeight: 600, color: '#192B45', marginBottom: '4px' }}>
+                      Full journey (filtered to this role)
+                    </div>
+                    <div style={{ fontFamily: "'Interstate', sans-serif", fontSize: '11px', color: '#8A95A5', lineHeight: 1.4 }}>
+                      All steps for {persona.label}
+                    </div>
+                  </div>
+                </label>
+              </div>
+              
+              {scope === 'context' && (
+                <div style={{ 
+                  marginTop: '12px', 
+                  padding: '12px', 
+                  background: '#E9EEF4', 
+                  borderRadius: '6px',
+                  display: 'flex',
+                  gap: '8px',
+                  alignItems: 'flex-start'
+                }}>
+                  <span style={{ fontSize: '16px' }}>ℹ️</span>
+                  <div style={{ flex: 1, fontSize: '11px', color: '#556275', lineHeight: 1.5, fontFamily: "'Interstate', sans-serif" }}>
+                    Recipients will see this step plus the previous and next steps for context. They can only see and edit steps for their role.
+                  </div>
+                </div>
+              )}
+            </div>
+            
+            {/* Optional Message */}
+            <div style={{ marginBottom: '24px' }}>
+              <label style={{ display: 'block', fontFamily: "'Interstate', sans-serif", fontSize: '12px', fontWeight: 600, color: '#556275', marginBottom: '8px' }}>
+                Optional message to recipients
+              </label>
+              <textarea
+                value={message}
+                onChange={(e) => setMessage(e.target.value)}
+                placeholder="We're reviewing our processes and would value your feedback..."
+                rows={3}
+                style={{
+                  width: '100%',
+                  padding: '10px 12px',
+                  border: '1px solid #E4E7EB',
+                  borderRadius: '6px',
+                  fontSize: '13px',
+                  fontFamily: "'Interstate', sans-serif",
+                  resize: 'vertical',
+                  boxSizing: 'border-box'
+                }}
+              />
+            </div>
+            
+            {/* Buttons */}
+            <div style={{ display: 'flex', gap: '12px', justifyContent: 'flex-end' }}>
+              <button
+                onClick={onClose}
+                style={{
+                  padding: '10px 20px',
+                  background: '#F4F5F7',
+                  border: 'none',
+                  borderRadius: '6px',
+                  cursor: 'pointer',
+                  fontFamily: "'Interstate', sans-serif",
+                  fontSize: '13px',
+                  color: '#556275',
+                  fontWeight: 600
+                }}
+              >
+                Cancel
+              </button>
+              <button
+                onClick={handleSend}
+                disabled={sending || selectedRecipients.length === 0}
+                style={{
+                  padding: '10px 20px',
+                  background: selectedRecipients.length === 0 ? '#A9B2BE' : '#5B8A9A',
+                  border: 'none',
+                  borderRadius: '6px',
+                  cursor: selectedRecipients.length === 0 ? 'not-allowed' : 'pointer',
+                  fontFamily: "'Interstate', sans-serif",
+                  fontSize: '13px',
+                  color: '#FFF',
+                  fontWeight: 600,
+                  display: 'flex',
+                  alignItems: 'center',
+                  gap: '8px'
+                }}
+              >
+                {sending ? 'Sending...' : 'Send Survey Link →'}
+              </button>
+            </div>
+          </div>
+        </div>
+      );
+    }
+
     // Role Management Modal
     function SalarySettingsModal({ personas, config, onUpdate, onClose }) {
-      const [localPersonas, setLocalPersonas] = useState(JSON.parse(JSON.stringify(personas)));
+      const [localPersonas, setLocalPersonas] = useState(() => {
+        const parsed = JSON.parse(JSON.stringify(personas));
+        // Ensure all personas have teamMembers array
+        return parsed.map(p => ({ ...p, teamMembers: p.teamMembers || [] }));
+      });
       const [editingId, setEditingId] = useState(null);
       const [showAddForm, setShowAddForm] = useState(false);
       const [newRole, setNewRole] = useState({ label: '', color: '#556275666', annualSalary: 0, burdenMultiplier: 1.35, workspaceHourlyCost: 6.00, isExternal: false, eventDeployment: { headcount: 1, hoursPerEvent: 4, rateType: 'hourly' } });
+      
+      // Team member management state
+      const [expandedTeamMembers, setExpandedTeamMembers] = useState({});
+      const [addingTeamMemberTo, setAddingTeamMemberTo] = useState(null);
+      const [newTeamMember, setNewTeamMember] = useState({ name: '', email: '' });
       
       // Check if we're in event mode
       const isEventMode = config?.meta?.costModel === 'event';
@@ -3962,9 +4465,62 @@
       const handleAddRole = () => {
         if (!newRole.label.trim()) return;
         const id = newRole.label.toLowerCase().replace(/\s+/g, '-').replace(/[^a-z0-9-]/g, '');
-        setLocalPersonas(prev => [...prev, { ...newRole, id, label: newRole.label.trim() }]);
+        setLocalPersonas(prev => [...prev, { ...newRole, id, label: newRole.label.trim(), teamMembers: [] }]);
         setNewRole({ label: '', color: '#556275666', annualSalary: 0, burdenMultiplier: 1.35, workspaceHourlyCost: 6.00, isExternal: false });
         setShowAddForm(false);
+      };
+      
+      // Team member management handlers
+      const toggleTeamMembers = (personaId) => {
+        setExpandedTeamMembers(prev => ({ ...prev, [personaId]: !prev[personaId] }));
+      };
+      
+      const handleAddTeamMember = (personaId) => {
+        const email = newTeamMember.email.trim().toLowerCase();
+        const name = newTeamMember.name.trim();
+        
+        if (!email) return;
+        
+        // Basic email validation
+        if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) {
+          alert('Please enter a valid email address');
+          return;
+        }
+        
+        setLocalPersonas(prev => prev.map(p => {
+          if (p.id !== personaId) return p;
+          const teamMembers = p.teamMembers || [];
+          
+          // Check for duplicate email
+          if (teamMembers.some(tm => tm.email === email)) {
+            alert('This email is already added to this role');
+            return p;
+          }
+          
+          return {
+            ...p,
+            teamMembers: [...teamMembers, {
+              id: `tm-${Date.now()}-${Math.random().toString(36).substr(2, 9)}`,
+              email,
+              name: name || email.split('@')[0]
+            }]
+          };
+        }));
+        
+        setNewTeamMember({ name: '', email: '' });
+        setAddingTeamMemberTo(null);
+      };
+      
+      const handleRemoveTeamMember = (personaId, memberId) => {
+        if (!confirm('Remove this team member?')) return;
+        
+        setLocalPersonas(prev => prev.map(p => {
+          if (p.id !== personaId) return p;
+          return {
+            ...p,
+            teamMembers: (p.teamMembers || []).filter(tm => tm.id !== memberId)
+          };
+        }));
       };
 
       return (
@@ -4378,6 +4934,255 @@
                       )}
                     </div>
                   )}
+                  
+                  {/* Team Members Section */}
+                  <div style={{ marginTop: '12px', paddingTop: '12px', borderTop: '1px solid #E4E7EB' }}>
+                    <button
+                      onClick={() => toggleTeamMembers(persona.id)}
+                      style={{
+                        width: '100%',
+                        display: 'flex',
+                        alignItems: 'center',
+                        justifyContent: 'space-between',
+                        background: 'transparent',
+                        border: 'none',
+                        padding: '4px 0',
+                        cursor: 'pointer',
+                        fontFamily: "'Interstate', sans-serif",
+                        fontSize: '12px',
+                        color: '#556275',
+                        fontWeight: 600
+                      }}
+                    >
+                      <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+                        <span style={{ fontSize: '14px' }}>{expandedTeamMembers[persona.id] ? '▼' : '▶'}</span>
+                        <span>Team Members</span>
+                        <span style={{ 
+                          padding: '2px 8px', 
+                          background: '#E9EEF4', 
+                          borderRadius: '10px', 
+                          fontSize: '11px', 
+                          color: '#192B45',
+                          fontWeight: 600
+                        }}>
+                          {(persona.teamMembers || []).length}
+                        </span>
+                      </div>
+                      <span style={{ fontSize: '10px', color: '#8A95A5' }}>For survey requests</span>
+                    </button>
+                    
+                    {/* Team Members List - shown when expanded */}
+                    {expandedTeamMembers[persona.id] && (
+                      <div style={{ marginTop: '12px' }}>
+                        {(persona.teamMembers || []).length === 0 ? (
+                          <div style={{ 
+                            padding: '16px', 
+                            background: '#F4F5F7', 
+                            borderRadius: '6px', 
+                            textAlign: 'center',
+                            color: '#8A95A5',
+                            fontSize: '12px',
+                            fontStyle: 'italic'
+                          }}>
+                            No team members yet. Add people to request step-level feedback.
+                          </div>
+                        ) : (
+                          <div style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
+                            {persona.teamMembers.map(member => (
+                              <div
+                                key={member.id}
+                                style={{
+                                  display: 'flex',
+                                  alignItems: 'center',
+                                  justifyContent: 'space-between',
+                                  padding: '10px 12px',
+                                  background: '#F4F5F7',
+                                  borderRadius: '6px',
+                                  border: '1px solid #E4E7EB'
+                                }}
+                              >
+                                <div style={{ flex: 1 }}>
+                                  <div style={{ 
+                                    fontFamily: "'Interstate', sans-serif", 
+                                    fontSize: '13px', 
+                                    color: '#192B45',
+                                    fontWeight: 500
+                                  }}>
+                                    {member.name}
+                                  </div>
+                                  <div style={{ 
+                                    fontFamily: "'Inter', sans-serif", 
+                                    fontSize: '11px', 
+                                    color: '#8A95A5',
+                                    marginTop: '2px'
+                                  }}>
+                                    {member.email}
+                                  </div>
+                                </div>
+                                <button
+                                  onClick={() => handleRemoveTeamMember(persona.id, member.id)}
+                                  style={{
+                                    width: '24px',
+                                    height: '24px',
+                                    borderRadius: '50%',
+                                    border: 'none',
+                                    background: '#F5E0E3',
+                                    color: '#B84A5A',
+                                    cursor: 'pointer',
+                                    fontSize: '14px',
+                                    display: 'flex',
+                                    alignItems: 'center',
+                                    justifyContent: 'center'
+                                  }}
+                                  title="Remove team member"
+                                >×</button>
+                              </div>
+                            ))}
+                          </div>
+                        )}
+                        
+                        {/* Add Team Member Form */}
+                        {addingTeamMemberTo === persona.id ? (
+                          <div style={{ 
+                            marginTop: '12px', 
+                            padding: '12px', 
+                            background: '#E1EEF2', 
+                            borderRadius: '6px',
+                            border: '2px solid #5B8A9A'
+                          }}>
+                            <div style={{ 
+                              fontFamily: "'Interstate', sans-serif", 
+                              fontSize: '12px', 
+                              fontWeight: 600, 
+                              color: '#3A6070', 
+                              marginBottom: '12px' 
+                            }}>
+                              Add Team Member
+                            </div>
+                            <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '8px', marginBottom: '12px' }}>
+                              <div>
+                                <label style={{ 
+                                  display: 'block', 
+                                  fontFamily: "'Interstate', sans-serif", 
+                                  fontSize: '10px', 
+                                  color: '#556275', 
+                                  marginBottom: '4px' 
+                                }}>
+                                  Name (optional)
+                                </label>
+                                <input
+                                  type="text"
+                                  value={newTeamMember.name}
+                                  onChange={(e) => setNewTeamMember(prev => ({ ...prev, name: e.target.value }))}
+                                  placeholder="Jane Smith"
+                                  style={{
+                                    width: '100%',
+                                    padding: '8px 10px',
+                                    border: '1px solid #96BCC7',
+                                    borderRadius: '4px',
+                                    fontSize: '13px',
+                                    boxSizing: 'border-box'
+                                  }}
+                                />
+                              </div>
+                              <div>
+                                <label style={{ 
+                                  display: 'block', 
+                                  fontFamily: "'Interstate', sans-serif", 
+                                  fontSize: '10px', 
+                                  color: '#556275', 
+                                  marginBottom: '4px' 
+                                }}>
+                                  Email *
+                                </label>
+                                <input
+                                  type="email"
+                                  value={newTeamMember.email}
+                                  onChange={(e) => setNewTeamMember(prev => ({ ...prev, email: e.target.value }))}
+                                  placeholder="jane@company.com"
+                                  style={{
+                                    width: '100%',
+                                    padding: '8px 10px',
+                                    border: '1px solid #96BCC7',
+                                    borderRadius: '4px',
+                                    fontSize: '13px',
+                                    boxSizing: 'border-box'
+                                  }}
+                                  onKeyPress={(e) => {
+                                    if (e.key === 'Enter') {
+                                      e.preventDefault();
+                                      handleAddTeamMember(persona.id);
+                                    }
+                                  }}
+                                />
+                              </div>
+                            </div>
+                            <div style={{ display: 'flex', gap: '8px', justifyContent: 'flex-end' }}>
+                              <button
+                                onClick={() => {
+                                  setAddingTeamMemberTo(null);
+                                  setNewTeamMember({ name: '', email: '' });
+                                }}
+                                style={{
+                                  padding: '6px 12px',
+                                  background: '#FFF',
+                                  border: '1px solid #96BCC7',
+                                  borderRadius: '4px',
+                                  cursor: 'pointer',
+                                  fontFamily: "'Interstate', sans-serif",
+                                  fontSize: '12px',
+                                  color: '#556275'
+                                }}
+                              >
+                                Cancel
+                              </button>
+                              <button
+                                onClick={() => handleAddTeamMember(persona.id)}
+                                disabled={!newTeamMember.email.trim()}
+                                style={{
+                                  padding: '6px 12px',
+                                  background: newTeamMember.email.trim() ? '#5B8A9A' : '#A9B2BE',
+                                  border: 'none',
+                                  borderRadius: '4px',
+                                  cursor: newTeamMember.email.trim() ? 'pointer' : 'not-allowed',
+                                  fontFamily: "'Interstate', sans-serif",
+                                  fontSize: '12px',
+                                  color: '#FFF',
+                                  fontWeight: 600
+                                }}
+                              >
+                                Add Member
+                              </button>
+                            </div>
+                          </div>
+                        ) : (
+                          <button
+                            onClick={() => setAddingTeamMemberTo(persona.id)}
+                            style={{
+                              width: '100%',
+                              marginTop: '12px',
+                              padding: '8px 12px',
+                              background: '#FFF',
+                              border: '1px dashed #96BCC7',
+                              borderRadius: '6px',
+                              cursor: 'pointer',
+                              fontFamily: "'Interstate', sans-serif",
+                              fontSize: '12px',
+                              color: '#5B8A9A',
+                              fontWeight: 500,
+                              display: 'flex',
+                              alignItems: 'center',
+                              justifyContent: 'center',
+                              gap: '6px'
+                            }}
+                          >
+                            <span style={{ fontSize: '16px' }}>+</span>
+                            Add Team Member
+                          </button>
+                        )}
+                      </div>
+                    )}
+                  </div>
                 </div>
               ))}
             </div>
@@ -6905,6 +7710,7 @@ FATHOM - Journey intelligence for modern operations`);
       const [showShareModal, setShowShareModal] = useState(false);
       const [showJourneySettings, setShowJourneySettings] = useState(false);
       const [showProfileMenu, setShowProfileMenu] = useState(false);
+      const [showSurveyRequestModal, setShowSurveyRequestModal] = useState(null); // { stepId, personaId }
       const [shares, setShares] = useState([]);
       const [isMobile, setIsMobile] = useState(() => window.innerWidth < 768);
       const [isCompact, setIsCompact] = useState(() => window.innerWidth < 1024 && window.innerWidth >= 768);
@@ -10738,7 +11544,63 @@ FATHOM - Journey intelligence for modern operations`);
                                 style={{ width: '100%', minHeight: '60px', padding: '8px', border: '1px solid #C8CED6', borderRadius: '4px', fontSize: '14px', fontFamily: "'Interstate', sans-serif", resize: 'vertical' }} 
                               />
                             ) : (
-                              <p style={{ margin: 0, fontSize: '14px', lineHeight: 1.5, fontFamily: "'Interstate', sans-serif" }}>{action}</p>
+                              <>
+                                <p style={{ margin: '0 0 12px', fontSize: '14px', lineHeight: 1.5, fontFamily: "'Interstate', sans-serif" }}>{action}</p>
+                                
+                                {/* Request Feedback Button */}
+                                {(() => {
+                                  const teamMemberCount = (persona.teamMembers || []).length;
+                                  return (
+                                    <button
+                                      onClick={() => {
+                                        if (teamMemberCount === 0) return;
+                                        setShowSurveyRequestModal({ stepId: selectedStep.id, personaId: persona.id });
+                                      }}
+                                      disabled={teamMemberCount === 0}
+                                      style={{
+                                        width: '100%',
+                                        padding: '8px 12px',
+                                        background: teamMemberCount === 0 ? '#F4F5F7' : '#5B8A9A',
+                                        color: teamMemberCount === 0 ? '#A9B2BE' : '#FFF',
+                                        border: teamMemberCount === 0 ? '1px solid #E4E7EB' : 'none',
+                                        borderRadius: '6px',
+                                        cursor: teamMemberCount === 0 ? 'not-allowed' : 'pointer',
+                                        fontFamily: "'Interstate', sans-serif",
+                                        fontSize: '12px',
+                                        fontWeight: 600,
+                                        display: 'flex',
+                                        alignItems: 'center',
+                                        justifyContent: 'center',
+                                        gap: '8px',
+                                        transition: 'background 0.2s'
+                                      }}
+                                      onMouseEnter={(e) => {
+                                        if (teamMemberCount > 0) {
+                                          e.currentTarget.style.background = '#4A7485';
+                                        }
+                                      }}
+                                      onMouseLeave={(e) => {
+                                        if (teamMemberCount > 0) {
+                                          e.currentTarget.style.background = '#5B8A9A';
+                                        }
+                                      }}
+                                      title={teamMemberCount === 0 ? 'Add team members to this role first' : `Request feedback from ${teamMemberCount} team ${teamMemberCount === 1 ? 'member' : 'members'}`}
+                                    >
+                                      <span style={{ fontSize: '14px' }}>📧</span>
+                                      <span>Request Feedback</span>
+                                      <span style={{ 
+                                        padding: '2px 8px', 
+                                        background: teamMemberCount === 0 ? '#E4E7EB' : 'rgba(255,255,255,0.2)', 
+                                        borderRadius: '10px', 
+                                        fontSize: '11px',
+                                        fontWeight: 700
+                                      }}>
+                                        {teamMemberCount} {teamMemberCount === 1 ? 'person' : 'people'}
+                                      </span>
+                                    </button>
+                                  );
+                                })()}
+                              </>
                             )}
                           </div>
                         );
@@ -11136,6 +11998,18 @@ FATHOM - Journey intelligence for modern operations`);
           {showAddStage && <AddStageModal onAdd={addStage} onClose={() => setShowAddStage(false)} />}
           {addStepTo && <AddStepModal stageId={addStepTo.id} stageName={addStepTo.name} personas={config.personas} onAdd={addStep} onClose={() => setAddStepTo(null)} />}
           {showSalarySettings && <SalarySettingsModal personas={config.personas} config={config} onUpdate={updateSalaries} onClose={() => setShowSalarySettings(false)} />}
+          {showSurveyRequestModal && (
+            <SurveyRequestModal 
+              stepId={showSurveyRequestModal.stepId}
+              personaId={showSurveyRequestModal.personaId}
+              config={config}
+              onClose={() => setShowSurveyRequestModal(null)}
+              onSend={(surveyRequest) => {
+                // Phase 3: Implement actual email sending
+                console.log('Survey request:', surveyRequest);
+              }}
+            />
+          )}
           {showShareModal && isSupabaseMode && (
             <ShareModal 
               mapId={mapId}
