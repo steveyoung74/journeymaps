@@ -546,34 +546,80 @@
     }
     
     // Submit survey
-    function submitSurvey() {
+    async function submitSurvey() {
       const feedback = collectFeedback();
       const result = decodeSurveyToken();
       
-      // In production, this would save to Supabase
-      const surveyResponse = {
-        token: result.data,
-        feedback,
-        submittedAt: new Date().toISOString()
-      };
+      if (!result.success) {
+        alert('Invalid survey token');
+        return;
+      }
       
-      console.log('Survey response:', surveyResponse);
+      // Show loading state
+      const submitBtn = document.querySelector('.submit-btn');
+      const originalText = submitBtn.textContent;
+      submitBtn.disabled = true;
+      submitBtn.textContent = 'Submitting...';
       
-      // Store in localStorage for now
-      const responses = JSON.parse(localStorage.getItem('surveyResponses') || '[]');
-      responses.push(surveyResponse);
-      localStorage.setItem('surveyResponses', JSON.stringify(responses));
-      
-      const content = document.getElementById('content');
-      content.innerHTML = `
-        <div class="success-box" style="margin-top: 24px;">
-          <h2>✅ Thank You!</h2>
-          <p style="font-size: 15px; margin-top: 12px;">Your feedback has been submitted successfully.</p>
-          <p style="font-size: 13px; margin-top: 16px; opacity: 0.8;">
-            Your insights will help improve this process. You can now close this window.
-          </p>
-        </div>
-      `;
+      try {
+        // Call Supabase Edge Function
+        const response = await fetch(`${SUPABASE_URL}/functions/v1/submit-survey`, {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+            'Authorization': `Bearer ${SUPABASE_ANON_KEY}`
+          },
+          body: JSON.stringify({
+            token: result.data,
+            feedback
+          })
+        });
+        
+        const data = await response.json();
+        
+        if (!response.ok) {
+          // Handle specific errors
+          if (data.alreadySubmitted) {
+            throw new Error('You have already submitted feedback for this survey.');
+          }
+          throw new Error(data.error || 'Failed to submit survey');
+        }
+        
+        // Success! Show thank you message
+        const content = document.getElementById('content');
+        content.innerHTML = `
+          <div class="success-box" style="margin-top: 24px;">
+            <h2>✅ Thank You!</h2>
+            <p style="font-size: 15px; margin-top: 12px;">Your feedback has been submitted successfully.</p>
+            <p style="font-size: 13px; margin-top: 16px; opacity: 0.8;">
+              Reference: ${data.responseId}
+            </p>
+            <p style="font-size: 13px; margin-top: 8px; opacity: 0.8;">
+              Your insights will help improve this process. You can now close this window.
+            </p>
+          </div>
+        `;
+        
+        // Also store in localStorage for local reference
+        const responses = JSON.parse(localStorage.getItem('surveyResponses') || '[]');
+        responses.push({
+          responseId: data.responseId,
+          token: result.data,
+          feedback,
+          submittedAt: new Date().toISOString()
+        });
+        localStorage.setItem('surveyResponses', JSON.stringify(responses));
+        
+      } catch (error) {
+        console.error('Submission error:', error);
+        
+        // Show error to user
+        alert(`Failed to submit survey: ${error.message}\n\nPlease try again or contact support if the problem persists.`);
+        
+        // Reset button
+        submitBtn.disabled = false;
+        submitBtn.textContent = originalText;
+      }
     }
     
     // Initialize
