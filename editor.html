@@ -6232,12 +6232,16 @@ FATHOM - Journey intelligence for modern operations`);
     }
 
     // Structure Configuration Panel
-    function StructurePanel({ config, onMoveStage, onMoveStep, onInsertStage, onInsertStep, onRemoveStage, onRemoveStep, onClose }) {
+    function StructurePanel({ config, onMoveStage, onMoveStep, onInsertStage, onInsertStep, onRemoveStage, onRemoveStep, onClose, onRenameStage, onRenameStep }) {
       const [addingStageAfter, setAddingStageAfter] = useState(null); // index or -1 for start
       const [addingStepIn, setAddingStepIn] = useState(null); // { stageId, afterIndex }
       const [newStageName, setNewStageName] = useState('');
       const [newStepName, setNewStepName] = useState('');
       const [expandedStages, setExpandedStages] = useState(config.stages.map(s => s.id));
+      const [editingStage, setEditingStage] = useState(null); // stageId
+      const [editingStageName, setEditingStageName] = useState('');
+      const [editingStepId, setEditingStepId] = useState(null); // stepId
+      const [editingStepName, setEditingStepName] = useState('');
 
       const toggleExpand = (stageId) => {
         setExpandedStages(prev => 
@@ -6261,6 +6265,32 @@ FATHOM - Journey intelligence for modern operations`);
           setNewStepName('');
           setAddingStepIn(null);
         }
+      };
+
+      const startEditingStage = (stageId, currentName) => {
+        setEditingStage(stageId);
+        setEditingStageName(currentName);
+      };
+
+      const saveStageEdit = (stageId) => {
+        if (editingStageName.trim() && onRenameStage) {
+          onRenameStage(stageId, editingStageName.trim());
+        }
+        setEditingStage(null);
+        setEditingStageName('');
+      };
+
+      const startEditingStep = (stepId, currentName) => {
+        setEditingStepId(stepId);
+        setEditingStepName(currentName);
+      };
+
+      const saveStepEdit = (stageId, stepId) => {
+        if (editingStepName.trim() && onRenameStep) {
+          onRenameStep(stageId, stepId, editingStepName.trim());
+        }
+        setEditingStepId(null);
+        setEditingStepName('');
       };
 
       return (
@@ -6337,7 +6367,47 @@ FATHOM - Journey intelligence for modern operations`);
                     >
                       {expandedStages.includes(stage.id) ? '▼' : '▶'}
                     </button>
-                    <span style={{ fontWeight: 500, flex: 1 }}>Stage {stageIndex + 1}: {stage.name}</span>
+                    {editingStage === stage.id ? (
+                      <input
+                        type="text"
+                        value={editingStageName}
+                        onChange={(e) => setEditingStageName(e.target.value)}
+                        onBlur={() => saveStageEdit(stage.id)}
+                        onKeyDown={(e) => {
+                          if (e.key === 'Enter') saveStageEdit(stage.id);
+                          if (e.key === 'Escape') { setEditingStage(null); setEditingStageName(''); }
+                        }}
+                        autoFocus
+                        style={{
+                          flex: 1,
+                          background: 'rgba(255,255,255,0.2)',
+                          border: '1px solid rgba(255,255,255,0.4)',
+                          borderRadius: '4px',
+                          padding: '4px 8px',
+                          color: '#FFF',
+                          fontSize: '14px',
+                          fontWeight: 500,
+                          fontFamily: "'Interstate', sans-serif"
+                        }}
+                      />
+                    ) : (
+                      <span 
+                        style={{ 
+                          fontWeight: 500, 
+                          flex: 1, 
+                          cursor: 'pointer',
+                          padding: '4px 8px',
+                          borderRadius: '4px',
+                          transition: 'background 0.15s'
+                        }}
+                        onClick={() => startEditingStage(stage.id, stage.name)}
+                        onMouseEnter={(e) => e.currentTarget.style.background = 'rgba(255,255,255,0.15)'}
+                        onMouseLeave={(e) => e.currentTarget.style.background = 'transparent'}
+                        title="Click to rename stage"
+                      >
+                        Stage {stageIndex + 1}: {stage.name}
+                      </span>
+                    )}
                     <span style={{ fontSize: '12px', opacity: 0.8 }}>{stage.steps.length} steps</span>
                     <div style={{ display: 'flex', gap: '4px' }}>
                       <button 
@@ -6398,7 +6468,47 @@ FATHOM - Journey intelligence for modern operations`);
                           }}>
                             <span style={{ color: '#8A95A5', fontSize: '12px', minWidth: '36px' }}>{stageIndex + 1}.{stepIndex + 1}</span>
                             {step.isHardCheckpoint && <span style={{ fontSize: '12px' }}>🚧</span>}
-                            <span style={{ flex: 1, fontSize: '14px', color: step.isHardCheckpoint ? '#B84A5A' : '#3D4A5C' }}>{step.name}</span>
+                            {editingStepId === step.id ? (
+                              <input
+                                type="text"
+                                value={editingStepName}
+                                onChange={(e) => setEditingStepName(e.target.value)}
+                                onBlur={() => saveStepEdit(stage.id, step.id)}
+                                onKeyDown={(e) => {
+                                  if (e.key === 'Enter') saveStepEdit(stage.id, step.id);
+                                  if (e.key === 'Escape') { setEditingStepId(null); setEditingStepName(''); }
+                                }}
+                                autoFocus
+                                style={{
+                                  flex: 1,
+                                  background: '#FFF',
+                                  border: '1px solid #5B8A9A',
+                                  borderRadius: '4px',
+                                  padding: '4px 8px',
+                                  fontSize: '14px',
+                                  color: step.isHardCheckpoint ? '#B84A5A' : '#3D4A5C',
+                                  fontFamily: "'Interstate', sans-serif"
+                                }}
+                              />
+                            ) : (
+                              <span 
+                                style={{ 
+                                  flex: 1, 
+                                  fontSize: '14px', 
+                                  color: step.isHardCheckpoint ? '#B84A5A' : '#3D4A5C',
+                                  cursor: 'pointer',
+                                  padding: '4px 8px',
+                                  borderRadius: '4px',
+                                  transition: 'background 0.15s'
+                                }}
+                                onClick={() => startEditingStep(step.id, step.name)}
+                                onMouseEnter={(e) => e.currentTarget.style.background = '#E9EEF4'}
+                                onMouseLeave={(e) => e.currentTarget.style.background = 'transparent'}
+                                title="Click to rename step"
+                              >
+                                {step.name}
+                              </span>
+                            )}
                             <div style={{ display: 'flex', gap: '4px' }}>
                               <button 
                                 onClick={() => onMoveStep(stage.id, step.id, 'up')} 
@@ -7547,6 +7657,31 @@ FATHOM - Journey intelligence for modern operations`);
             steps.splice(afterIndex + 1, 0, newStep);
             return { ...stage, steps };
           })
+        }));
+      }, []);
+
+      const renameStage = useCallback((stageId, newName) => {
+        setConfig(prev => ({
+          ...prev,
+          stages: prev.stages.map(stage =>
+            stage.id === stageId ? { ...stage, name: newName } : stage
+          )
+        }));
+      }, []);
+
+      const renameStep = useCallback((stageId, stepId, newName) => {
+        setConfig(prev => ({
+          ...prev,
+          stages: prev.stages.map(stage =>
+            stage.id === stageId
+              ? {
+                  ...stage,
+                  steps: stage.steps.map(step =>
+                    step.id === stepId ? { ...step, name: newName } : step
+                  )
+                }
+              : stage
+          )
         }));
       }, []);
 
@@ -10857,6 +10992,8 @@ FATHOM - Journey intelligence for modern operations`);
             onInsertStage={insertStageAt}
             onInsertStep={insertStepAt}
             onRemoveStage={removeStage}
+            onRenameStage={renameStage}
+            onRenameStep={renameStep}
             onRemoveStep={(stageId, stepId) => {
               setConfig(prev => ({
                 ...prev,
