@@ -6,17 +6,10 @@
   <title>Survey Response - FATHOM</title>
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
   <style>
-    @font-face {
-      font-family: 'Interstate';
-      src: url('https://steveyoung74.github.io/journeymaps/fonts/Interstate-regular.ttf') format('truetype');
-      font-weight: 400;
-      font-style: normal;
-    }
-    
     * { box-sizing: border-box; margin: 0; padding: 0; }
     
     body {
-      font-family: 'Interstate', -apple-system, sans-serif;
+      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', sans-serif;
       background: #F4F5F7;
       padding: 20px;
       color: #192B45;
@@ -166,7 +159,7 @@
       border: 2px solid #E4E7EB;
       border-radius: 6px;
       font-size: 14px;
-      font-family: 'Interstate', sans-serif;
+      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
       resize: vertical;
     }
     
@@ -185,7 +178,7 @@
       font-size: 15px;
       font-weight: 600;
       cursor: pointer;
-      font-family: 'Interstate', sans-serif;
+      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
       margin-top: 24px;
       transition: background 0.2s;
     }
@@ -259,11 +252,17 @@
   </div>
   
   <script>
-    // Supabase configuration
+    // Supabase configuration - only initialize if not already present
     const SUPABASE_URL = 'https://ktctvaeulualihczwnrl.supabase.co';
     const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Imt0Y3R2YWV1bHVhbGloY3p3bnJsIiwicm9sZSI6ImFub24iLCJpYXQiOjE3Njc0MzczNjksImV4cCI6MjA4MzAxMzM2OX0.qnvrAUvUhp3hgu37YnahR0Ql-CKR0zcDt3sKWaMq95I';
     
-    const supabase = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+    let supabaseClient;
+    try {
+      supabaseClient = window.supabase?.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+    } catch (e) {
+      console.log('Supabase not available or already initialized');
+      supabaseClient = null;
+    }
     
     // Decode survey token from URL
     function decodeSurveyToken() {
@@ -290,16 +289,17 @@
     
     // Load journey data from Supabase or localStorage
     async function loadJourneyData(mapId) {
-      // First try Supabase if we have a real mapId
-      if (mapId && mapId !== 'unknown') {
+      // First try Supabase if we have a real mapId and supabase is available
+      if (supabaseClient && mapId && mapId !== 'unknown') {
         try {
-          const { data, error } = await supabase
+          const { data, error } = await supabaseClient
             .from('journey_maps')
             .select('config')
             .eq('id', mapId)
             .single();
           
           if (!error && data) {
+            console.log('Loaded from Supabase:', data.config.meta?.title);
             return data.config;
           }
         } catch (e) {
@@ -308,10 +308,14 @@
       }
       
       // Fall back to localStorage
+      console.log('Loading from localStorage...');
       const storedMaps = JSON.parse(localStorage.getItem('journeyMaps') || '[]');
+      console.log('Found maps in localStorage:', storedMaps.length);
+      
       if (storedMaps.length > 0) {
         // If mapId is unknown, use the first map
         if (mapId === 'unknown') {
+          console.log('Using first map from localStorage');
           return storedMaps[0];
         }
         // Otherwise try to find the specific map
@@ -319,6 +323,7 @@
         return map || storedMaps[0];
       }
       
+      console.error('No journey data found');
       return null;
     }
     
