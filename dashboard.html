@@ -3260,6 +3260,10 @@
                                     <span className="card-options-item-icon">↗️</span>
                                     Open in new tab
                                   </button>
+                                  <button className="card-options-item" onClick={(e) => { e.stopPropagation(); window.location.href = `responses-review.html?id=${map.id}`; }}>
+                                    <span className="card-options-item-icon">📊</span>
+                                    Review Responses
+                                  </button>
                                   <div className="card-options-divider"></div>
                                   <button className="card-options-item" onClick={(e) => toggleFavourite(map.id, e)}>
                                     <span className="card-options-item-icon">{map.favourite ? '★' : '☆'}</span>
