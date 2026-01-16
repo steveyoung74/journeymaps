@@ -2804,7 +2804,8 @@
 
     // Journey Settings Panel - Configure cost model and event settings
     function JourneySettingsPanel({ config, setConfig, onClose }) {
-      const isEventMode = config.meta?.costModel === 'event';
+      const costModel = config.meta?.costModel || 'client';
+      const isEventMode = costModel === 'event';
       const [localEventConfig, setLocalEventConfig] = useState(config.meta?.eventConfig || {
         capacity: 1000,
         durationMinutes: 180,
@@ -2826,7 +2827,7 @@
 
       const toggleCostModel = (model) => {
         if (config.meta?.eventConfig && model !== config.meta?.costModel) {
-          if (!confirm('Changing the cost model will affect all cost calculations. Continue?')) {
+          if (!confirm('Changing the cost model will affect how costs are calculated. Continue?')) {
             return;
           }
         }
@@ -2854,7 +2855,7 @@
             background: '#FFF',
             borderRadius: '12px',
             padding: '32px',
-            width: '640px',
+            width: '700px',
             maxWidth: '95vw',
             maxHeight: '90vh',
             overflow: 'auto'
@@ -2872,53 +2873,100 @@
               <label style={{ display: 'block', fontSize: '12px', fontWeight: 600, color: '#3D4A5C', marginBottom: '12px', textTransform: 'uppercase', letterSpacing: '0.5px', fontFamily: "'Interstate', sans-serif" }}>
                 Cost Model
               </label>
-              <div style={{ display: 'flex', gap: '12px' }}>
+              <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: '12px' }}>
+                {/* Client Journey Option */}
                 <button
-                  onClick={() => toggleCostModel('per-journey')}
+                  onClick={() => toggleCostModel('client')}
                   style={{
-                    flex: 1,
                     padding: '16px',
-                    border: `2px solid ${!isEventMode ? '#2D8A6E' : '#E4E7EB'}`,
+                    border: `2px solid ${costModel === 'client' ? '#5B8A9A' : '#E4E7EB'}`,
                     borderRadius: '8px',
-                    background: !isEventMode ? 'rgba(45, 138, 110, 0.08)' : '#FFF',
+                    background: costModel === 'client' ? 'rgba(91, 138, 154, 0.08)' : '#FFF',
                     cursor: 'pointer',
                     textAlign: 'left',
                     fontFamily: "'Interstate', sans-serif"
                   }}
                 >
                   <div style={{ fontSize: '16px', fontWeight: 600, color: '#1A2332', marginBottom: '4px' }}>
-                    🚶 Per-Journey
+                    🚶 Client
                   </div>
                   <div style={{ fontSize: '12px', color: '#6E7B8C', lineHeight: 1.4 }}>
-                    Sequential process where one client flows through. Staff time directly attributed per journey.
+                    Customer flows through sequentially. Cost per client.
                   </div>
-                  {!isEventMode && (
-                    <div style={{ marginTop: '8px', fontSize: '11px', color: '#2D8A6E', fontWeight: 600 }}>✓ SELECTED</div>
+                  {costModel === 'client' && (
+                    <div style={{ marginTop: '8px', fontSize: '11px', color: '#5B8A9A', fontWeight: 600 }}>✓ SELECTED</div>
                   )}
                 </button>
+
+                {/* Project/Pursuit Option */}
+                <button
+                  onClick={() => toggleCostModel('project')}
+                  style={{
+                    padding: '16px',
+                    border: `2px solid ${costModel === 'project' ? '#5A5B8A' : '#E4E7EB'}`,
+                    borderRadius: '8px',
+                    background: costModel === 'project' ? 'rgba(90, 91, 138, 0.08)' : '#FFF',
+                    cursor: 'pointer',
+                    textAlign: 'left',
+                    fontFamily: "'Interstate', sans-serif"
+                  }}
+                >
+                  <div style={{ fontSize: '16px', fontWeight: 600, color: '#1A2332', marginBottom: '4px' }}>
+                    🎯 Project
+                  </div>
+                  <div style={{ fontSize: '12px', color: '#6E7B8C', lineHeight: 1.4 }}>
+                    Internal pursuit or delivery. Cost per project.
+                  </div>
+                  {costModel === 'project' && (
+                    <div style={{ marginTop: '8px', fontSize: '11px', color: '#5A5B8A', fontWeight: 600 }}>✓ SELECTED</div>
+                  )}
+                </button>
+
+                {/* Event/Batch Option */}
                 <button
                   onClick={() => toggleCostModel('event')}
                   style={{
-                    flex: 1,
                     padding: '16px',
-                    border: `2px solid ${isEventMode ? '#C4942A' : '#E4E7EB'}`,
+                    border: `2px solid ${costModel === 'event' ? '#C4942A' : '#E4E7EB'}`,
                     borderRadius: '8px',
-                    background: isEventMode ? 'rgba(196, 148, 42, 0.08)' : '#FFF',
+                    background: costModel === 'event' ? 'rgba(196, 148, 42, 0.08)' : '#FFF',
                     cursor: 'pointer',
                     textAlign: 'left',
                     fontFamily: "'Interstate', sans-serif"
                   }}
                 >
                   <div style={{ fontSize: '16px', fontWeight: 600, color: '#1A2332', marginBottom: '4px' }}>
-                    🎪 Event/Batch
+                    🎪 Event
                   </div>
                   <div style={{ fontSize: '12px', color: '#6E7B8C', lineHeight: 1.4 }}>
-                    Fixed capacity event where many participants experience simultaneously. Staff deployed regardless of attendance.
+                    Fixed capacity, many participants. Cost per event.
                   </div>
-                  {isEventMode && (
+                  {costModel === 'event' && (
                     <div style={{ marginTop: '8px', fontSize: '11px', color: '#C4942A', fontWeight: 600 }}>✓ SELECTED</div>
                   )}
                 </button>
+              </div>
+              
+              {/* Extended descriptions */}
+              <div style={{ marginTop: '16px', padding: '16px', background: '#F4F5F7', borderRadius: '8px', fontSize: '13px', color: '#556275', lineHeight: 1.6, fontFamily: "'Interstate', sans-serif" }}>
+                {costModel === 'client' && (
+                  <>
+                    <strong style={{ color: '#1A2332' }}>Client Journey:</strong> One customer at a time flows through your process. Staff time is directly attributed per journey. 
+                    <br/><em>Examples: Client onboarding, mortgage application, wealth management, customer support case.</em>
+                  </>
+                )}
+                {costModel === 'project' && (
+                  <>
+                    <strong style={{ color: '#1A2332' }}>Project/Pursuit:</strong> Your team pursues or delivers a project with multiple workstreams. Costs are project-based, not per-participant.
+                    <br/><em>Examples: Construction tender, RFP response, deal pursuit, product development, consulting engagement.</em>
+                  </>
+                )}
+                {costModel === 'event' && (
+                  <>
+                    <strong style={{ color: '#1A2332' }}>Event/Batch:</strong> Fixed capacity event where many participants experience simultaneously. Staff deployed regardless of attendance.
+                    <br/><em>Examples: Stadium matchday, conference, concert, training session, batch processing.</em>
+                  </>
+                )}
               </div>
             </div>
 
@@ -6631,6 +6679,16 @@ FATHOM - Journey intelligence for modern operations`);
           data.meta = { title: mapTitle || 'Journey Map', version: '1.0' };
         }
         
+        // Backward compatibility: migrate 'per-journey' to 'client'
+        if (data.meta.costModel === 'per-journey') {
+          data.meta.costModel = 'client';
+        }
+        
+        // Default to 'client' if no costModel specified
+        if (!data.meta.costModel) {
+          data.meta.costModel = 'client';
+        }
+        
         // Ensure funnel object exists
         if (!data.funnel) {
           data.funnel = { enabled: true, initialVolume: 1000, periodLabel: 'per quarter' };
@@ -8232,6 +8290,59 @@ FATHOM - Journey intelligence for modern operations`);
                       </div>
                     )}
                   </h1>
+                  {/* Cost Model Badge */}
+                  {config.meta?.costModel === 'event' ? (
+                    <span style={{
+                      background: '#C4942A',
+                      color: '#FFF',
+                      padding: '3px 10px',
+                      borderRadius: '12px',
+                      fontSize: '11px',
+                      fontWeight: 600,
+                      textTransform: 'uppercase',
+                      letterSpacing: '0.5px',
+                      flexShrink: 0,
+                      display: 'flex',
+                      alignItems: 'center',
+                      gap: '4px'
+                    }}>
+                      🎪 Event
+                    </span>
+                  ) : config.meta?.costModel === 'project' ? (
+                    <span style={{
+                      background: '#5A5B8A',
+                      color: '#FFF',
+                      padding: '3px 10px',
+                      borderRadius: '12px',
+                      fontSize: '11px',
+                      fontWeight: 600,
+                      textTransform: 'uppercase',
+                      letterSpacing: '0.5px',
+                      flexShrink: 0,
+                      display: 'flex',
+                      alignItems: 'center',
+                      gap: '4px'
+                    }}>
+                      🎯 Project
+                    </span>
+                  ) : (
+                    <span style={{
+                      background: '#5B8A9A',
+                      color: '#FFF',
+                      padding: '3px 10px',
+                      borderRadius: '12px',
+                      fontSize: '11px',
+                      fontWeight: 600,
+                      textTransform: 'uppercase',
+                      letterSpacing: '0.5px',
+                      flexShrink: 0,
+                      display: 'flex',
+                      alignItems: 'center',
+                      gap: '4px'
+                    }}>
+                      🚶 Client
+                    </span>
+                  )}
                   {/* Read-only badge */}
                   {isSupabaseMode && authChecked && !canEdit && (
                     <span style={{
