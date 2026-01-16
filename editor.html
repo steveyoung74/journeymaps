@@ -10149,25 +10149,26 @@ FATHOM - Journey intelligence for modern operations`);
                             { value: 1.5, label: 'High', emoji: '😰', desc: '+50% demand' },
                             { value: 2.0, label: 'Extreme', emoji: '🔥', desc: '2× demand' }
                           ].map(level => {
-                            const currentFactor = selectedStep.eventCosts?.peakLoadFactor || 1.0;
+                            const currentFactor = (editingStep || selectedStep).eventCosts?.peakLoadFactor || 1.0;
                             const isSelected = Math.abs(currentFactor - level.value) < 0.01;
                             return (
                               <button
                                 key={level.value}
                                 onClick={() => {
-                                  if (editMode) {
-                                    const newEventCosts = { ...(selectedStep.eventCosts || {}), peakLoadFactor: level.value };
-                                    updateStep(selectedStep.stageId, selectedStep.id, { eventCosts: newEventCosts });
-                                    setSelectedStep(prev => ({ ...prev, eventCosts: newEventCosts }));
+                                  if (editingStep) {
+                                    setEditingStep(prev => ({
+                                      ...prev,
+                                      eventCosts: { ...(prev.eventCosts || {}), peakLoadFactor: level.value }
+                                    }));
                                   }
                                 }}
-                                disabled={!editMode}
+                                disabled={!editingStep}
                                 style={{
                                   padding: '10px 14px',
                                   border: `2px solid ${isSelected ? '#8B6914' : '#E4C87A'}`,
                                   borderRadius: '8px',
                                   background: isSelected ? '#FFF' : 'rgba(255,255,255,0.5)',
-                                  cursor: editMode ? 'pointer' : 'default',
+                                  cursor: editingStep ? 'pointer' : 'default',
                                   fontFamily: "'Interstate', sans-serif",
                                   fontSize: '12px',
                                   display: 'flex',
@@ -10197,29 +10198,30 @@ FATHOM - Journey intelligence for modern operations`);
                         </div>
                         <div style={{ display: 'flex', flexWrap: 'wrap', gap: '8px' }}>
                           {config.personas.filter(p => !p.isExternal).map(persona => {
-                            const activeRoles = selectedStep.eventCosts?.activeRoles || [];
+                            const activeRoles = (editingStep || selectedStep).eventCosts?.activeRoles || [];
                             const isActive = activeRoles.includes(persona.id);
                             return (
                               <button
                                 key={persona.id}
                                 onClick={() => {
-                                  if (editMode) {
+                                  if (editingStep) {
                                     const newActiveRoles = isActive 
                                       ? activeRoles.filter(id => id !== persona.id)
                                       : [...activeRoles, persona.id];
-                                    const newEventCosts = { ...(selectedStep.eventCosts || {}), activeRoles: newActiveRoles };
-                                    updateStep(selectedStep.stageId, selectedStep.id, { eventCosts: newEventCosts });
-                                    setSelectedStep(prev => ({ ...prev, eventCosts: newEventCosts }));
+                                    setEditingStep(prev => ({
+                                      ...prev,
+                                      eventCosts: { ...(prev.eventCosts || {}), activeRoles: newActiveRoles }
+                                    }));
                                   }
                                 }}
-                                disabled={!editMode}
+                                disabled={!editingStep}
                                 style={{
                                   padding: '8px 12px',
                                   border: `2px solid ${isActive ? persona.color : '#E4C87A'}`,
                                   borderRadius: '20px',
                                   background: isActive ? persona.color : 'rgba(255,255,255,0.5)',
                                   color: isActive ? '#FFF' : '#6E7B8C',
-                                  cursor: editMode ? 'pointer' : 'default',
+                                  cursor: editingStep ? 'pointer' : 'default',
                                   fontFamily: "'Interstate', sans-serif",
                                   fontSize: '12px',
                                   fontWeight: 500,
@@ -10248,15 +10250,16 @@ FATHOM - Journey intelligence for modern operations`);
                         <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '12px' }}>
                           <div>
                             <label style={{ display: 'block', fontFamily: "'Interstate', sans-serif", fontSize: '10px', color: '#8A95A5', marginBottom: '4px' }}>Fixed Cost (£)</label>
-                            {editMode ? (
+                            {editingStep ? (
                               <input
                                 type="number"
                                 step="10"
-                                value={selectedStep.eventCosts?.fixedCosts || ''}
+                                value={editingStep.eventCosts?.fixedCosts || ''}
                                 onChange={(e) => {
-                                  const newEventCosts = { ...(selectedStep.eventCosts || {}), fixedCosts: parseFloat(e.target.value) || 0 };
-                                  updateStep(selectedStep.stageId, selectedStep.id, { eventCosts: newEventCosts });
-                                  setSelectedStep(prev => ({ ...prev, eventCosts: newEventCosts }));
+                                  setEditingStep(prev => ({
+                                    ...prev,
+                                    eventCosts: { ...(prev.eventCosts || {}), fixedCosts: parseFloat(e.target.value) || 0 }
+                                  }));
                                 }}
                                 placeholder="0"
                                 style={{ width: '100%', padding: '8px', border: '1px solid #E4C87A', borderRadius: '6px', fontSize: '13px', background: '#FFF' }}
@@ -10272,15 +10275,16 @@ FATHOM - Journey intelligence for modern operations`);
                           </div>
                           <div>
                             <label style={{ display: 'block', fontFamily: "'Interstate', sans-serif", fontSize: '10px', color: '#8A95A5', marginBottom: '4px' }}>Variable Cost/Head (£)</label>
-                            {editMode ? (
+                            {editingStep ? (
                               <input
                                 type="number"
                                 step="0.10"
-                                value={selectedStep.eventCosts?.variableCostPerHead || ''}
+                                value={editingStep.eventCosts?.variableCostPerHead || ''}
                                 onChange={(e) => {
-                                  const newEventCosts = { ...(selectedStep.eventCosts || {}), variableCostPerHead: parseFloat(e.target.value) || 0 };
-                                  updateStep(selectedStep.stageId, selectedStep.id, { eventCosts: newEventCosts });
-                                  setSelectedStep(prev => ({ ...prev, eventCosts: newEventCosts }));
+                                  setEditingStep(prev => ({
+                                    ...prev,
+                                    eventCosts: { ...(prev.eventCosts || {}), variableCostPerHead: parseFloat(e.target.value) || 0 }
+                                  }));
                                 }}
                                 placeholder="0"
                                 style={{ width: '100%', padding: '8px', border: '1px solid #E4C87A', borderRadius: '6px', fontSize: '13px', background: '#FFF' }}
