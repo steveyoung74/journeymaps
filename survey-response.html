@@ -289,9 +289,12 @@
     
     // Load journey data from Supabase or localStorage
     async function loadJourneyData(mapId) {
+      console.log('Loading journey data for mapId:', mapId);
+      
       // First try Supabase if we have a real mapId and supabase is available
-      if (supabaseClient && mapId && mapId !== 'unknown') {
+      if (supabaseClient && mapId && mapId !== 'unknown' && mapId !== 'demo') {
         try {
+          console.log('Attempting Supabase fetch...');
           const { data, error } = await supabaseClient
             .from('journey_maps')
             .select('config')
@@ -299,31 +302,51 @@
             .single();
           
           if (!error && data) {
-            console.log('Loaded from Supabase:', data.config.meta?.title);
+            console.log('✓ Loaded from Supabase:', data.config.meta?.title);
             return data.config;
+          } else if (error) {
+            console.log('Supabase error:', error.message);
           }
         } catch (e) {
-          console.log('Supabase fetch failed, trying localStorage:', e);
+          console.log('Supabase fetch failed:', e.message);
         }
       }
       
-      // Fall back to localStorage
-      console.log('Loading from localStorage...');
+      // Try demo config stored by editor (for testing)
+      console.log('Checking for demo config in localStorage...');
+      const demoConfig = localStorage.getItem('demoJourneyConfig');
+      if (demoConfig) {
+        try {
+          const config = JSON.parse(demoConfig);
+          console.log('✓ Loaded from demo config:', config.meta?.title);
+          return config;
+        } catch (e) {
+          console.log('Failed to parse demo config:', e.message);
+        }
+      }
+      
+      // Fall back to journeyMaps in localStorage
+      console.log('Checking journeyMaps in localStorage...');
       const storedMaps = JSON.parse(localStorage.getItem('journeyMaps') || '[]');
       console.log('Found maps in localStorage:', storedMaps.length);
       
       if (storedMaps.length > 0) {
-        // If mapId is unknown, use the first map
-        if (mapId === 'unknown') {
-          console.log('Using first map from localStorage');
+        // If mapId is unknown or demo, use the first map
+        if (mapId === 'unknown' || mapId === 'demo') {
+          console.log('✓ Using first map from journeyMaps');
           return storedMaps[0];
         }
         // Otherwise try to find the specific map
         const map = storedMaps.find(m => m.meta?.id === mapId);
-        return map || storedMaps[0];
+        if (map) {
+          console.log('✓ Found specific map:', map.meta?.title);
+          return map;
+        }
+        console.log('✓ Using first map as fallback');
+        return storedMaps[0];
       }
       
-      console.error('No journey data found');
+      console.error('✗ No journey data found anywhere');
       return null;
     }
     

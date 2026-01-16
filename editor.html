@@ -4064,7 +4064,13 @@ Powered by FATHOM
           
           // Get mapId from URL or localStorage
           const urlParams = new URLSearchParams(window.location.search);
-          const mapId = urlParams.get('map') || localStorage.getItem('lastMapId') || 'unknown';
+          const mapId = urlParams.get('map') || localStorage.getItem('lastMapId') || config.meta?.id || 'demo';
+          
+          // For demo purposes, store the config so survey page can access it
+          // In production, this would be fetched from Supabase by mapId
+          if (!urlParams.get('map')) {
+            localStorage.setItem('demoJourneyConfig', JSON.stringify(config));
+          }
           
           // Generate emails with survey URLs
           const emails = await sendSurveyEmails(surveyRequest, mapId, config);
