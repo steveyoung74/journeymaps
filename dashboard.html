@@ -2189,6 +2189,20 @@
         return name.split(' ').map(n => n[0]).join('').toUpperCase().slice(0, 2);
       };
       
+      // Helper to get cost model badge info
+      const getCostModelBadge = (costModel) => {
+        // Backward compatibility: treat 'per-journey' as 'client'
+        const normalizedModel = costModel === 'per-journey' ? 'client' : (costModel || 'client');
+        
+        if (normalizedModel === 'event') {
+          return { icon: '🎪', label: 'EVENT', color: '#C4942A', bg: 'rgba(196, 148, 42, 0.1)' };
+        } else if (normalizedModel === 'project') {
+          return { icon: '🎯', label: 'PROJECT', color: '#5A5B8A', bg: 'rgba(90, 91, 138, 0.1)' };
+        } else {
+          return { icon: '🚶', label: 'CLIENT', color: '#5B8A9A', bg: 'rgba(91, 138, 154, 0.1)' };
+        }
+      };
+      
       // Close profile menu and options menu when clicking outside
       useEffect(() => {
         const handleClickOutside = (e) => {
@@ -2221,24 +2235,37 @@
         try {
           const data = await fetchMapsFromSupabase(profile.organisation_id);
           // Transform Supabase data to match existing map structure
-          const transformedMaps = data.map(m => ({
-            id: m.id,
-            title: m.title,
-            description: m.description,
-            journeyType: m.journey_type,
-            template: m.template_source,
-            createdAt: m.created_at,
-            updatedAt: m.updated_at,
-            lastOpenedAt: m.last_opened_at,
-            createdBy: m.created_by,
-            isExample: m.is_example || false,
-            // Config is stored directly in the map
-            config: m.config,
-            // Legacy compatibility
-            favourite: m.config?.favourite || false,
-            locked: m.config?.locked || false,
-            sharedWith: m.config?.sharedWith || []
-          }));
+          const transformedMaps = data.map(m => {
+            // Normalize cost model for backward compatibility
+            let config = m.config;
+            if (config?.meta) {
+              if (config.meta.costModel === 'per-journey') {
+                config.meta.costModel = 'client';
+              }
+              if (!config.meta.costModel) {
+                config.meta.costModel = 'client';
+              }
+            }
+            
+            return {
+              id: m.id,
+              title: m.title,
+              description: m.description,
+              journeyType: m.journey_type,
+              template: m.template_source,
+              createdAt: m.created_at,
+              updatedAt: m.updated_at,
+              lastOpenedAt: m.last_opened_at,
+              createdBy: m.created_by,
+              isExample: m.is_example || false,
+              // Config is stored directly in the map
+              config: config,
+              // Legacy compatibility
+              favourite: config?.favourite || false,
+              locked: config?.locked || false,
+              sharedWith: config?.sharedWith || []
+            };
+          });
           setMaps(transformedMaps);
         } catch (err) {
           console.error('Fetch error:', err);
@@ -3094,11 +3121,34 @@
                         onMouseEnter={e => { e.currentTarget.style.background = 'var(--slate-50)'; }}
                         onMouseLeave={e => { e.currentTarget.style.background = '#FFF'; }}
                       >
-                        <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
-                          <span style={{ fontWeight: '500', color: 'var(--slate-800)' }}>
-                            {map.favourite && <span style={{ marginRight: '4px' }}>⭐</span>}
-                            {map.config?.meta?.title || map.title || 'Untitled'}
-                          </span>
+                        <div style={{ display: 'flex', alignItems: 'center', gap: '10px', flexWrap: 'wrap' }}>
+                          <div style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
+                            <span style={{ fontWeight: '500', color: 'var(--slate-800)' }}>
+                              {map.favourite && <span style={{ marginRight: '4px' }}>⭐</span>}
+                              {map.config?.meta?.title || map.title || 'Untitled'}
+                            </span>
+                            {(() => {
+                              const badge = getCostModelBadge(map.config?.meta?.costModel);
+                              return (
+                                <span style={{ 
+                                  fontSize: '9px', 
+                                  padding: '2px 6px', 
+                                  borderRadius: '8px', 
+                                  background: badge.bg,
+                                  color: badge.color,
+                                  fontWeight: 600,
+                                  textTransform: 'uppercase',
+                                  letterSpacing: '0.3px',
+                                  display: 'inline-flex',
+                                  alignItems: 'center',
+                                  gap: '3px',
+                                  whiteSpace: 'nowrap'
+                                }}>
+                                  {badge.icon} {badge.label}
+                                </span>
+                              );
+                            })()}
+                          </div>
                           {map.config?.meta?.description && (
                             <span style={{ fontSize: '12px', color: 'var(--slate-400)' }}>
                               {map.config.meta.description.substring(0, 40)}{map.config.meta.description.length > 40 ? '...' : ''}
@@ -3259,6 +3309,30 @@
                           <h3 className="journey-card-title">
                             {mapConfigs[map.id]?.meta?.title || map.title}
                           </h3>
+                          
+                          {/* Cost Model Badge */}
+                          {(() => {
+                            const badge = getCostModelBadge(mapConfigs[map.id]?.meta?.costModel);
+                            return (
+                              <div style={{ 
+                                fontSize: '10px', 
+                                padding: '3px 8px', 
+                                borderRadius: '10px', 
+                                background: badge.bg,
+                                color: badge.color,
+                                fontWeight: 600,
+                                textTransform: 'uppercase',
+                                letterSpacing: '0.4px',
+                                display: 'inline-flex',
+                                alignItems: 'center',
+                                gap: '4px',
+                                marginTop: '6px',
+                                width: 'fit-content'
+                              }}>
+                                {badge.icon} {badge.label}
+                              </div>
+                            );
+                          })()}
                         </div>
                         
                         {/* Card body */}
@@ -3783,9 +3857,12 @@
 
     function CreateMapModal({ maps, onClose, onCreated }) {
       const { profile } = useAuth();
-      // Modal mode: 'select', 'wizard', 'customize', 'generating', 'import'
-      const [mode, setMode] = useState('select');
+      // Modal mode: 'cost-model', 'select', 'wizard', 'customize', 'generating', 'import'
+      const [mode, setMode] = useState('cost-model');
       const [wizardStep, setWizardStep] = useState(1);
+      
+      // Cost model selection (NEW - first step)
+      const [selectedCostModel, setSelectedCostModel] = useState('client');
       
       // Template mode state
       const [selectedTemplate, setSelectedTemplate] = useState(null);
@@ -4170,7 +4247,12 @@ RULES:
         // Save to Supabase
         try {
           const mapConfig = {
-            meta: { title: journeyConfig.title, version: '1.0', template: 'ai-generated' },
+            meta: { 
+              title: journeyConfig.title, 
+              version: '1.0', 
+              template: 'ai-generated',
+              costModel: selectedCostModel // Add selected cost model
+            },
             funnel: { enabled: false, initialVolume: 100, periodLabel: 'per month' },
             personas: journeyConfig.personas.map(p => ({
               id: p.id, label: p.label, annualSalary: p.annualSalary || p.salary || 0,
@@ -4218,7 +4300,12 @@ RULES:
           const templateConfig = JSON.parse(JSON.stringify(selectedTemplate.config));
           
           const mapConfig = {
-            meta: { title: title.trim(), version: '1.0', template: selectedTemplate.id },
+            meta: { 
+              title: title.trim(), 
+              version: '1.0', 
+              template: selectedTemplate.id,
+              costModel: selectedCostModel // Add selected cost model
+            },
             funnel: { enabled: templateConfig.funnelConfig?.enabled || false, initialVolume: templateConfig.funnelConfig?.startVolume || 100, periodLabel: 'per month' },
             personas: templateConfig.personas.map(p => ({ id: p.id, label: p.name, salary: p.salary, isExternal: p.isExternal, color: p.isExternal ? '#2D8A6E' : '#5B8A9A' })),
             stages: templateConfig.stages.map(stage => ({
@@ -4263,6 +4350,7 @@ RULES:
 
       // Modal title based on mode
       const getTitle = () => {
+        if (mode === 'cost-model') return 'What type of journey?';
         if (mode === 'select') return 'Choose a Template';
         if (mode === 'customize') return 'Customise Your Map';
         if (mode === 'generating') return 'Creating Your Journey';
@@ -4277,7 +4365,7 @@ RULES:
 
       return (
         <div className="modal-overlay" onClick={onClose}>
-          <div className="modal" onClick={e => e.stopPropagation()} style={{ maxWidth: mode === 'generating' ? '400px' : '520px', width: '95%' }}>
+          <div className="modal" onClick={e => e.stopPropagation()} style={{ maxWidth: mode === 'cost-model' ? '760px' : mode === 'generating' ? '400px' : '520px', width: '95%' }}>
             <div className="modal-content" style={{ padding: '32px' }}>
               {/* Header */}
               <div style={{ display: 'flex', alignItems: 'center', gap: '12px', marginBottom: '24px' }}>
@@ -4296,6 +4384,109 @@ RULES:
               </div>
               
               {error && <div style={{ padding: '10px 12px', background: 'var(--error-light)', borderRadius: '8px', marginBottom: '16px', color: 'var(--error)', fontSize: '13px' }}>{error}</div>}
+              
+              {/* COST MODEL SELECTION - FIRST STEP */}
+              {mode === 'cost-model' && (
+                <>
+                  <p style={{ color: 'var(--slate-500)', marginBottom: '28px', fontSize: '14px', lineHeight: 1.5 }}>
+                    This affects how costs are calculated throughout your journey. Choose the model that best fits your process.
+                  </p>
+                  
+                  <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: '16px', marginBottom: '32px' }}>
+                    {/* Client Journey */}
+                    <button
+                      onClick={() => setSelectedCostModel('client')}
+                      style={{
+                        padding: '24px',
+                        border: `2px solid ${selectedCostModel === 'client' ? '#5B8A9A' : 'var(--slate-200)'}`,
+                        borderRadius: '12px',
+                        background: selectedCostModel === 'client' ? 'rgba(91, 138, 154, 0.05)' : '#FFF',
+                        cursor: 'pointer',
+                        textAlign: 'left',
+                        transition: 'all 0.2s',
+                        fontFamily: 'inherit'
+                      }}
+                      onMouseOver={(e) => { if (selectedCostModel !== 'client') e.currentTarget.style.borderColor = '#5B8A9A'; }}
+                      onMouseOut={(e) => { if (selectedCostModel !== 'client') e.currentTarget.style.borderColor = 'var(--slate-200)'; }}
+                    >
+                      <div style={{ fontSize: '32px', marginBottom: '12px' }}>🚶</div>
+                      <div style={{ fontSize: '16px', fontWeight: 600, marginBottom: '6px', color: 'var(--navy-700)' }}>Client Journey</div>
+                      <div style={{ fontSize: '13px', color: 'var(--slate-500)', lineHeight: 1.4, marginBottom: '8px' }}>
+                        Customer flows through sequentially. Cost per client.
+                      </div>
+                      <div style={{ fontSize: '11px', color: 'var(--slate-400)', fontStyle: 'italic' }}>
+                        Client onboarding, mortgage application
+                      </div>
+                      {selectedCostModel === 'client' && (
+                        <div style={{ marginTop: '12px', fontSize: '11px', color: '#5B8A9A', fontWeight: 600 }}>✓ SELECTED</div>
+                      )}
+                    </button>
+
+                    {/* Project Journey */}
+                    <button
+                      onClick={() => setSelectedCostModel('project')}
+                      style={{
+                        padding: '24px',
+                        border: `2px solid ${selectedCostModel === 'project' ? '#5A5B8A' : 'var(--slate-200)'}`,
+                        borderRadius: '12px',
+                        background: selectedCostModel === 'project' ? 'rgba(90, 91, 138, 0.05)' : '#FFF',
+                        cursor: 'pointer',
+                        textAlign: 'left',
+                        transition: 'all 0.2s',
+                        fontFamily: 'inherit'
+                      }}
+                      onMouseOver={(e) => { if (selectedCostModel !== 'project') e.currentTarget.style.borderColor = '#5A5B8A'; }}
+                      onMouseOut={(e) => { if (selectedCostModel !== 'project') e.currentTarget.style.borderColor = 'var(--slate-200)'; }}
+                    >
+                      <div style={{ fontSize: '32px', marginBottom: '12px' }}>🎯</div>
+                      <div style={{ fontSize: '16px', fontWeight: 600, marginBottom: '6px', color: 'var(--navy-700)' }}>Project/Pursuit</div>
+                      <div style={{ fontSize: '13px', color: 'var(--slate-500)', lineHeight: 1.4, marginBottom: '8px' }}>
+                        Internal pursuit or delivery. Cost per project.
+                      </div>
+                      <div style={{ fontSize: '11px', color: 'var(--slate-400)', fontStyle: 'italic' }}>
+                        Construction tender, RFP response, deal
+                      </div>
+                      {selectedCostModel === 'project' && (
+                        <div style={{ marginTop: '12px', fontSize: '11px', color: '#5A5B8A', fontWeight: 600 }}>✓ SELECTED</div>
+                      )}
+                    </button>
+
+                    {/* Event Journey */}
+                    <button
+                      onClick={() => setSelectedCostModel('event')}
+                      style={{
+                        padding: '24px',
+                        border: `2px solid ${selectedCostModel === 'event' ? '#C4942A' : 'var(--slate-200)'}`,
+                        borderRadius: '12px',
+                        background: selectedCostModel === 'event' ? 'rgba(196, 148, 42, 0.05)' : '#FFF',
+                        cursor: 'pointer',
+                        textAlign: 'left',
+                        transition: 'all 0.2s',
+                        fontFamily: 'inherit'
+                      }}
+                      onMouseOver={(e) => { if (selectedCostModel !== 'event') e.currentTarget.style.borderColor = '#C4942A'; }}
+                      onMouseOut={(e) => { if (selectedCostModel !== 'event') e.currentTarget.style.borderColor = 'var(--slate-200)'; }}
+                    >
+                      <div style={{ fontSize: '32px', marginBottom: '12px' }}>🎪</div>
+                      <div style={{ fontSize: '16px', fontWeight: 600, marginBottom: '6px', color: 'var(--navy-700)' }}>Event/Batch</div>
+                      <div style={{ fontSize: '13px', color: 'var(--slate-500)', lineHeight: 1.4, marginBottom: '8px' }}>
+                        Fixed capacity, many participants. Cost per event.
+                      </div>
+                      <div style={{ fontSize: '11px', color: 'var(--slate-400)', fontStyle: 'italic' }}>
+                        Stadium matchday, conference, concert
+                      </div>
+                      {selectedCostModel === 'event' && (
+                        <div style={{ marginTop: '12px', fontSize: '11px', color: '#C4942A', fontWeight: 600 }}>✓ SELECTED</div>
+                      )}
+                    </button>
+                  </div>
+
+                  <div style={{ display: 'flex', gap: '12px', justifyContent: 'flex-end' }}>
+                    <button onClick={onClose} className="btn btn-secondary">Cancel</button>
+                    <button onClick={() => setMode('select')} className="btn btn-primary">Continue →</button>
+                  </div>
+                </>
+              )}
               
               {/* GENERATING STATE */}
               {mode === 'generating' && (
