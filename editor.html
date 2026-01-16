@@ -7323,10 +7323,10 @@ FATHOM - Journey intelligence for modern operations`);
 
       // Step-level edit handlers
       const startStepEdit = useCallback(() => {
-        if (selectedStep && userPermission === 'edit') {
+        if (selectedStep && canEdit) {
           setEditingStep({ ...selectedStep });
         }
-      }, [selectedStep, userPermission]);
+      }, [selectedStep, canEdit]);
 
       const cancelStepEdit = useCallback(() => {
         setEditingStep(null);
@@ -9583,7 +9583,7 @@ FATHOM - Journey intelligence for modern operations`);
                         </button>
                       </>
                     ) : (
-                      userPermission === 'edit' && (
+                      canEdit && (
                         <button 
                           onClick={startStepEdit}
                           style={{ 
