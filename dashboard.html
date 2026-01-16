@@ -3309,14 +3309,17 @@
                           <h3 className="journey-card-title">
                             {mapConfigs[map.id]?.meta?.title || map.title}
                           </h3>
-                          
-                          {/* Cost Model Badge */}
+                        </div>
+                        
+                        {/* Card body */}
+                        <div className="journey-card-body">
+                          {/* Cost Model Badge - moved to white background for readability */}
                           {(() => {
                             const badge = getCostModelBadge(mapConfigs[map.id]?.meta?.costModel);
                             return (
                               <div style={{ 
                                 fontSize: '10px', 
-                                padding: '3px 8px', 
+                                padding: '4px 10px', 
                                 borderRadius: '10px', 
                                 background: badge.bg,
                                 color: badge.color,
@@ -3326,17 +3329,14 @@
                                 display: 'inline-flex',
                                 alignItems: 'center',
                                 gap: '4px',
-                                marginTop: '6px',
+                                marginBottom: '10px',
                                 width: 'fit-content'
                               }}>
                                 {badge.icon} {badge.label}
                               </div>
                             );
                           })()}
-                        </div>
-                        
-                        {/* Card body */}
-                        <div className="journey-card-body">
+                          
                           <p className="journey-card-desc">{mapConfigs[map.id]?.meta?.description || map.description || 'No description'}</p>
                           
                           {metrics && (
