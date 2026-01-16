@@ -6713,6 +6713,7 @@ FATHOM - Journey intelligence for modern operations`);
       
       const [selectedStep, setSelectedStep] = useState(null);
       const [editingStep, setEditingStep] = useState(null);
+      const [editingTitle, setEditingTitle] = useState(false);
       const [activePerspective, setActivePerspective] = useState('all');
       const [showJson, setShowJson] = useState(false);
       const [editMode, setEditMode] = useState(false);
@@ -8022,47 +8023,79 @@ FATHOM - Journey intelligence for modern operations`);
                 
                 {/* Title */}
                 <div className="header-title-wrapper" style={{ minWidth: 0, flex: 1, display: 'flex', alignItems: 'center', gap: '12px' }}>
-                  <h1 style={{ margin: 0, fontSize: isMobile ? '16px' : '18px', fontWeight: 500, letterSpacing: '-0.3px', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>
-                    {editMode ? (
-                      <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
-                        <input 
-                          type="text" 
-                          value={config.meta.title} 
-                          onChange={(e) => setConfig(prev => ({ ...prev, meta: { ...prev.meta, title: e.target.value } }))}
-                          placeholder="Journey Title"
+                  <h1 style={{ margin: 0, fontSize: isMobile ? '16px' : '18px', fontWeight: 500, letterSpacing: '-0.3px', display: 'flex', alignItems: 'center', gap: '8px' }}>
+                    {editingTitle ? (
+                      <input 
+                        type="text" 
+                        value={config.meta.title} 
+                        onChange={(e) => setConfig(prev => ({ ...prev, meta: { ...prev.meta, title: e.target.value } }))}
+                        onBlur={() => {
+                          setEditingTitle(false);
+                          if (isSupabaseMode) {
+                            saveToSupabase();
+                          } else if (isMultiUserMode && gitHubConfig.token) {
+                            saveToGitHub();
+                          }
+                        }}
+                        onKeyDown={(e) => {
+                          if (e.key === 'Enter') {
+                            e.target.blur();
+                          } else if (e.key === 'Escape') {
+                            setEditingTitle(false);
+                          }
+                        }}
+                        autoFocus
+                        placeholder="Journey Title"
+                        style={{ 
+                          background: 'rgba(255,255,255,0.1)', 
+                          border: '1px solid rgba(255,255,255,0.3)', 
+                          borderRadius: '4px', 
+                          padding: '4px 8px', 
+                          fontSize: isMobile ? '16px' : '18px', 
+                          fontWeight: 500, 
+                          letterSpacing: '-0.3px', 
+                          color: '#F4F5F7', 
+                          fontFamily: "'Interstate', sans-serif", 
+                          width: `${Math.max(200, Math.min(400, config.meta.title.length * 10 + 40))}px`,
+                          outline: 'none'
+                        }}
+                      />
+                    ) : (
+                      <div 
+                        style={{ 
+                          display: 'flex', 
+                          alignItems: 'center', 
+                          gap: '8px',
+                          cursor: 'pointer',
+                          padding: '4px 8px',
+                          borderRadius: '4px',
+                          transition: 'background 0.15s'
+                        }}
+                        onMouseEnter={(e) => { 
+                          e.currentTarget.style.background = 'rgba(255,255,255,0.1)'; 
+                          e.currentTarget.querySelector('.edit-pencil').style.opacity = '1';
+                        }}
+                        onMouseLeave={(e) => { 
+                          e.currentTarget.style.background = 'transparent'; 
+                          e.currentTarget.querySelector('.edit-pencil').style.opacity = '0';
+                        }}
+                        onClick={() => setEditingTitle(true)}
+                        title="Click to edit journey name"
+                      >
+                        <span style={{ whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>
+                          {config.meta.title}
+                        </span>
+                        <span 
+                          className="edit-pencil"
                           style={{ 
-                            background: 'rgba(255,255,255,0.1)', 
-                            border: '1px solid rgba(255,255,255,0.3)', 
-                            borderRadius: '4px', 
-                            padding: '4px 8px', 
-                            fontSize: '18px', 
-                            fontWeight: 500, 
-                            letterSpacing: '-0.3px', 
-                            color: '#F4F5F7', 
-                            fontFamily: "'Interstate', sans-serif", 
-                            width: `${Math.max(200, Math.min(400, config.meta.title.length * 10 + 20))}px`
-                          }}
-                        />
-                        <span style={{ fontSize: '12px', color: 'rgba(255,255,255,0.5)' }}>Owner:</span>
-                        <input 
-                          type="text" 
-                          value={config.meta.owner || ''} 
-                          onChange={(e) => setConfig(prev => ({ ...prev, meta: { ...prev.meta, owner: e.target.value } }))}
-                          placeholder="Name"
-                          style={{ 
-                            background: 'rgba(255,255,255,0.1)', 
-                            border: '1px solid rgba(255,255,255,0.3)', 
-                            borderRadius: '4px', 
-                            padding: '4px 8px', 
                             fontSize: '14px', 
-                            fontWeight: 400, 
-                            color: '#F4F5F7', 
-                            fontFamily: "'Interstate', sans-serif", 
-                            width: '150px'
+                            opacity: '0', 
+                            transition: 'opacity 0.15s',
+                            flexShrink: 0
                           }}
-                        />
+                        >✏️</span>
                       </div>
-                    ) : config.meta.title}
+                    )}
                   </h1>
                   {/* Read-only badge */}
                   {isSupabaseMode && authChecked && !canEdit && (
@@ -8185,9 +8218,37 @@ FATHOM - Journey intelligence for modern operations`);
                 </>
               )}
               
-              {/* Right side: Export & Settings - Desktop only (mobile shows in row 2) */}
+              {/* Right side: Configure Structure + Export & Settings - Desktop only (mobile shows in row 2) */}
               {!isMobile && (
               <div className="no-print" style={{ display: 'flex', gap: '6px', alignItems: 'center', flexShrink: 0 }}>
+                {!editMode && (
+                  <>
+                    {/* Configure Structure Button - Always visible */}
+                    <button 
+                      onClick={() => setShowStructurePanel(true)}
+                      style={{ 
+                        padding: '6px 10px', 
+                        background: 'transparent', 
+                        color: '#F4F5F7', 
+                        border: '1px solid rgba(255,255,255,0.4)', 
+                        borderRadius: '4px', 
+                        cursor: 'pointer', 
+                        fontFamily: "'Interstate', sans-serif", 
+                        fontSize: '11px', 
+                        display: 'flex', 
+                        alignItems: 'center', 
+                        gap: '4px',
+                        transition: 'all 0.15s'
+                      }}
+                      onMouseOver={(e) => { e.currentTarget.style.background = 'rgba(255,255,255,0.1)'; }}
+                      onMouseOut={(e) => { e.currentTarget.style.background = 'transparent'; }}
+                      title="Add, remove, and reorder stages and steps"
+                    >
+                      🏗️{!isCompact && ' Structure'}
+                    </button>
+                    <div style={{ width: '1px', height: '20px', background: 'rgba(255,255,255,0.15)' }} />
+                  </>
+                )}
                 {editMode ? (
                   <>
                     <span style={{ fontFamily: "'Interstate', sans-serif", fontSize: '11px', color: '#F4F5F7', opacity: 0.7, marginRight: '4px' }}>✏️ Editing</span>
@@ -8530,7 +8591,7 @@ FATHOM - Journey intelligence for modern operations`);
                   </div>
                 )}
                 
-                {/* GROUP 3: Dashboard */}
+                {/* GROUP 3: Dashboard + Configure Structure */}
                 <button 
                   onClick={() => setShowDashboard(true)} 
                   style={{ 
@@ -8548,6 +8609,26 @@ FATHOM - Journey intelligence for modern operations`);
                   }}
                 >
                   📊
+                </button>
+                
+                <button 
+                  onClick={() => setShowStructurePanel(true)} 
+                  style={{ 
+                    padding: '7px 12px', 
+                    background: 'transparent', 
+                    color: '#F4F5F7', 
+                    border: '1px solid rgba(255,255,255,0.35)', 
+                    borderRadius: '5px',
+                    cursor: 'pointer', 
+                    fontFamily: "'Interstate', sans-serif", 
+                    fontSize: '11px',
+                    display: 'flex',
+                    alignItems: 'center',
+                    gap: '5px'
+                  }}
+                  title="Configure Structure"
+                >
+                  🏗️
                 </button>
                 
                 {/* Settings - pushed to right */}
