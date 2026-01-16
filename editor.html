@@ -8439,16 +8439,6 @@ FATHOM - Journey intelligence for modern operations`);
                         <div onClick={(e) => e.stopPropagation()} style={{ position: 'absolute', top: '100%', right: 0, marginTop: '8px', background: '#FFF', borderRadius: '12px', boxShadow: '0 8px 32px rgba(0,0,0,0.2)', overflow: 'hidden', zIndex: 9999, minWidth: '220px', padding: '8px 0' }}>
                           <div style={{ color: '#6E7B8C', fontSize: '10px', fontWeight: 600, textTransform: 'uppercase', letterSpacing: '0.5px', padding: '8px 16px 4px' }}>Configuration</div>
                           {canEdit && (
-                            <button onClick={() => { setShowSalarySettings(true); setShowSettingsMenu(false); }} style={{ display: 'flex', alignItems: 'center', gap: '12px', width: '100%', padding: '10px 16px', border: 'none', background: 'transparent', cursor: 'pointer', textAlign: 'left', fontFamily: "'Interstate', sans-serif", fontSize: '14px', color: '#3D4A5C', transition: 'background 0.1s' }} onMouseOver={(e) => e.currentTarget.style.background = '#F4F5F7'} onMouseOut={(e) => e.currentTarget.style.background = 'transparent'}>
-                              <span style={{ width: '18px', textAlign: 'center' }}>👥</span> Manage Roles
-                            </button>
-                          )}
-                          {canEdit && (
-                            <button onClick={() => { setShowFunnelSettings(true); setShowSettingsMenu(false); }} style={{ display: 'flex', alignItems: 'center', gap: '12px', width: '100%', padding: '10px 16px', border: 'none', background: 'transparent', cursor: 'pointer', textAlign: 'left', fontFamily: "'Interstate', sans-serif", fontSize: '14px', color: '#3D4A5C', transition: 'background 0.1s' }} onMouseOver={(e) => e.currentTarget.style.background = '#F4F5F7'} onMouseOut={(e) => e.currentTarget.style.background = 'transparent'}>
-                              <span style={{ width: '18px', textAlign: 'center' }}>🔻</span> Funnel Settings
-                            </button>
-                          )}
-                          {canEdit && (
                             <button onClick={() => { setShowJourneySettings(true); setShowSettingsMenu(false); }} style={{ display: 'flex', alignItems: 'center', gap: '12px', width: '100%', padding: '10px 16px', border: 'none', background: 'transparent', cursor: 'pointer', textAlign: 'left', fontFamily: "'Interstate', sans-serif", fontSize: '14px', color: '#3D4A5C', transition: 'background 0.1s' }} onMouseOver={(e) => e.currentTarget.style.background = '#F4F5F7'} onMouseOut={(e) => e.currentTarget.style.background = 'transparent'}>
                               <span style={{ width: '18px', textAlign: 'center' }}>⚙️</span> Journey Settings
                               {config.meta?.costModel === 'event' && <span style={{ marginLeft: 'auto', padding: '2px 6px', background: '#FAF0D6', color: '#8B6914', borderRadius: '4px', fontSize: '9px', fontWeight: 600 }}>EVENT</span>}
@@ -8775,16 +8765,6 @@ FATHOM - Journey intelligence for modern operations`);
                     {showSettingsMenu && (isSupabaseMode ? canAccessSettings : isSettingsUnlocked) && (
                       <div onClick={(e) => e.stopPropagation()} style={{ position: 'absolute', top: '100%', right: 0, marginTop: '8px', background: '#FFF', borderRadius: '12px', boxShadow: '0 8px 32px rgba(0,0,0,0.2)', overflow: 'hidden', zIndex: 9999, minWidth: '220px', padding: '8px 0' }}>
                         <div style={{ color: '#6E7B8C', fontSize: '10px', fontWeight: 600, textTransform: 'uppercase', letterSpacing: '0.5px', padding: '8px 16px 4px' }}>Configuration</div>
-                        {canEdit && (
-                          <button onClick={() => { setShowSalarySettings(true); setShowSettingsMenu(false); }} style={{ display: 'flex', alignItems: 'center', gap: '12px', width: '100%', padding: '10px 16px', border: 'none', background: 'transparent', cursor: 'pointer', textAlign: 'left', fontFamily: "'Interstate', sans-serif", fontSize: '14px', color: '#3D4A5C', transition: 'background 0.1s' }} onMouseOver={(e) => e.currentTarget.style.background = '#F4F5F7'} onMouseOut={(e) => e.currentTarget.style.background = 'transparent'}>
-                            <span style={{ width: '18px', textAlign: 'center' }}>👥</span> Manage Roles
-                          </button>
-                        )}
-                        {canEdit && (
-                          <button onClick={() => { setShowFunnelSettings(true); setShowSettingsMenu(false); }} style={{ display: 'flex', alignItems: 'center', gap: '12px', width: '100%', padding: '10px 16px', border: 'none', background: 'transparent', cursor: 'pointer', textAlign: 'left', fontFamily: "'Interstate', sans-serif", fontSize: '14px', color: '#3D4A5C', transition: 'background 0.1s' }} onMouseOver={(e) => e.currentTarget.style.background = '#F4F5F7'} onMouseOut={(e) => e.currentTarget.style.background = 'transparent'}>
-                            <span style={{ width: '18px', textAlign: 'center' }}>🔻</span> Funnel Settings
-                          </button>
-                        )}
                         {canEdit && (
                           <button onClick={() => { setShowJourneySettings(true); setShowSettingsMenu(false); }} style={{ display: 'flex', alignItems: 'center', gap: '12px', width: '100%', padding: '10px 16px', border: 'none', background: 'transparent', cursor: 'pointer', textAlign: 'left', fontFamily: "'Interstate', sans-serif", fontSize: '14px', color: '#3D4A5C', transition: 'background 0.1s' }} onMouseOver={(e) => e.currentTarget.style.background = '#F4F5F7'} onMouseOut={(e) => e.currentTarget.style.background = 'transparent'}>
                             <span style={{ width: '18px', textAlign: 'center' }}>⚙️</span> Journey Settings
@@ -10936,10 +10916,100 @@ FATHOM - Journey intelligence for modern operations`);
                     <Timeline stages={config.stages} totalTime={totalTime} formatTime={formatTime} personas={config.personas} showCosts={showCosts} config={config} />
                   )}
                   {dashboardTab === 'costs' && showCosts && (
-                    <CostAnalysisPanel stages={config.stages} personas={config.personas} formatTime={formatTime} config={config} />
+                    <div style={{ height: '100%', display: 'flex', flexDirection: 'column' }}>
+                      {/* Costs Tab Header with Manage Roles Button */}
+                      {canEdit && (
+                        <div style={{ 
+                          padding: '16px 24px', 
+                          borderBottom: '1px solid #E4E7EB',
+                          display: 'flex',
+                          justifyContent: 'space-between',
+                          alignItems: 'center',
+                          background: '#F4F5F7'
+                        }}>
+                          <div>
+                            <h3 style={{ margin: 0, fontSize: '16px', fontWeight: 600, color: '#1A2332' }}>Cost Analysis</h3>
+                            <p style={{ margin: '4px 0 0', fontSize: '13px', color: '#6E7B8C' }}>Configure roles and their costs</p>
+                          </div>
+                          <button
+                            onClick={() => {
+                              setShowSalarySettings(true);
+                              setShowDashboard(false);
+                            }}
+                            style={{
+                              padding: '8px 16px',
+                              background: '#192B45',
+                              color: '#FFF',
+                              border: 'none',
+                              borderRadius: '6px',
+                              cursor: 'pointer',
+                              fontFamily: "'Interstate', sans-serif",
+                              fontSize: '13px',
+                              fontWeight: 500,
+                              display: 'flex',
+                              alignItems: 'center',
+                              gap: '6px',
+                              transition: 'all 0.15s'
+                            }}
+                            onMouseOver={(e) => { e.currentTarget.style.background = '#243D5C'; }}
+                            onMouseOut={(e) => { e.currentTarget.style.background = '#192B45'; }}
+                          >
+                            👥 Manage Roles
+                          </button>
+                        </div>
+                      )}
+                      <div style={{ flex: 1, overflow: 'auto' }}>
+                        <CostAnalysisPanel stages={config.stages} personas={config.personas} formatTime={formatTime} config={config} />
+                      </div>
+                    </div>
                   )}
                   {dashboardTab === 'funnel' && config.funnel?.enabled && (
-                    <FunnelDashboard config={config} formatTime={formatTime} />
+                    <div style={{ height: '100%', display: 'flex', flexDirection: 'column' }}>
+                      {/* Funnel Tab Header with Settings Button */}
+                      {canEdit && (
+                        <div style={{ 
+                          padding: '16px 24px', 
+                          borderBottom: '1px solid #E4E7EB',
+                          display: 'flex',
+                          justifyContent: 'space-between',
+                          alignItems: 'center',
+                          background: '#F4F5F7'
+                        }}>
+                          <div>
+                            <h3 style={{ margin: 0, fontSize: '16px', fontWeight: 600, color: '#1A2332' }}>Conversion Funnel</h3>
+                            <p style={{ margin: '4px 0 0', fontSize: '13px', color: '#6E7B8C' }}>Configure drop-off rates and volumes</p>
+                          </div>
+                          <button
+                            onClick={() => {
+                              setShowFunnelSettings(true);
+                              setShowDashboard(false);
+                            }}
+                            style={{
+                              padding: '8px 16px',
+                              background: '#192B45',
+                              color: '#FFF',
+                              border: 'none',
+                              borderRadius: '6px',
+                              cursor: 'pointer',
+                              fontFamily: "'Interstate', sans-serif",
+                              fontSize: '13px',
+                              fontWeight: 500,
+                              display: 'flex',
+                              alignItems: 'center',
+                              gap: '6px',
+                              transition: 'all 0.15s'
+                            }}
+                            onMouseOver={(e) => { e.currentTarget.style.background = '#243D5C'; }}
+                            onMouseOut={(e) => { e.currentTarget.style.background = '#192B45'; }}
+                          >
+                            ⚙️ Funnel Settings
+                          </button>
+                        </div>
+                      )}
+                      <div style={{ flex: 1, overflow: 'auto' }}>
+                        <FunnelDashboard config={config} formatTime={formatTime} />
+                      </div>
+                    </div>
                   )}
                   {dashboardTab === 'event' && config.meta?.costModel === 'event' && showCosts && (
                     <EventEconomicsPanel config={config} formatTime={formatTime} />
