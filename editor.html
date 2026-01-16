@@ -9886,11 +9886,11 @@ FATHOM - Journey intelligence for modern operations`);
                         </div>
                         <div style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
                           {config.personas.filter(p => !p.isExternal).map(persona => {
-                            const involvement = selectedStep.roleInvolvement?.[persona.id] || { timeMinutes: 0, headcount: 1 };
+                            const involvement = (editingStep || selectedStep).roleInvolvement?.[persona.id] || { timeMinutes: 0, headcount: 1 };
                             const fullyLoadedRate = calculateFullyLoadedRate(persona);
                             const roleCost = (involvement.timeMinutes / 60) * fullyLoadedRate * (involvement.headcount || 1);
                             
-                            if (!editMode && involvement.timeMinutes === 0) return null;
+                            if (!editingStep && involvement.timeMinutes === 0) return null;
                             
                             return (
                               <div key={persona.id} style={{
@@ -9920,7 +9920,7 @@ FATHOM - Journey intelligence for modern operations`);
                                   </div>
                                 </div>
                                 
-                                {editMode ? (
+                                {editingStep ? (
                                   <>
                                     <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '2px' }}>
                                       <span style={{ fontFamily: "'Interstate', sans-serif", fontSize: '9px', color: '#8A95A5', textTransform: 'uppercase' }}>Mins</span>
@@ -9929,8 +9929,7 @@ FATHOM - Journey intelligence for modern operations`);
                                         value={involvement.timeMinutes || 0}
                                         onChange={(e) => {
                                           const newVal = parseInt(e.target.value) || 0;
-                                          updateRoleInvolvement(selectedStep.stageId, selectedStep.id, persona.id, 'timeMinutes', newVal);
-                                          setSelectedStep(prev => {
+                                          setEditingStep(prev => {
                                             const newRoleInvolvement = {
                                               ...(prev.roleInvolvement || {}),
                                               [persona.id]: { ...involvement, timeMinutes: newVal }
@@ -9963,8 +9962,7 @@ FATHOM - Journey intelligence for modern operations`);
                                         value={involvement.headcount || 1}
                                         onChange={(e) => {
                                           const newVal = parseInt(e.target.value) || 1;
-                                          updateRoleInvolvement(selectedStep.stageId, selectedStep.id, persona.id, 'headcount', newVal);
-                                          setSelectedStep(prev => ({
+                                          setEditingStep(prev => ({
                                             ...prev,
                                             roleInvolvement: {
                                               ...(prev.roleInvolvement || {}),
@@ -10011,15 +10009,16 @@ FATHOM - Journey intelligence for modern operations`);
                       <div>
                         <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '8px' }}>
                           <div style={{ fontFamily: "'Interstate', sans-serif", fontSize: '10px', color: '#8B6914', textTransform: 'uppercase', letterSpacing: '0.5px', fontWeight: 600 }}>
-                            📦 Additional Costs ({formatCurrency(calculateStepAdditionalCosts(selectedStep))})
+                            📦 Additional Costs ({formatCurrency(calculateStepAdditionalCosts(editingStep || selectedStep))})
                           </div>
-                          {editMode && (
+                          {editingStep && (
                             <button
                               onClick={() => {
                                 const newCost = { id: generateId(), description: 'New cost', amount: 0, category: 'third-party' };
-                                const newCosts = [...(selectedStep.additionalCosts || []), newCost];
-                                updateStep(selectedStep.stageId, selectedStep.id, { additionalCosts: newCosts });
-                                setSelectedStep(prev => ({ ...prev, additionalCosts: newCosts }));
+                                setEditingStep(prev => ({
+                                  ...prev,
+                                  additionalCosts: [...(prev.additionalCosts || []), newCost]
+                                }));
                               }}
                               style={{ padding: '4px 10px', background: '#8B6914', color: '#FFF', border: 'none', borderRadius: '4px', cursor: 'pointer', fontFamily: "'Interstate', sans-serif", fontSize: '11px' }}
                             >
@@ -10028,13 +10027,13 @@ FATHOM - Journey intelligence for modern operations`);
                           )}
                         </div>
                         
-                        {(!selectedStep.additionalCosts || selectedStep.additionalCosts.length === 0) && !editMode ? (
+                        {(!(editingStep || selectedStep).additionalCosts || (editingStep || selectedStep).additionalCosts.length === 0) && !editingStep ? (
                           <div style={{ padding: '12px', background: '#FFF', borderRadius: '6px', fontFamily: "'Interstate', sans-serif", fontSize: '12px', color: '#8A95A5', fontStyle: 'italic' }}>
                             No additional costs
                           </div>
                         ) : (
                           <div style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
-                            {(selectedStep.additionalCosts || []).map((cost, index) => (
+                            {((editingStep || selectedStep).additionalCosts || []).map((cost, index) => (
                               <div key={cost.id || index} style={{
                                 display: 'flex',
                                 alignItems: 'center',
@@ -10044,15 +10043,16 @@ FATHOM - Journey intelligence for modern operations`);
                                 borderRadius: '6px',
                                 borderLeft: '3px solid #6E7B8C'
                               }}>
-                                {editMode ? (
+                                {editingStep ? (
                                   <>
                                     <select
                                       value={cost.category || 'third-party'}
                                       onChange={(e) => {
-                                        const newCosts = [...(selectedStep.additionalCosts || [])];
-                                        newCosts[index] = { ...cost, category: e.target.value };
-                                        updateStep(selectedStep.stageId, selectedStep.id, { additionalCosts: newCosts });
-                                        setSelectedStep(prev => ({ ...prev, additionalCosts: newCosts }));
+                                        setEditingStep(prev => {
+                                          const newCosts = [...(prev.additionalCosts || [])];
+                                          newCosts[index] = { ...cost, category: e.target.value };
+                                          return { ...prev, additionalCosts: newCosts };
+                                        });
                                       }}
                                       style={{ padding: '6px', border: '1px solid #C8CED6', borderRadius: '4px', fontSize: '11px', fontFamily: "'Interstate', sans-serif" }}
                                     >
@@ -10064,10 +10064,11 @@ FATHOM - Journey intelligence for modern operations`);
                                       type="text"
                                       value={cost.description}
                                       onChange={(e) => {
-                                        const newCosts = [...(selectedStep.additionalCosts || [])];
-                                        newCosts[index] = { ...cost, description: e.target.value };
-                                        updateStep(selectedStep.stageId, selectedStep.id, { additionalCosts: newCosts });
-                                        setSelectedStep(prev => ({ ...prev, additionalCosts: newCosts }));
+                                        setEditingStep(prev => {
+                                          const newCosts = [...(prev.additionalCosts || [])];
+                                          newCosts[index] = { ...cost, description: e.target.value };
+                                          return { ...prev, additionalCosts: newCosts };
+                                        });
                                       }}
                                       placeholder="Description"
                                       style={{ flex: 1, padding: '6px', border: '1px solid #C8CED6', borderRadius: '4px', fontSize: '12px', fontFamily: "'Interstate', sans-serif" }}
@@ -10079,19 +10080,21 @@ FATHOM - Journey intelligence for modern operations`);
                                         step="0.01"
                                         value={cost.amount || ''}
                                         onChange={(e) => {
-                                          const newCosts = [...(selectedStep.additionalCosts || [])];
-                                          newCosts[index] = { ...cost, amount: parseFloat(e.target.value) || 0 };
-                                          updateStep(selectedStep.stageId, selectedStep.id, { additionalCosts: newCosts });
-                                          setSelectedStep(prev => ({ ...prev, additionalCosts: newCosts }));
+                                          setEditingStep(prev => {
+                                            const newCosts = [...(prev.additionalCosts || [])];
+                                            newCosts[index] = { ...cost, amount: parseFloat(e.target.value) || 0 };
+                                            return { ...prev, additionalCosts: newCosts };
+                                          });
                                         }}
                                         style={{ width: '70px', padding: '6px', border: '1px solid #C8CED6', borderRadius: '4px', fontSize: '12px', textAlign: 'right' }}
                                       />
                                     </div>
                                     <button
                                       onClick={() => {
-                                        const newCosts = (selectedStep.additionalCosts || []).filter((_, i) => i !== index);
-                                        updateStep(selectedStep.stageId, selectedStep.id, { additionalCosts: newCosts });
-                                        setSelectedStep(prev => ({ ...prev, additionalCosts: newCosts }));
+                                        setEditingStep(prev => ({
+                                          ...prev,
+                                          additionalCosts: (prev.additionalCosts || []).filter((_, i) => i !== index)
+                                        }));
                                       }}
                                       style={{ width: '24px', height: '24px', borderRadius: '50%', border: 'none', background: '#F5E0E3', color: '#B84A5A', cursor: 'pointer', fontSize: '14px', display: 'flex', alignItems: 'center', justifyContent: 'center' }}
                                     >×</button>
@@ -10319,52 +10322,50 @@ FATHOM - Journey intelligence for modern operations`);
                     {/* Pain Points */}
                     <div style={{ marginBottom: '24px' }}>
                       <label style={{ display: 'block', fontFamily: "'Interstate', sans-serif", fontSize: '11px', color: '#556275', textTransform: 'uppercase', letterSpacing: '0.5px', marginBottom: '12px' }}>Pain Points</label>
-                      {selectedStep.painPoints.length === 0 && !editMode ? (
+                      {((editingStep || selectedStep).painPoints || []).length === 0 && !editingStep ? (
                         <p style={{ color: '#8A95A5', fontStyle: 'italic', fontFamily: "'Interstate', sans-serif", fontSize: '14px' }}>No pain points identified</p>
                       ) : (
                         <ul style={{ margin: 0, padding: 0, listStyle: 'none' }}>
-                          {selectedStep.painPoints.map((pp, i) => (
+                          {((editingStep || selectedStep).painPoints || []).map((pp, i) => (
                             <li key={i} style={{ display: 'flex', alignItems: 'flex-start', gap: '12px', padding: '12px', background: '#F5E0E3', borderRadius: '6px', marginBottom: '8px', fontFamily: "'Interstate', sans-serif", fontSize: '14px', color: '#B84A5A' }}>
                               <span>⚠️</span>
                               <span style={{ flex: 1 }}>{pp}</span>
-                              {editMode && <button onClick={(e) => { e.stopPropagation(); removePainPoint(selectedStep.stageId, selectedStep.id, i); setSelectedStep(prev => ({ ...prev, painPoints: prev.painPoints.filter((_, idx) => idx !== i) })); }} style={{ background: 'none', border: 'none', color: '#B84A5A', cursor: 'pointer', fontSize: '16px' }}>×</button>}
+                              {editingStep && <button onClick={(e) => { e.stopPropagation(); setEditingStep(prev => ({ ...prev, painPoints: (prev.painPoints || []).filter((_, idx) => idx !== i) })); }} style={{ background: 'none', border: 'none', color: '#B84A5A', cursor: 'pointer', fontSize: '16px' }}>×</button>}
                             </li>
                           ))}
                         </ul>
                       )}
-                      {editMode && (
+                      {editingStep && (
                         <div style={{ marginTop: '12px', display: 'flex', gap: '8px' }}>
-                          <input type="text" placeholder="Add a pain point..." id="new-pain-point" style={{ flex: 1, padding: '10px 12px', border: '1px solid #C8CED6', borderRadius: '6px', fontSize: '14px', fontFamily: "'Interstate', sans-serif" }} onKeyDown={(e) => { if (e.key === 'Enter' && e.target.value.trim()) { const val = e.target.value.trim(); addPainPoint(selectedStep.stageId, selectedStep.id, val); setSelectedStep(prev => ({ ...prev, painPoints: [...prev.painPoints, val] })); e.target.value = ''; }}} />
-                          <button onClick={() => { const input = document.getElementById('new-pain-point'); if (input.value.trim()) { const val = input.value.trim(); addPainPoint(selectedStep.stageId, selectedStep.id, val); setSelectedStep(prev => ({ ...prev, painPoints: [...prev.painPoints, val] })); input.value = ''; }}} style={{ padding: '10px 20px', background: '#B84A5A', color: '#FFF', border: 'none', borderRadius: '6px', cursor: 'pointer', fontFamily: "'Interstate', sans-serif", fontSize: '13px' }}>Add</button>
+                          <input type="text" placeholder="Add a pain point..." id="new-pain-point" style={{ flex: 1, padding: '10px 12px', border: '1px solid #C8CED6', borderRadius: '6px', fontSize: '14px', fontFamily: "'Interstate', sans-serif" }} onKeyDown={(e) => { if (e.key === 'Enter' && e.target.value.trim()) { const val = e.target.value.trim(); setEditingStep(prev => ({ ...prev, painPoints: [...(prev.painPoints || []), val] })); e.target.value = ''; }}} />
+                          <button onClick={() => { const input = document.getElementById('new-pain-point'); if (input.value.trim()) { const val = input.value.trim(); setEditingStep(prev => ({ ...prev, painPoints: [...(prev.painPoints || []), val] })); input.value = ''; }}} style={{ padding: '10px 20px', background: '#B84A5A', color: '#FFF', border: 'none', borderRadius: '6px', cursor: 'pointer', fontFamily: "'Interstate', sans-serif", fontSize: '13px' }}>Add</button>
                         </div>
                       )}
                     </div>
                     {/* Checkpoint */}
                     <div style={{ marginBottom: '24px' }}>
                       <label style={{ display: 'block', fontFamily: "'Interstate', sans-serif", fontSize: '11px', color: '#556275', textTransform: 'uppercase', letterSpacing: '0.5px', marginBottom: '12px' }}>Checkpoint</label>
-                      {editMode ? (
+                      {editingStep ? (
                         <div style={{ display: 'flex', flexDirection: 'column', gap: '12px' }}>
                           <label style={{ display: 'flex', alignItems: 'center', gap: '12px', cursor: 'pointer' }}>
                             <input 
                               type="checkbox" 
-                              checked={selectedStep.isHardCheckpoint || false} 
+                              checked={editingStep.isHardCheckpoint || false} 
                               onChange={(e) => { 
-                                updateStep(selectedStep.stageId, selectedStep.id, { isHardCheckpoint: e.target.checked }); 
-                                setSelectedStep(prev => ({ ...prev, isHardCheckpoint: e.target.checked })); 
+                                setEditingStep(prev => ({ ...prev, isHardCheckpoint: e.target.checked }));
                               }}
                               style={{ width: '20px', height: '20px', accentColor: '#B84A5A' }}
                             />
                             <span style={{ fontFamily: "'Interstate', sans-serif", fontSize: '14px' }}>This step is a checkpoint</span>
                           </label>
-                          {selectedStep.isHardCheckpoint && (
+                          {editingStep.isHardCheckpoint && (
                             <>
                               <div>
                                 <label style={{ display: 'block', fontFamily: "'Interstate', sans-serif", fontSize: '12px', color: '#556275', marginBottom: '6px' }}>Checkpoint Type</label>
                                 <select 
-                                  value={selectedStep.checkpointType || 'compliance'} 
+                                  value={editingStep.checkpointType || 'compliance'} 
                                   onChange={(e) => { 
-                                    updateStep(selectedStep.stageId, selectedStep.id, { checkpointType: e.target.value }); 
-                                    setSelectedStep(prev => ({ ...prev, checkpointType: e.target.value })); 
+                                    setEditingStep(prev => ({ ...prev, checkpointType: e.target.value }));
                                   }}
                                   style={{ width: '100%', padding: '10px 12px', border: '1px solid #C8CED6', borderRadius: '6px', fontSize: '14px', fontFamily: "'Interstate', sans-serif" }}
                                 >
@@ -10378,10 +10379,9 @@ FATHOM - Journey intelligence for modern operations`);
                               <div>
                                 <label style={{ display: 'block', fontFamily: "'Interstate', sans-serif", fontSize: '12px', color: '#556275', marginBottom: '6px' }}>Checkpoint Requirements</label>
                                 <textarea 
-                                  value={selectedStep.checkpointDetails || ''} 
+                                  value={editingStep.checkpointDetails || ''} 
                                   onChange={(e) => { 
-                                    updateStep(selectedStep.stageId, selectedStep.id, { checkpointDetails: e.target.value }); 
-                                    setSelectedStep(prev => ({ ...prev, checkpointDetails: e.target.value })); 
+                                    setEditingStep(prev => ({ ...prev, checkpointDetails: e.target.value }));
                                   }}
                                   placeholder="Describe what must be verified or completed at this checkpoint..."
                                   style={{ width: '100%', minHeight: '80px', padding: '10px 12px', border: '1px solid #C8CED6', borderRadius: '6px', fontSize: '14px', fontFamily: "'Interstate', sans-serif", resize: 'vertical' }}
@@ -10405,23 +10405,23 @@ FATHOM - Journey intelligence for modern operations`);
                     {/* Regulatory */}
                     <div>
                       <label style={{ display: 'block', fontFamily: "'Interstate', sans-serif", fontSize: '11px', color: '#556275', textTransform: 'uppercase', letterSpacing: '0.5px', marginBottom: '12px' }}>Regulatory Requirements</label>
-                      {(!selectedStep.regulatoryRequirements || selectedStep.regulatoryRequirements.length === 0) && !editMode ? (
+                      {(!(editingStep || selectedStep).regulatoryRequirements || (editingStep || selectedStep).regulatoryRequirements.length === 0) && !editingStep ? (
                         <p style={{ color: '#8A95A5', fontStyle: 'italic', fontFamily: "'Interstate', sans-serif", fontSize: '14px' }}>No regulatory requirements specified</p>
                       ) : (
                         <ul style={{ margin: 0, padding: 0, listStyle: 'none' }}>
-                          {(selectedStep.regulatoryRequirements || []).map((req, i) => (
+                          {((editingStep || selectedStep).regulatoryRequirements || []).map((req, i) => (
                             <li key={i} style={{ display: 'flex', alignItems: 'flex-start', gap: '12px', padding: '12px', background: '#E1EEF2', borderRadius: '6px', marginBottom: '8px', fontFamily: "'Interstate', sans-serif", fontSize: '14px', color: '#5A5B8A' }}>
                               <span>📋</span>
                               <span style={{ flex: 1 }}>{req}</span>
-                              {editMode && <button onClick={(e) => { e.stopPropagation(); removeRegRequirement(selectedStep.stageId, selectedStep.id, i); setSelectedStep(prev => ({ ...prev, regulatoryRequirements: prev.regulatoryRequirements.filter((_, idx) => idx !== i) })); }} style={{ background: 'none', border: 'none', color: '#5A5B8A', cursor: 'pointer', fontSize: '16px' }}>×</button>}
+                              {editingStep && <button onClick={(e) => { e.stopPropagation(); setEditingStep(prev => ({ ...prev, regulatoryRequirements: (prev.regulatoryRequirements || []).filter((_, idx) => idx !== i) })); }} style={{ background: 'none', border: 'none', color: '#5A5B8A', cursor: 'pointer', fontSize: '16px' }}>×</button>}
                             </li>
                           ))}
                         </ul>
                       )}
-                      {editMode && (
+                      {editingStep && (
                         <div style={{ marginTop: '12px', display: 'flex', gap: '8px' }}>
-                          <input type="text" placeholder="Add a regulatory requirement..." id="new-reg-req" style={{ flex: 1, padding: '10px 12px', border: '1px solid #C8CED6', borderRadius: '6px', fontSize: '14px', fontFamily: "'Interstate', sans-serif" }} onKeyDown={(e) => { if (e.key === 'Enter' && e.target.value.trim()) { const val = e.target.value.trim(); addRegRequirement(selectedStep.stageId, selectedStep.id, val); setSelectedStep(prev => ({ ...prev, regulatoryRequirements: [...(prev.regulatoryRequirements || []), val] })); e.target.value = ''; }}} />
-                          <button onClick={() => { const input = document.getElementById('new-reg-req'); if (input.value.trim()) { const val = input.value.trim(); addRegRequirement(selectedStep.stageId, selectedStep.id, val); setSelectedStep(prev => ({ ...prev, regulatoryRequirements: [...(prev.regulatoryRequirements || []), val] })); input.value = ''; }}} style={{ padding: '10px 20px', background: '#5A5B8A', color: '#FFF', border: 'none', borderRadius: '6px', cursor: 'pointer', fontFamily: "'Interstate', sans-serif", fontSize: '13px' }}>Add</button>
+                          <input type="text" placeholder="Add a regulatory requirement..." id="new-reg-req" style={{ flex: 1, padding: '10px 12px', border: '1px solid #C8CED6', borderRadius: '6px', fontSize: '14px', fontFamily: "'Interstate', sans-serif" }} onKeyDown={(e) => { if (e.key === 'Enter' && e.target.value.trim()) { const val = e.target.value.trim(); setEditingStep(prev => ({ ...prev, regulatoryRequirements: [...(prev.regulatoryRequirements || []), val] })); e.target.value = ''; }}} />
+                          <button onClick={() => { const input = document.getElementById('new-reg-req'); if (input.value.trim()) { const val = input.value.trim(); setEditingStep(prev => ({ ...prev, regulatoryRequirements: [...(prev.regulatoryRequirements || []), val] })); input.value = ''; }}} style={{ padding: '10px 20px', background: '#5A5B8A', color: '#FFF', border: 'none', borderRadius: '6px', cursor: 'pointer', fontFamily: "'Interstate', sans-serif", fontSize: '13px' }}>Add</button>
                         </div>
                       )}
                     </div>
@@ -10430,13 +10430,23 @@ FATHOM - Journey intelligence for modern operations`);
                     <label style={{ display: 'block', fontFamily: "'Interstate', sans-serif", fontSize: '11px', color: '#556275', textTransform: 'uppercase', letterSpacing: '0.5px', marginBottom: '16px' }}>Actions by Role</label>
                     <div style={{ display: 'flex', flexDirection: 'column', gap: '12px' }}>
                       {config.personas.map(persona => {
-                        const action = selectedStep.actions?.[persona.id];
-                        if (!action && !editMode) return null;
+                        const action = (editingStep || selectedStep).actions?.[persona.id];
+                        if (!action && !editingStep) return null;
                         return (
                           <div key={persona.id} style={{ padding: '16px', background: '#F4F5F7', borderRadius: '8px', borderLeft: `4px solid ${persona.color}` }}>
                             <div style={{ fontFamily: "'Interstate', sans-serif", fontSize: '12px', color: persona.color, fontWeight: 600, marginBottom: '8px', textTransform: 'uppercase', letterSpacing: '0.5px' }}>{persona.label}</div>
-                            {editMode ? (
-                              <textarea value={action || ''} onChange={(e) => { const newActions = { ...(selectedStep.actions || {}), [persona.id]: e.target.value }; updateStep(selectedStep.stageId, selectedStep.id, { actions: newActions }); setSelectedStep(prev => ({ ...prev, actions: newActions })); }} placeholder={`What does the ${persona.label.toLowerCase()} do?`} style={{ width: '100%', minHeight: '60px', padding: '8px', border: '1px solid #C8CED6', borderRadius: '4px', fontSize: '14px', fontFamily: "'Interstate', sans-serif", resize: 'vertical' }} />
+                            {editingStep ? (
+                              <textarea 
+                                value={action || ''} 
+                                onChange={(e) => { 
+                                  setEditingStep(prev => ({ 
+                                    ...prev, 
+                                    actions: { ...(prev.actions || {}), [persona.id]: e.target.value } 
+                                  })); 
+                                }} 
+                                placeholder={`What does the ${persona.label.toLowerCase()} do?`} 
+                                style={{ width: '100%', minHeight: '60px', padding: '8px', border: '1px solid #C8CED6', borderRadius: '4px', fontSize: '14px', fontFamily: "'Interstate', sans-serif", resize: 'vertical' }} 
+                              />
                             ) : (
                               <p style={{ margin: 0, fontSize: '14px', lineHeight: 1.5, fontFamily: "'Interstate', sans-serif" }}>{action}</p>
                             )}
@@ -10449,15 +10459,16 @@ FATHOM - Journey intelligence for modern operations`);
                     <div style={{ marginTop: '24px' }}>
                       <label style={{ display: 'block', fontFamily: "'Interstate', sans-serif", fontSize: '11px', color: '#556275', textTransform: 'uppercase', letterSpacing: '0.5px', marginBottom: '12px' }}>Touchpoints</label>
                       <div style={{ display: 'flex', flexWrap: 'wrap', gap: '8px' }}>
-                        {(selectedStep.touchpoints || []).map((tp, i) => (
+                        {((editingStep || selectedStep).touchpoints || []).map((tp, i) => (
                           <span key={i} style={{ padding: '6px 12px', background: '#E8E8E8', borderRadius: '16px', fontFamily: "'Interstate', sans-serif", fontSize: '13px', display: 'flex', alignItems: 'center', gap: '6px' }}>
                             {tp}
-                            {editMode && (
+                            {editingStep && (
                               <button 
                                 onClick={() => { 
-                                  const newTouchpoints = selectedStep.touchpoints.filter((_, idx) => idx !== i);
-                                  updateStep(selectedStep.stageId, selectedStep.id, { touchpoints: newTouchpoints }); 
-                                  setSelectedStep(prev => ({ ...prev, touchpoints: newTouchpoints })); 
+                                  setEditingStep(prev => ({
+                                    ...prev,
+                                    touchpoints: prev.touchpoints.filter((_, idx) => idx !== i)
+                                  }));
                                 }} 
                                 style={{ background: 'none', border: 'none', color: '#556275', cursor: 'pointer', fontSize: '14px', padding: '0 0 0 2px', lineHeight: 1 }}
                               >×</button>
@@ -10465,7 +10476,7 @@ FATHOM - Journey intelligence for modern operations`);
                           </span>
                         ))}
                       </div>
-                      {editMode && (
+                      {editingStep && (
                         <div style={{ marginTop: '12px', display: 'flex', gap: '8px' }}>
                           <input 
                             type="text" 
@@ -10475,9 +10486,10 @@ FATHOM - Journey intelligence for modern operations`);
                             onKeyDown={(e) => { 
                               if (e.key === 'Enter' && e.target.value.trim()) { 
                                 const val = e.target.value.trim(); 
-                                const newTouchpoints = [...(selectedStep.touchpoints || []), val];
-                                updateStep(selectedStep.stageId, selectedStep.id, { touchpoints: newTouchpoints }); 
-                                setSelectedStep(prev => ({ ...prev, touchpoints: newTouchpoints })); 
+                                setEditingStep(prev => ({
+                                  ...prev,
+                                  touchpoints: [...(prev.touchpoints || []), val]
+                                }));
                                 e.target.value = ''; 
                               }
                             }} 
@@ -10487,9 +10499,10 @@ FATHOM - Journey intelligence for modern operations`);
                               const input = document.getElementById('new-touchpoint'); 
                               if (input.value.trim()) { 
                                 const val = input.value.trim(); 
-                                const newTouchpoints = [...(selectedStep.touchpoints || []), val];
-                                updateStep(selectedStep.stageId, selectedStep.id, { touchpoints: newTouchpoints }); 
-                                setSelectedStep(prev => ({ ...prev, touchpoints: newTouchpoints })); 
+                                setEditingStep(prev => ({
+                                  ...prev,
+                                  touchpoints: [...(prev.touchpoints || []), val]
+                                }));
                                 input.value = ''; 
                               }
                             }} 
@@ -10501,18 +10514,17 @@ FATHOM - Journey intelligence for modern operations`);
                     {/* Emotion */}
                     <div style={{ marginTop: '24px' }}>
                       <label style={{ display: 'block', fontFamily: "'Interstate', sans-serif", fontSize: '11px', color: '#556275', textTransform: 'uppercase', letterSpacing: '0.5px', marginBottom: '12px' }}>Client Emotions <span style={{ fontWeight: 400, textTransform: 'none' }}>(select multiple)</span></label>
-                      {editMode ? (
+                      {editingStep ? (
                         <div style={{ display: 'flex', flexWrap: 'wrap', gap: '8px' }}>
                           {Object.entries(emotionColors).map(([emotion, colors]) => {
-                            const currentEmotions = Array.isArray(selectedStep.emotions) ? selectedStep.emotions : (selectedStep.emotions ? [selectedStep.emotions] : []);
+                            const currentEmotions = Array.isArray(editingStep.emotions) ? editingStep.emotions : (editingStep.emotions ? [editingStep.emotions] : []);
                             const isSelected = currentEmotions.includes(emotion);
                             return (
                               <button key={emotion} onClick={() => { 
                                 const newEmotions = isSelected 
                                   ? currentEmotions.filter(e => e !== emotion)
                                   : [...currentEmotions, emotion];
-                                updateStep(selectedStep.stageId, selectedStep.id, { emotions: newEmotions }); 
-                                setSelectedStep(prev => ({ ...prev, emotions: newEmotions })); 
+                                setEditingStep(prev => ({ ...prev, emotions: newEmotions }));
                               }} style={{ padding: '8px 14px', background: isSelected ? colors.bg : '#F4F5F7', border: '2px solid', borderColor: isSelected ? colors.text : 'transparent', borderRadius: '20px', cursor: 'pointer', display: 'flex', alignItems: 'center', gap: '6px' }}>
                                 <span>{colors.icon}</span>
                                 <span style={{ fontFamily: "'Interstate', sans-serif", fontSize: '12px', color: isSelected ? colors.text : '#556275', textTransform: 'capitalize' }}>{emotion}</span>
