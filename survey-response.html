@@ -4,6 +4,7 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Survey Response - FATHOM</title>
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
   <style>
     @font-face {
       font-family: 'Interstate';
@@ -105,7 +106,7 @@
     .step-card.focus {
       border-color: #5B8A9A;
       background: #F0F8FA;
-      box-shadow: 0 4px 12px rgba(91, 138, 154, 0.1);
+      box-shadow: 0 4px 12px rgba(91, 138, 154, 0.15);
     }
     
     .step-header {
@@ -220,6 +221,26 @@
       font-size: 24px;
       margin-bottom: 12px;
     }
+    
+    .loading {
+      text-align: center;
+      padding: 40px;
+      color: #8A95A5;
+    }
+    
+    .loading-spinner {
+      width: 40px;
+      height: 40px;
+      border: 4px solid #E4E7EB;
+      border-top-color: #5B8A9A;
+      border-radius: 50%;
+      animation: spin 1s linear infinite;
+      margin: 0 auto 16px;
+    }
+    
+    @keyframes spin {
+      to { transform: rotate(360deg); }
+    }
   </style>
 </head>
 <body>
@@ -230,11 +251,20 @@
     </div>
     
     <div id="content">
-      <!-- Content will be injected here -->
+      <div class="loading" style="margin-top: 24px;">
+        <div class="loading-spinner"></div>
+        <p>Loading survey...</p>
+      </div>
     </div>
   </div>
   
   <script>
+    // Supabase configuration
+    const SUPABASE_URL = 'https://ktctvaeulualihczwnrl.supabase.co';
+    const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Imt0Y3R2YWV1bHVhbGloY3p3bnJsIiwicm9sZSI6ImFub24iLCJpYXQiOjE3Njc0MzczNjksImV4cCI6MjA4MzAxMzM2OX0.qnvrAUvUhp3hgu37YnahR0Ql-CKR0zcDt3sKWaMq95I';
+    
+    const supabase = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+    
     // Decode survey token from URL
     function decodeSurveyToken() {
       const urlParams = new URLSearchParams(window.location.search);
@@ -258,41 +288,48 @@
       }
     }
     
-    // Mock journey data - in production, this would be fetched from the backend
-    const mockJourneyData = {
-      title: 'Stadium Matchday Experience',
-      stages: [
-        {
-          id: 'stage-1',
-          name: 'Arrival',
-          steps: [
-            { id: 'step-1-1', name: 'Park vehicle', persona: 'attendee', description: 'Find parking space and park vehicle' },
-            { id: 'step-1-2', name: 'Walk to stadium', persona: 'attendee', description: 'Navigate from parking to stadium entrance' }
-          ]
-        },
-        {
-          id: 'stage-2',
-          name: 'Stadium Entry',
-          steps: [
-            { id: 'step-2-1', name: 'Approach turnstiles', persona: 'attendee', description: 'Walk towards designated entry point' },
-            { id: 'step-2-2', name: 'Guide fans', persona: 'steward', description: 'Direct fans to correct entry gates based on ticket type' },
-            { id: 'step-2-3', name: 'Scan ticket', persona: 'attendee', description: 'Present ticket or pass for scanning' },
-            { id: 'step-2-4', name: 'Security check', persona: 'security', description: 'Conduct bag checks and security screening' }
-          ]
-        },
-        {
-          id: 'stage-3',
-          name: 'Find Seating',
-          steps: [
-            { id: 'step-3-1', name: 'Navigate concourse', persona: 'attendee', description: 'Move through concourse to correct section' },
-            { id: 'step-3-2', name: 'Direct to section', persona: 'steward', description: 'Help fans find their seating section' }
-          ]
+    // Load journey data from Supabase or localStorage
+    async function loadJourneyData(mapId) {
+      // First try Supabase if we have a real mapId
+      if (mapId && mapId !== 'unknown') {
+        try {
+          const { data, error } = await supabase
+            .from('journey_maps')
+            .select('config')
+            .eq('id', mapId)
+            .single();
+          
+          if (!error && data) {
+            return data.config;
+          }
+        } catch (e) {
+          console.log('Supabase fetch failed, trying localStorage:', e);
         }
-      ]
-    };
+      }
+      
+      // Fall back to localStorage
+      const storedMaps = JSON.parse(localStorage.getItem('journeyMaps') || '[]');
+      if (storedMaps.length > 0) {
+        // If mapId is unknown, use the first map
+        if (mapId === 'unknown') {
+          return storedMaps[0];
+        }
+        // Otherwise try to find the specific map
+        const map = storedMaps.find(m => m.meta?.id === mapId);
+        return map || storedMaps[0];
+      }
+      
+      return null;
+    }
+    
+    // Find persona label by ID
+    function getPersonaLabel(config, personaId) {
+      const persona = config.personas?.find(p => p.id === personaId);
+      return persona ? persona.label : personaId;
+    }
     
     // Render survey
-    function renderSurvey() {
+    async function renderSurvey() {
       const result = decodeSurveyToken();
       const content = document.getElementById('content');
       
@@ -308,42 +345,63 @@
       
       const { mapId, stepId, personaId, scope, recipientEmail, expires } = result.data;
       
-      // Find the focus step
-      let focusStep = null;
-      let focusStage = null;
-      let focusStepIndex = -1;
+      // Load journey data
+      const config = await loadJourneyData(mapId);
       
-      mockJourneyData.stages.forEach(stage => {
-        stage.steps.forEach((step, index) => {
-          if (step.id === stepId) {
-            focusStep = step;
-            focusStage = stage;
-            focusStepIndex = index;
-          }
-        });
-      });
-      
-      if (!focusStep) {
+      if (!config || !config.stages) {
         content.innerHTML = `
           <div class="error-box" style="margin-top: 24px;">
-            <h2>⚠️ Step Not Found</h2>
-            <p style="margin-top: 12px; font-size: 14px;">The requested step could not be found.</p>
+            <h2>⚠️ Journey Not Found</h2>
+            <p style="margin-top: 12px; font-size: 14px;">Could not load journey data. The journey may have been deleted or you may need to be logged in.</p>
           </div>
         `;
         return;
       }
       
+      // Find the focus step
+      let focusStep = null;
+      let focusStage = null;
+      
+      for (const stage of config.stages) {
+        const step = stage.steps.find(s => s.id === stepId);
+        if (step) {
+          focusStep = step;
+          focusStage = stage;
+          break;
+        }
+      }
+      
+      if (!focusStep) {
+        content.innerHTML = `
+          <div class="error-box" style="margin-top: 24px;">
+            <h2>⚠️ Step Not Found</h2>
+            <p style="margin-top: 12px; font-size: 14px;">The requested step could not be found in this journey.</p>
+            <p style="margin-top: 8px; font-size: 12px; opacity: 0.7;">Looking for step ID: ${stepId}</p>
+          </div>
+        `;
+        return;
+      }
+      
+      // Get all steps for this persona
+      const allStepsFlat = config.stages.flatMap(s => 
+        s.steps
+          .filter(step => step.persona === personaId)
+          .map(step => ({ 
+            ...step, 
+            stageName: s.name,
+            stageId: s.id
+          }))
+      );
+      
       // Get steps to display based on scope
       let stepsToDisplay = [];
-      const allStepsFlat = mockJourneyData.stages.flatMap(s => s.steps.map(step => ({ ...step, stageName: s.name })));
-      const roleSteps = allStepsFlat.filter(s => s.persona === personaId);
       
       if (scope === 'step') {
-        stepsToDisplay = [{ ...focusStep, stageName: focusStage.name }];
+        stepsToDisplay = [{ ...focusStep, stageName: focusStage.name, isFocus: true }];
       } else if (scope === 'context') {
-        const focusIndex = roleSteps.findIndex(s => s.id === stepId);
-        const prevStep = focusIndex > 0 ? roleSteps[focusIndex - 1] : null;
-        const nextStep = focusIndex < roleSteps.length - 1 ? roleSteps[focusIndex + 1] : null;
+        const focusIndex = allStepsFlat.findIndex(s => s.id === stepId);
+        const prevStep = focusIndex > 0 ? allStepsFlat[focusIndex - 1] : null;
+        const nextStep = focusIndex < allStepsFlat.length - 1 ? allStepsFlat[focusIndex + 1] : null;
         
         stepsToDisplay = [
           prevStep,
@@ -351,11 +409,14 @@
           nextStep
         ].filter(Boolean);
       } else if (scope === 'full') {
-        stepsToDisplay = roleSteps.map(s => ({
+        stepsToDisplay = allStepsFlat.map(s => ({
           ...s,
           isFocus: s.id === stepId
         }));
       }
+      
+      const personaLabel = getPersonaLabel(config, personaId);
+      const journeyTitle = config.meta?.title || 'Journey Map';
       
       // Render the survey
       const infoBannerHTML = `
@@ -364,11 +425,11 @@
           <div class="info-grid">
             <div class="info-item">
               <div class="info-label">Journey</div>
-              <div class="info-value">${mockJourneyData.title}</div>
+              <div class="info-value">${journeyTitle}</div>
             </div>
             <div class="info-item">
               <div class="info-label">Your Role</div>
-              <div class="info-value">${personaId === 'steward' ? 'Matchday Steward' : 'Unknown'}</div>
+              <div class="info-value">${personaLabel}</div>
             </div>
             <div class="info-item">
               <div class="info-label">Focus Step</div>
@@ -382,37 +443,40 @@
         </div>
       `;
       
-      const stepsHTML = stepsToDisplay.map(step => `
-        <div class="step-card ${step.isFocus ? 'focus' : ''}">
+      const stepsHTML = stepsToDisplay.map((step, index) => {
+        const stepAction = step.actions?.[personaId] || 'No action defined';
+        
+        return `
+        <div class="step-card ${step.isFocus ? 'focus' : ''}" data-step-id="${step.id}">
           <div class="step-header">
             <div class="step-badge ${step.isFocus ? 'focus' : ''}">${step.isFocus ? '→ Focus Step' : step.stageName}</div>
             <div class="step-title">${step.name}</div>
           </div>
-          <div class="step-description">${step.description}</div>
+          <div class="step-description">${stepAction}</div>
           
           <div class="feedback-form">
             <div class="form-group">
               <label>What actually happens in this step?</label>
-              <textarea rows="3" placeholder="Describe what you do in practice..."></textarea>
+              <textarea rows="3" placeholder="Describe what you do in practice..." data-field="description"></textarea>
             </div>
             
             <div class="form-group">
               <label>How long does this typically take? (minutes)</label>
-              <input type="number" placeholder="e.g. 5" min="0" />
+              <input type="number" placeholder="e.g. ${step.duration || 5}" min="0" data-field="timeEstimate" />
             </div>
             
             <div class="form-group">
               <label>What challenges or pain points do you experience?</label>
-              <textarea rows="3" placeholder="Any difficulties, delays, or frustrations..."></textarea>
+              <textarea rows="3" placeholder="Any difficulties, delays, or frustrations..." data-field="painPoints"></textarea>
             </div>
             
             <div class="form-group">
               <label>How could this step be improved?</label>
-              <textarea rows="2" placeholder="Suggestions for making this easier or faster..."></textarea>
+              <textarea rows="2" placeholder="Suggestions for making this easier or faster..." data-field="improvements"></textarea>
             </div>
           </div>
         </div>
-      `).join('');
+      `}).join('');
       
       content.innerHTML = `
         ${infoBannerHTML}
@@ -420,7 +484,7 @@
         <div style="margin-bottom: 24px;">
           <p style="font-size: 13px; color: #556275; line-height: 1.6;">
             Your feedback will help us improve this process. Please complete the form below for ${scope === 'step' ? 'this step' : scope === 'context' ? 'each step shown' : 'all steps for your role'}.
-            ${scope === 'context' ? ' The highlighted step is the focus of this survey.' : ''}
+            ${scope === 'context' ? ' The <strong>highlighted step</strong> is the focus of this survey.' : ''}
           </p>
         </div>
         
@@ -430,14 +494,56 @@
       `;
     }
     
+    // Collect feedback from forms
+    function collectFeedback() {
+      const stepCards = document.querySelectorAll('.step-card');
+      const feedback = [];
+      
+      stepCards.forEach(card => {
+        const stepId = card.getAttribute('data-step-id');
+        const fields = {};
+        
+        card.querySelectorAll('[data-field]').forEach(field => {
+          const fieldName = field.getAttribute('data-field');
+          fields[fieldName] = field.value;
+        });
+        
+        feedback.push({
+          stepId,
+          ...fields
+        });
+      });
+      
+      return feedback;
+    }
+    
     // Submit survey
     function submitSurvey() {
+      const feedback = collectFeedback();
+      const result = decodeSurveyToken();
+      
+      // In production, this would save to Supabase
+      const surveyResponse = {
+        token: result.data,
+        feedback,
+        submittedAt: new Date().toISOString()
+      };
+      
+      console.log('Survey response:', surveyResponse);
+      
+      // Store in localStorage for now
+      const responses = JSON.parse(localStorage.getItem('surveyResponses') || '[]');
+      responses.push(surveyResponse);
+      localStorage.setItem('surveyResponses', JSON.stringify(responses));
+      
       const content = document.getElementById('content');
       content.innerHTML = `
         <div class="success-box" style="margin-top: 24px;">
           <h2>✅ Thank You!</h2>
           <p style="font-size: 15px; margin-top: 12px;">Your feedback has been submitted successfully.</p>
-          <p style="font-size: 13px; margin-top: 16px; opacity: 0.8;">In production, this would save to the database and notify the requester.</p>
+          <p style="font-size: 13px; margin-top: 16px; opacity: 0.8;">
+            Your insights will help improve this process. You can now close this window.
+          </p>
         </div>
       `;
     }
