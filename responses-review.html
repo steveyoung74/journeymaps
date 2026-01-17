@@ -1116,8 +1116,9 @@
         const { error } = await supabaseClient
           .from('survey_responses')
           .update({
-            review_status: 'approved',
-            reviewed_at: new Date().toISOString()
+            review_status: 'approved'
+            // Note: reviewed_at removed - column doesn't exist yet
+            // Add it back after running add-review-columns.sql
           })
           .eq('id', responseId);
         
@@ -1128,6 +1129,7 @@
         applyFilters();
         
       } catch (err) {
+        console.error('Approve error:', err);
         alert('Failed to approve: ' + err.message);
       }
     }
@@ -1139,8 +1141,8 @@
         const { error } = await supabaseClient
           .from('survey_responses')
           .update({
-            review_status: 'rejected',
-            reviewed_at: new Date().toISOString()
+            review_status: 'rejected'
+            // Note: reviewed_at removed - column doesn't exist yet
           })
           .eq('id', responseId);
         
