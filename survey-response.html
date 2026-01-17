@@ -387,251 +387,236 @@
   </div>
 
   <script>
-    // ============================================
-    // CONFIGURATION
-    // ============================================
-    const SUPABASE_URL = 'https://xvfqcqhazgjwopwxqyep.supabase.co';
-    const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Inh2ZnFjcWhhemdan3b3B3eHF5ZXAiLCJyb2xlIjoiYW5vbiIsImlhdCI6MTczNjY4NDk5MCwiZXhwIjoyMDUyMjYwOTkwfQ.sb_publishable_NlZjP1W6SO7j7jrbv8gARA_HgZlRxLY';
+    (function() {
+      // ============================================
+      // CONFIGURATION
+      // ============================================
+      const SUPABASE_URL = 'https://xvfqcqhazgjwopwxqyep.supabase.co';
+      const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Inh2ZnFjcWhhemdan3b3B3eHF5ZXAiLCJyb2xlIjoiYW5vbiIsImlhdCI6MTczNjY4NDk5MCwiZXhwIjoyMDUyMjYwOTkwfQ.sb_publishable_NlZjP1W6SO7j7jrbv8gARA_HgZlRxLY';
 
-    // Initialize Supabase client (for reading journey data only)
-    const supabase = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+      // Initialize Supabase client
+      const supabaseClient = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
 
-    // ============================================
-    // STATE
-    // ============================================
-    let tokenData = null;
-    let journeyData = null;
+      // ============================================
+      // STATE
+      // ============================================
+      let tokenData = null;
+      let journeyData = null;
 
-    // ============================================
-    // INITIALIZATION
-    // ============================================
-    document.addEventListener('DOMContentLoaded', async () => {
-      try {
-        // Get token from URL
-        const urlParams = new URLSearchParams(window.location.search);
-        const token = urlParams.get('token');
-
-        if (!token) {
-          showError('No survey token provided. Please use the link from your email.');
-          return;
-        }
-
-        // Decode token
+      // ============================================
+      // INITIALIZATION
+      // ============================================
+      document.addEventListener('DOMContentLoaded', async () => {
         try {
-          const decodedString = atob(token);
-          tokenData = JSON.parse(decodedString);
-          console.log('Decoded token:', tokenData);
-        } catch (e) {
-          console.error('Token decode error:', e);
-          showError('Invalid survey token. Please check your link.');
-          return;
+          const urlParams = new URLSearchParams(window.location.search);
+          const token = urlParams.get('token');
+
+          if (!token) {
+            showError('No survey token provided. Please use the link from your email.');
+            return;
+          }
+
+          // Decode token
+          try {
+            const decodedString = atob(token);
+            tokenData = JSON.parse(decodedString);
+            console.log('Decoded token:', tokenData);
+          } catch (e) {
+            console.error('Token decode error:', e);
+            showError('Invalid survey token. Please check your link.');
+            return;
+          }
+
+          // Validate token
+          if (!tokenData.personaId || !tokenData.recipientEmail) {
+            showError('Incomplete survey token. Please contact support.');
+            return;
+          }
+
+          // Check expiration
+          if (tokenData.expires && new Date(tokenData.expires) < new Date()) {
+            showError('This survey link has expired. Please request a new one.');
+            return;
+          }
+
+          // Load journey data
+          await loadJourneyData();
+
+          // Show survey form
+          document.getElementById('loading').style.display = 'none';
+          document.getElementById('surveyContent').style.display = 'block';
+
+        } catch (error) {
+          console.error('Initialization error:', error);
+          showError('Failed to load survey. Please try again or contact support.');
         }
+      });
 
-        // Validate token
-        if (!tokenData.personaId || !tokenData.recipientEmail) {
-          showError('Incomplete survey token. Please contact support.');
-          return;
+      // ============================================
+      // LOAD JOURNEY DATA
+      // ============================================
+      async function loadJourneyData() {
+        try {
+          if (tokenData.mapId === 'demo' || tokenData.mapId === 'unknown' || !tokenData.mapId) {
+            displayDemoData();
+            return;
+          }
+
+          const { data, error } = await supabaseClient
+            .from('journey_maps')
+            .select('title, config')
+            .eq('id', tokenData.mapId)
+            .single();
+
+          if (error) {
+            console.error('Error fetching journey:', error);
+            displayDemoData();
+            return;
+          }
+
+          journeyData = data;
+          displayJourneyData();
+
+        } catch (error) {
+          console.error('Error loading journey:', error);
+          displayDemoData();
         }
-
-        // Check expiration
-        if (tokenData.expires && new Date(tokenData.expires) < new Date()) {
-          showError('This survey link has expired. Please request a new one.');
-          return;
-        }
-
-        // Load journey data
-        await loadJourneyData();
-
-        // Show survey form
-        document.getElementById('loading').style.display = 'none';
-        document.getElementById('surveyContent').style.display = 'block';
-
-      } catch (error) {
-        console.error('Initialization error:', error);
-        showError('Failed to load survey. Please try again or contact support.');
       }
-    });
 
-    // ============================================
-    // LOAD JOURNEY DATA
-    // ============================================
-    async function loadJourneyData() {
-      try {
-        // For demo maps, use static data
-        if (tokenData.mapId === 'demo' || tokenData.mapId === 'unknown' || !tokenData.mapId) {
+      // ============================================
+      // DISPLAY DATA
+      // ============================================
+      function displayJourneyData() {
+        if (!journeyData || !journeyData.config) {
           displayDemoData();
           return;
         }
 
-        // Fetch journey map from Supabase
-        const { data, error } = await supabase
-          .from('journey_maps')
-          .select('title, config')
-          .eq('id', tokenData.mapId)
-          .single();
+        const config = journeyData.config;
+        
+        document.getElementById('journeyTitle').textContent = journeyData.title || 'Journey Map';
 
-        if (error) {
-          console.error('Error fetching journey:', error);
-          displayDemoData();
-          return;
+        let foundStep = null;
+        if (config.stages) {
+          for (const stage of config.stages) {
+            if (stage.steps) {
+              foundStep = stage.steps.find(s => s.id === tokenData.stepId);
+              if (foundStep) break;
+            }
+          }
         }
 
-        journeyData = data;
-        displayJourneyData();
+        if (foundStep) {
+          document.getElementById('stepName').textContent = foundStep.name || 'Step';
+          if (foundStep.description) {
+            document.getElementById('stepDescription').textContent = foundStep.description;
+          }
+        } else {
+          document.getElementById('stepName').textContent = tokenData.stepId || 'Step';
+        }
 
-      } catch (error) {
-        console.error('Error loading journey:', error);
-        displayDemoData();
-      }
-    }
-
-    // ============================================
-    // DISPLAY DATA
-    // ============================================
-    function displayJourneyData() {
-      if (!journeyData || !journeyData.config) {
-        displayDemoData();
-        return;
-      }
-
-      const config = journeyData.config;
-      
-      // Set journey title
-      document.getElementById('journeyTitle').textContent = journeyData.title || 'Journey Map';
-
-      // Find the step
-      let foundStep = null;
-      if (config.stages) {
-        for (const stage of config.stages) {
-          if (stage.steps) {
-            foundStep = stage.steps.find(s => s.id === tokenData.stepId);
-            if (foundStep) break;
+        if (config.personas) {
+          const persona = config.personas.find(p => p.id === tokenData.personaId);
+          if (persona) {
+            document.getElementById('journeyMeta').textContent = `Your role: ${persona.label}`;
           }
         }
       }
 
-      if (foundStep) {
-        document.getElementById('stepName').textContent = foundStep.name || 'Step';
-        if (foundStep.description) {
-          document.getElementById('stepDescription').textContent = foundStep.description;
-        }
-      } else {
-        document.getElementById('stepName').textContent = tokenData.stepId || 'Step';
-      }
-
-      // Find persona
-      if (config.personas) {
-        const persona = config.personas.find(p => p.id === tokenData.personaId);
-        if (persona) {
-          document.getElementById('journeyMeta').textContent = `Your role: ${persona.label}`;
+      function displayDemoData() {
+        document.getElementById('journeyTitle').textContent = 'Survey Feedback';
+        document.getElementById('stepName').textContent = tokenData.stepId || 'Process Step';
+        document.getElementById('stepDescription').textContent = 'Please provide your feedback on this step';
+        
+        if (tokenData.personaId) {
+          document.getElementById('journeyMeta').textContent = `Your role: ${tokenData.personaId}`;
         }
       }
-    }
 
-    function displayDemoData() {
-      document.getElementById('journeyTitle').textContent = 'Survey Feedback';
-      document.getElementById('stepName').textContent = tokenData.stepId || 'Process Step';
-      document.getElementById('stepDescription').textContent = 'Please provide your feedback on this step';
-      
-      if (tokenData.personaId) {
-        document.getElementById('journeyMeta').textContent = `Your role: ${tokenData.personaId}`;
-      }
-    }
+      // ============================================
+      // FORM SUBMISSION
+      // ============================================
+      document.getElementById('surveyForm').addEventListener('submit', async (e) => {
+        e.preventDefault();
+        await submitSurvey();
+      });
 
-    // ============================================
-    // FORM SUBMISSION
-    // ============================================
-    document.getElementById('surveyForm').addEventListener('submit', async (e) => {
-      e.preventDefault();
-      await submitSurvey();
-    });
+      async function submitSurvey() {
+        const submitBtn = document.getElementById('submitBtn');
+        const errorDiv = document.getElementById('errorMessage');
+        
+        errorDiv.classList.remove('visible');
+        submitBtn.disabled = true;
+        submitBtn.textContent = 'Submitting...';
 
-    async function submitSurvey() {
-      const submitBtn = document.getElementById('submitBtn');
-      const errorDiv = document.getElementById('errorMessage');
-      const errorText = document.getElementById('errorText');
-      
-      // Hide previous errors
-      errorDiv.classList.remove('visible');
+        try {
+          const feedback = [{
+            stepId: tokenData.stepId,
+            description: document.getElementById('description').value.trim(),
+            timeEstimate: document.getElementById('timeEstimate').value,
+            painPoints: document.getElementById('painPoints').value.trim(),
+            improvements: document.getElementById('improvements').value.trim()
+          }];
 
-      // Disable submit button
-      submitBtn.disabled = true;
-      submitBtn.textContent = 'Submitting...';
+          const hasContent = feedback[0].description || 
+                            feedback[0].timeEstimate || 
+                            feedback[0].painPoints || 
+                            feedback[0].improvements;
 
-      try {
-        // Gather form data
-        const feedback = [{
-          stepId: tokenData.stepId,
-          description: document.getElementById('description').value.trim(),
-          timeEstimate: document.getElementById('timeEstimate').value,
-          painPoints: document.getElementById('painPoints').value.trim(),
-          improvements: document.getElementById('improvements').value.trim()
-        }];
+          if (!hasContent) {
+            showError('Please fill in at least one field before submitting.');
+            submitBtn.disabled = false;
+            submitBtn.textContent = 'Submit Feedback';
+            return;
+          }
 
-        // Validate at least one field is filled
-        const hasContent = feedback[0].description || 
-                          feedback[0].timeEstimate || 
-                          feedback[0].painPoints || 
-                          feedback[0].improvements;
+          console.log('Submitting to Edge Function:', { token: tokenData, feedback });
 
-        if (!hasContent) {
-          showError('Please fill in at least one field before submitting.');
+          const response = await fetch(`${SUPABASE_URL}/functions/v1/submit-survey`, {
+            method: 'POST',
+            headers: {
+              'Content-Type': 'application/json',
+              'Authorization': `Bearer ${SUPABASE_ANON_KEY}`
+            },
+            body: JSON.stringify({
+              token: tokenData,
+              feedback: feedback
+            })
+          });
+
+          console.log('Response status:', response.status);
+          const result = await response.json();
+          console.log('Response data:', result);
+
+          if (!response.ok) {
+            throw new Error(result.error || 'Failed to submit survey');
+          }
+
+          document.getElementById('surveyForm').style.display = 'none';
+          document.getElementById('successMessage').classList.add('visible');
+
+        } catch (error) {
+          console.error('Submission error:', error);
+          showError(error.message || 'Failed to submit survey. Please try again.');
           submitBtn.disabled = false;
           submitBtn.textContent = 'Submit Feedback';
-          return;
         }
-
-        console.log('Submitting to Edge Function:', {
-          token: tokenData,
-          feedback: feedback
-        });
-
-        // Call Edge Function
-        const response = await fetch(`${SUPABASE_URL}/functions/v1/submit-survey`, {
-          method: 'POST',
-          headers: {
-            'Content-Type': 'application/json',
-            'Authorization': `Bearer ${SUPABASE_ANON_KEY}`
-          },
-          body: JSON.stringify({
-            token: tokenData,
-            feedback: feedback
-          })
-        });
-
-        console.log('Response status:', response.status);
-        const result = await response.json();
-        console.log('Response data:', result);
-
-        if (!response.ok) {
-          throw new Error(result.error || 'Failed to submit survey');
-        }
-
-        // Success!
-        document.getElementById('surveyForm').style.display = 'none';
-        document.getElementById('successMessage').classList.add('visible');
-
-      } catch (error) {
-        console.error('Submission error:', error);
-        showError(error.message || 'Failed to submit survey. Please try again.');
-        submitBtn.disabled = false;
-        submitBtn.textContent = 'Submit Feedback';
       }
-    }
 
-    // ============================================
-    // ERROR HANDLING
-    // ============================================
-    function showError(message) {
-      const errorDiv = document.getElementById('errorMessage');
-      const errorText = document.getElementById('errorText');
-      
-      errorText.textContent = message;
-      errorDiv.classList.add('visible');
-      
-      document.getElementById('loading').style.display = 'none';
-      document.getElementById('surveyContent').style.display = 'block';
-    }
+      // ============================================
+      // ERROR HANDLING
+      // ============================================
+      function showError(message) {
+        const errorDiv = document.getElementById('errorMessage');
+        const errorText = document.getElementById('errorText');
+        
+        errorText.textContent = message;
+        errorDiv.classList.add('visible');
+        
+        document.getElementById('loading').style.display = 'none';
+        document.getElementById('surveyContent').style.display = 'block';
+      }
+    })();
   </script>
 
 </body>
