@@ -567,7 +567,7 @@
           method: 'POST',
           headers: {
           'Content-Type': 'application/json',
-          'apikey': SUPABASE_SERVICE_ROLE_KEY  // Just need apikey, not Authorization
+          'apikey': SUPABASE_ANON_KEY  // Just need apikey, not Authorization
         },
         body: JSON.stringify({ token: result.data, feedback })
       });
