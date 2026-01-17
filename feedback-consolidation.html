@@ -1,0 +1,603 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Consolidate Survey Feedback - FATHOM</title>
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+  <style>
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+      background: #F4F5F7;
+      padding: 20px;
+      color: #1A2332;
+    }
+    
+    .header {
+      background: #192B45;
+      color: white;
+      padding: 24px;
+      border-radius: 12px;
+      margin-bottom: 24px;
+    }
+    
+    .header h1 {
+      font-size: 24px;
+      margin-bottom: 8px;
+    }
+    
+    .header p {
+      opacity: 0.8;
+      font-size: 14px;
+    }
+    
+    .step-group {
+      background: white;
+      border-radius: 12px;
+      padding: 24px;
+      margin-bottom: 24px;
+      box-shadow: 0 2px 8px rgba(0,0,0,0.05);
+    }
+    
+    .step-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 20px;
+      padding-bottom: 16px;
+      border-bottom: 2px solid #E4E7EB;
+    }
+    
+    .step-title {
+      font-size: 20px;
+      font-weight: 600;
+      color: #192B45;
+    }
+    
+    .step-meta {
+      font-size: 14px;
+      color: #6E7B8C;
+    }
+    
+    .persona-section {
+      margin-bottom: 24px;
+      padding: 16px;
+      background: #F4F5F7;
+      border-radius: 8px;
+    }
+    
+    .persona-header {
+      font-size: 16px;
+      font-weight: 600;
+      color: #192B45;
+      margin-bottom: 12px;
+    }
+    
+    .response-card {
+      background: white;
+      border: 1px solid #E4E7EB;
+      border-radius: 8px;
+      padding: 16px;
+      margin-bottom: 12px;
+    }
+    
+    .response-meta {
+      display: flex;
+      justify-content: space-between;
+      margin-bottom: 12px;
+      font-size: 13px;
+      color: #6E7B8C;
+    }
+    
+    .response-field {
+      margin-bottom: 12px;
+    }
+    
+    .response-field label {
+      display: block;
+      font-size: 12px;
+      font-weight: 600;
+      color: #556275;
+      margin-bottom: 4px;
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+    }
+    
+    .response-field-value {
+      font-size: 14px;
+      color: #1A2332;
+      padding: 8px;
+      background: #F9FAFB;
+      border-radius: 4px;
+    }
+    
+    .time-badge {
+      display: inline-block;
+      background: #5B8A9A;
+      color: white;
+      padding: 4px 12px;
+      border-radius: 12px;
+      font-size: 14px;
+      font-weight: 600;
+    }
+    
+    .consolidation-panel {
+      background: #E9EEF4;
+      border: 2px solid #5B8A9A;
+      border-radius: 8px;
+      padding: 20px;
+      margin-top: 20px;
+    }
+    
+    .consolidation-header {
+      font-size: 16px;
+      font-weight: 600;
+      color: #192B45;
+      margin-bottom: 16px;
+    }
+    
+    .consolidation-input {
+      width: 100%;
+      padding: 12px;
+      border: 2px solid #C8CED6;
+      border-radius: 6px;
+      font-size: 14px;
+      font-family: inherit;
+      margin-bottom: 12px;
+    }
+    
+    .consolidation-textarea {
+      width: 100%;
+      padding: 12px;
+      border: 2px solid #C8CED6;
+      border-radius: 6px;
+      font-size: 14px;
+      font-family: inherit;
+      min-height: 100px;
+      resize: vertical;
+      margin-bottom: 12px;
+    }
+    
+    .btn {
+      padding: 12px 24px;
+      border: none;
+      border-radius: 6px;
+      font-size: 14px;
+      font-weight: 600;
+      cursor: pointer;
+      transition: all 0.2s;
+    }
+    
+    .btn-primary {
+      background: #192B45;
+      color: white;
+    }
+    
+    .btn-primary:hover {
+      background: #243D5C;
+    }
+    
+    .btn-success {
+      background: #2D8A6E;
+      color: white;
+    }
+    
+    .btn-success:hover {
+      background: #248A6A;
+    }
+    
+    .stats {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+      gap: 12px;
+      margin-bottom: 24px;
+    }
+    
+    .stat-card {
+      background: white;
+      padding: 16px;
+      border-radius: 8px;
+      box-shadow: 0 2px 8px rgba(0,0,0,0.05);
+    }
+    
+    .stat-value {
+      font-size: 32px;
+      font-weight: 700;
+      color: #192B45;
+    }
+    
+    .stat-label {
+      font-size: 12px;
+      color: #6E7B8C;
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+      margin-top: 4px;
+    }
+    
+    .empty-state {
+      text-align: center;
+      padding: 60px 20px;
+      color: #6E7B8C;
+    }
+    
+    .loading {
+      text-align: center;
+      padding: 60px 20px;
+      color: #6E7B8C;
+      font-size: 16px;
+    }
+  </style>
+</head>
+<body>
+
+  <div class="header">
+    <h1>📊 Consolidate Survey Feedback</h1>
+    <p>Review multiple responses per step/role and consolidate into single values for your journey map</p>
+  </div>
+
+  <div class="stats" id="stats"></div>
+  
+  <div id="content">
+    <div class="loading">Loading responses...</div>
+  </div>
+
+  <script>
+    const SUPABASE_URL = 'https://ktctvaeulualihczwnrl.supabase.co';
+    const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Imt0Y3R2YWV1bHVhbGloY3p3bnJsIiwicm9sZSI6ImFub24iLCJpYXQiOjE3MzcwMzAxMjgsImV4cCI6MjA1MjYwNjEyOH0.4wAD8jXKFn3OWlMW7nE0ZbHsVMHikSPvtfW3xZLu-wI';
+    
+    const { createClient } = supabase;
+    const supabaseClient = createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+    
+    let mapId = null;
+    let allResponses = [];
+    let mapConfig = null;
+    
+    // Get map ID from URL
+    const urlParams = new URLSearchParams(window.location.search);
+    mapId = urlParams.get('id');
+    
+    if (!mapId) {
+      document.getElementById('content').innerHTML = `
+        <div class="empty-state">
+          <h2>No Journey Map Specified</h2>
+          <p>Please access this page with a journey map ID: <code>?id=YOUR_MAP_ID</code></p>
+        </div>
+      `;
+    } else {
+      init();
+    }
+    
+    async function init() {
+      await loadData();
+      renderStats();
+      renderConsolidationView();
+    }
+    
+    async function loadData() {
+      try {
+        // Load journey map config
+        const { data: mapData, error: mapError } = await supabaseClient
+          .from('journey_maps')
+          .select('*')
+          .eq('id', mapId)
+          .single();
+        
+        if (mapError) throw mapError;
+        mapConfig = mapData.config;
+        
+        // Load approved responses for this map
+        const { data: responses, error: respError } = await supabaseClient
+          .from('survey_responses')
+          .select('*')
+          .eq('map_id', mapId)
+          .eq('review_status', 'approved')
+          .order('submitted_at', { ascending: false });
+        
+        if (respError) throw respError;
+        allResponses = responses || [];
+        
+      } catch (err) {
+        console.error('Load error:', err);
+        document.getElementById('content').innerHTML = `
+          <div class="empty-state">
+            <h2>Error Loading Data</h2>
+            <p>${err.message}</p>
+          </div>
+        `;
+      }
+    }
+    
+    function renderStats() {
+      const groupedByStep = {};
+      allResponses.forEach(r => {
+        const key = `${r.step_id}-${r.persona_id}`;
+        if (!groupedByStep[key]) groupedByStep[key] = [];
+        groupedByStep[key].push(r);
+      });
+      
+      const uniqueSteps = new Set(allResponses.map(r => r.step_id)).size;
+      const uniqueRoles = new Set(allResponses.map(r => r.persona_id)).size;
+      const needsConsolidation = Object.values(groupedByStep).filter(arr => arr.length > 1).length;
+      
+      document.getElementById('stats').innerHTML = `
+        <div class="stat-card">
+          <div class="stat-value">${allResponses.length}</div>
+          <div class="stat-label">Total Responses</div>
+        </div>
+        <div class="stat-card">
+          <div class="stat-value">${uniqueSteps}</div>
+          <div class="stat-label">Steps with Feedback</div>
+        </div>
+        <div class="stat-card">
+          <div class="stat-value">${uniqueRoles}</div>
+          <div class="stat-label">Roles Represented</div>
+        </div>
+        <div class="stat-card">
+          <div class="stat-value">${needsConsolidation}</div>
+          <div class="stat-label">Need Consolidation</div>
+        </div>
+      `;
+    }
+    
+    function renderConsolidationView() {
+      // Group responses by step, then by persona
+      const groupedByStep = {};
+      
+      allResponses.forEach(response => {
+        if (!groupedByStep[response.step_id]) {
+          groupedByStep[response.step_id] = {};
+        }
+        if (!groupedByStep[response.step_id][response.persona_id]) {
+          groupedByStep[response.step_id][response.persona_id] = [];
+        }
+        groupedByStep[response.step_id][response.persona_id].push(response);
+      });
+      
+      if (Object.keys(groupedByStep).length === 0) {
+        document.getElementById('content').innerHTML = `
+          <div class="empty-state">
+            <h2>No Approved Responses</h2>
+            <p>Approve some survey responses first, then they'll appear here for consolidation.</p>
+          </div>
+        `;
+        return;
+      }
+      
+      let html = '';
+      
+      Object.keys(groupedByStep).forEach(stepId => {
+        const stepName = getStepName(stepId);
+        const personaGroups = groupedByStep[stepId];
+        
+        html += `
+          <div class="step-group">
+            <div class="step-header">
+              <div class="step-title">${stepName}</div>
+              <div class="step-meta">${stepId}</div>
+            </div>
+        `;
+        
+        Object.keys(personaGroups).forEach(personaId => {
+          const responses = personaGroups[personaId];
+          const avgTime = Math.round(responses.reduce((sum, r) => sum + (r.time_estimate || 0), 0) / responses.length);
+          
+          html += `
+            <div class="persona-section">
+              <div class="persona-header">
+                ${formatPersonaName(personaId)} 
+                <span style="font-weight: normal; color: #6E7B8C;">(${responses.length} ${responses.length === 1 ? 'response' : 'responses'})</span>
+              </div>
+          `;
+          
+          // Show all individual responses
+          responses.forEach((response, idx) => {
+            html += `
+              <div class="response-card">
+                <div class="response-meta">
+                  <span>${response.respondent_email}</span>
+                  <span>${new Date(response.submitted_at).toLocaleDateString()}</span>
+                </div>
+                
+                ${response.time_estimate ? `
+                  <div class="response-field">
+                    <label>Time Estimate</label>
+                    <div class="response-field-value">
+                      <span class="time-badge">${response.time_estimate} minutes</span>
+                    </div>
+                  </div>
+                ` : ''}
+                
+                ${response.description ? `
+                  <div class="response-field">
+                    <label>Description</label>
+                    <div class="response-field-value">${response.description}</div>
+                  </div>
+                ` : ''}
+                
+                ${response.pain_points ? `
+                  <div class="response-field">
+                    <label>Pain Points</label>
+                    <div class="response-field-value">${response.pain_points}</div>
+                  </div>
+                ` : ''}
+                
+                ${response.improvements ? `
+                  <div class="response-field">
+                    <label>Improvements</label>
+                    <div class="response-field-value">${response.improvements}</div>
+                  </div>
+                ` : ''}
+              </div>
+            `;
+          });
+          
+          // Consolidation panel
+          const consolidationId = `${stepId}-${personaId}`;
+          html += `
+            <div class="consolidation-panel">
+              <div class="consolidation-header">✏️ Consolidated Values</div>
+              
+              <label style="display: block; font-size: 13px; font-weight: 600; margin-bottom: 6px;">
+                Time (minutes) - Average: ${avgTime}
+              </label>
+              <input 
+                type="number" 
+                class="consolidation-input"
+                id="time-${consolidationId}"
+                value="${avgTime}"
+                placeholder="Enter consolidated time in minutes"
+              />
+              
+              <label style="display: block; font-size: 13px; font-weight: 600; margin-bottom: 6px;">
+                Action Description
+              </label>
+              <textarea 
+                class="consolidation-textarea"
+                id="action-${consolidationId}"
+                placeholder="Consolidate the descriptions into one clear action..."
+              >${responses.map(r => r.description).filter(Boolean).join('\n\n')}</textarea>
+              
+              <label style="display: block; font-size: 13px; font-weight: 600; margin-bottom: 6px;">
+                Pain Points & Improvements (for notes field)
+              </label>
+              <textarea 
+                class="consolidation-textarea"
+                id="notes-${consolidationId}"
+                placeholder="Consolidate pain points and improvements..."
+              >${responses.map(r => {
+                const parts = [];
+                if (r.pain_points) parts.push(`Pain: ${r.pain_points}`);
+                if (r.improvements) parts.push(`Improvement: ${r.improvements}`);
+                return parts.join('\n');
+              }).filter(Boolean).join('\n\n')}</textarea>
+              
+              <button 
+                class="btn btn-success" 
+                onclick="applyConsolidation('${stepId}', '${personaId}')"
+              >
+                ✓ Apply to Journey Map
+              </button>
+            </div>
+          </div>
+          `;
+        });
+        
+        html += '</div>';
+      });
+      
+      document.getElementById('content').innerHTML = html;
+    }
+    
+    function getStepName(stepId) {
+      if (!mapConfig || !mapConfig.stages) return stepId;
+      
+      for (const stage of mapConfig.stages) {
+        const step = stage.steps?.find(s => s.id === stepId);
+        if (step) return step.name || stepId;
+      }
+      return stepId;
+    }
+    
+    function formatPersonaName(personaId) {
+      return personaId.split('-').map(w => w.charAt(0).toUpperCase() + w.slice(1)).join(' ');
+    }
+    
+    async function applyConsolidation(stepId, personaId) {
+      const consolidationId = `${stepId}-${personaId}`;
+      
+      const timeInput = document.getElementById(`time-${consolidationId}`);
+      const actionInput = document.getElementById(`action-${consolidationId}`);
+      const notesInput = document.getElementById(`notes-${consolidationId}`);
+      
+      const consolidatedTime = parseInt(timeInput.value) || 0;
+      const consolidatedAction = actionInput.value.trim();
+      const consolidatedNotes = notesInput.value.trim();
+      
+      if (!consolidatedTime && !consolidatedAction) {
+        alert('Please enter at least a time estimate or action description');
+        return;
+      }
+      
+      if (!confirm(`Apply consolidated values for ${formatPersonaName(personaId)} to the journey map?`)) {
+        return;
+      }
+      
+      try {
+        // Find and update the step in the config
+        let updated = false;
+        mapConfig.stages.forEach(stage => {
+          stage.steps?.forEach(step => {
+            if (step.id === stepId) {
+              // Update roleInvolvement time
+              if (!step.roleInvolvement) step.roleInvolvement = {};
+              if (!step.roleInvolvement[personaId]) {
+                step.roleInvolvement[personaId] = { timeMinutes: 0, headcount: 1 };
+              }
+              step.roleInvolvement[personaId].timeMinutes = consolidatedTime;
+              
+              // Update actions description
+              if (!step.actions) step.actions = {};
+              step.actions[personaId] = consolidatedAction;
+              
+              // Append notes (don't overwrite)
+              if (consolidatedNotes) {
+                const timestamp = new Date().toISOString().split('T')[0];
+                const feedbackNote = `\n\n[Survey feedback ${timestamp} - ${formatPersonaName(personaId)}]:\n${consolidatedNotes}`;
+                step.notes = (step.notes || '') + feedbackNote;
+              }
+              
+              step.lastUpdatedFromFeedback = new Date().toISOString();
+              updated = true;
+            }
+          });
+        });
+        
+        if (!updated) {
+          alert('Step not found in journey map');
+          return;
+        }
+        
+        // Save updated config to Supabase
+        const { error: saveError } = await supabaseClient
+          .from('journey_maps')
+          .update({ 
+            config: mapConfig,
+            updated_at: new Date().toISOString()
+          })
+          .eq('id', mapId);
+        
+        if (saveError) throw saveError;
+        
+        // Mark responses as applied
+        const responsesToMark = allResponses.filter(
+          r => r.step_id === stepId && r.persona_id === personaId
+        );
+        
+        const { error: updateError } = await supabaseClient
+          .from('survey_responses')
+          .update({
+            review_status: 'applied',
+            applied_to_map: true,
+            applied_at: new Date().toISOString()
+          })
+          .in('id', responsesToMark.map(r => r.id));
+        
+        if (updateError) throw updateError;
+        
+        alert('✓ Consolidated values applied to journey map!\n\nRefresh the editor to see changes.');
+        
+        // Reload to update view
+        await loadData();
+        renderStats();
+        renderConsolidationView();
+        
+      } catch (err) {
+        console.error('Apply error:', err);
+        alert('Failed to apply: ' + err.message);
+      }
+    }
+  </script>
+
+</body>
+</html>
