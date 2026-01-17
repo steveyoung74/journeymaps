@@ -1,0 +1,382 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>User Testing - Survey Links | FATHOM</title>
+  
+  <style>
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+    
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+      background: #F4F5F7;
+      color: #1A2332;
+      padding: 40px 20px;
+      line-height: 1.6;
+    }
+    
+    .container { max-width: 900px; margin: 0 auto; }
+    
+    .header {
+      text-align: center;
+      margin-bottom: 32px;
+      padding: 24px;
+      background: #192B45;
+      border-radius: 12px;
+      color: #FFF;
+    }
+    
+    .header h1 {
+      font-size: 24px;
+      font-weight: 700;
+      letter-spacing: 2px;
+      margin-bottom: 8px;
+    }
+    
+    .header p { font-size: 14px; opacity: 0.8; }
+    
+    .card {
+      background: #FFF;
+      border-radius: 12px;
+      padding: 24px;
+      margin-bottom: 24px;
+      box-shadow: 0 2px 8px rgba(25, 43, 69, 0.08);
+    }
+    
+    .card h2 {
+      font-size: 18px;
+      color: #192B45;
+      margin-bottom: 16px;
+      padding-bottom: 12px;
+      border-bottom: 2px solid #E4E7EB;
+    }
+    
+    .test-scenario {
+      background: #F4F5F7;
+      border-left: 4px solid #5B8A9A;
+      padding: 16px;
+      margin-bottom: 16px;
+      border-radius: 8px;
+    }
+    
+    .scenario-title {
+      font-weight: 600;
+      color: #192B45;
+      margin-bottom: 8px;
+      font-size: 16px;
+    }
+    
+    .scenario-details {
+      font-size: 14px;
+      color: #6E7B8C;
+      margin-bottom: 12px;
+    }
+    
+    .url-box {
+      background: #FFF;
+      border: 1px solid #E4E7EB;
+      border-radius: 6px;
+      padding: 12px;
+      font-family: monospace;
+      font-size: 12px;
+      word-break: break-all;
+      margin: 12px 0;
+      max-height: 100px;
+      overflow-y: auto;
+    }
+    
+    .btn {
+      padding: 10px 20px;
+      background: #5B8A9A;
+      color: #FFF;
+      border: none;
+      border-radius: 6px;
+      font-size: 14px;
+      font-weight: 600;
+      cursor: pointer;
+      transition: all 0.2s;
+      margin-right: 8px;
+    }
+    
+    .btn:hover {
+      background: #4A7485;
+      transform: translateY(-1px);
+    }
+    
+    .btn-secondary {
+      background: #192B45;
+    }
+    
+    .btn-secondary:hover {
+      background: #0C1620;
+    }
+    
+    .success-msg {
+      color: #2D8A6E;
+      font-size: 12px;
+      margin-left: 8px;
+      display: none;
+    }
+    
+    .success-msg.visible { display: inline; }
+    
+    .instructions {
+      background: #E9EEF4;
+      border-radius: 8px;
+      padding: 16px;
+      margin-bottom: 24px;
+    }
+    
+    .instructions h3 {
+      font-size: 16px;
+      color: #192B45;
+      margin-bottom: 8px;
+    }
+    
+    .instructions ul {
+      margin-left: 20px;
+      font-size: 14px;
+      color: #556275;
+    }
+    
+    .instructions li {
+      margin-bottom: 6px;
+    }
+
+    .token-info {
+      background: #FAF0D6;
+      border-left: 4px solid #C4942A;
+      padding: 12px;
+      margin-top: 12px;
+      border-radius: 6px;
+      font-size: 13px;
+      color: #8B6914;
+    }
+  </style>
+</head>
+<body>
+
+  <div class="container">
+    <div class="header">
+      <h1>FATHOM</h1>
+      <p>User Testing - Survey Links Generator</p>
+    </div>
+
+    <div class="card instructions">
+      <h3>📋 Testing Instructions</h3>
+      <ul>
+        <li>Click "Generate Link" for each scenario below</li>
+        <li>Copy the link and send it to test users (or test yourself)</li>
+        <li>Each link is valid for 30 days</li>
+        <li>Test on different devices: desktop, mobile, tablet</li>
+        <li>Check responses in your responses-review.html page</li>
+      </ul>
+    </div>
+
+    <div class="card">
+      <h2>Configuration</h2>
+      <div style="margin-bottom: 20px;">
+        <label style="display: block; font-size: 14px; font-weight: 600; margin-bottom: 8px;">
+          Journey Map ID
+        </label>
+        <input 
+          type="text" 
+          id="mapId" 
+          placeholder="Enter your journey map ID (or leave blank for testing)"
+          value=""
+          style="width: 100%; padding: 12px; border: 2px solid #E4E7EB; border-radius: 6px; font-family: monospace; font-size: 13px;"
+        >
+        <div style="font-size: 12px; color: #6E7B8C; margin-top: 6px;">
+          💡 <strong>Tip:</strong> Get this from your journey map URL in FATHOM dashboard. 
+          Example: <code>a8b4021d-d450-4f1f-ac55-81a47a005e2b</code>
+          <br>Leave blank to use "user-testing" as the map ID.
+        </div>
+      </div>
+    </div>
+
+    <div class="card">
+      <h2>Test Scenarios</h2>
+
+      <!-- Scenario 1: Financial Advisor -->
+      <div class="test-scenario">
+        <div class="scenario-title">🏦 Financial Advisor - KYC Verification</div>
+        <div class="scenario-details">
+          <strong>Persona:</strong> Financial Advisor<br>
+          <strong>Step:</strong> KYC Verification<br>
+          <strong>Test Email:</strong> <a href="/cdn-cgi/l/email-protection" class="__cf_email__" data-cfemail="2f4e4b59465c405d015b4a5c5b6f4a574e425f434a014c4042">[email&#160;protected]</a>
+        </div>
+        <button class="btn" onclick="generateLink('kyc-verification', 'financial-advisor', 'advisor.test@example.com', 1)">
+          Generate Link
+        </button>
+        <button class="btn btn-secondary" onclick="copyLink(1)" style="display:none;" id="copy-1">
+          Copy Link
+        </button>
+        <span class="success-msg" id="success-1">✓ Copied!</span>
+        <div class="url-box" id="url-1" style="display:none;"></div>
+      </div>
+
+      <!-- Scenario 2: Client -->
+      <div class="test-scenario">
+        <div class="scenario-title">👤 Client - Document Upload</div>
+        <div class="scenario-details">
+          <strong>Persona:</strong> Client<br>
+          <strong>Step:</strong> Document Upload<br>
+          <strong>Test Email:</strong> <a href="/cdn-cgi/l/email-protection" class="__cf_email__" data-cfemail="93f0fffaf6fde7bde7f6e0e7d3f6ebf2fee3fff6bdf0fcfe">[email&#160;protected]</a>
+        </div>
+        <button class="btn" onclick="generateLink('document-upload', 'client', 'client.test@example.com', 2)">
+          Generate Link
+        </button>
+        <button class="btn btn-secondary" onclick="copyLink(2)" style="display:none;" id="copy-2">
+          Copy Link
+        </button>
+        <span class="success-msg" id="success-2">✓ Copied!</span>
+        <div class="url-box" id="url-2" style="display:none;"></div>
+      </div>
+
+      <!-- Scenario 3: Admin -->
+      <div class="test-scenario">
+        <div class="scenario-title">⚙️ Admin - Account Setup</div>
+        <div class="scenario-details">
+          <strong>Persona:</strong> Admin<br>
+          <strong>Step:</strong> Account Setup<br>
+          <strong>Test Email:</strong> <a href="/cdn-cgi/l/email-protection" class="__cf_email__" data-cfemail="dfbebbb2b6b1f1abbaacab9fbaa7beb2afb3baf1bcb0b2">[email&#160;protected]</a>
+        </div>
+        <button class="btn" onclick="generateLink('account-setup', 'admin', 'admin.test@example.com', 3)">
+          Generate Link
+        </button>
+        <button class="btn btn-secondary" onclick="copyLink(3)" style="display:none;" id="copy-3">
+          Copy Link
+        </button>
+        <span class="success-msg" id="success-3">✓ Copied!</span>
+        <div class="url-box" id="url-3" style="display:none;"></div>
+      </div>
+
+      <!-- Scenario 4: Compliance -->
+      <div class="test-scenario">
+        <div class="scenario-title">🔒 Compliance Officer - Risk Assessment</div>
+        <div class="scenario-details">
+          <strong>Persona:</strong> Compliance Officer<br>
+          <strong>Step:</strong> Risk Assessment<br>
+          <strong>Test Email:</strong> <a href="/cdn-cgi/l/email-protection" class="__cf_email__" data-cfemail="0f6c60627f63666e616c6a217b6a7c7b4f6a776e627f636a216c6062">[email&#160;protected]</a>
+        </div>
+        <button class="btn" onclick="generateLink('risk-assessment', 'compliance-officer', 'compliance.test@example.com', 4)">
+          Generate Link
+        </button>
+        <button class="btn btn-secondary" onclick="copyLink(4)" style="display:none;" id="copy-4">
+          Copy Link
+        </button>
+        <span class="success-msg" id="success-4">✓ Copied!</span>
+        <div class="url-box" id="url-4" style="display:none;"></div>
+      </div>
+
+      <!-- Scenario 5: Operations -->
+      <div class="test-scenario">
+        <div class="scenario-title">📊 Operations - Data Entry</div>
+        <div class="scenario-details">
+          <strong>Persona:</strong> Operations<br>
+          <strong>Step:</strong> Data Entry<br>
+          <strong>Test Email:</strong> <a href="/cdn-cgi/l/email-protection" class="__cf_email__" data-cfemail="305f40431e44554344705548515d405c551e535f5d">[email&#160;protected]</a>
+        </div>
+        <button class="btn" onclick="generateLink('data-entry', 'operations', 'ops.test@example.com', 5)">
+          Generate Link
+        </button>
+        <button class="btn btn-secondary" onclick="copyLink(5)" style="display:none;" id="copy-5">
+          Copy Link
+        </button>
+        <span class="success-msg" id="success-5">✓ Copied!</span>
+        <div class="url-box" id="url-5" style="display:none;"></div>
+      </div>
+
+      <div class="token-info">
+        <strong>⚠️ Note:</strong> These are test links. All responses will appear in your database with these test emails. 
+        You can filter them out later or delete them from Supabase.
+      </div>
+    </div>
+
+    <div class="card">
+      <h2>Custom Link Generator</h2>
+      <div style="display: grid; gap: 16px; margin-bottom: 16px;">
+        <div>
+          <label style="display: block; font-size: 14px; font-weight: 600; margin-bottom: 6px;">Step ID</label>
+          <input type="text" id="customStep" placeholder="e.g., onboarding-welcome" 
+                 style="width: 100%; padding: 10px; border: 2px solid #E4E7EB; border-radius: 6px;">
+        </div>
+        <div>
+          <label style="display: block; font-size: 14px; font-weight: 600; margin-bottom: 6px;">Persona/Role</label>
+          <input type="text" id="customPersona" placeholder="e.g., manager" 
+                 style="width: 100%; padding: 10px; border: 2px solid #E4E7EB; border-radius: 6px;">
+        </div>
+        <div>
+          <label style="display: block; font-size: 14px; font-weight: 600; margin-bottom: 6px;">Test Email</label>
+          <input type="email" id="customEmail" placeholder="e.g., test@example.com" 
+                 style="width: 100%; padding: 10px; border: 2px solid #E4E7EB; border-radius: 6px;">
+        </div>
+      </div>
+      <button class="btn" onclick="generateCustomLink()">Generate Custom Link</button>
+      <button class="btn btn-secondary" onclick="copyLink(6)" style="display:none;" id="copy-6">
+        Copy Link
+      </button>
+      <span class="success-msg" id="success-6">✓ Copied!</span>
+      <div class="url-box" id="url-6" style="display:none;"></div>
+    </div>
+  </div>
+
+  <script data-cfasync="false" src="/cdn-cgi/scripts/5c5dd728/cloudflare-static/email-decode.min.js"></script><script>
+    const BASE_URL = 'https://canfathom.co.uk/survey-response.html';
+    const generatedLinks = {};
+
+    function getMapId() {
+      const mapIdInput = document.getElementById('mapId');
+      const mapId = mapIdInput.value.trim();
+      return mapId || 'user-testing';
+    }
+
+    function generateLink(stepId, personaId, email, scenarioNum) {
+      const expiryDate = new Date();
+      expiryDate.setDate(expiryDate.getDate() + 30); // 30 days from now
+
+      const tokenData = {
+        mapId: getMapId(),
+        stepId: stepId,
+        personaId: personaId,
+        recipientEmail: email,
+        scope: 'full',
+        expires: expiryDate.toISOString(),
+        generated: new Date().toISOString()
+      };
+
+      const token = btoa(JSON.stringify(tokenData));
+      const url = `${BASE_URL}?token=${token}`;
+
+      generatedLinks[scenarioNum] = url;
+
+      document.getElementById(`url-${scenarioNum}`).textContent = url;
+      document.getElementById(`url-${scenarioNum}`).style.display = 'block';
+      document.getElementById(`copy-${scenarioNum}`).style.display = 'inline-block';
+    }
+
+    function generateCustomLink() {
+      const stepId = document.getElementById('customStep').value.trim();
+      const personaId = document.getElementById('customPersona').value.trim();
+      const email = document.getElementById('customEmail').value.trim();
+
+      if (!stepId || !personaId || !email) {
+        alert('Please fill in all fields');
+        return;
+      }
+
+      const expiryDate = new Date();
+      expiryDate.setDate(expiryDate.getDate() + 30);
+
+      const tokenData = {
+        mapId: getMapId(),
+        stepId: stepId,
+        personaId: personaId,
+        recipientEmail: email,
+        scope: 'full',
+        expires: expiryDate.toISOString(),
+        generated: new Date().toISOString()
+      };
+
+      const token = bt
