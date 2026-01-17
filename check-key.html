@@ -1,0 +1,39 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <title>API Key Check</title>
+</head>
+<body>
+  <h1>Checking deployed responses-review.html...</h1>
+  <div id="result"></div>
+  
+  <script>
+    fetch('responses-review.html')
+      .then(r => r.text())
+      .then(html => {
+        // Extract the anon key from the HTML
+        const match = html.match(/SUPABASE_ANON_KEY = '([^']+)'/);
+        const key = match ? match[1] : 'NOT FOUND';
+        
+        // Show first and last 20 chars
+        const display = key.length > 40 ? 
+          key.substring(0, 30) + '...' + key.substring(key.length - 30) : 
+          key;
+        
+        const correctKey = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Imt0Y3R2YWV1bHVhbGloY3p3bnJsIiwicm9sZSI6ImFub24iLCJpYXQiOjE3Njc0MzczNjksImV4cCI6MjA4MzAxMzM2OX0.qnvrAUvUhp3hgu37YnahR0Ql-CKR0zcDt3sKWaMq95I';
+        
+        const isCorrect = key === correctKey;
+        
+        document.getElementById('result').innerHTML = `
+          <p><strong>Deployed Key:</strong><br><code>${display}</code></p>
+          <p><strong>Status:</strong> ${isCorrect ? '✅ CORRECT' : '❌ WRONG - needs update'}</p>
+          <p><strong>Key ends with:</strong> ${key.substring(key.length - 10)}</p>
+          <p><strong>Should end with:</strong> ${correctKey.substring(correctKey.length - 10)}</p>
+        `;
+      })
+      .catch(err => {
+        document.getElementById('result').innerHTML = `<p>Error: ${err.message}</p>`;
+      });
+  </script>
+</body>
+</html>
