@@ -251,8 +251,8 @@
       const SUPABASE_URL = 'https://ktctvaeuluallhczwnrl.supabase.co';
       const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Imt0Y3R2YWV1bHVhbGxoY3p3bnJsIiwicm9sZSI6ImFub24iLCJpYXQiOjE3MzY5NTU4MTQsImV4cCI6MjA1MjUzMTgxNH0.ts4wMYOKiGfUgJ32zZ93wRlGZY_BKmrjCbqE__kzFzQ';
       
-      // CORRECT Edge Function URL format
-      const EDGE_FUNCTION_URL = 'https://ktctvaeuluallhczwnrl.functions.supabase.co/submit-survey';
+      // NOW USING CORRECT ENDPOINT WITH IPv4 SUPPORT
+      const EDGE_FUNCTION_URL = 'https://ktctvaeuluallhczwnrl.supabase.co/functions/v1/submit-survey';
 
       const supabase = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
       let tokenData = null;
