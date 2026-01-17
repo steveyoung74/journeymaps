@@ -248,10 +248,21 @@
 
   <script>
     (function() {
-      const SUPABASE_URL = 'https://ktctvaeuluallhczwnrl.supabase.co';
-      const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Imt0Y3R2YWV1bHVhbGxoY3p3bnJsIiwicm9sZSI6ImFub24iLCJpYXQiOjE3MzY5NTU4MTQsImV4cCI6MjA1MjUzMTgxNH0.ts4wMYOKiGfUgJ32zZ93wRlGZY_BKmrjCbqE__kzFzQ';
+      // CORRECTED Supabase credentials (matching responses-review.html)
+      const SUPABASE_URL = 'https://ktctvaeulualihczwnrl.supabase.co';
+      const SUPABASE_ANON_KEY = 'sb_publishable_NlZjP1W6SO7j7jrbv8gARA_HgZlRxLY';
 
-      const supabase = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+      // Create Supabase client
+      const supabase = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY, {
+        auth: {
+          persistSession: false,
+          autoRefreshToken: false
+        },
+        db: {
+          schema: 'public'
+        }
+      });
+      
       let tokenData = null;
 
       document.addEventListener('DOMContentLoaded', async () => {
@@ -274,6 +285,26 @@
 
           if (tokenData.expires && new Date(tokenData.expires) < new Date()) {
             showError('Token expired.');
+            return;
+          }
+
+          // Test Supabase connection
+          console.log('→ Testing Supabase connection...');
+          try {
+            const { error: testError } = await supabase
+              .from('survey_responses')
+              .select('id')
+              .limit(1);
+            
+            if (testError) {
+              console.error('❌ Supabase connection test failed:', testError);
+              showError(`Cannot connect to database: ${testError.message}. Please check your internet connection.`);
+              return;
+            }
+            console.log('✓ Supabase connection OK');
+          } catch (connError) {
+            console.error('❌ Connection error:', connError);
+            showError('Cannot connect to database. This might be a DNS or network issue.');
             return;
           }
 
@@ -336,28 +367,7 @@
           console.log('→ Submitting directly to Supabase');
           console.log('→ Data:', responseData);
 
-          // Check for duplicates first
-          const { data: existingData, error: checkError } = await supabase
-            .from('survey_responses')
-            .select('id')
-            .eq('step_id', responseData.step_id)
-            .eq('persona_id', responseData.persona_id)
-            .eq('respondent_email', responseData.respondent_email)
-            .limit(1);
-
-          if (checkError) {
-            console.error('Check error:', checkError);
-            throw new Error('Failed to check for existing response');
-          }
-
-          if (existingData && existingData.length > 0) {
-            showError('You have already submitted feedback for this step.');
-            btn.disabled = false;
-            btn.textContent = 'Submit Feedback';
-            return;
-          }
-
-          // Insert the response
+          // Insert the response (duplicate check removed for now)
           const { data: insertData, error: insertError } = await supabase
             .from('survey_responses')
             .insert([responseData])
