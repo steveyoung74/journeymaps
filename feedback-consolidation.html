@@ -244,7 +244,7 @@
 
   <script>
     const SUPABASE_URL = 'https://ktctvaeulualihczwnrl.supabase.co';
-    const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Imt0Y3R2YWV1bHVhbGloY3p3bnJsIiwicm9sZSI6ImFub24iLCJpYXQiOjE3MzcwMzAxMjgsImV4cCI6MjA1MjYwNjEyOH0.4wAD8jXKFn3OWlMW7nE0ZbHsVMHikSPvtfW3xZLu-wI';
+    const SUPABASE_ANON_KEY = 'sb_publishable_NlZjP1W6SO7j7jrbv8gARA_HgZlRxLY';
     
     const { createClient } = supabase;
     const supabaseClient = createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
@@ -269,24 +269,57 @@
     }
     
     async function init() {
+      // Check if user is authenticated
+      console.log('Checking authentication...');
+      const { data: { user }, error: authError } = await supabaseClient.auth.getUser();
+      
+      console.log('Auth result:', { user, authError });
+      
+      if (!user) {
+        document.getElementById('content').innerHTML = `
+          <div class="empty-state">
+            <h2>🔒 Authentication Required</h2>
+            <p>Please sign in to access this page.</p>
+            <p style="margin-top: 16px;">
+              <a href="index.html" style="color: #5B8A9A; font-weight: 600;">Go to Sign In →</a>
+            </p>
+          </div>
+        `;
+        return;
+      }
+      
+      console.log('User authenticated:', user.email);
+      
       await loadData();
       renderStats();
       renderConsolidationView();
     }
     
     async function loadData() {
+      console.log('Loading data for map ID:', mapId);
+      
       try {
         // Load journey map config
+        console.log('Fetching journey map...');
         const { data: mapData, error: mapError } = await supabaseClient
           .from('journey_maps')
           .select('*')
           .eq('id', mapId)
           .single();
         
+        console.log('Journey map result:', { mapData, mapError });
+        
         if (mapError) throw mapError;
+        
+        if (!mapData) {
+          throw new Error('Journey map not found');
+        }
+        
         mapConfig = mapData.config;
+        console.log('Loaded map config:', mapConfig);
         
         // Load approved responses for this map
+        console.log('Fetching approved responses...');
         const { data: responses, error: respError } = await supabaseClient
           .from('survey_responses')
           .select('*')
@@ -294,15 +327,21 @@
           .eq('review_status', 'approved')
           .order('submitted_at', { ascending: false });
         
+        console.log('Responses result:', { responses, respError });
+        
         if (respError) throw respError;
         allResponses = responses || [];
+        
+        console.log(`Loaded ${allResponses.length} approved responses`);
         
       } catch (err) {
         console.error('Load error:', err);
         document.getElementById('content').innerHTML = `
           <div class="empty-state">
             <h2>Error Loading Data</h2>
-            <p>${err.message}</p>
+            <p><strong>Error:</strong> ${err.message}</p>
+            <p style="margin-top: 12px; font-size: 13px;"><strong>Map ID:</strong> ${mapId}</p>
+            <p style="font-size: 13px; color: #B84A5A;">Check the browser console for more details</p>
           </div>
         `;
       }
@@ -341,6 +380,9 @@
     }
     
     function renderConsolidationView() {
+      console.log('Rendering consolidation view...');
+      console.log('All responses:', allResponses);
+      
       // Group responses by step, then by persona
       const groupedByStep = {};
       
@@ -354,11 +396,19 @@
         groupedByStep[response.step_id][response.persona_id].push(response);
       });
       
+      console.log('Grouped by step:', groupedByStep);
+      
       if (Object.keys(groupedByStep).length === 0) {
         document.getElementById('content').innerHTML = `
           <div class="empty-state">
-            <h2>No Approved Responses</h2>
-            <p>Approve some survey responses first, then they'll appear here for consolidation.</p>
+            <h2>No Approved Responses Found</h2>
+            <p>There are no approved survey responses for this journey map yet.</p>
+            <p style="margin-top: 16px; font-size: 14px;">
+              <strong>To get started:</strong><br>
+              1. Go to <a href="responses-review.html?id=${mapId}" style="color: #5B8A9A;">Response Review</a><br>
+              2. Approve some survey responses<br>
+              3. Come back here to consolidate them
+            </p>
           </div>
         `;
         return;
