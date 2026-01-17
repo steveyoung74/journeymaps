@@ -250,6 +250,9 @@
     (function() {
       const SUPABASE_URL = 'https://ktctvaeuluallhczwnrl.supabase.co';
       const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Imt0Y3R2YWV1bHVhbGxoY3p3bnJsIiwicm9sZSI6ImFub24iLCJpYXQiOjE3MzY5NTU4MTQsImV4cCI6MjA1MjUzMTgxNH0.ts4wMYOKiGfUgJ32zZ93wRlGZY_BKmrjCbqE__kzFzQ';
+      
+      // CORRECT Edge Function URL format
+      const EDGE_FUNCTION_URL = 'https://ktctvaeuluallhczwnrl.functions.supabase.co/submit-survey';
 
       const supabase = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
       let tokenData = null;
@@ -265,7 +268,7 @@
           }
 
           tokenData = JSON.parse(atob(token));
-          console.log('Token:', tokenData);
+          console.log('✓ Token decoded:', tokenData);
 
           if (!tokenData.personaId || !tokenData.recipientEmail) {
             showError('Invalid token.');
@@ -326,9 +329,10 @@
             return;
           }
 
-          console.log('Submitting:', { token: tokenData, feedback });
+          console.log('→ Submitting to:', EDGE_FUNCTION_URL);
+          console.log('→ Payload:', { token: tokenData, feedback });
 
-          const response = await fetch(`${SUPABASE_URL}/functions/v1/submit-survey`, {
+          const response = await fetch(EDGE_FUNCTION_URL, {
             method: 'POST',
             headers: {
               'Content-Type': 'application/json',
@@ -337,19 +341,20 @@
             body: JSON.stringify({ token: tokenData, feedback })
           });
 
-          console.log('Status:', response.status);
+          console.log('← Status:', response.status);
           const result = await response.json();
-          console.log('Result:', result);
+          console.log('← Result:', result);
 
           if (!response.ok) {
             throw new Error(result.error || 'Submission failed');
           }
 
+          console.log('✓ Success!');
           document.getElementById('surveyForm').style.display = 'none';
           document.getElementById('successMsg').classList.add('visible');
 
         } catch (error) {
-          console.error('Error:', error);
+          console.error('✗ Error:', error);
           showError(error.message);
           btn.disabled = false;
           btn.textContent = 'Submit Feedback';
