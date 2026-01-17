@@ -250,9 +250,6 @@
     (function() {
       const SUPABASE_URL = 'https://ktctvaeuluallhczwnrl.supabase.co';
       const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Imt0Y3R2YWV1bHVhbGxoY3p3bnJsIiwicm9sZSI6ImFub24iLCJpYXQiOjE3MzY5NTU4MTQsImV4cCI6MjA1MjUzMTgxNH0.ts4wMYOKiGfUgJ32zZ93wRlGZY_BKmrjCbqE__kzFzQ';
-      
-      // NOW USING CORRECT ENDPOINT WITH IPv4 SUPPORT
-      const EDGE_FUNCTION_URL = 'https://ktctvaeuluallhczwnrl.supabase.co/functions/v1/submit-survey';
 
       const supabase = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
       let tokenData = null;
@@ -311,16 +308,23 @@
         btn.textContent = 'Submitting...';
 
         try {
-          const feedback = [{
-            stepId: tokenData.stepId,
-            description: document.getElementById('description').value.trim(),
-            timeEstimate: document.getElementById('timeEstimate').value,
-            painPoints: document.getElementById('painPoints').value.trim(),
-            improvements: document.getElementById('improvements').value.trim()
-          }];
+          // Prepare the response data
+          const responseData = {
+            map_id: tokenData.mapId && tokenData.mapId !== 'demo' && tokenData.mapId !== 'unknown' ? tokenData.mapId : null,
+            step_id: tokenData.stepId,
+            persona_id: tokenData.personaId,
+            respondent_email: tokenData.recipientEmail,
+            scope: tokenData.scope || 'full',
+            description: document.getElementById('description').value.trim() || null,
+            time_estimate: document.getElementById('timeEstimate').value ? parseInt(document.getElementById('timeEstimate').value) : null,
+            pain_points: document.getElementById('painPoints').value.trim() || null,
+            improvements: document.getElementById('improvements').value.trim() || null,
+            review_status: 'pending',
+            submitted_at: new Date().toISOString()
+          };
 
-          const hasContent = feedback[0].description || feedback[0].timeEstimate || 
-                            feedback[0].painPoints || feedback[0].improvements;
+          const hasContent = responseData.description || responseData.time_estimate || 
+                            responseData.pain_points || responseData.improvements;
 
           if (!hasContent) {
             showError('Please fill in at least one field.');
@@ -329,33 +333,48 @@
             return;
           }
 
-          console.log('→ Submitting to:', EDGE_FUNCTION_URL);
-          console.log('→ Payload:', { token: tokenData, feedback });
+          console.log('→ Submitting directly to Supabase');
+          console.log('→ Data:', responseData);
 
-          const response = await fetch(EDGE_FUNCTION_URL, {
-            method: 'POST',
-            headers: {
-              'Content-Type': 'application/json',
-              'Authorization': `Bearer ${SUPABASE_ANON_KEY}`
-            },
-            body: JSON.stringify({ token: tokenData, feedback })
-          });
+          // Check for duplicates first
+          const { data: existingData, error: checkError } = await supabase
+            .from('survey_responses')
+            .select('id')
+            .eq('step_id', responseData.step_id)
+            .eq('persona_id', responseData.persona_id)
+            .eq('respondent_email', responseData.respondent_email)
+            .limit(1);
 
-          console.log('← Status:', response.status);
-          const result = await response.json();
-          console.log('← Result:', result);
-
-          if (!response.ok) {
-            throw new Error(result.error || 'Submission failed');
+          if (checkError) {
+            console.error('Check error:', checkError);
+            throw new Error('Failed to check for existing response');
           }
 
-          console.log('✓ Success!');
+          if (existingData && existingData.length > 0) {
+            showError('You have already submitted feedback for this step.');
+            btn.disabled = false;
+            btn.textContent = 'Submit Feedback';
+            return;
+          }
+
+          // Insert the response
+          const { data: insertData, error: insertError } = await supabase
+            .from('survey_responses')
+            .insert([responseData])
+            .select();
+
+          if (insertError) {
+            console.error('Insert error:', insertError);
+            throw new Error(insertError.message);
+          }
+
+          console.log('✓ Success!', insertData);
           document.getElementById('surveyForm').style.display = 'none';
           document.getElementById('successMsg').classList.add('visible');
 
         } catch (error) {
           console.error('✗ Error:', error);
-          showError(error.message);
+          showError(error.message || 'Submission failed');
           btn.disabled = false;
           btn.textContent = 'Submit Feedback';
         }
