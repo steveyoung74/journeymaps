@@ -5,43 +5,22 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Survey Response - FATHOM</title>
   
-  <!-- Supabase -->
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
   
   <style>
-    @font-face {
-      font-family: 'Interstate';
-      src: url('https://steveyoung74.github.io/journeymaps/fonts/Interstate-regular.ttf') format('truetype');
-      font-weight: 400;
-      font-style: normal;
-    }
-    @font-face {
-      font-family: 'Interstate';
-      src: url('https://steveyoung74.github.io/journeymaps/fonts/Interstate-bold.ttf') format('truetype');
-      font-weight: 700;
-      font-style: normal;
-    }
-
-    * {
-      margin: 0;
-      padding: 0;
-      box-sizing: border-box;
-    }
-
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+    
     body {
-      font-family: 'Interstate', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
       background: #F4F5F7;
       color: #1A2332;
       line-height: 1.6;
       padding: 20px;
       min-height: 100vh;
     }
-
-    .container {
-      max-width: 800px;
-      margin: 0 auto;
-    }
-
+    
+    .container { max-width: 800px; margin: 0 auto; }
+    
     .header {
       text-align: center;
       margin-bottom: 32px;
@@ -50,105 +29,58 @@
       border-radius: 12px;
       color: #FFF;
     }
-
+    
     .header h1 {
       font-size: 24px;
       font-weight: 700;
       letter-spacing: 2px;
       margin-bottom: 8px;
     }
-
-    .header p {
-      font-size: 14px;
-      opacity: 0.8;
-    }
-
-    .journey-context {
+    
+    .header p { font-size: 14px; opacity: 0.8; }
+    
+    .card {
       background: #FFF;
       border-radius: 12px;
       padding: 24px;
       margin-bottom: 24px;
       box-shadow: 0 2px 8px rgba(25, 43, 69, 0.08);
     }
-
-    .context-header {
+    
+    .label {
       font-size: 11px;
       font-weight: 600;
       text-transform: uppercase;
       letter-spacing: 1px;
       color: #6E7B8C;
-      margin-bottom: 12px;
+      margin-bottom: 8px;
     }
-
-    .journey-title {
+    
+    .title {
       font-size: 20px;
       font-weight: 700;
       color: #192B45;
       margin-bottom: 8px;
     }
-
-    .journey-meta {
-      font-size: 14px;
-      color: #6E7B8C;
-    }
-
+    
+    .meta { font-size: 14px; color: #6E7B8C; }
+    
     .focus-step {
       background: #E9EEF4;
       border-left: 4px solid #5B8A9A;
-      padding: 16px 20px;
+      padding: 16px;
       border-radius: 8px;
       margin-top: 16px;
     }
-
-    .focus-step-label {
-      font-size: 11px;
-      font-weight: 600;
-      text-transform: uppercase;
-      letter-spacing: 1px;
-      color: #5B8A9A;
-      margin-bottom: 6px;
-    }
-
-    .focus-step-name {
+    
+    .step-name {
       font-size: 18px;
       font-weight: 700;
       color: #192B45;
     }
-
-    .focus-step-description {
-      font-size: 14px;
-      color: #556275;
-      margin-top: 6px;
-    }
-
-    .instructions {
-      background: #FFF;
-      border-radius: 12px;
-      padding: 20px;
-      margin-bottom: 24px;
-      border: 2px dashed #C8D5E2;
-    }
-
-    .instructions p {
-      font-size: 14px;
-      color: #556275;
-    }
-
-    .survey-form {
-      background: #FFF;
-      border-radius: 12px;
-      padding: 28px;
-      box-shadow: 0 2px 8px rgba(25, 43, 69, 0.08);
-    }
-
-    .form-section {
-      margin-bottom: 28px;
-    }
-
-    .form-section:last-child {
-      margin-bottom: 0;
-    }
-
+    
+    .form-group { margin-bottom: 24px; }
+    
     .form-label {
       display: block;
       font-size: 14px;
@@ -156,110 +88,84 @@
       color: #1A2332;
       margin-bottom: 8px;
     }
-
-    .form-input,
-    .form-textarea {
+    
+    .form-input, .form-textarea {
       width: 100%;
       padding: 12px 16px;
       border: 2px solid #E4E7EB;
       border-radius: 8px;
-      font-family: 'Interstate', sans-serif;
       font-size: 14px;
       color: #1A2332;
-      transition: border-color 0.2s;
     }
-
-    .form-input:focus,
-    .form-textarea:focus {
+    
+    .form-input:focus, .form-textarea:focus {
       outline: none;
       border-color: #5B8A9A;
     }
-
+    
     .form-textarea {
       resize: vertical;
       min-height: 100px;
+      font-family: inherit;
     }
-
-    .form-hint {
+    
+    .hint {
       font-size: 12px;
       color: #6E7B8C;
       margin-top: 6px;
     }
-
-    .submit-btn {
+    
+    .btn {
       width: 100%;
       padding: 16px 32px;
       background: #5B8A9A;
       color: #FFF;
       border: none;
       border-radius: 8px;
-      font-family: 'Interstate', sans-serif;
       font-size: 16px;
       font-weight: 600;
       cursor: pointer;
       transition: all 0.2s;
       margin-top: 24px;
     }
-
-    .submit-btn:hover:not(:disabled) {
+    
+    .btn:hover:not(:disabled) {
       background: #4A7485;
       transform: translateY(-1px);
-      box-shadow: 0 4px 12px rgba(91, 138, 154, 0.3);
     }
-
-    .submit-btn:disabled {
+    
+    .btn:disabled {
       background: #C8D5E2;
       cursor: not-allowed;
     }
-
-    .success-message {
-      background: #D4EDE5;
-      border: 2px solid #2D8A6E;
-      border-radius: 12px;
-      padding: 24px;
+    
+    .message {
+      padding: 20px;
+      border-radius: 8px;
+      margin-bottom: 20px;
       text-align: center;
       display: none;
     }
-
-    .success-message.visible {
-      display: block;
-    }
-
-    .success-message h2 {
+    
+    .message.visible { display: block; }
+    
+    .success {
+      background: #D4EDE5;
+      border: 2px solid #2D8A6E;
       color: #2D8A6E;
-      font-size: 24px;
-      margin-bottom: 12px;
     }
-
-    .success-message p {
-      color: #1A2332;
-      font-size: 14px;
-    }
-
-    .error-message {
+    
+    .error {
       background: #F5E0E3;
       border: 2px solid #B84A5A;
-      border-radius: 8px;
-      padding: 16px;
-      margin-bottom: 20px;
-      display: none;
-    }
-
-    .error-message.visible {
-      display: block;
-    }
-
-    .error-message p {
       color: #B84A5A;
-      font-size: 14px;
-      font-weight: 600;
     }
-
+    
     .loading {
       text-align: center;
       padding: 40px;
     }
-
+    
     .spinner {
       border: 3px solid #E4E7EB;
       border-top: 3px solid #5B8A9A;
@@ -269,28 +175,10 @@
       animation: spin 1s linear infinite;
       margin: 0 auto 16px;
     }
-
+    
     @keyframes spin {
       0% { transform: rotate(0deg); }
       100% { transform: rotate(360deg); }
-    }
-
-    @media (max-width: 768px) {
-      body {
-        padding: 12px;
-      }
-
-      .header h1 {
-        font-size: 20px;
-      }
-
-      .journey-title {
-        font-size: 18px;
-      }
-
-      .survey-form {
-        padding: 20px;
-      }
     }
   </style>
 </head>
@@ -307,247 +195,117 @@
       <p>Loading survey...</p>
     </div>
 
-    <div id="surveyContent" style="display: none;">
-      <div class="journey-context">
-        <div class="context-header">Journey</div>
-        <div class="journey-title" id="journeyTitle">Loading...</div>
-        <div class="journey-meta" id="journeyMeta"></div>
+    <div id="content" style="display: none;">
+      <div class="card">
+        <div class="label">Journey</div>
+        <div class="title" id="journeyTitle">Loading...</div>
+        <div class="meta" id="journeyMeta"></div>
         
         <div class="focus-step">
-          <div class="focus-step-label">Focus Step</div>
-          <div class="focus-step-name" id="stepName">Loading...</div>
-          <div class="focus-step-description" id="stepDescription"></div>
+          <div class="label">Focus Step</div>
+          <div class="step-name" id="stepName">Loading...</div>
         </div>
       </div>
 
-      <div class="instructions">
-        <p>Your feedback will help us improve this journey. Please complete the form below for each step shown. The more detail you provide, the better we can understand and optimise this process.</p>
-      </div>
-
-      <div id="errorMessage" class="error-message">
+      <div id="errorMsg" class="message error">
         <p id="errorText"></p>
       </div>
 
-      <div id="successMessage" class="success-message">
+      <div id="successMsg" class="message success">
         <h2>✓ Thank you!</h2>
-        <p>Your feedback has been submitted successfully. We appreciate your time and insights.</p>
+        <p>Your feedback has been submitted successfully.</p>
       </div>
 
-      <form id="surveyForm" class="survey-form">
-        <div class="form-section">
+      <form id="surveyForm" class="card">
+        <div class="form-group">
           <label class="form-label" for="description">What actually happens in this step?</label>
-          <textarea 
-            id="description" 
-            class="form-textarea" 
-            placeholder="Describe what you do in this step..."
-            rows="4"
-          ></textarea>
-          <div class="form-hint">Please describe the actual activities, tasks, or decisions involved</div>
+          <textarea id="description" class="form-textarea" rows="4"></textarea>
+          <div class="hint">Describe the actual activities and tasks</div>
         </div>
 
-        <div class="form-section">
-          <label class="form-label" for="timeEstimate">How long does this typically take? (minutes)</label>
-          <input 
-            type="number" 
-            id="timeEstimate" 
-            class="form-input" 
-            placeholder="e.g. 30"
-            min="1"
-          />
-          <div class="form-hint">Your best estimate of the typical time required</div>
+        <div class="form-group">
+          <label class="form-label" for="timeEstimate">How long does this take? (minutes)</label>
+          <input type="number" id="timeEstimate" class="form-input" min="1">
+          <div class="hint">Your best estimate</div>
         </div>
 
-        <div class="form-section">
-          <label class="form-label" for="painPoints">What challenges or pain points do you experience?</label>
-          <textarea 
-            id="painPoints" 
-            class="form-textarea" 
-            placeholder="Describe any difficulties, frustrations, or obstacles..."
-            rows="4"
-          ></textarea>
-          <div class="form-hint">What makes this step difficult or time-consuming?</div>
+        <div class="form-group">
+          <label class="form-label" for="painPoints">What challenges do you experience?</label>
+          <textarea id="painPoints" class="form-textarea" rows="4"></textarea>
+          <div class="hint">Any difficulties or obstacles</div>
         </div>
 
-        <div class="form-section">
-          <label class="form-label" for="improvements">How could this step be improved?</label>
-          <textarea 
-            id="improvements" 
-            class="form-textarea" 
-            placeholder="Share your ideas for making this step better..."
-            rows="4"
-          ></textarea>
-          <div class="form-hint">Any suggestions for tools, processes, or changes that would help</div>
+        <div class="form-group">
+          <label class="form-label" for="improvements">How could this be improved?</label>
+          <textarea id="improvements" class="form-textarea" rows="4"></textarea>
+          <div class="hint">Suggestions for improvement</div>
         </div>
 
-        <button type="submit" id="submitBtn" class="submit-btn">
-          Submit Feedback
-        </button>
+        <button type="submit" id="submitBtn" class="btn">Submit Feedback</button>
       </form>
     </div>
   </div>
 
   <script>
     (function() {
-      // ============================================
-      // CONFIGURATION - USING CORRECT SUPABASE URL
-      // ============================================
       const SUPABASE_URL = 'https://ktctvaeuluallhczwnrl.supabase.co';
       const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Imt0Y3R2YWV1bHVhbGxoY3p3bnJsIiwicm9sZSI6ImFub24iLCJpYXQiOjE3MzY5NTU4MTQsImV4cCI6MjA1MjUzMTgxNH0.ts4wMYOKiGfUgJ32zZ93wRlGZY_BKmrjCbqE__kzFzQ';
 
-      // Initialize Supabase client
-      const supabaseClient = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
-
-      // ============================================
-      // STATE
-      // ============================================
+      const supabase = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
       let tokenData = null;
-      let journeyData = null;
 
-      // ============================================
-      // INITIALIZATION
-      // ============================================
       document.addEventListener('DOMContentLoaded', async () => {
         try {
-          const urlParams = new URLSearchParams(window.location.search);
-          const token = urlParams.get('token');
+          const params = new URLSearchParams(window.location.search);
+          const token = params.get('token');
 
           if (!token) {
-            showError('No survey token provided. Please use the link from your email.');
+            showError('No survey token provided.');
             return;
           }
 
-          // Decode token
-          try {
-            const decodedString = atob(token);
-            tokenData = JSON.parse(decodedString);
-            console.log('Decoded token:', tokenData);
-          } catch (e) {
-            console.error('Token decode error:', e);
-            showError('Invalid survey token. Please check your link.');
-            return;
-          }
+          tokenData = JSON.parse(atob(token));
+          console.log('Token:', tokenData);
 
-          // Validate token
           if (!tokenData.personaId || !tokenData.recipientEmail) {
-            showError('Incomplete survey token. Please contact support.');
+            showError('Invalid token.');
             return;
           }
 
-          // Check expiration
           if (tokenData.expires && new Date(tokenData.expires) < new Date()) {
-            showError('This survey link has expired. Please request a new one.');
+            showError('Token expired.');
             return;
           }
 
-          // Load journey data
-          await loadJourneyData();
+          await loadJourney();
 
-          // Show survey form
           document.getElementById('loading').style.display = 'none';
-          document.getElementById('surveyContent').style.display = 'block';
+          document.getElementById('content').style.display = 'block';
 
         } catch (error) {
-          console.error('Initialization error:', error);
-          showError('Failed to load survey. Please try again or contact support.');
+          console.error('Init error:', error);
+          showError('Failed to load survey.');
         }
       });
 
-      // ============================================
-      // LOAD JOURNEY DATA
-      // ============================================
-      async function loadJourneyData() {
-        try {
-          if (tokenData.mapId === 'demo' || tokenData.mapId === 'unknown' || !tokenData.mapId) {
-            displayDemoData();
-            return;
-          }
-
-          const { data, error } = await supabaseClient
-            .from('journey_maps')
-            .select('title, config')
-            .eq('id', tokenData.mapId)
-            .single();
-
-          if (error) {
-            console.error('Error fetching journey:', error);
-            displayDemoData();
-            return;
-          }
-
-          journeyData = data;
-          displayJourneyData();
-
-        } catch (error) {
-          console.error('Error loading journey:', error);
-          displayDemoData();
-        }
-      }
-
-      // ============================================
-      // DISPLAY DATA
-      // ============================================
-      function displayJourneyData() {
-        if (!journeyData || !journeyData.config) {
-          displayDemoData();
-          return;
-        }
-
-        const config = journeyData.config;
-        
-        document.getElementById('journeyTitle').textContent = journeyData.title || 'Journey Map';
-
-        let foundStep = null;
-        if (config.stages) {
-          for (const stage of config.stages) {
-            if (stage.steps) {
-              foundStep = stage.steps.find(s => s.id === tokenData.stepId);
-              if (foundStep) break;
-            }
-          }
-        }
-
-        if (foundStep) {
-          document.getElementById('stepName').textContent = foundStep.name || 'Step';
-          if (foundStep.description) {
-            document.getElementById('stepDescription').textContent = foundStep.description;
-          }
-        } else {
-          document.getElementById('stepName').textContent = tokenData.stepId || 'Step';
-        }
-
-        if (config.personas) {
-          const persona = config.personas.find(p => p.id === tokenData.personaId);
-          if (persona) {
-            document.getElementById('journeyMeta').textContent = `Your role: ${persona.label}`;
-          }
-        }
-      }
-
-      function displayDemoData() {
+      async function loadJourney() {
         document.getElementById('journeyTitle').textContent = 'Survey Feedback';
-        document.getElementById('stepName').textContent = tokenData.stepId || 'Process Step';
-        document.getElementById('stepDescription').textContent = 'Please provide your feedback on this step';
+        document.getElementById('stepName').textContent = tokenData.stepId || 'Step';
         
         if (tokenData.personaId) {
           document.getElementById('journeyMeta').textContent = `Your role: ${tokenData.personaId}`;
         }
       }
 
-      // ============================================
-      // FORM SUBMISSION
-      // ============================================
       document.getElementById('surveyForm').addEventListener('submit', async (e) => {
         e.preventDefault();
-        await submitSurvey();
-      });
-
-      async function submitSurvey() {
-        const submitBtn = document.getElementById('submitBtn');
-        const errorDiv = document.getElementById('errorMessage');
+        
+        const btn = document.getElementById('submitBtn');
+        const errorDiv = document.getElementById('errorMsg');
         
         errorDiv.classList.remove('visible');
-        submitBtn.disabled = true;
-        submitBtn.textContent = 'Submitting...';
+        btn.disabled = true;
+        btn.textContent = 'Submitting...';
 
         try {
           const feedback = [{
@@ -558,19 +316,17 @@
             improvements: document.getElementById('improvements').value.trim()
           }];
 
-          const hasContent = feedback[0].description || 
-                            feedback[0].timeEstimate || 
-                            feedback[0].painPoints || 
-                            feedback[0].improvements;
+          const hasContent = feedback[0].description || feedback[0].timeEstimate || 
+                            feedback[0].painPoints || feedback[0].improvements;
 
           if (!hasContent) {
-            showError('Please fill in at least one field before submitting.');
-            submitBtn.disabled = false;
-            submitBtn.textContent = 'Submit Feedback';
+            showError('Please fill in at least one field.');
+            btn.disabled = false;
+            btn.textContent = 'Submit Feedback';
             return;
           }
 
-          console.log('Submitting to Edge Function:', { token: tokenData, feedback });
+          console.log('Submitting:', { token: tokenData, feedback });
 
           const response = await fetch(`${SUPABASE_URL}/functions/v1/submit-survey`, {
             method: 'POST',
@@ -578,43 +334,33 @@
               'Content-Type': 'application/json',
               'Authorization': `Bearer ${SUPABASE_ANON_KEY}`
             },
-            body: JSON.stringify({
-              token: tokenData,
-              feedback: feedback
-            })
+            body: JSON.stringify({ token: tokenData, feedback })
           });
 
-          console.log('Response status:', response.status);
+          console.log('Status:', response.status);
           const result = await response.json();
-          console.log('Response data:', result);
+          console.log('Result:', result);
 
           if (!response.ok) {
-            throw new Error(result.error || 'Failed to submit survey');
+            throw new Error(result.error || 'Submission failed');
           }
 
           document.getElementById('surveyForm').style.display = 'none';
-          document.getElementById('successMessage').classList.add('visible');
+          document.getElementById('successMsg').classList.add('visible');
 
         } catch (error) {
-          console.error('Submission error:', error);
-          showError(error.message || 'Failed to submit survey. Please try again.');
-          submitBtn.disabled = false;
-          submitBtn.textContent = 'Submit Feedback';
+          console.error('Error:', error);
+          showError(error.message);
+          btn.disabled = false;
+          btn.textContent = 'Submit Feedback';
         }
-      }
+      });
 
-      // ============================================
-      // ERROR HANDLING
-      // ============================================
       function showError(message) {
-        const errorDiv = document.getElementById('errorMessage');
-        const errorText = document.getElementById('errorText');
-        
-        errorText.textContent = message;
-        errorDiv.classList.add('visible');
-        
+        document.getElementById('errorText').textContent = message;
+        document.getElementById('errorMsg').classList.add('visible');
         document.getElementById('loading').style.display = 'none';
-        document.getElementById('surveyContent').style.display = 'block';
+        document.getElementById('content').style.display = 'block';
       }
     })();
   </script>
