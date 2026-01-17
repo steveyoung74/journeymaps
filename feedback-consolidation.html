@@ -484,9 +484,56 @@
           
           // Consolidation panel
           const consolidationId = `${stepId}-${personaId}`;
+          
+          // Get current values from journey map
+          const currentStepData = getCurrentStepData(stepId, personaId);
+          
           html += `
             <div class="consolidation-panel">
-              <div class="consolidation-header">✏️ Consolidated Values</div>
+              <div class="consolidation-header">📊 Current Journey Map Data</div>
+              
+              <div style="background: white; border: 1px solid #C8CED6; border-radius: 6px; padding: 12px; margin-bottom: 16px;">
+                ${currentStepData.exists ? `
+                  <div style="display: grid; grid-template-columns: repeat(2, 1fr); gap: 12px; margin-bottom: 12px;">
+                    <div>
+                      <div style="font-size: 11px; color: #6E7B8C; font-weight: 600; margin-bottom: 4px;">CURRENT TIME</div>
+                      <div style="font-size: 16px; font-weight: 600; color: #192B45;">
+                        ${currentStepData.currentTime || 0} minutes
+                      </div>
+                    </div>
+                    <div>
+                      <div style="font-size: 11px; color: #6E7B8C; font-weight: 600; margin-bottom: 4px;">SURVEY AVERAGE</div>
+                      <div style="font-size: 16px; font-weight: 600; color: #5B8A9A;">
+                        ${avgTime} minutes
+                      </div>
+                    </div>
+                  </div>
+                  
+                  ${currentStepData.currentAction ? `
+                    <div style="margin-bottom: 8px;">
+                      <div style="font-size: 11px; color: #6E7B8C; font-weight: 600; margin-bottom: 4px;">CURRENT ACTION</div>
+                      <div style="font-size: 13px; color: #1A2332; padding: 8px; background: #F9FAFB; border-radius: 4px;">
+                        ${currentStepData.currentAction}
+                      </div>
+                    </div>
+                  ` : ''}
+                  
+                  ${currentStepData.currentNotes ? `
+                    <div>
+                      <div style="font-size: 11px; color: #6E7B8C; font-weight: 600; margin-bottom: 4px;">CURRENT NOTES</div>
+                      <div style="font-size: 13px; color: #1A2332; padding: 8px; background: #F9FAFB; border-radius: 4px; max-height: 100px; overflow-y: auto;">
+                        ${currentStepData.currentNotes}
+                      </div>
+                    </div>
+                  ` : ''}
+                ` : `
+                  <div style="color: #6E7B8C; font-size: 13px;">
+                    ⚠️ No existing data for ${formatPersonaName(personaId)} on this step
+                  </div>
+                `}
+              </div>
+              
+              <div class="consolidation-header">✏️ New Consolidated Values</div>
               
               <label style="display: block; font-size: 13px; font-weight: 600; margin-bottom: 6px;">
                 Time (minutes) - Average: ${avgTime}
@@ -547,6 +594,30 @@
         if (step) return step.name || stepId;
       }
       return stepId;
+    }
+    
+    function getCurrentStepData(stepId, personaId) {
+      if (!mapConfig || !mapConfig.stages) {
+        return { exists: false };
+      }
+      
+      for (const stage of mapConfig.stages) {
+        const step = stage.steps?.find(s => s.id === stepId);
+        if (step) {
+          const currentTime = step.roleInvolvement?.[personaId]?.timeMinutes || 0;
+          const currentAction = step.actions?.[personaId] || '';
+          const currentNotes = step.notes || '';
+          
+          return {
+            exists: true,
+            currentTime,
+            currentAction,
+            currentNotes
+          };
+        }
+      }
+      
+      return { exists: false };
     }
     
     function formatPersonaName(personaId) {
