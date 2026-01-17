@@ -1,0 +1,451 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Survey Response - FATHOM</title>
+  
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+  
+  <style>
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+    
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+      background: #F4F5F7;
+      color: #1A2332;
+      line-height: 1.6;
+      padding: 20px;
+      min-height: 100vh;
+    }
+    
+    .container { max-width: 800px; margin: 0 auto; }
+    
+    .header {
+      text-align: center;
+      margin-bottom: 32px;
+      padding: 24px;
+      background: #192B45;
+      border-radius: 12px;
+      color: #FFF;
+    }
+    
+    .header h1 {
+      font-size: 24px;
+      font-weight: 700;
+      letter-spacing: 2px;
+      margin-bottom: 8px;
+    }
+    
+    .header p { font-size: 14px; opacity: 0.8; }
+    
+    .card {
+      background: #FFF;
+      border-radius: 12px;
+      padding: 24px;
+      margin-bottom: 24px;
+      box-shadow: 0 2px 8px rgba(25, 43, 69, 0.08);
+    }
+    
+    .label {
+      font-size: 11px;
+      font-weight: 600;
+      text-transform: uppercase;
+      letter-spacing: 1px;
+      color: #6E7B8C;
+      margin-bottom: 8px;
+    }
+    
+    .title {
+      font-size: 20px;
+      font-weight: 700;
+      color: #192B45;
+      margin-bottom: 8px;
+    }
+    
+    .meta { font-size: 14px; color: #6E7B8C; }
+    
+    .focus-step {
+      background: #E9EEF4;
+      border-left: 4px solid #5B8A9A;
+      padding: 16px;
+      border-radius: 8px;
+      margin-top: 16px;
+    }
+    
+    .step-name {
+      font-size: 18px;
+      font-weight: 700;
+      color: #192B45;
+    }
+    
+    .form-group { margin-bottom: 24px; }
+    
+    .form-label {
+      display: block;
+      font-size: 14px;
+      font-weight: 600;
+      color: #1A2332;
+      margin-bottom: 8px;
+    }
+    
+    .form-input, .form-textarea {
+      width: 100%;
+      padding: 12px 16px;
+      border: 2px solid #E4E7EB;
+      border-radius: 8px;
+      font-size: 14px;
+      color: #1A2332;
+    }
+    
+    .form-input:focus, .form-textarea:focus {
+      outline: none;
+      border-color: #5B8A9A;
+    }
+    
+    .form-textarea {
+      resize: vertical;
+      min-height: 100px;
+      font-family: inherit;
+    }
+    
+    .hint {
+      font-size: 12px;
+      color: #6E7B8C;
+      margin-top: 6px;
+    }
+    
+    .btn {
+      width: 100%;
+      padding: 16px 32px;
+      background: #5B8A9A;
+      color: #FFF;
+      border: none;
+      border-radius: 8px;
+      font-size: 16px;
+      font-weight: 600;
+      cursor: pointer;
+      transition: all 0.2s;
+      margin-top: 24px;
+    }
+    
+    .btn:hover:not(:disabled) {
+      background: #4A7485;
+      transform: translateY(-1px);
+    }
+    
+    .btn:disabled {
+      background: #C8D5E2;
+      cursor: not-allowed;
+    }
+    
+    .message {
+      padding: 20px;
+      border-radius: 8px;
+      margin-bottom: 20px;
+      text-align: center;
+      display: none;
+    }
+    
+    .message.visible { display: block; }
+    
+    .success {
+      background: #D4EDE5;
+      border: 2px solid #2D8A6E;
+      color: #2D8A6E;
+    }
+    
+    .error {
+      background: #F5E0E3;
+      border: 2px solid #B84A5A;
+      color: #B84A5A;
+    }
+    
+    .loading {
+      text-align: center;
+      padding: 40px;
+    }
+    
+    .spinner {
+      border: 3px solid #E4E7EB;
+      border-top: 3px solid #5B8A9A;
+      border-radius: 50%;
+      width: 40px;
+      height: 40px;
+      animation: spin 1s linear infinite;
+      margin: 0 auto 16px;
+    }
+    
+    @keyframes spin {
+      0% { transform: rotate(0deg); }
+      100% { transform: rotate(360deg); }
+    }
+
+    .debug {
+      background: #FFF;
+      border: 1px solid #E4E7EB;
+      border-radius: 8px;
+      padding: 12px;
+      margin-top: 20px;
+      font-family: monospace;
+      font-size: 11px;
+      max-height: 200px;
+      overflow-y: auto;
+    }
+    .debug pre { 
+      white-space: pre-wrap; 
+      word-break: break-all;
+      margin: 0;
+    }
+  </style>
+</head>
+<body>
+
+  <div class="container">
+    <div class="header">
+      <h1>FATHOM</h1>
+      <p>Journey Step Feedback</p>
+    </div>
+
+    <div id="loading" class="loading">
+      <div class="spinner"></div>
+      <p>Loading survey...</p>
+    </div>
+
+    <div id="content" style="display: none;">
+      <div class="card">
+        <div class="label">Journey</div>
+        <div class="title" id="journeyTitle">Loading...</div>
+        <div class="meta" id="journeyMeta"></div>
+        
+        <div class="focus-step">
+          <div class="label">Focus Step</div>
+          <div class="step-name" id="stepName">Loading...</div>
+        </div>
+      </div>
+
+      <div id="errorMsg" class="message error">
+        <p id="errorText"></p>
+      </div>
+
+      <div id="successMsg" class="message success">
+        <h2>✓ Thank you!</h2>
+        <p>Your feedback has been submitted successfully.</p>
+      </div>
+
+      <form id="surveyForm" class="card">
+        <div class="form-group">
+          <label class="form-label" for="description">What actually happens in this step?</label>
+          <textarea id="description" class="form-textarea" rows="4" placeholder="Describe the actual activities and tasks..."></textarea>
+          <div class="hint">Describe the actual activities and tasks</div>
+        </div>
+
+        <div class="form-group">
+          <label class="form-label" for="timeEstimate">How long does this take? (minutes)</label>
+          <input type="number" id="timeEstimate" class="form-input" min="1" placeholder="e.g., 30">
+          <div class="hint">Your best estimate</div>
+        </div>
+
+        <div class="form-group">
+          <label class="form-label" for="painPoints">What challenges do you experience?</label>
+          <textarea id="painPoints" class="form-textarea" rows="4" placeholder="Any difficulties or obstacles..."></textarea>
+          <div class="hint">Any difficulties or obstacles</div>
+        </div>
+
+        <div class="form-group">
+          <label class="form-label" for="improvements">How could this be improved?</label>
+          <textarea id="improvements" class="form-textarea" rows="4" placeholder="Suggestions for improvement..."></textarea>
+          <div class="hint">Suggestions for improvement</div>
+        </div>
+
+        <button type="submit" id="submitBtn" class="btn">Submit Feedback</button>
+      </form>
+
+      <!-- Debug Panel (remove in production) -->
+      <div class="card">
+        <div class="label">Debug Info</div>
+        <div id="debugInfo" class="debug">
+          <pre id="debugContent">Initializing...</pre>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    (function() {
+      const SUPABASE_URL = 'https://ktctvaeuluallhczwnrl.supabase.co';
+      const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Imt0Y3R2YWV1bHVhbGxoY3p3bnJsIiwicm9sZSI6ImFub24iLCJpYXQiOjE3MzY5NTU4MTQsImV4cCI6MjA1MjUzMTgxNH0.ts4wMYOKiGfUgJ32zZ93wRlGZY_BKmrjCbqE__kzFzQ';
+
+      const supabase = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+      let tokenData = null;
+
+      function log(message, data = null) {
+        const debugEl = document.getElementById('debugContent');
+        if (debugEl) {
+          const timestamp = new Date().toLocaleTimeString();
+          const logEntry = `[${timestamp}] ${message}${data ? '\n' + JSON.stringify(data, null, 2) : ''}`;
+          debugEl.textContent = logEntry + '\n\n' + debugEl.textContent;
+        }
+        console.log(message, data || '');
+      }
+
+      document.addEventListener('DOMContentLoaded', async () => {
+        try {
+          log('Starting initialization...');
+          
+          const params = new URLSearchParams(window.location.search);
+          const token = params.get('token');
+
+          if (!token) {
+            showError('No survey token provided in URL.');
+            log('ERROR: No token in URL');
+            return;
+          }
+
+          log('Token received, decoding...');
+          tokenData = JSON.parse(atob(token));
+          log('Token decoded successfully', tokenData);
+
+          if (!tokenData.personaId || !tokenData.recipientEmail) {
+            showError('Invalid token format.');
+            log('ERROR: Missing required token fields', tokenData);
+            return;
+          }
+
+          if (tokenData.expires && new Date(tokenData.expires) < new Date()) {
+            showError('Survey link has expired.');
+            log('ERROR: Token expired', { expires: tokenData.expires });
+            return;
+          }
+
+          // Check if database table exists and is accessible
+          log('Checking database connection...');
+          const { data: testData, error: testError } = await supabase
+            .from('survey_responses')
+            .select('id')
+            .limit(1);
+
+          if (testError) {
+            log('Database connection error', testError);
+            showError(`Database error: ${testError.message}`);
+            return;
+          }
+
+          log('Database connection OK');
+
+          // Check for existing responses
+          log('Checking for existing responses...');
+          const { data: existingResponses, error: checkError } = await supabase
+            .from('survey_responses')
+            .select('id, step_id')
+            .eq('persona_id', tokenData.personaId)
+            .eq('respondent_email', tokenData.recipientEmail);
+
+          if (checkError) {
+            log('Error checking existing responses', checkError);
+          } else {
+            log('Existing responses found', existingResponses);
+          }
+
+          await loadJourney();
+
+          document.getElementById('loading').style.display = 'none';
+          document.getElementById('content').style.display = 'block';
+
+          log('Initialization complete!');
+
+        } catch (error) {
+          log('CRITICAL ERROR during init', error);
+          console.error('Init error:', error);
+          showError(`Failed to load survey: ${error.message}`);
+        }
+      });
+
+      async function loadJourney() {
+        log('Loading journey details...');
+        document.getElementById('journeyTitle').textContent = 'Survey Feedback';
+        document.getElementById('stepName').textContent = tokenData.stepId || 'Step';
+        
+        if (tokenData.personaId) {
+          document.getElementById('journeyMeta').textContent = `Your role: ${tokenData.personaId}`;
+        }
+        log('Journey details loaded');
+      }
+
+      document.getElementById('surveyForm').addEventListener('submit', async (e) => {
+        e.preventDefault();
+        
+        log('Form submission started...');
+        
+        const btn = document.getElementById('submitBtn');
+        const errorDiv = document.getElementById('errorMsg');
+        
+        errorDiv.classList.remove('visible');
+        btn.disabled = true;
+        btn.textContent = 'Submitting...';
+
+        try {
+          const feedback = {
+            map_id: tokenData.mapId === 'unknown' || tokenData.mapId === 'demo' ? null : tokenData.mapId,
+            step_id: tokenData.stepId,
+            persona_id: tokenData.personaId,
+            respondent_email: tokenData.recipientEmail,
+            scope: tokenData.scope || 'full',
+            description: document.getElementById('description').value.trim() || null,
+            time_estimate: document.getElementById('timeEstimate').value ? parseInt(document.getElementById('timeEstimate').value) : null,
+            pain_points: document.getElementById('painPoints').value.trim() || null,
+            improvements: document.getElementById('improvements').value.trim() || null,
+            review_status: 'pending',
+            submitted_at: new Date().toISOString()
+          };
+
+          log('Feedback data prepared', feedback);
+
+          const hasContent = feedback.description || feedback.time_estimate || 
+                            feedback.pain_points || feedback.improvements;
+
+          if (!hasContent) {
+            showError('Please fill in at least one field.');
+            log('ERROR: No content provided');
+            btn.disabled = false;
+            btn.textContent = 'Submit Feedback';
+            return;
+          }
+
+          log('Inserting into database...');
+
+          const { data: insertedData, error: insertError } = await supabase
+            .from('survey_responses')
+            .insert([feedback])
+            .select();
+
+          if (insertError) {
+            log('Database insert error', insertError);
+            throw new Error(insertError.message);
+          }
+
+          log('Success! Response saved', insertedData);
+
+          document.getElementById('surveyForm').style.display = 'none';
+          document.getElementById('successMsg').classList.add('visible');
+
+        } catch (error) {
+          log('ERROR during submission', error);
+          console.error('Submit error:', error);
+          showError(`Submission failed: ${error.message}`);
+          btn.disabled = false;
+          btn.textContent = 'Submit Feedback';
+        }
+      });
+
+      function showError(message) {
+        document.getElementById('errorText').textContent = message;
+        document.getElementById('errorMsg').classList.add('visible');
+        document.getElementById('loading').style.display = 'none';
+        document.getElementById('content').style.display = 'block';
+      }
+    })();
+  </script>
+
+</body>
+</html>

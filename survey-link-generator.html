@@ -1,0 +1,375 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Survey Link Generator - FATHOM</title>
+  
+  <style>
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+    
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+      background: #F4F5F7;
+      color: #1A2332;
+      padding: 40px 20px;
+      line-height: 1.6;
+    }
+    
+    .container { max-width: 800px; margin: 0 auto; }
+    
+    .header {
+      text-align: center;
+      margin-bottom: 32px;
+      padding: 24px;
+      background: #192B45;
+      border-radius: 12px;
+      color: #FFF;
+    }
+    
+    .header h1 {
+      font-size: 24px;
+      font-weight: 700;
+      letter-spacing: 2px;
+      margin-bottom: 8px;
+    }
+    
+    .card {
+      background: #FFF;
+      border-radius: 12px;
+      padding: 24px;
+      margin-bottom: 24px;
+      box-shadow: 0 2px 8px rgba(25, 43, 69, 0.08);
+    }
+    
+    .form-group {
+      margin-bottom: 20px;
+    }
+    
+    .form-label {
+      display: block;
+      font-size: 14px;
+      font-weight: 600;
+      color: #1A2332;
+      margin-bottom: 8px;
+    }
+    
+    .form-input {
+      width: 100%;
+      padding: 12px 16px;
+      border: 2px solid #E4E7EB;
+      border-radius: 8px;
+      font-size: 14px;
+      color: #1A2332;
+    }
+    
+    .form-input:focus {
+      outline: none;
+      border-color: #5B8A9A;
+    }
+    
+    .hint {
+      font-size: 12px;
+      color: #6E7B8C;
+      margin-top: 6px;
+    }
+    
+    .btn {
+      width: 100%;
+      padding: 16px 32px;
+      background: #5B8A9A;
+      color: #FFF;
+      border: none;
+      border-radius: 8px;
+      font-size: 16px;
+      font-weight: 600;
+      cursor: pointer;
+      transition: all 0.2s;
+    }
+    
+    .btn:hover {
+      background: #4A7485;
+      transform: translateY(-1px);
+    }
+    
+    .result {
+      background: #E9EEF4;
+      border-left: 4px solid #5B8A9A;
+      padding: 16px;
+      border-radius: 8px;
+      margin-top: 24px;
+    }
+    
+    .result-label {
+      font-size: 11px;
+      font-weight: 600;
+      text-transform: uppercase;
+      letter-spacing: 1px;
+      color: #6E7B8C;
+      margin-bottom: 8px;
+    }
+    
+    .result-url {
+      font-family: monospace;
+      font-size: 12px;
+      word-break: break-all;
+      color: #192B45;
+      background: #FFF;
+      padding: 12px;
+      border-radius: 6px;
+      margin-bottom: 12px;
+    }
+    
+    .copy-btn {
+      width: auto;
+      padding: 8px 16px;
+      font-size: 14px;
+      background: #192B45;
+    }
+    
+    .success-msg {
+      color: #2D8A6E;
+      font-size: 12px;
+      margin-left: 12px;
+      display: none;
+    }
+    
+    .success-msg.visible {
+      display: inline;
+    }
+
+    .token-preview {
+      background: #FFF;
+      border: 1px solid #E4E7EB;
+      border-radius: 6px;
+      padding: 12px;
+      font-family: monospace;
+      font-size: 11px;
+      max-height: 200px;
+      overflow-y: auto;
+      margin-top: 12px;
+    }
+
+    .token-preview pre {
+      margin: 0;
+      white-space: pre-wrap;
+      word-break: break-all;
+    }
+  </style>
+</head>
+<body>
+
+  <div class="container">
+    <div class="header">
+      <h1>FATHOM</h1>
+      <p>Survey Link Generator</p>
+    </div>
+
+    <div class="card">
+      <h2 style="margin-bottom: 20px; color: #192B45;">Generate Survey Link</h2>
+      
+      <form id="generatorForm">
+        <div class="form-group">
+          <label class="form-label" for="surveyUrl">Survey Page URL</label>
+          <input 
+            type="url" 
+            id="surveyUrl" 
+            class="form-input" 
+            value="http://localhost:8000/survey-response-fixed.html"
+            required
+          >
+          <div class="hint">URL of your deployed survey-response.html page</div>
+        </div>
+
+        <div class="form-group">
+          <label class="form-label" for="mapId">Map ID (optional)</label>
+          <input 
+            type="text" 
+            id="mapId" 
+            class="form-input" 
+            placeholder="e.g., map-abc-123"
+          >
+          <div class="hint">Leave blank for standalone surveys</div>
+        </div>
+
+        <div class="form-group">
+          <label class="form-label" for="stepId">Step ID</label>
+          <input 
+            type="text" 
+            id="stepId" 
+            class="form-input" 
+            placeholder="e.g., step-1-1"
+            required
+          >
+          <div class="hint">The journey step this survey is for</div>
+        </div>
+
+        <div class="form-group">
+          <label class="form-label" for="personaId">Persona/Role ID</label>
+          <input 
+            type="text" 
+            id="personaId" 
+            class="form-input" 
+            placeholder="e.g., advisor, client, admin"
+            required
+          >
+          <div class="hint">Who this survey is for</div>
+        </div>
+
+        <div class="form-group">
+          <label class="form-label" for="recipientEmail">Recipient Email</label>
+          <input 
+            type="email" 
+            id="recipientEmail" 
+            class="form-input" 
+            placeholder="e.g., user@example.com"
+            required
+          >
+          <div class="hint">Email of the person completing the survey</div>
+        </div>
+
+        <div class="form-group">
+          <label class="form-label" for="expiryDays">Expiry (days from now)</label>
+          <input 
+            type="number" 
+            id="expiryDays" 
+            class="form-input" 
+            value="7"
+            min="1"
+            max="365"
+            required
+          >
+          <div class="hint">How long the link stays valid</div>
+        </div>
+
+        <button type="submit" class="btn">Generate Survey Link</button>
+      </form>
+
+      <div id="result" class="result" style="display: none;">
+        <div class="result-label">Generated Survey Link</div>
+        <div class="result-url" id="generatedUrl"></div>
+        <button type="button" class="btn copy-btn" onclick="copyToClipboard()">
+          Copy Link
+        </button>
+        <span id="copySuccess" class="success-msg">✓ Copied!</span>
+
+        <div class="result-label" style="margin-top: 20px;">Token Data (for debugging)</div>
+        <div class="token-preview">
+          <pre id="tokenPreview"></pre>
+        </div>
+      </div>
+    </div>
+
+    <div class="card">
+      <h3 style="margin-bottom: 16px; color: #192B45;">Quick Test Examples</h3>
+      
+      <button type="button" class="btn" style="margin-bottom: 12px;" onclick="fillExample('advisor')">
+        Financial Advisor Survey
+      </button>
+      
+      <button type="button" class="btn" style="margin-bottom: 12px;" onclick="fillExample('client')">
+        Client Survey
+      </button>
+      
+      <button type="button" class="btn" onclick="fillExample('admin')">
+        Admin Survey
+      </button>
+    </div>
+  </div>
+
+  <script>
+    let lastGeneratedToken = '';
+
+    document.getElementById('generatorForm').addEventListener('submit', (e) => {
+      e.preventDefault();
+      generateLink();
+    });
+
+    function fillExample(persona) {
+      const examples = {
+        advisor: {
+          stepId: 'step-kyc-verification',
+          personaId: 'financial-advisor',
+          email: 'advisor@example.com'
+        },
+        client: {
+          stepId: 'step-document-upload',
+          personaId: 'client',
+          email: 'client@example.com'
+        },
+        admin: {
+          stepId: 'step-account-setup',
+          personaId: 'admin',
+          email: 'admin@example.com'
+        }
+      };
+
+      const example = examples[persona];
+      document.getElementById('mapId').value = 'demo-journey-123';
+      document.getElementById('stepId').value = example.stepId;
+      document.getElementById('personaId').value = example.personaId;
+      document.getElementById('recipientEmail').value = example.email;
+    }
+
+    function generateLink() {
+      const surveyUrl = document.getElementById('surveyUrl').value;
+      const mapId = document.getElementById('mapId').value || 'demo';
+      const stepId = document.getElementById('stepId').value;
+      const personaId = document.getElementById('personaId').value;
+      const recipientEmail = document.getElementById('recipientEmail').value;
+      const expiryDays = parseInt(document.getElementById('expiryDays').value);
+
+      const expiryDate = new Date();
+      expiryDate.setDate(expiryDate.getDate() + expiryDays);
+
+      const tokenData = {
+        mapId: mapId,
+        stepId: stepId,
+        personaId: personaId,
+        recipientEmail: recipientEmail,
+        scope: 'full',
+        expires: expiryDate.toISOString(),
+        generated: new Date().toISOString()
+      };
+
+      // Encode token as base64
+      const token = btoa(JSON.stringify(tokenData));
+      lastGeneratedToken = token;
+
+      // Build full URL
+      const url = new URL(surveyUrl);
+      url.searchParams.set('token', token);
+      const fullUrl = url.toString();
+
+      // Display result
+      document.getElementById('generatedUrl').textContent = fullUrl;
+      document.getElementById('tokenPreview').textContent = JSON.stringify(tokenData, null, 2);
+      document.getElementById('result').style.display = 'block';
+      document.getElementById('copySuccess').classList.remove('visible');
+
+      // Scroll to result
+      document.getElementById('result').scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+    }
+
+    function copyToClipboard() {
+      const url = document.getElementById('generatedUrl').textContent;
+      navigator.clipboard.writeText(url).then(() => {
+        const successMsg = document.getElementById('copySuccess');
+        successMsg.classList.add('visible');
+        setTimeout(() => {
+          successMsg.classList.remove('visible');
+        }, 2000);
+      });
+    }
+
+    // Auto-fill localhost for development
+    window.addEventListener('DOMContentLoaded', () => {
+      const urlInput = document.getElementById('surveyUrl');
+      if (window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1') {
+        urlInput.value = `${window.location.protocol}//${window.location.host}/survey-response-fixed.html`;
+      }
+    });
+  </script>
+
+</body>
+</html>
