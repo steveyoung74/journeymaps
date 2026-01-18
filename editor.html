@@ -728,6 +728,23 @@
       return `${baseUrl}/survey-response.html?token=${token}`;
     };
     
+    // Generate bulk survey URL (for multiple steps)
+    const generateBulkSurveyUrl = (mapId, personaId, stepIds, stepDetails, scope, recipientEmail) => {
+      const token = encodeSurveyToken({
+        mapId,
+        personaId,
+        stepIds, // Array of step IDs
+        stepDetails, // Array of { id, name, stageName, stageId }
+        scope,
+        recipientEmail,
+        type: 'bulk', // Flag to identify bulk surveys
+        expires: new Date(Date.now() + 14 * 24 * 60 * 60 * 1000).toISOString() // 14 days
+      });
+      
+      const baseUrl = window.location.origin;
+      return `${baseUrl}/survey-response.html?token=${token}`;
+    };
+    
     // Send survey request emails
     const sendSurveyEmails = async (surveyRequest, mapId, config) => {
       const { recipients, stepName, stageName, personaLabel, scope, message, journeyTitle } = surveyRequest;
@@ -761,6 +778,56 @@ Powered by FATHOM
         
         // For now, we'll use mailto: link to open email client
         // In production, this would call a backend API to send via Resend/SendGrid
+        return {
+          recipient: recipient.email,
+          subject: emailSubject,
+          body: emailBody,
+          surveyUrl,
+          mailto: `mailto:${recipient.email}?subject=${encodeURIComponent(emailSubject)}&body=${encodeURIComponent(emailBody)}`
+        };
+      });
+      
+      return Promise.all(emailPromises);
+    };
+    
+    // Send bulk survey emails (for all steps a person is involved in)
+    const sendBulkSurveyEmails = async (bulkRequest, mapId, config) => {
+      const { recipients, personaLabel, stepDetails, scope, message, journeyTitle } = bulkRequest;
+      
+      const emailPromises = recipients.map(async (recipient) => {
+        // Generate bulk survey URL with multiple stepIds
+        const stepIds = stepDetails.map(s => s.id);
+        const surveyUrl = generateBulkSurveyUrl(mapId, bulkRequest.personaId, stepIds, stepDetails, scope, recipient.email);
+        
+        // Create step list for email
+        const stepList = stepDetails.map((step, i) => `  ${i + 1}. ${step.stageName} → ${step.name}`).join('\n');
+        
+        // Prepare email content
+        const emailSubject = `Feedback requested: ${journeyTitle} - ${personaLabel} role`;
+        const emailBody = `
+Hi ${recipient.name},
+
+Your feedback has been requested on your involvement in the following process:
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+${journeyTitle}
+Your role: ${personaLabel}
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+You're involved in ${stepDetails.length} steps across ${new Set(stepDetails.map(s => s.stageId)).size} stages:
+
+${stepList}
+
+${message ? message + '\n\n' : ''}This survey covers all the steps where you're involved as ${personaLabel}. You can complete it in one session or save progress and return later.
+
+Complete Survey: ${surveyUrl}
+
+This link expires in 14 days.
+
+───────────────────────────────────────────
+Powered by FATHOM
+        `.trim();
+        
         return {
           recipient: recipient.email,
           subject: emailSubject,
@@ -4062,13 +4129,13 @@ Powered by FATHOM
             requestedAt: new Date().toISOString()
           };
           
-          // Get mapId from URL parameters (support both Supabase and legacy modes)
+          // Get mapId from URL or localStorage
           const urlParams = new URLSearchParams(window.location.search);
-          const mapId = urlParams.get('id') || urlParams.get('map') || localStorage.getItem('lastMapId') || config.meta?.id || 'demo';
+          const mapId = urlParams.get('map') || localStorage.getItem('lastMapId') || config.meta?.id || 'demo';
           
           // For demo purposes, store the config so survey page can access it
           // In production, this would be fetched from Supabase by mapId
-          if (!urlParams.get('id') && !urlParams.get('map')) {
+          if (!urlParams.get('map')) {
             localStorage.setItem('demoJourneyConfig', JSON.stringify(config));
           }
           
@@ -4401,6 +4468,444 @@ Powered by FATHOM
                 }}
               >
                 {sending ? 'Sending...' : 'Send Survey Link →'}
+              </button>
+            </div>
+          </div>
+        </div>
+      );
+    }
+
+    // Bulk Survey Request Modal - NEW
+    function BulkSurveyModal({ config, onClose }) {
+      const [selectedPersonaId, setSelectedPersonaId] = useState(null);
+      const [selectedRecipients, setSelectedRecipients] = useState([]);
+      const [scope, setScope] = useState('role-steps'); // 'role-steps', 'full'
+      const [message, setMessage] = useState('');
+      const [sending, setSending] = useState(false);
+      
+      // Find all steps where selected persona is involved
+      const getInvolvedSteps = (personaId) => {
+        if (!personaId) return [];
+        const steps = [];
+        config.stages?.forEach(stage => {
+          stage.steps?.forEach(step => {
+            const hasAction = step.actions?.[personaId];
+            const hasTime = step.roleInvolvement?.[personaId];
+            if (hasAction || hasTime) {
+              steps.push({
+                id: step.id,
+                name: step.name,
+                stageName: stage.name,
+                stageId: stage.id
+              });
+            }
+          });
+        });
+        return steps;
+      };
+      
+      const selectedPersona = config.personas?.find(p => p.id === selectedPersonaId);
+      const involvedSteps = selectedPersona ? getInvolvedSteps(selectedPersonaId) : [];
+      const teamMembers = selectedPersona?.teamMembers || [];
+      
+      // Calculate total time for this role
+      const totalTime = involvedSteps.reduce((sum, stepInfo) => {
+        const step = config.stages
+          .flatMap(s => s.steps)
+          .find(st => st.id === stepInfo.id);
+        const timeMinutes = step?.roleInvolvement?.[selectedPersonaId]?.timeMinutes || 0;
+        return sum + timeMinutes;
+      }, 0);
+      
+      const toggleRecipient = (memberId) => {
+        setSelectedRecipients(prev => 
+          prev.includes(memberId) 
+            ? prev.filter(id => id !== memberId)
+            : [...prev, memberId]
+        );
+      };
+      
+      const toggleSelectAll = () => {
+        if (selectedRecipients.length === teamMembers.length) {
+          setSelectedRecipients([]);
+        } else {
+          setSelectedRecipients(teamMembers.map(tm => tm.id));
+        }
+      };
+      
+      const handleSend = async () => {
+        if (selectedRecipients.length === 0) {
+          alert('Please select at least one recipient');
+          return;
+        }
+        
+        if (!selectedPersonaId) {
+          alert('Please select a role');
+          return;
+        }
+        
+        setSending(true);
+        
+        try {
+          const recipients = teamMembers.filter(tm => selectedRecipients.includes(tm.id));
+          
+          // Get mapId
+          const urlParams = new URLSearchParams(window.location.search);
+          const mapId = urlParams.get('map') || urlParams.get('id') || localStorage.getItem('lastMapId') || config.meta?.id || 'demo';
+          
+          // Generate bulk survey URLs
+          const emails = await sendBulkSurveyEmails({
+            personaId: selectedPersonaId,
+            personaLabel: selectedPersona.label,
+            stepDetails: involvedSteps,
+            recipients,
+            scope,
+            message: message.trim(),
+            journeyTitle: config.meta?.title || 'Journey Map'
+          }, mapId, config);
+          
+          // Show success
+          const emailList = emails.map(e => `📧 ${e.recipient}`).join('\n');
+          const shouldOpen = confirm(
+            `✅ Survey requests prepared for ${recipients.length} ${recipients.length === 1 ? 'person' : 'people'}!\n\n` +
+            `Role: ${selectedPersona.label}\n` +
+            `Steps: ${involvedSteps.length}\n\n` +
+            `${emailList}\n\n` +
+            `📬 For now, clicking OK will open your email client.\n` +
+            `🚀 In production, emails would be sent automatically via backend.\n\n` +
+            `Open email client now?`
+          );
+          
+          if (shouldOpen && emails.length > 0) {
+            window.open(emails[0].mailto, '_blank');
+            console.log('Bulk Survey URLs generated:');
+            emails.forEach(e => {
+              console.log(`${e.recipient}: ${e.surveyUrl}`);
+            });
+          }
+          
+          // Store requests
+          const existingRequests = JSON.parse(localStorage.getItem('surveyRequests') || '[]');
+          const newRequest = {
+            id: generateSurveyToken(),
+            type: 'bulk',
+            personaId: selectedPersonaId,
+            personaLabel: selectedPersona.label,
+            stepCount: involvedSteps.length,
+            recipients,
+            scope,
+            message: message.trim(),
+            journeyTitle: config.meta?.title || 'Journey Map',
+            mapId,
+            emails: emails.map(e => ({ recipient: e.recipient, surveyUrl: e.surveyUrl })),
+            sentAt: new Date().toISOString()
+          };
+          localStorage.setItem('surveyRequests', JSON.stringify([...existingRequests, newRequest]));
+          
+          setSending(false);
+          onClose();
+          
+        } catch (error) {
+          console.error('Error sending bulk survey requests:', error);
+          alert('Failed to send survey requests. Please try again.');
+          setSending(false);
+        }
+      };
+      
+      return (
+        <div 
+          style={{
+            position: 'fixed',
+            inset: 0,
+            background: 'rgba(0,0,0,0.5)',
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'center',
+            zIndex: 10000
+          }}
+          onClick={onClose}
+        >
+          <div 
+            style={{
+              background: '#FFF',
+              borderRadius: '12px',
+              padding: '32px',
+              width: '680px',
+              maxWidth: '95vw',
+              maxHeight: '90vh',
+              overflow: 'auto'
+            }}
+            onClick={e => e.stopPropagation()}
+          >
+            {/* Header */}
+            <div style={{ marginBottom: '24px' }}>
+              <h3 style={{ margin: '0 0 6px 0', fontSize: '20px', fontFamily: "'Interstate', sans-serif", color: '#192B45' }}>
+                Request Survey Feedback
+              </h3>
+              <p style={{ margin: 0, fontSize: '13px', color: '#6E7B8C', fontFamily: "'Interstate', sans-serif", lineHeight: 1.5 }}>
+                Send survey requests to team members for all steps they're involved in
+              </p>
+            </div>
+            
+            {/* Role Selection */}
+            <div style={{ marginBottom: '24px' }}>
+              <label style={{ display: 'block', fontFamily: "'Interstate', sans-serif", fontSize: '12px', fontWeight: 600, color: '#556275', marginBottom: '8px' }}>
+                Select Role
+              </label>
+              <select
+                value={selectedPersonaId || ''}
+                onChange={(e) => {
+                  setSelectedPersonaId(e.target.value);
+                  setSelectedRecipients([]); // Reset recipients when role changes
+                }}
+                style={{
+                  width: '100%',
+                  padding: '10px 12px',
+                  border: '1px solid #E4E7EB',
+                  borderRadius: '6px',
+                  fontSize: '13px',
+                  fontFamily: "'Interstate', sans-serif",
+                  background: '#FFF',
+                  cursor: 'pointer'
+                }}
+              >
+                <option value="">Choose a role...</option>
+                {config.personas?.filter(p => !p.isExternal).map(persona => (
+                  <option key={persona.id} value={persona.id}>
+                    {persona.label}
+                  </option>
+                ))}
+              </select>
+            </div>
+            
+            {/* Role Summary */}
+            {selectedPersona && (
+              <div style={{ 
+                marginBottom: '24px',
+                padding: '16px',
+                background: '#F4F5F7',
+                borderRadius: '8px',
+                borderLeft: '3px solid #5B8A9A'
+              }}>
+                <div style={{ fontFamily: "'Interstate', sans-serif", fontSize: '13px', color: '#1A2332', marginBottom: '8px' }}>
+                  <strong>{selectedPersona.label}</strong> is involved in:
+                </div>
+                <div style={{ display: 'flex', gap: '16px', flexWrap: 'wrap', fontSize: '12px', color: '#556275', fontFamily: "'Interstate', sans-serif" }}>
+                  <div>📋 <strong>{involvedSteps.length}</strong> steps</div>
+                  <div>📂 <strong>{new Set(involvedSteps.map(s => s.stageId)).size}</strong> stages</div>
+                  <div>⏱️ <strong>{Math.floor(totalTime / 60)}h {totalTime % 60}m</strong> total</div>
+                </div>
+              </div>
+            )}
+            
+            {/* Recipients */}
+            {selectedPersona && (
+              <div style={{ marginBottom: '24px' }}>
+                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '8px' }}>
+                  <label style={{ fontFamily: "'Interstate', sans-serif", fontSize: '12px', fontWeight: 600, color: '#556275' }}>
+                    Recipients ({selectedRecipients.length} selected)
+                  </label>
+                  {teamMembers.length > 0 && (
+                    <button
+                      onClick={toggleSelectAll}
+                      style={{
+                        background: 'transparent',
+                        border: 'none',
+                        color: '#5B8A9A',
+                        cursor: 'pointer',
+                        fontSize: '11px',
+                        fontFamily: "'Interstate', sans-serif",
+                        fontWeight: 600,
+                        textDecoration: 'underline'
+                      }}
+                    >
+                      {selectedRecipients.length === teamMembers.length ? 'Deselect All' : 'Select All'}
+                    </button>
+                  )}
+                </div>
+                
+                {teamMembers.length === 0 ? (
+                  <div style={{ 
+                    padding: '16px', 
+                    background: '#FAF0D6', 
+                    borderRadius: '6px',
+                    fontSize: '12px',
+                    color: '#8B6914',
+                    fontFamily: "'Interstate', sans-serif"
+                  }}>
+                    ⚠️ No team members assigned to this role yet. Add team members in the Role Management settings.
+                  </div>
+                ) : (
+                  <div style={{ 
+                    border: '1px solid #E4E7EB', 
+                    borderRadius: '6px',
+                    maxHeight: '200px',
+                    overflow: 'auto'
+                  }}>
+                    {teamMembers.map(member => (
+                      <label
+                        key={member.id}
+                        style={{
+                          display: 'flex',
+                          alignItems: 'center',
+                          padding: '12px',
+                          borderBottom: '1px solid #F4F5F7',
+                          cursor: 'pointer',
+                          background: selectedRecipients.includes(member.id) ? '#F9FAFB' : '#FFF'
+                        }}
+                        onClick={() => toggleRecipient(member.id)}
+                      >
+                        <input
+                          type="checkbox"
+                          checked={selectedRecipients.includes(member.id)}
+                          onChange={() => {}}
+                          style={{ marginRight: '12px', cursor: 'pointer' }}
+                        />
+                        <div style={{ flex: 1 }}>
+                          <div style={{ fontFamily: "'Interstate', sans-serif", fontSize: '13px', color: '#1A2332', fontWeight: 500 }}>
+                            {member.name}
+                          </div>
+                          <div style={{ fontFamily: "'Interstate', sans-serif", fontSize: '11px', color: '#8A95A5' }}>
+                            {member.email}
+                          </div>
+                        </div>
+                      </label>
+                    ))}
+                  </div>
+                )}
+              </div>
+            )}
+            
+            {/* Scope */}
+            {selectedPersona && (
+              <div style={{ marginBottom: '24px' }}>
+                <label style={{ display: 'block', fontFamily: "'Interstate', sans-serif", fontSize: '12px', fontWeight: 600, color: '#556275', marginBottom: '8px' }}>
+                  Survey Scope
+                </label>
+                <div style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
+                  <label 
+                    style={{ 
+                      display: 'flex',
+                      gap: '10px', 
+                      padding: '12px',
+                      background: scope === 'role-steps' ? '#E1EEF2' : '#FFF',
+                      border: `2px solid ${scope === 'role-steps' ? '#5B8A9A' : '#E4E7EB'}`,
+                      borderRadius: '6px',
+                      cursor: 'pointer'
+                    }}
+                  >
+                    <input
+                      type="radio"
+                      name="bulk-scope"
+                      value="role-steps"
+                      checked={scope === 'role-steps'}
+                      onChange={(e) => setScope(e.target.value)}
+                      style={{ marginTop: '2px', cursor: 'pointer' }}
+                    />
+                    <div style={{ flex: 1 }}>
+                      <div style={{ fontFamily: "'Interstate', sans-serif", fontSize: '13px', fontWeight: 600, color: '#192B45', marginBottom: '4px' }}>
+                        Their Steps Only (Recommended)
+                      </div>
+                      <div style={{ fontFamily: "'Interstate', sans-serif", fontSize: '11px', color: '#8A95A5', lineHeight: 1.4 }}>
+                        Survey covers {involvedSteps.length} steps where {selectedPersona.label} is involved
+                      </div>
+                    </div>
+                  </label>
+                  
+                  <label 
+                    style={{ 
+                      display: 'flex',
+                      gap: '10px', 
+                      padding: '12px',
+                      background: scope === 'full' ? '#E1EEF2' : '#FFF',
+                      border: `2px solid ${scope === 'full' ? '#5B8A9A' : '#E4E7EB'}`,
+                      borderRadius: '6px',
+                      cursor: 'pointer'
+                    }}
+                  >
+                    <input
+                      type="radio"
+                      name="bulk-scope"
+                      value="full"
+                      checked={scope === 'full'}
+                      onChange={(e) => setScope(e.target.value)}
+                      style={{ marginTop: '2px', cursor: 'pointer' }}
+                    />
+                    <div style={{ flex: 1 }}>
+                      <div style={{ fontFamily: "'Interstate', sans-serif", fontSize: '13px', fontWeight: 600, color: '#192B45', marginBottom: '4px' }}>
+                        Full Journey (For Context)
+                      </div>
+                      <div style={{ fontFamily: "'Interstate', sans-serif", fontSize: '11px', color: '#8A95A5', lineHeight: 1.4 }}>
+                        Show entire journey for context, but only collect feedback on their {involvedSteps.length} steps
+                      </div>
+                    </div>
+                  </label>
+                </div>
+              </div>
+            )}
+            
+            {/* Message */}
+            {selectedPersona && (
+              <div style={{ marginBottom: '24px' }}>
+                <label style={{ display: 'block', fontFamily: "'Interstate', sans-serif", fontSize: '12px', fontWeight: 600, color: '#556275', marginBottom: '8px' }}>
+                  Optional message to recipients
+                </label>
+                <textarea
+                  value={message}
+                  onChange={(e) => setMessage(e.target.value)}
+                  placeholder="We're reviewing our processes and would value your feedback on the steps you're involved in..."
+                  rows={3}
+                  style={{
+                    width: '100%',
+                    padding: '10px 12px',
+                    border: '1px solid #E4E7EB',
+                    borderRadius: '6px',
+                    fontSize: '13px',
+                    fontFamily: "'Interstate', sans-serif",
+                    resize: 'vertical',
+                    boxSizing: 'border-box'
+                  }}
+                />
+              </div>
+            )}
+            
+            {/* Buttons */}
+            <div style={{ display: 'flex', gap: '12px', justifyContent: 'flex-end' }}>
+              <button
+                onClick={onClose}
+                style={{
+                  padding: '10px 20px',
+                  background: '#F4F5F7',
+                  border: 'none',
+                  borderRadius: '6px',
+                  cursor: 'pointer',
+                  fontFamily: "'Interstate', sans-serif",
+                  fontSize: '13px',
+                  color: '#556275',
+                  fontWeight: 600
+                }}
+              >
+                Cancel
+              </button>
+              <button
+                onClick={handleSend}
+                disabled={sending || selectedRecipients.length === 0 || !selectedPersonaId}
+                style={{
+                  padding: '10px 20px',
+                  background: (selectedRecipients.length === 0 || !selectedPersonaId) ? '#A9B2BE' : '#5B8A9A',
+                  border: 'none',
+                  borderRadius: '6px',
+                  cursor: (selectedRecipients.length === 0 || !selectedPersonaId) ? 'not-allowed' : 'pointer',
+                  fontFamily: "'Interstate', sans-serif",
+                  fontSize: '13px',
+                  color: '#FFF',
+                  fontWeight: 600,
+                  display: 'flex',
+                  alignItems: 'center',
+                  gap: '8px'
+                }}
+              >
+                {sending ? 'Sending...' : `Send ${selectedRecipients.length} Survey ${selectedRecipients.length === 1 ? 'Link' : 'Links'} →`}
               </button>
             </div>
           </div>
@@ -7717,6 +8222,7 @@ FATHOM - Journey intelligence for modern operations`);
       const [showJourneySettings, setShowJourneySettings] = useState(false);
       const [showProfileMenu, setShowProfileMenu] = useState(false);
       const [showSurveyRequestModal, setShowSurveyRequestModal] = useState(null); // { stepId, personaId }
+      const [showBulkSurveyModal, setShowBulkSurveyModal] = useState(false); // New bulk survey modal
       const [shares, setShares] = useState([]);
       const [isMobile, setIsMobile] = useState(() => window.innerWidth < 768);
       const [isCompact, setIsCompact] = useState(() => window.innerWidth < 1024 && window.innerWidth >= 768);
@@ -9319,6 +9825,30 @@ FATHOM - Journey intelligence for modern operations`);
                   </>
                 ) : (
                   <>
+                    {/* Request Surveys Button - NEW */}
+                    <button 
+                      onClick={() => setShowBulkSurveyModal(true)}
+                      style={{ 
+                        padding: '6px 10px', 
+                        background: 'transparent', 
+                        color: '#F4F5F7', 
+                        border: '1px solid rgba(255,255,255,0.4)', 
+                        borderRadius: '4px', 
+                        cursor: 'pointer', 
+                        fontFamily: "'Interstate', sans-serif", 
+                        fontSize: '11px', 
+                        display: 'flex', 
+                        alignItems: 'center', 
+                        gap: '4px',
+                        transition: 'all 0.15s'
+                      }}
+                      onMouseOver={(e) => { e.currentTarget.style.background = 'rgba(255,255,255,0.1)'; }}
+                      onMouseOut={(e) => { e.currentTarget.style.background = 'transparent'; }}
+                      title="Request survey feedback from team members"
+                    >
+                      📋 Surveys
+                    </button>
+                    
                     {/* Share Button (Supabase mode only) */}
                     {isSupabaseMode && canAccessSettings && (
                       <button 
@@ -12014,6 +12544,12 @@ FATHOM - Journey intelligence for modern operations`);
                 // Phase 3: Implement actual email sending
                 console.log('Survey request:', surveyRequest);
               }}
+            />
+          )}
+          {showBulkSurveyModal && (
+            <BulkSurveyModal 
+              config={config}
+              onClose={() => setShowBulkSurveyModal(false)}
             />
           )}
           {showShareModal && isSupabaseMode && (
