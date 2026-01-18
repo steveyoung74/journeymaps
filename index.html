@@ -2876,6 +2876,14 @@
               </div>
             </div>
           </footer>
+          
+          {/* NEW: Demo Modal */}
+          {showDemo && (
+            <InteractiveDemo 
+              context={activeContext} 
+              onClose={() => setShowDemo(false)} 
+            />
+          )}
         </div>
       );
     }
@@ -5717,14 +5725,7 @@
                 </>
               )}
             </div>
-          
-          {/* NEW: Demo Modal */}
-          {showDemo && (
-            <InteractiveDemo 
-              context={activeContext} 
-              onClose={() => setShowDemo(false)} 
-            />
-          )}
+          </div>
         </div>
       );
     }
