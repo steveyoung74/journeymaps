@@ -563,14 +563,32 @@
     }
     
     async function loadAnalyticsData(organisationId) {
+      // Load survey invitations (better tracking than responses)
+      const { data: invitations, error: invitationsError } = await supabase
+        .from('survey_invitations')
+        .select('*')
+        .eq('map_id', 'in', 
+          await supabase
+            .from('journey_maps')
+            .select('id')
+            .eq('organisation_id', organisationId)
+        )
+        .order('sent_at', { ascending: false });
+      
+      if (invitationsError) {
+        console.error('Error loading invitations:', invitationsError);
+      }
+      analyticsData.invitations = invitations || [];
+      
       // Load survey responses
       const { data: responses, error: responsesError } = await supabase
         .from('survey_responses')
         .select('*')
-        .eq('organisation_id', organisationId)
-        .order('created_at', { ascending: false });
+        .order('submitted_at', { ascending: false });
       
-      if (responsesError) throw responsesError;
+      if (responsesError) {
+        console.error('Error loading responses:', responsesError);
+      }
       analyticsData.responses = responses || [];
       
       // Load journey maps
@@ -585,22 +603,24 @@
     }
     
     function renderStats() {
+      const invitations = analyticsData.invitations;
       const responses = analyticsData.responses;
-      const totalSurveys = responses.length;
-      const completed = responses.filter(r => r.status === 'reviewed' || r.submitted_at).length;
-      const pending = responses.filter(r => r.status === 'pending' || !r.submitted_at).length;
+      
+      const totalSurveys = invitations.length;
+      const completed = invitations.filter(i => i.status === 'completed').length;
+      const pending = invitations.filter(i => ['pending', 'opened', 'started', 'partial'].includes(i.status)).length;
       const responseRate = totalSurveys > 0 ? Math.round((completed / totalSurveys) * 100) : 0;
       
-      // Calculate average response time
-      const completedResponses = responses.filter(r => r.submitted_at && r.created_at);
+      // Calculate average response time from invitations (has sent_at and completed_at)
+      const completedInvitations = invitations.filter(i => i.completed_at && i.sent_at);
       let avgResponseTime = '-';
-      if (completedResponses.length > 0) {
-        const totalTime = completedResponses.reduce((sum, r) => {
-          const start = new Date(r.created_at);
-          const end = new Date(r.submitted_at);
+      if (completedInvitations.length > 0) {
+        const totalTime = completedInvitations.reduce((sum, i) => {
+          const start = new Date(i.sent_at);
+          const end = new Date(i.completed_at);
           return sum + (end - start);
         }, 0);
-        const avgMs = totalTime / completedResponses.length;
+        const avgMs = totalTime / completedInvitations.length;
         const hours = Math.round(avgMs / (1000 * 60 * 60));
         avgResponseTime = hours < 24 ? `${hours}h` : `${Math.round(hours / 24)}d`;
       }
@@ -615,13 +635,13 @@
     }
     
     function renderCharts() {
-      const responses = analyticsData.responses;
+      const invitations = analyticsData.invitations;
       
       // Status Chart (Doughnut)
       const statusCounts = {
-        completed: responses.filter(r => r.status === 'reviewed' || r.submitted_at).length,
-        pending: responses.filter(r => r.status === 'pending' && !r.submitted_at).length,
-        inProgress: responses.filter(r => r.status === 'pending' && r.started_at).length
+        completed: invitations.filter(i => i.status === 'completed').length,
+        pending: invitations.filter(i => i.status === 'pending').length,
+        inProgress: invitations.filter(i => ['started', 'partial'].includes(i.status)).length
       };
       
       new Chart(document.getElementById('statusChart'), {
@@ -657,9 +677,10 @@
       });
       
       const responsesPerDay = last7Days.map(date => {
-        return responses.filter(r => {
-          const responseDate = new Date(r.submitted_at || r.created_at).toISOString().split('T')[0];
-          return responseDate === date;
+        return invitations.filter(i => {
+          if (!i.completed_at) return false;
+          const completedDate = new Date(i.completed_at).toISOString().split('T')[0];
+          return completedDate === date;
         }).length;
       });
       
@@ -699,7 +720,7 @@
     function renderTables() {
       // Journey Map Performance
       const journeyStats = analyticsData.journeyMaps.map(map => {
-        const mapResponses = analyticsData.responses.filter(r => r.journey_map_id === map.id);
+        const mapResponses = analyticsData.responses.filter(r => r.map_id === map.id);
         const completed = mapResponses.filter(r => r.status === 'reviewed' || r.submitted_at).length;
         const pending = mapResponses.filter(r => r.status === 'pending' || !r.submitted_at).length;
         const rate = mapResponses.length > 0 ? Math.round((completed / mapResponses.length) * 100) : 0;

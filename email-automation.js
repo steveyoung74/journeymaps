@@ -69,9 +69,8 @@ const EmailAutomation = {
   async scheduleReminder(survey) {
     try {
       const { data, error } = await supabase.rpc('schedule_survey_reminder', {
-        p_survey_id: survey.surveyId,
-        p_journey_map_id: survey.mapId,
-        p_organisation_id: survey.organisationId,
+        p_invitation_id: survey.invitationId,
+        p_map_id: survey.mapId,
         p_recipient_email: survey.email,
         p_survey_url: survey.url,
         p_days_delay: survey.reminderDays || 3
