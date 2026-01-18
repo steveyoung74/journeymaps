@@ -301,13 +301,13 @@
   <script>
     // Configuration
     const CONFIG = {
-      SUPABASE_URL: 'https://ktctvaeuluallhczwnrl.supabase.co',
+      SUPABASE_URL: 'https://ktctvaeuluallhczwnrl.supabaseClient.co',
       SUPABASE_ANON_KEY: 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Imt0Y3R2YWV1bHVhbGxoY3p3bnJsIiwicm9sZSI6ImFub24iLCJpYXQiOjE3MzY4NTQ5NzAsImV4cCI6MjA1MjQzMDk3MH0.gL_JqmZ8o9Bn55QxSU6VczKTJTpWu6bEMNr_BHMIg4c',
-      SUBMIT_SURVEY_URL: 'https://ktctvaeuluallhczwnrl.supabase.co/functions/v1/submit-survey',
-      SEND_EMAIL_URL: 'https://ktctvaeuluallhczwnrl.supabase.co/functions/v1/send-survey-email'
+      SUBMIT_SURVEY_URL: 'https://ktctvaeuluallhczwnrl.supabaseClient.co/functions/v1/submit-survey',
+      SEND_EMAIL_URL: 'https://ktctvaeuluallhczwnrl.supabaseClient.co/functions/v1/send-survey-email'
     };
     
-    let supabase;
+    let supabaseClient;
     let testResults = {
       total: 0,
       passed: 0,
@@ -392,7 +392,7 @@
       updateTest(testId, 'running');
       try {
         const url = new URL(CONFIG.SUPABASE_URL);
-        if (url.hostname.includes('supabase.co')) {
+        if (url.hostname.includes('supabaseClient.co')) {
           updateTest(testId, 'success', '✓ Valid');
         } else {
           updateTest(testId, 'warning', 'Non-standard domain');
@@ -436,10 +436,10 @@
     
     async function testSupabaseConnection() {
       // Test 1: Initialize Client
-      let testId = addTest('supabaseTests', 'Initialize Supabase Client', 'window.supabase.createClient()');
+      let testId = addTest('supabaseTests', 'Initialize Supabase Client', 'window.supabaseClient.createClient()');
       updateTest(testId, 'running');
       try {
-        supabase = window.supabase.createClient(CONFIG.SUPABASE_URL, CONFIG.SUPABASE_ANON_KEY);
+        supabaseClient = window.supabaseClient.createClient(CONFIG.SUPABASE_URL, CONFIG.SUPABASE_ANON_KEY);
         updateTest(testId, 'success', '✓ Initialized');
       } catch (e) {
         updateTest(testId, 'error', 'Failed', e.message);
@@ -468,7 +468,7 @@
       testId = addTest('supabaseTests', 'Current Session', 'Check if logged in');
       updateTest(testId, 'running');
       try {
-        const { data: { session } } = await supabase.auth.getSession();
+        const { data: { session } } = await supabaseClient.auth.getSession();
         if (session) {
           updateTest(testId, 'success', `User: ${session.user.email}`);
         } else {
@@ -480,7 +480,7 @@
     }
     
     async function testDatabaseSchema() {
-      if (!supabase) {
+      if (!supabaseClient) {
         addTest('schemaTests', 'Supabase not initialized', '⚠ Skipping schema tests');
         return;
       }
@@ -591,13 +591,13 @@
     }
     
     async function testAuthentication() {
-      if (!supabase) return;
+      if (!supabaseClient) return;
       
       // Test 1: Session
       let testId = addTest('authTests', 'Current Session', 'auth.getSession()');
       updateTest(testId, 'running');
       try {
-        const { data: { session }, error } = await supabase.auth.getSession();
+        const { data: { session }, error } = await supabaseClient.auth.getSession();
         if (error) {
           updateTest(testId, 'error', 'Auth error', error.message);
         } else if (session) {
@@ -613,7 +613,7 @@
       testId = addTest('authTests', 'User Profile', 'FROM users');
       updateTest(testId, 'running');
       try {
-        const { data: { session } } = await supabase.auth.getSession();
+        const { data: { session } } = await supabaseClient.auth.getSession();
         if (!session) {
           updateTest(testId, 'warning', 'Not logged in');
           return;
@@ -638,9 +638,9 @@
     }
     
     async function testDataAccess() {
-      if (!supabase) return;
+      if (!supabaseClient) return;
       
-      const { data: { session } } = await supabase.auth.getSession();
+      const { data: { session } } = await supabaseClient.auth.getSession();
       if (!session) {
         addTest('dataTests', '⚠ Login required', 'These tests need authentication');
         return;

@@ -1,0 +1,1365 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=5.0, viewport-fit=cover">
+  <title>FATHOM - Operational Intelligence Platform</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Open+Sans:wght@400;500;600;700&display=swap" rel="stylesheet">
+  <script src="https://unpkg.com/react@18/umd/react.production.min.js"></script>
+  <script src="https://unpkg.com/react-dom@18/umd/react-dom.production.min.js"></script>
+  <script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
+  <style>
+    /* Interstate Font Family - Brand/Display Font */
+    @font-face {
+      font-family: 'Interstate';
+      src: url('https://steveyoung74.github.io/journeymaps/fonts/Interstate-light.ttf') format('truetype');
+      font-weight: 300;
+      font-style: normal;
+      font-display: swap;
+    }
+    @font-face {
+      font-family: 'Interstate';
+      src: url('https://steveyoung74.github.io/journeymaps/fonts/Interstate-regular.ttf') format('truetype');
+      font-weight: 400;
+      font-style: normal;
+      font-display: swap;
+    }
+    @font-face {
+      font-family: 'Interstate';
+      src: url('https://steveyoung74.github.io/journeymaps/fonts/Interstate-bold.ttf') format('truetype');
+      font-weight: 700;
+      font-style: normal;
+      font-display: swap;
+    }
+    
+    /* CSS Custom Properties - Fathom Color Palette */
+    :root {
+      --font-display: 'Interstate', -apple-system, BlinkMacSystemFont, sans-serif;
+      --font-body: 'Open Sans', -apple-system, BlinkMacSystemFont, sans-serif;
+      --navy-950: #0C1620;
+      --navy-900: #111E2E;
+      --navy-800: #15243A;
+      --navy-700: #192B45;
+      --navy-600: #243D5C;
+      --navy-500: #2F5070;
+      --navy-400: #456A8A;
+      --navy-300: #6889A8;
+      --navy-200: #9BB1C7;
+      --navy-100: #C8D5E2;
+      --navy-50: #E9EEF4;
+      --steel-700: #3A6070;
+      --steel-600: #4A7485;
+      --steel-500: #5B8A9A;
+      --steel-400: #74A0AE;
+      --steel-300: #96BCC7;
+      --steel-200: #BDD6DE;
+      --steel-100: #E1EEF2;
+      --amber-700: #8B6914;
+      --amber-600: #A67D1D;
+      --amber-500: #C4942A;
+      --amber-400: #D4A84A;
+      --amber-200: #E8D5A3;
+      --amber-100: #FAF0D6;
+      --success: #2D8A6E;
+      --success-light: #D4EDE5;
+      --error: #B84A5A;
+      --error-light: #F5E0E3;
+      --slate-900: #1A2332;
+      --slate-700: #3D4A5C;
+      --slate-600: #556275;
+      --slate-500: #6E7B8C;
+      --slate-400: #8A95A5;
+      --slate-300: #A9B2BE;
+      --slate-200: #C8CED6;
+      --slate-100: #E4E7EB;
+      --slate-50: #F4F5F7;
+    }
+    
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    html { 
+      scroll-behavior: smooth; 
+      overflow-x: hidden;
+      width: 100%;
+    }
+    body { 
+      font-family: var(--font-body); 
+      background: #FFF; 
+      color: var(--slate-900);
+      line-height: 1.6;
+      margin: 0;
+      overflow-x: hidden;
+      width: 100%;
+      max-width: 100vw;
+      position: relative;
+    }
+    
+    h1, h2, h3, h4, h5, h6 {
+      font-family: var(--font-display);
+    }
+    
+    h1, h2, h3, h4, h5, h6, p, span, a, button {
+      word-wrap: break-word;
+      overflow-wrap: break-word;
+    }
+    
+    /* Buttons */
+    .btn { 
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      gap: 8px;
+      padding: 14px 28px; 
+      border-radius: 8px; 
+      font-size: 15px; 
+      font-weight: 500; 
+      cursor: pointer; 
+      transition: all 0.2s;
+      border: none;
+      font-family: inherit;
+      text-decoration: none;
+    }
+    .btn:disabled { opacity: 0.5; cursor: not-allowed; }
+    .btn-primary { background: var(--navy-700); color: #FFF; }
+    .btn-primary:hover:not(:disabled) { background: var(--navy-800); transform: translateY(-1px); }
+    .btn-secondary { background: #FFF; color: var(--navy-700); border: 2px solid var(--navy-700); }
+    .btn-secondary:hover:not(:disabled) { background: var(--navy-50); }
+    .btn-light { background: rgba(255,255,255,0.15); color: #FFF; border: 1px solid rgba(255,255,255,0.3); }
+    .btn-light:hover:not(:disabled) { background: rgba(255,255,255,0.25); }
+    
+    /* Context Switcher */
+    .context-switcher {
+      display: inline-flex;
+      gap: 0;
+      background: rgba(255, 255, 255, 0.1);
+      border: 1px solid rgba(255, 255, 255, 0.2);
+      border-radius: 10px;
+      padding: 4px;
+      backdrop-filter: blur(10px);
+    }
+    .context-btn {
+      padding: 10px 20px;
+      background: transparent;
+      border: none;
+      color: rgba(255, 255, 255, 0.7);
+      font-size: 14px;
+      font-weight: 500;
+      cursor: pointer;
+      transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+      border-radius: 7px;
+      font-family: var(--font-display);
+      letter-spacing: 0.3px;
+      position: relative;
+    }
+    .context-btn:hover {
+      color: rgba(255, 255, 255, 0.9);
+      background: rgba(255, 255, 255, 0.08);
+    }
+    .context-btn.active {
+      background: rgba(255, 255, 255, 0.2);
+      color: #FFF;
+      box-shadow: 0 2px 8px rgba(0, 0, 0, 0.15);
+      transform: scale(1.02);
+    }
+    
+    /* Industry Selector */
+    .industry-selector {
+      display: inline-flex;
+      gap: 8px;
+      flex-wrap: wrap;
+      justify-content: center;
+      margin-top: 24px;
+    }
+    .industry-btn {
+      padding: 8px 16px;
+      background: rgba(255, 255, 255, 0.08);
+      border: 1px solid rgba(255, 255, 255, 0.15);
+      border-radius: 20px;
+      color: rgba(255, 255, 255, 0.7);
+      font-size: 13px;
+      font-weight: 500;
+      cursor: pointer;
+      transition: all 0.2s;
+      font-family: var(--font-body);
+    }
+    .industry-btn:hover {
+      background: rgba(255, 255, 255, 0.15);
+      color: #FFF;
+    }
+    .industry-btn.active {
+      background: rgba(255, 255, 255, 0.25);
+      color: #FFF;
+      border-color: rgba(255, 255, 255, 0.3);
+    }
+    
+    /* Hero Animations */
+    .hero-logo {
+      animation: heroLogoIn 0.8s ease-out forwards;
+      opacity: 0;
+    }
+    @keyframes heroLogoIn {
+      0% {
+        opacity: 0;
+        transform: translateY(-20px);
+      }
+      100% {
+        opacity: 1;
+        transform: translateY(0);
+      }
+    }
+    
+    .hero-content {
+      animation: fadeInUp 0.6s ease-out 0.2s forwards;
+      opacity: 0;
+    }
+    @keyframes fadeInUp {
+      0% {
+        opacity: 0;
+        transform: translateY(30px);
+      }
+      100% {
+        opacity: 1;
+        transform: translateY(0);
+      }
+    }
+    
+    /* Enhanced context transition animations */
+    .context-content {
+      animation: contextFadeIn 0.5s cubic-bezier(0.4, 0, 0.2, 1) forwards;
+    }
+    @keyframes contextFadeIn {
+      0% {
+        opacity: 0;
+        transform: translateY(20px) scale(0.98);
+      }
+      100% {
+        opacity: 1;
+        transform: translateY(0) scale(1);
+      }
+    }
+    
+    .context-content-exit {
+      animation: contextFadeOut 0.3s cubic-bezier(0.4, 0, 0.2, 1) forwards;
+    }
+    @keyframes contextFadeOut {
+      0% {
+        opacity: 1;
+        transform: translateY(0) scale(1);
+      }
+      100% {
+        opacity: 0;
+        transform: translateY(-20px) scale(0.98);
+      }
+    }
+    
+    /* Contour Background */
+    .contour-bg {
+      position: absolute;
+      inset: 0;
+      overflow: hidden;
+      pointer-events: none;
+      z-index: 0;
+    }
+    .contour-line {
+      position: absolute;
+      left: 0;
+      right: 0;
+      height: 2px;
+      background: currentColor;
+      opacity: 0.03;
+      animation: contourFloat 20s ease-in-out infinite;
+    }
+    @keyframes contourFloat {
+      0%, 100% { transform: translateY(0); }
+      50% { transform: translateY(-5px); }
+    }
+    
+    /* Feature Cards */
+    .feature-card {
+      background: #FFF;
+      border-radius: 16px;
+      padding: 32px;
+      box-shadow: 0 4px 24px rgba(25, 43, 69, 0.08);
+      transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+      position: relative;
+      overflow: hidden;
+    }
+    .feature-card:hover {
+      transform: translateY(-6px);
+      box-shadow: 0 12px 40px rgba(25, 43, 69, 0.15);
+    }
+    .feature-card::before {
+      content: '';
+      position: absolute;
+      top: 0;
+      left: 0;
+      right: 0;
+      height: 4px;
+      background: linear-gradient(90deg, var(--steel-500), var(--navy-700));
+      opacity: 0;
+      transition: opacity 0.3s;
+    }
+    .feature-card:hover::before {
+      opacity: 1;
+    }
+    
+    /* Interactive Demo */
+    .demo-container {
+      background: #FFF;
+      border-radius: 20px;
+      padding: 40px;
+      box-shadow: 0 8px 40px rgba(25, 43, 69, 0.12);
+      max-width: 1000px;
+      margin: 0 auto;
+    }
+    .demo-stage {
+      display: flex;
+      align-items: center;
+      gap: 16px;
+      padding: 20px;
+      background: var(--slate-50);
+      border-radius: 12px;
+      margin-bottom: 12px;
+      cursor: pointer;
+      transition: all 0.3s;
+      border: 2px solid transparent;
+    }
+    .demo-stage:hover {
+      background: var(--steel-100);
+      border-color: var(--steel-400);
+      transform: translateX(4px);
+    }
+    .demo-stage.active {
+      background: var(--steel-100);
+      border-color: var(--steel-500);
+    }
+    .demo-step {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 16px;
+      background: #FFF;
+      border-radius: 8px;
+      margin-bottom: 8px;
+      border-left: 3px solid var(--slate-300);
+      transition: all 0.2s;
+    }
+    .demo-step:hover {
+      border-left-color: var(--steel-500);
+      box-shadow: 0 2px 8px rgba(91, 138, 154, 0.15);
+    }
+    .demo-metric {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      padding: 6px 12px;
+      background: var(--navy-50);
+      border-radius: 6px;
+      font-size: 13px;
+      font-weight: 500;
+      color: var(--navy-700);
+    }
+    
+    /* Modal */
+    .modal-overlay {
+      position: fixed;
+      inset: 0;
+      background: rgba(12, 22, 32, 0.8);
+      backdrop-filter: blur(8px);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      z-index: 9999;
+      padding: 20px;
+      animation: modalFadeIn 0.3s ease forwards;
+    }
+    @keyframes modalFadeIn {
+      from { opacity: 0; }
+      to { opacity: 1; }
+    }
+    .modal {
+      background: #FFF;
+      border-radius: 20px;
+      box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
+      max-width: 600px;
+      width: 100%;
+      max-height: 90vh;
+      overflow-y: auto;
+      animation: modalSlideUp 0.4s cubic-bezier(0.4, 0, 0.2, 1) forwards;
+    }
+    @keyframes modalSlideUp {
+      from {
+        opacity: 0;
+        transform: translateY(40px) scale(0.95);
+      }
+      to {
+        opacity: 1;
+        transform: translateY(0) scale(1);
+      }
+    }
+    
+    /* Responsive */
+    @media (max-width: 768px) {
+      .context-switcher {
+        flex-direction: column;
+        width: 100%;
+      }
+      .context-btn {
+        width: 100%;
+        text-align: center;
+      }
+      .industry-selector {
+        gap: 6px;
+      }
+      .industry-btn {
+        font-size: 12px;
+        padding: 6px 12px;
+      }
+    }
+  </style>
+</head>
+<body>
+  <div id="root"></div>
+  
+  <script type="text/babel">
+    const { useState, useEffect, useRef } = React;
+    
+    // ============================================
+    // INDUSTRY CONFIGURATIONS
+    // ============================================
+    const INDUSTRIES = {
+      all: {
+        id: 'all',
+        label: 'All Industries',
+        description: 'General operational intelligence for any sector'
+      },
+      financial: {
+        id: 'financial',
+        label: 'Financial Services',
+        description: 'Wealth management, banking, insurance, and advisory firms',
+        customization: {
+          journeys: {
+            tagline: 'Quantify client onboarding and servicing costs',
+            examples: [
+              { title: 'Client Onboarding', detail: 'KYC/AML, 6-8 weeks, £2,150 per client' },
+              { title: 'Annual Review Process', detail: '12 touchpoints, £680 per client/year' },
+              { title: 'Complaint Handling', detail: 'FCA regulated, 15 days, £1,240 average' }
+            ]
+          },
+          projects: {
+            tagline: 'Track regulatory and compliance project costs',
+            examples: [
+              { title: 'FCA Compliance Audit', detail: '8 weeks, £18,500 internal cost' },
+              { title: 'Platform Migration', detail: '16 weeks, £95,000 total delivery' },
+              { title: 'SMCR Implementation', detail: '12 weeks, £42,000 compliance cost' }
+            ]
+          },
+          events: {
+            tagline: 'Model tax season and regulatory deadline surges',
+            examples: [
+              { title: 'Tax Season Peak', detail: '8 weeks, 3.5x capacity, £84,000 surge cost' },
+              { title: 'Year-End Reporting', detail: '4 weeks, 2.8x capacity, £56,000 overtime' },
+              { title: 'Regulatory Submission Deadline', detail: '2 weeks, 4x capacity, £32,000' }
+            ]
+          }
+        }
+      },
+      professional: {
+        id: 'professional',
+        label: 'Professional Services',
+        description: 'Legal, accounting, consulting, and advisory practices',
+        customization: {
+          journeys: {
+            tagline: 'See the true cost of client engagement',
+            examples: [
+              { title: 'Client Engagement', detail: 'Proposal to delivery, £12,400 average' },
+              { title: 'Matter Management', detail: 'Legal cases, 8-12 weeks, £18,500' },
+              { title: 'Audit Cycle', detail: 'Planning to sign-off, £28,000 per client' }
+            ]
+          },
+          projects: {
+            tagline: 'Know what each engagement really costs',
+            examples: [
+              { title: 'Management Consulting Project', detail: '12 weeks, £85,000 delivery' },
+              { title: 'Legal Case (Complex)', detail: '24 weeks, £142,000 total cost' },
+              { title: 'Statutory Audit', detail: '8 weeks, £34,000 engagement cost' }
+            ]
+          }
+        }
+      },
+      saas: {
+        id: 'saas',
+        label: 'SaaS & Tech',
+        description: 'Software companies, tech startups, and digital products',
+        customization: {
+          journeys: {
+            tagline: 'Optimize user onboarding and activation',
+            examples: [
+              { title: 'User Onboarding Flow', detail: '7 days to activation, £45 support cost' },
+              { title: 'Enterprise Sales Cycle', detail: '12 touchpoints, 45 days, £8,400' },
+              { title: 'Churn Prevention', detail: '14-day intervention, £280 recovery cost' }
+            ]
+          },
+          projects: {
+            tagline: 'Track feature delivery and implementation costs',
+            examples: [
+              { title: 'Feature Development', detail: '6 sprints, £64,000 engineering cost' },
+              { title: 'Enterprise Implementation', detail: '8 weeks, £24,000 CS + eng time' },
+              { title: 'Platform Integration', detail: '10 weeks, £48,000 total delivery' }
+            ]
+          },
+          events: {
+            tagline: 'Model product launches and release cycles',
+            examples: [
+              { title: 'Product Launch Event', detail: '4 weeks prep, £32,000 total cost' },
+              { title: 'Major Release Deploy', detail: '48 hours, 5x on-call, £18,000' },
+              { title: 'Conference Presence', detail: '5 days, £28,000 all-in cost' }
+            ]
+          }
+        }
+      },
+      construction: {
+        id: 'construction',
+        label: 'Construction',
+        description: 'Construction firms, developers, and project delivery',
+        customization: {
+          projects: {
+            tagline: 'Quantify tender and delivery costs accurately',
+            examples: [
+              { title: 'Tender Response (Major)', detail: '6 weeks, £22,400 internal cost' },
+              { title: 'Site Mobilization', detail: '4 weeks, £68,000 setup cost' },
+              { title: 'Design Change Process', detail: 'Per change, £4,200 average delay cost' }
+            ]
+          }
+        }
+      }
+    };
+    
+    // ============================================
+    // CONTEXT CONFIGURATIONS
+    // ============================================
+    const CONTEXTS = {
+      journeys: {
+        id: 'journeys',
+        label: 'Journeys',
+        tagline: 'See what your journeys really cost',
+        description: 'Quantify multi-stage customer and employee journeys with precision time and cost tracking. Map touchpoints, identify friction, and prove ROI.',
+        icon: '🗺️',
+        color: 'var(--steel-500)',
+        examples: [
+          { title: 'Client Onboarding', detail: '6-8 weeks, £2,150 per client' },
+          { title: 'Employee Onboarding', detail: '90 days, £1,850 per hire' },
+          { title: 'Complaint Resolution', detail: '12 touchpoints, £420 average' }
+        ],
+        features: [
+          {
+            icon: '⏱️',
+            title: 'Time & Cost Tracking',
+            description: 'Capture every minute and pound spent across stages, steps, and roles.'
+          },
+          {
+            icon: '📊',
+            title: 'Funnel Analytics',
+            description: 'Track drop-offs, conversion rates, and identify where customers abandon the journey.'
+          },
+          {
+            icon: '🎯',
+            title: 'Friction Mapping',
+            description: 'Rate pain points from low to high, prioritize improvements that matter most.'
+          },
+          {
+            icon: '👥',
+            title: 'Multi-Persona Views',
+            description: 'See the journey from customer, advisor, operations, and compliance perspectives.'
+          }
+        ],
+        stats: [
+          { value: '£1,850', label: 'Avg cost per journey' },
+          { value: '6-8', label: 'Typical stages' },
+          { value: '40%', label: 'Time saved after optimization' }
+        ],
+        demoData: {
+          title: 'Client Onboarding Journey',
+          stages: [
+            {
+              name: 'Initial Contact',
+              steps: [
+                { name: 'Enquiry received', time: 15, cost: 12, friction: 'low' },
+                { name: 'Qualification call', time: 30, cost: 45, friction: 'low' },
+                { name: 'Information pack sent', time: 20, cost: 16, friction: 'low' }
+              ]
+            },
+            {
+              name: 'KYC & Compliance',
+              steps: [
+                { name: 'ID verification', time: 30, cost: 75, friction: 'medium' },
+                { name: 'AML screening', time: 45, cost: 95, friction: 'high' },
+                { name: 'Source of wealth check', time: 120, cost: 180, friction: 'high' }
+              ]
+            },
+            {
+              name: 'Account Setup',
+              steps: [
+                { name: 'Platform account creation', time: 45, cost: 85, friction: 'medium' },
+                { name: 'Initial investment', time: 60, cost: 120, friction: 'low' }
+              ]
+            }
+          ]
+        }
+      },
+      projects: {
+        id: 'projects',
+        label: 'Projects',
+        tagline: 'Know what delivery really costs',
+        description: 'Quantify project work with milestone-based cost tracking. From construction tenders to software implementations, see the true cost of delivery.',
+        icon: '📋',
+        color: 'var(--amber-500)',
+        examples: [
+          { title: 'Construction Tender', detail: '4 weeks, £18,400 internal cost' },
+          { title: 'Software Implementation', detail: '12 weeks, £42,000 delivery' },
+          { title: 'Regulatory Compliance Audit', detail: '6 weeks, £12,500 total' }
+        ],
+        features: [
+          {
+            icon: '🎯',
+            title: 'Milestone Tracking',
+            description: 'Break projects into phases, track progress and costs against each milestone.'
+          },
+          {
+            icon: '👷',
+            title: 'Resource Allocation',
+            description: 'See who\'s doing what, identify bottlenecks, optimize team capacity.'
+          },
+          {
+            icon: '💰',
+            title: 'Budget vs Actual',
+            description: 'Compare estimated costs against reality, spot overruns before they spiral.'
+          },
+          {
+            icon: '📈',
+            title: 'Dependency Mapping',
+            description: 'Visualize task dependencies, critical path analysis, and delivery risk.'
+          }
+        ],
+        stats: [
+          { value: '£28k', label: 'Avg project cost' },
+          { value: '8-12', label: 'Typical milestones' },
+          { value: '25%', label: 'Cost reduction after analysis' }
+        ],
+        demoData: {
+          title: 'Construction Tender Response',
+          stages: [
+            {
+              name: 'Tender Analysis',
+              steps: [
+                { name: 'Document review', time: 480, cost: 1240, friction: 'medium' },
+                { name: 'Site visit', time: 240, cost: 840, friction: 'low' },
+                { name: 'Risk assessment', time: 360, cost: 1080, friction: 'high' }
+              ]
+            },
+            {
+              name: 'Pricing & Planning',
+              steps: [
+                { name: 'Cost estimation', time: 720, cost: 2160, friction: 'medium' },
+                { name: 'Subcontractor quotes', time: 480, cost: 960, friction: 'high' },
+                { name: 'Programme development', time: 540, cost: 1620, friction: 'medium' }
+              ]
+            },
+            {
+              name: 'Submission',
+              steps: [
+                { name: 'Document compilation', time: 360, cost: 720, friction: 'low' },
+                { name: 'Final review', time: 240, cost: 840, friction: 'low' },
+                { name: 'Submit tender', time: 60, cost: 120, friction: 'low' }
+              ]
+            }
+          ]
+        }
+      },
+      events: {
+        id: 'events',
+        label: 'Events',
+        tagline: 'Understand peak load operations',
+        description: 'Model one-time or seasonal events with peak capacity planning. From matchday operations to tax season surges, quantify what it takes.',
+        icon: '⚡',
+        color: 'var(--success)',
+        examples: [
+          { title: 'Stadium Matchday', detail: '6 hours, £15,200 operational cost' },
+          { title: 'Tax Season Surge', detail: '8 weeks, £84,000 additional capacity' },
+          { title: 'Product Launch Event', detail: '3 days, £22,400 total cost' }
+        ],
+        features: [
+          {
+            icon: '📊',
+            title: 'Peak Load Factors',
+            description: 'Model 2x, 3x, or 5x normal capacity requirements during peak periods.'
+          },
+          {
+            icon: '⏰',
+            title: 'Time-Boxed Costing',
+            description: 'Precise hour-by-hour or day-by-day cost attribution for events.'
+          },
+          {
+            icon: '🔄',
+            title: 'Recurring Event Analysis',
+            description: 'Compare season-to-season, identify trends, optimize year-on-year.'
+          },
+          {
+            icon: '👥',
+            title: 'Surge Staffing Models',
+            description: 'Plan temporary staff, overtime costs, and third-party support needs.'
+          }
+        ],
+        stats: [
+          { value: '3.2x', label: 'Avg peak load factor' },
+          { value: '6-12h', label: 'Typical event duration' },
+          { value: '35%', label: 'Staff efficiency gain' }
+        ],
+        demoData: {
+          title: 'Tax Season Surge (Week 1)',
+          stages: [
+            {
+              name: 'Client Intake',
+              steps: [
+                { name: 'Document collection (3x volume)', time: 1440, cost: 2880, friction: 'high' },
+                { name: 'Data entry (3x volume)', time: 960, cost: 1440, friction: 'medium' }
+              ]
+            },
+            {
+              name: 'Processing',
+              steps: [
+                { name: 'Tax return preparation (3.5x)', time: 2520, cost: 5040, friction: 'high' },
+                { name: 'Review queue (2.5x)', time: 1200, cost: 3000, friction: 'medium' }
+              ]
+            },
+            {
+              name: 'Filing',
+              steps: [
+                { name: 'Client sign-off (2x)', time: 480, cost: 960, friction: 'low' },
+                { name: 'HMRC submission (2x)', time: 240, cost: 360, friction: 'low' }
+              ]
+            }
+          ]
+        }
+      }
+    };
+    
+    // ============================================
+    // URL PARAMETER UTILITIES
+    // ============================================
+    const useURLParams = () => {
+      const getParams = () => {
+        const params = new URLSearchParams(window.location.search);
+        return {
+          context: params.get('context') || 'journeys',
+          industry: params.get('industry') || 'all'
+        };
+      };
+      
+      const setParams = (context, industry) => {
+        const params = new URLSearchParams();
+        params.set('context', context);
+        params.set('industry', industry);
+        window.history.replaceState({}, '', `${window.location.pathname}?${params.toString()}`);
+      };
+      
+      return { getParams, setParams };
+    };
+    
+    // ============================================
+    // CONTOUR BACKGROUND COMPONENT
+    // ============================================
+    function ContourBackground({ count = 8, opacity = 0.03 }) {
+      const lines = Array.from({ length: count }, (_, i) => {
+        const top = (100 / (count + 1)) * (i + 1);
+        const delay = i * 0.5;
+        return { top: `${top}%`, opacity, delay: `${delay}s` };
+      });
+      
+      return (
+        <div className="contour-bg">
+          {lines.map((line, i) => (
+            <div 
+              key={i} 
+              className="contour-line" 
+              style={{ 
+                top: line.top, 
+                opacity: line.opacity,
+                animationDelay: line.delay
+              }} 
+            />
+          ))}
+        </div>
+      );
+    }
+    
+    // ============================================
+    // INTERACTIVE DEMO COMPONENT
+    // ============================================
+    function InteractiveDemo({ context, onClose }) {
+      const [selectedStage, setSelectedStage] = useState(0);
+      const demoData = context.demoData;
+      
+      const totalCost = demoData.stages.reduce((sum, stage) => 
+        sum + stage.steps.reduce((stageSum, step) => stageSum + step.cost, 0), 0
+      );
+      
+      const totalTime = demoData.stages.reduce((sum, stage) => 
+        sum + stage.steps.reduce((stageSum, step) => stageSum + step.time, 0), 0
+      );
+      
+      const frictionColors = {
+        low: 'var(--success)',
+        medium: 'var(--amber-500)',
+        high: 'var(--error)'
+      };
+      
+      return (
+        <div className="modal-overlay" onClick={onClose}>
+          <div className="modal" onClick={e => e.stopPropagation()}>
+            <div style={{ padding: '40px' }}>
+              {/* Header */}
+              <div style={{ marginBottom: '32px' }}>
+                <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '12px' }}>
+                  <h2 style={{ fontSize: '28px', fontWeight: 400, color: 'var(--navy-700)' }}>
+                    Interactive Demo
+                  </h2>
+                  <button 
+                    onClick={onClose}
+                    style={{
+                      background: 'none',
+                      border: 'none',
+                      fontSize: '24px',
+                      color: 'var(--slate-400)',
+                      cursor: 'pointer',
+                      padding: '4px'
+                    }}
+                  >
+                    ×
+                  </button>
+                </div>
+                <h3 style={{ fontSize: '20px', fontWeight: 600, color: 'var(--steel-600)', marginBottom: '16px' }}>
+                  {demoData.title}
+                </h3>
+                
+                {/* Summary Metrics */}
+                <div style={{ display: 'flex', gap: '16px', flexWrap: 'wrap' }}>
+                  <div className="demo-metric">
+                    <span>⏱️</span>
+                    <span>{Math.round(totalTime / 60)} hours total</span>
+                  </div>
+                  <div className="demo-metric">
+                    <span>💰</span>
+                    <span>£{totalCost.toLocaleString()} total cost</span>
+                  </div>
+                  <div className="demo-metric">
+                    <span>📊</span>
+                    <span>{demoData.stages.length} stages</span>
+                  </div>
+                </div>
+              </div>
+              
+              {/* Stage Selection */}
+              <div style={{ marginBottom: '24px' }}>
+                {demoData.stages.map((stage, idx) => (
+                  <div
+                    key={idx}
+                    className={`demo-stage ${selectedStage === idx ? 'active' : ''}`}
+                    onClick={() => setSelectedStage(idx)}
+                  >
+                    <div style={{
+                      width: '32px',
+                      height: '32px',
+                      borderRadius: '50%',
+                      background: selectedStage === idx ? context.color : 'var(--slate-300)',
+                      color: '#FFF',
+                      display: 'flex',
+                      alignItems: 'center',
+                      justifyContent: 'center',
+                      fontWeight: 600,
+                      fontSize: '14px',
+                      transition: 'all 0.3s'
+                    }}>
+                      {idx + 1}
+                    </div>
+                    <div style={{ flex: 1 }}>
+                      <div style={{ fontWeight: 600, color: 'var(--navy-700)', fontSize: '15px' }}>
+                        {stage.name}
+                      </div>
+                      <div style={{ fontSize: '13px', color: 'var(--slate-500)' }}>
+                        {stage.steps.length} steps • £{stage.steps.reduce((sum, s) => sum + s.cost, 0).toLocaleString()}
+                      </div>
+                    </div>
+                    <div style={{ fontSize: '18px', color: 'var(--slate-400)' }}>›</div>
+                  </div>
+                ))}
+              </div>
+              
+              {/* Step Details */}
+              <div>
+                <h4 style={{ fontSize: '15px', fontWeight: 600, color: 'var(--slate-700)', marginBottom: '12px', textTransform: 'uppercase', letterSpacing: '0.5px' }}>
+                  Steps in {demoData.stages[selectedStage].name}
+                </h4>
+                {demoData.stages[selectedStage].steps.map((step, idx) => (
+                  <div key={idx} className="demo-step">
+                    <div style={{ flex: 1 }}>
+                      <div style={{ fontWeight: 500, color: 'var(--navy-700)', marginBottom: '4px' }}>
+                        {step.name}
+                      </div>
+                      <div style={{ display: 'flex', gap: '12px', fontSize: '13px', color: 'var(--slate-500)' }}>
+                        <span>⏱️ {step.time} min</span>
+                        <span>💰 £{step.cost}</span>
+                        <span style={{ 
+                          color: frictionColors[step.friction],
+                          fontWeight: 500
+                        }}>
+                          ● {step.friction} friction
+                        </span>
+                      </div>
+                    </div>
+                  </div>
+                ))}
+              </div>
+              
+              {/* CTA */}
+              <div style={{ marginTop: '32px', padding: '20px', background: 'var(--slate-50)', borderRadius: '12px', textAlign: 'center' }}>
+                <p style={{ color: 'var(--slate-600)', marginBottom: '16px', fontSize: '14px' }}>
+                  This is just one example. Build your own {context.label.toLowerCase()} with real data.
+                </p>
+                <button className="btn btn-primary" onClick={onClose}>
+                  Get Started Free
+                </button>
+              </div>
+            </div>
+          </div>
+        </div>
+      );
+    }
+    
+    // ============================================
+    // LANDING PAGE COMPONENT
+    // ============================================
+    function LandingPage({ onGetStarted }) {
+      const { getParams, setParams } = useURLParams();
+      const initialParams = getParams();
+      
+      const [activeContext, setActiveContext] = useState(initialParams.context);
+      const [activeIndustry, setActiveIndustry] = useState(initialParams.industry);
+      const [showDemo, setShowDemo] = useState(false);
+      const [isTransitioning, setIsTransitioning] = useState(false);
+      
+      const industry = INDUSTRIES[activeIndustry];
+      let context = CONTEXTS[activeContext];
+      
+      // Apply industry customization if available
+      if (industry?.customization?.[activeContext]) {
+        context = {
+          ...context,
+          ...industry.customization[activeContext]
+        };
+      }
+      
+      const handleContextChange = (newContext) => {
+        if (newContext === activeContext) return;
+        
+        setIsTransitioning(true);
+        setTimeout(() => {
+          setActiveContext(newContext);
+          setParams(newContext, activeIndustry);
+          setIsTransitioning(false);
+        }, 300);
+      };
+      
+      const handleIndustryChange = (newIndustry) => {
+        if (newIndustry === activeIndustry) return;
+        
+        setIsTransitioning(true);
+        setTimeout(() => {
+          setActiveIndustry(newIndustry);
+          setParams(activeContext, newIndustry);
+          setIsTransitioning(false);
+        }, 300);
+      };
+      
+      return (
+        <div>
+          {/* HERO SECTION */}
+          <section style={{
+            background: 'linear-gradient(135deg, var(--navy-700) 0%, var(--navy-900) 100%)',
+            color: '#FFF',
+            padding: '60px 20px',
+            position: 'relative',
+            overflow: 'hidden'
+          }}>
+            <ContourBackground count={6} opacity={0.04} />
+            
+            <div style={{
+              maxWidth: '1200px',
+              margin: '0 auto',
+              position: 'relative',
+              zIndex: 1
+            }}>
+              {/* Logo */}
+              <div className="hero-logo" style={{ textAlign: 'center', marginBottom: '48px' }}>
+                <h1 style={{
+                  fontSize: 'clamp(40px, 8vw, 72px)',
+                  fontWeight: 400,
+                  letterSpacing: '4px',
+                  marginBottom: '8px'
+                }}>
+                  FATHOM
+                </h1>
+                <p style={{
+                  fontSize: '12px',
+                  letterSpacing: '2px',
+                  textTransform: 'uppercase',
+                  opacity: 0.6,
+                  fontFamily: 'var(--font-display)'
+                }}>
+                  Operational Intelligence Platform
+                </p>
+              </div>
+              
+              {/* Context Switcher */}
+              <div className="hero-content" style={{ textAlign: 'center', marginBottom: '24px' }}>
+                <div className="context-switcher">
+                  {Object.values(CONTEXTS).map(ctx => (
+                    <button
+                      key={ctx.id}
+                      className={`context-btn ${activeContext === ctx.id ? 'active' : ''}`}
+                      onClick={() => handleContextChange(ctx.id)}
+                    >
+                      <span style={{ marginRight: '6px' }}>{ctx.icon}</span>
+                      {ctx.label}
+                    </button>
+                  ))}
+                </div>
+              </div>
+              
+              {/* Industry Selector */}
+              <div className="hero-content" style={{ textAlign: 'center', marginBottom: '48px' }}>
+                <div className="industry-selector">
+                  {Object.values(INDUSTRIES).map(ind => (
+                    <button
+                      key={ind.id}
+                      className={`industry-btn ${activeIndustry === ind.id ? 'active' : ''}`}
+                      onClick={() => handleIndustryChange(ind.id)}
+                    >
+                      {ind.label}
+                    </button>
+                  ))}
+                </div>
+              </div>
+              
+              {/* Hero Content - Context-Specific */}
+              <div 
+                className={isTransitioning ? 'context-content-exit' : 'context-content'} 
+                style={{ textAlign: 'center', maxWidth: '800px', margin: '0 auto' }}
+              >
+                <h2 style={{
+                  fontSize: 'clamp(28px, 5vw, 42px)',
+                  fontWeight: 400,
+                  marginBottom: '20px',
+                  lineHeight: 1.3
+                }}>
+                  {context.tagline}
+                </h2>
+                <p style={{
+                  fontSize: 'clamp(16px, 3vw, 19px)',
+                  lineHeight: 1.7,
+                  opacity: 0.85,
+                  marginBottom: '40px',
+                  maxWidth: '700px',
+                  margin: '0 auto 40px'
+                }}>
+                  {context.description}
+                </p>
+                
+                <div style={{ display: 'flex', gap: '16px', justifyContent: 'center', flexWrap: 'wrap' }}>
+                  <button className="btn btn-light" onClick={onGetStarted} style={{ padding: '16px 32px', fontSize: '16px' }}>
+                    Get Started Free
+                  </button>
+                  <button 
+                    className="btn btn-light" 
+                    onClick={() => setShowDemo(true)}
+                    style={{ padding: '16px 32px', fontSize: '16px' }}
+                  >
+                    See Interactive Demo
+                  </button>
+                </div>
+              </div>
+            </div>
+          </section>
+          
+          {/* EXAMPLES SECTION */}
+          <section style={{
+            padding: '80px 20px',
+            background: 'var(--slate-50)',
+            position: 'relative'
+          }}>
+            <div style={{ maxWidth: '1200px', margin: '0 auto' }}>
+              <div 
+                className={isTransitioning ? 'context-content-exit' : 'context-content'} 
+                style={{ textAlign: 'center', marginBottom: '48px' }}
+              >
+                <h2 style={{
+                  fontSize: 'clamp(24px, 4vw, 32px)',
+                  fontWeight: 400,
+                  color: 'var(--navy-700)',
+                  marginBottom: '12px'
+                }}>
+                  Real {context.label} We've Mapped
+                </h2>
+                <p style={{ color: 'var(--slate-600)', fontSize: '17px' }}>
+                  {activeIndustry !== 'all' ? `${industry.label} examples` : 'See what\'s possible with FATHOM'}
+                </p>
+              </div>
+              
+              <div 
+                className={isTransitioning ? 'context-content-exit' : 'context-content'}
+                style={{
+                  display: 'grid',
+                  gridTemplateColumns: 'repeat(auto-fit, minmax(300px, 1fr))',
+                  gap: '24px'
+                }}
+              >
+                {context.examples.map((example, i) => (
+                  <div key={i} className="feature-card" style={{ animationDelay: `${i * 0.1}s` }}>
+                    <div style={{
+                      fontSize: '32px',
+                      marginBottom: '16px'
+                    }}>
+                      {context.icon}
+                    </div>
+                    <h3 style={{
+                      fontSize: '18px',
+                      fontWeight: 600,
+                      color: 'var(--navy-700)',
+                      marginBottom: '8px'
+                    }}>
+                      {example.title}
+                    </h3>
+                    <p style={{
+                      color: 'var(--slate-600)',
+                      fontSize: '14px',
+                      fontFamily: 'SF Mono, Monaco, monospace'
+                    }}>
+                      {example.detail}
+                    </p>
+                  </div>
+                ))}
+              </div>
+            </div>
+          </section>
+          
+          {/* FEATURES SECTION */}
+          <section id="features" style={{
+            padding: '80px 20px',
+            background: '#FFF'
+          }}>
+            <div style={{ maxWidth: '1200px', margin: '0 auto' }}>
+              <div 
+                className={isTransitioning ? 'context-content-exit' : 'context-content'}
+                style={{ textAlign: 'center', marginBottom: '60px' }}
+              >
+                <h2 style={{
+                  fontSize: 'clamp(24px, 4vw, 32px)',
+                  fontWeight: 400,
+                  color: 'var(--navy-700)',
+                  marginBottom: '12px'
+                }}>
+                  Everything You Need for {context.label}
+                </h2>
+                <p style={{ color: 'var(--slate-600)', fontSize: '17px' }}>
+                  Purpose-built capabilities for {activeContext === 'journeys' ? 'recurring flows' : activeContext === 'projects' ? 'delivery work' : 'peak operations'}
+                </p>
+              </div>
+              
+              <div 
+                className={isTransitioning ? 'context-content-exit' : 'context-content'}
+                style={{
+                  display: 'grid',
+                  gridTemplateColumns: 'repeat(auto-fit, minmax(280px, 1fr))',
+                  gap: '32px'
+                }}
+              >
+                {context.features.map((feature, i) => (
+                  <div key={i} style={{ animationDelay: `${i * 0.1}s` }}>
+                    <div style={{
+                      fontSize: '40px',
+                      marginBottom: '20px'
+                    }}>
+                      {feature.icon}
+                    </div>
+                    <h3 style={{
+                      fontSize: '19px',
+                      fontWeight: 600,
+                      color: 'var(--navy-700)',
+                      marginBottom: '12px'
+                    }}>
+                      {feature.title}
+                    </h3>
+                    <p style={{
+                      color: 'var(--slate-600)',
+                      fontSize: '15px',
+                      lineHeight: 1.7
+                    }}>
+                      {feature.description}
+                    </p>
+                  </div>
+                ))}
+              </div>
+            </div>
+          </section>
+          
+          {/* STATS SECTION */}
+          <section style={{
+            padding: '80px 20px',
+            background: 'var(--navy-700)',
+            color: '#FFF',
+            position: 'relative',
+            overflow: 'hidden'
+          }}>
+            <ContourBackground count={5} opacity={0.05} />
+            
+            <div style={{ maxWidth: '1200px', margin: '0 auto', position: 'relative', zIndex: 1 }}>
+              <div 
+                className={isTransitioning ? 'context-content-exit' : 'context-content'}
+                style={{
+                  display: 'grid',
+                  gridTemplateColumns: 'repeat(auto-fit, minmax(200px, 1fr))',
+                  gap: '48px',
+                  textAlign: 'center'
+                }}
+              >
+                {context.stats.map((stat, i) => (
+                  <div key={i} style={{ animationDelay: `${i * 0.1}s` }}>
+                    <div style={{
+                      fontSize: 'clamp(36px, 6vw, 52px)',
+                      fontWeight: 700,
+                      fontFamily: 'var(--font-display)',
+                      marginBottom: '8px',
+                      color: 'var(--steel-300)'
+                    }}>
+                      {stat.value}
+                    </div>
+                    <div style={{
+                      fontSize: '15px',
+                      opacity: 0.8,
+                      letterSpacing: '0.5px'
+                    }}>
+                      {stat.label}
+                    </div>
+                  </div>
+                ))}
+              </div>
+            </div>
+          </section>
+          
+          {/* CTA SECTION */}
+          <section style={{
+            padding: '100px 20px',
+            background: 'linear-gradient(135deg, var(--steel-600) 0%, var(--navy-700) 100%)',
+            color: '#FFF',
+            textAlign: 'center',
+            position: 'relative',
+            overflow: 'hidden'
+          }}>
+            <ContourBackground count={7} opacity={0.04} />
+            
+            <div style={{ maxWidth: '800px', margin: '0 auto', position: 'relative', zIndex: 1 }}>
+              <h2 style={{
+                fontSize: 'clamp(28px, 5vw, 40px)',
+                fontWeight: 400,
+                marginBottom: '20px',
+                lineHeight: 1.3
+              }}>
+                Ready to see what your operations really cost?
+              </h2>
+              <p style={{
+                fontSize: '18px',
+                opacity: 0.9,
+                marginBottom: '40px',
+                lineHeight: 1.7
+              }}>
+                Start with a free account. Map your first {activeContext === 'journeys' ? 'journey' : activeContext === 'projects' ? 'project' : 'event'} in minutes.
+              </p>
+              <button className="btn btn-light" onClick={onGetStarted} style={{
+                padding: '18px 40px',
+                fontSize: '17px',
+                fontWeight: 600
+              }}>
+                Get Started Free →
+              </button>
+              <p style={{
+                marginTop: '20px',
+                fontSize: '13px',
+                opacity: 0.7
+              }}>
+                No credit card required • Free forever for individuals
+              </p>
+            </div>
+          </section>
+          
+          {/* FOOTER */}
+          <footer style={{
+            padding: '40px 20px',
+            background: 'var(--navy-900)',
+            color: 'rgba(255,255,255,0.6)',
+            fontSize: '14px',
+            textAlign: 'center'
+          }}>
+            <div style={{ maxWidth: '1200px', margin: '0 auto' }}>
+              <div style={{ marginBottom: '20px' }}>
+                <span style={{ fontFamily: 'var(--font-display)', letterSpacing: '2px', fontSize: '16px', opacity: 0.8 }}>FATHOM</span>
+              </div>
+              <p>
+                Operational Intelligence Platform • Quantify what you do
+              </p>
+              <p style={{ marginTop: '12px', opacity: 0.5 }}>
+                © 2026 FATHOM. All rights reserved.
+              </p>
+            </div>
+          </footer>
+          
+          {/* Interactive Demo Modal */}
+          {showDemo && (
+            <InteractiveDemo 
+              context={CONTEXTS[activeContext]} 
+              onClose={() => setShowDemo(false)} 
+            />
+          )}
+        </div>
+      );
+    }
+    
+    // ============================================
+    // MAIN APP
+    // ============================================
+    function App() {
+      const [isLoaded, setIsLoaded] = useState(false);
+      
+      useEffect(() => {
+        setIsLoaded(true);
+      }, []);
+      
+      if (!isLoaded) {
+        return (
+          <div style={{ minHeight: '100vh', display: 'flex', alignItems: 'center', justifyContent: 'center', background: 'var(--navy-700)' }}>
+            <div style={{ fontSize: '48px', fontFamily: 'var(--font-display)', letterSpacing: '4px', color: '#FFF', opacity: 0.5 }}>
+              FATHOM
+            </div>
+          </div>
+        );
+      }
+      
+      return (
+        <LandingPage onGetStarted={() => window.location.href = 'dashboard.html'} />
+      );
+    }
+    
+    ReactDOM.createRoot(document.getElementById('root')).render(<App />);
+  </script>
+</body>
+</html>
