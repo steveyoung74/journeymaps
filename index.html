@@ -1015,356 +1015,6 @@
     // ============================================
     // LANDING PAGE
     // ============================================
-    // ============================================
-    // ============================================
-    // ENHANCED LANDINGPAGE COMPONENT
-    // Replace lines 1018-5309 in your index.html with this
-    // ============================================
-    
-    function LandingPage({ onGetStarted }) {
-      const [scrolled, setScrolled] = useState(false);
-      const [logoVisible, setLogoVisible] = useState(false);
-      
-      // NEW: Context and industry state
-      const [activeContext, setActiveContext] = useState('journeys');
-      const [activeIndustry, setActiveIndustry] = useState('all');
-      const [showDemo, setShowDemo] = useState(false);
-      const [isTransitioning, setIsTransitioning] = useState(false);
-      
-      // URL deep linking
-      useEffect(() => {
-        const params = new URLSearchParams(window.location.search);
-        const context = params.get('context');
-        const industry = params.get('industry');
-        if (context && ['journeys', 'projects', 'events'].includes(context)) {
-          setActiveContext(context);
-        }
-        if (industry) {
-          setActiveIndustry(industry);
-        }
-      }, []);
-      
-      // Update URL when context/industry changes
-      useEffect(() => {
-        const params = new URLSearchParams();
-        params.set('context', activeContext);
-        params.set('industry', activeIndustry);
-        window.history.replaceState({}, '', `${window.location.pathname}?${params}`);
-      }, [activeContext, activeIndustry]);
-      
-      useEffect(() => {
-        const handleScroll = () => {
-          const scrollY = window.scrollY;
-          setScrolled(scrollY > 50);
-          setLogoVisible(scrollY > 200);
-        };
-        window.addEventListener('scroll', handleScroll);
-        return () => window.removeEventListener('scroll', handleScroll);
-      }, []);
-      
-      // Context change handler with transition
-      const handleContextChange = (newContext) => {
-        if (newContext === activeContext) return;
-        setIsTransitioning(true);
-        setTimeout(() => {
-          setActiveContext(newContext);
-          setIsTransitioning(false);
-        }, 150);
-      };
-      
-      // Context configurations
-      // Context configurations
-      const CONTEXTS = {
-        journeys: {
-          badge: 'JOURNEY INTELLIGENCE PLATFORM',
-          headline: React.createElement(React.Fragment, null,
-            "See what your journeys ",
-            React.createElement("br"),
-            React.createElement("span", { style: { color: 'var(--steel-400)', fontWeight: 600 } }, "really cost")
-          ),
-          subhead: 'Map operational processes with precision. Capture ground-truth data from the people who do the work. Transform assumptions into actionable insights.',
-          icon: '🗺️',
-          color: 'var(--steel-500)'
-        },
-        projects: {
-          badge: 'PROJECT INTELLIGENCE PLATFORM',
-          headline: React.createElement(React.Fragment, null,
-            "Know what delivery ",
-            React.createElement("br"),
-            React.createElement("span", { style: { color: 'var(--amber-400)', fontWeight: 600 } }, "really costs")
-          ),
-          subhead: 'Quantify project work with milestone-based cost tracking. From construction tenders to software implementations, see the true cost of delivery.',
-          icon: '📋',
-          color: 'var(--amber-500)'
-        },
-        events: {
-          badge: 'EVENT INTELLIGENCE PLATFORM',
-          headline: React.createElement(React.Fragment, null,
-            "Understand peak load ",
-            React.createElement("br"),
-            React.createElement("span", { style: { color: 'var(--success)', fontWeight: 600 } }, "operations")
-          ),
-          subhead: 'Model one-time or seasonal events with peak capacity planning. From matchday operations to tax season surges, quantify what it takes.',
-          icon: '⚡',
-          color: 'var(--success)'
-        }
-      };
-      
-      const context = CONTEXTS[activeContext];
-      
-      return (
-        <div>
-          {/* Navigation - UNCHANGED */}
-          <nav style={{
-            position: 'fixed',
-            top: 0,
-            left: 0,
-            right: 0,
-            zIndex: 100,
-            padding: '16px 32px',
-            display: 'flex',
-            justifyContent: 'space-between',
-            alignItems: 'center',
-            background: scrolled ? 'rgba(25, 43, 69, 0.98)' : 'transparent',
-            backdropFilter: scrolled ? 'blur(12px)' : 'none',
-            transition: 'all 0.3s',
-            borderBottom: scrolled ? '1px solid rgba(255,255,255,0.1)' : 'none'
-          }}>
-            <img 
-              src="logo_light.png" 
-              alt="FATHOM" 
-              style={{ 
-                height: '28px',
-                opacity: logoVisible ? 1 : 0,
-                transform: logoVisible ? 'translateY(0)' : 'translateY(-8px)',
-                transition: 'opacity 0.4s ease, transform 0.4s ease'
-              }} 
-            />
-            <div className="nav-links" style={{ display: 'flex', gap: '40px', alignItems: 'center' }}>
-              <a href="#features" style={{ color: 'rgba(255,255,255,0.8)', textDecoration: 'none', fontSize: '14px', fontWeight: 500 }}>Features</a>
-              <a href="#how-it-works" style={{ color: 'rgba(255,255,255,0.8)', textDecoration: 'none', fontSize: '14px', fontWeight: 500 }}>How It Works</a>
-              <a href="#templates" style={{ color: 'rgba(255,255,255,0.8)', textDecoration: 'none', fontSize: '14px', fontWeight: 500 }}>Templates</a>
-              <a href="#use-cases" style={{ color: 'rgba(255,255,255,0.8)', textDecoration: 'none', fontSize: '14px', fontWeight: 500 }}>Use Cases</a>
-              <button onClick={onGetStarted} className="btn btn-light" style={{ padding: '10px 24px' }}>
-                Sign In
-              </button>
-            </div>
-          </nav>
-          
-          {/* Hero Section - ENHANCED */}
-          <section className="hero-bg" style={{ minHeight: '100vh', display: 'flex', flexDirection: 'column', justifyContent: 'center', padding: '120px 24px 60px' }}>
-            <div className="container" style={{ position: 'relative', zIndex: 1 }}>
-              <div className="hero-content" style={{ maxWidth: '720px', marginBottom: '48px' }}>
-                {/* Large Hero Logo - UNCHANGED */}
-                <img 
-                  src="logo_light.png" 
-                  alt="FATHOM" 
-                  className="hero-logo"
-                  style={{ 
-                    height: '80px',
-                    marginBottom: '48px'
-                  }} 
-                />
-                
-                {/* NEW: Context Switcher */}
-                <div style={{
-                  display: 'flex',
-                  justifyContent: 'flex-start',
-                  marginBottom: '32px'
-                }}>
-                  <div style={{
-                    display: 'inline-flex',
-                    gap: 0,
-                    background: 'rgba(255, 255, 255, 0.08)',
-                    border: '1px solid rgba(255, 255, 255, 0.15)',
-                    borderRadius: '12px',
-                    padding: '6px',
-                    backdropFilter: 'blur(10px)'
-                  }}>
-                    {Object.keys(CONTEXTS).map(ctx => (
-                      <button
-                        key={ctx}
-                        onClick={() => handleContextChange(ctx)}
-                        style={{
-                          padding: '12px 24px',
-                          background: activeContext === ctx ? 'rgba(255,255,255,0.2)' : 'transparent',
-                          border: 'none',
-                          borderRadius: '8px',
-                          color: activeContext === ctx ? '#FFF' : 'rgba(255,255,255,0.6)',
-                          fontSize: '14px',
-                          fontWeight: 500,
-                          cursor: 'pointer',
-                          transition: 'all 0.3s cubic-bezier(0.4, 0, 0.2, 1)',
-                          fontFamily: 'var(--font-display)',
-                          textTransform: 'capitalize',
-                          boxShadow: activeContext === ctx ? '0 2px 8px rgba(0,0,0,0.2)' : 'none',
-                          transform: activeContext === ctx ? 'scale(1.02)' : 'scale(1)'
-                        }}
-                      >
-                        {CONTEXTS[ctx].icon} {ctx}
-                      </button>
-                    ))}
-                  </div>
-                </div>
-                
-                {/* NEW: Industry Pills */}
-                <div style={{
-                  display: 'flex',
-                  gap: '8px',
-                  flexWrap: 'wrap',
-                  marginBottom: '40px'
-                }}>
-                  {['All', 'Financial Services', 'Professional Services', 'SaaS & Tech', 'Construction'].map(ind => {
-                    const slug = ind.toLowerCase().replace(/ & /g, '-').replace(/ /g, '-');
-                    return (
-                      <button
-                        key={ind}
-                        onClick={() => setActiveIndustry(slug)}
-                        style={{
-                          padding: '8px 16px',
-                          background: activeIndustry === slug 
-                            ? 'rgba(255,255,255,0.2)' 
-                            : 'rgba(255,255,255,0.06)',
-                          border: `1px solid ${activeIndustry === slug
-                            ? 'rgba(255,255,255,0.3)'
-                            : 'rgba(255,255,255,0.12)'}`,
-                          borderRadius: '20px',
-                          color: activeIndustry === slug
-                            ? '#FFF'
-                            : 'rgba(255,255,255,0.6)',
-                          fontSize: '13px',
-                          fontWeight: 500,
-                          cursor: 'pointer',
-                          transition: 'all 0.2s',
-                          fontFamily: 'var(--font-body)'
-                        }}
-                      >
-                        {ind}
-                      </button>
-                    );
-                  })}
-                </div>
-                
-                {/* Dynamic Badge */}
-                <div 
-                  className={`hero-badge ${isTransitioning ? 'context-content-exit' : 'context-content'}`}
-                  style={{ 
-                    display: 'inline-block',
-                    padding: '10px 20px', 
-                    background: 'rgba(91, 138, 154, 0.2)', 
-                    borderRadius: '24px', 
-                    marginBottom: '28px',
-                    fontSize: '13px',
-                    color: 'var(--steel-300)',
-                    fontWeight: 500,
-                    letterSpacing: '0.5px'
-                  }}
-                >
-                  {context.badge}
-                </div>
-                
-                {/* Dynamic Headline */}
-                <h1 
-                  className={`hero-headline ${isTransitioning ? 'context-content-exit' : 'context-content'}`}
-                  style={{ 
-                    fontSize: '60px', 
-                    fontWeight: 300, 
-                    color: '#FFF', 
-                    marginBottom: '24px',
-                    lineHeight: 1.08,
-                    letterSpacing: '-1.5px'
-                  }}
-                >
-                  {context.headline}
-                </h1>
-                
-                {/* Dynamic Subhead */}
-                <p 
-                  className={`hero-subhead ${isTransitioning ? 'context-content-exit' : 'context-content'}`}
-                  style={{ 
-                    fontSize: '20px', 
-                    color: 'var(--slate-300)', 
-                    marginBottom: '40px',
-                    lineHeight: 1.7,
-                    maxWidth: '560px'
-                  }}
-                >
-                  {context.subhead}
-                </p>
-                
-                {/* Hero Buttons */}
-                <div className="hero-buttons" style={{ display: 'flex', gap: '16px', flexWrap: 'wrap' }}>
-                  <button onClick={onGetStarted} className="btn btn-primary" style={{ padding: '18px 36px', fontSize: '16px' }}>
-                    Get Started Free
-                    <span style={{ marginLeft: '4px' }}>→</span>
-                  </button>
-                  <a href="#features" className="btn btn-secondary" style={{ padding: '18px 36px', background: 'transparent', borderColor: 'rgba(255,255,255,0.3)', color: '#FFF' }}>
-                    See How It Works
-                  </a>
-                  <button 
-                    onClick={() => setShowDemo(true)}
-                    className="btn btn-secondary"
-                    style={{ padding: '18px 36px', background: 'transparent', borderColor: 'rgba(255,255,255,0.3)', color: '#FFF' }}
-                  >
-                    📊 Interactive Demo
-                  </button>
-                </div>
-              </div>
-              
-              {/* Benefits Bar - UNCHANGED */}
-              <div style={{ 
-                display: 'flex', 
-                justifyContent: 'center', 
-                gap: '40px', 
-                flexWrap: 'wrap',
-                borderTop: '1px solid rgba(255,255,255,0.1)', 
-                marginTop: '40px',
-                paddingTop: '32px'
-              }}>
-                <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
-                  <span style={{ color: 'var(--steel-400)', fontSize: '18px' }}>✓</span>
-                  <span style={{ color: 'var(--steel-300)', fontSize: '15px' }}>Map any journey in minutes</span>
-                </div>
-                <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
-                  <span style={{ color: 'var(--steel-400)', fontSize: '18px' }}>✓</span>
-                  <span style={{ color: 'var(--steel-300)', fontSize: '15px' }}>See true costs, not estimates</span>
-                </div>
-                <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
-                  <span style={{ color: 'var(--steel-400)', fontSize: '18px' }}>✓</span>
-                  <span style={{ color: 'var(--steel-300)', fontSize: '15px' }}>Find waste before you fix it</span>
-                </div>
-              </div>
-            </div>
-          </section>
-          
-          {/* 
-            ALL OTHER SECTIONS REMAIN EXACTLY AS THEY ARE IN YOUR ORIGINAL:
-            - Problem vs Solution Visual
-            - Features Section
-            - How It Works
-            - Visual Journey Editor Showcase
-            - Templates
-            - Use Cases
-            - Social Proof
-            - Pricing
-            - FAQ
-            - CTA
-            - Footer
-            
-            COPY THEM ALL FROM YOUR ORIGINAL FILE (lines ~1156-5308)
-          */}
-          
-          {/* NEW: Demo Modal */}
-          {showDemo && (
-            <InteractiveDemo 
-              context={activeContext} 
-              onClose={() => setShowDemo(false)} 
-            />
-          )}
-        </div>
-      );
-    }
-    
     // NEW: Interactive Demo Component (add BEFORE LandingPage)
     function InteractiveDemo({ context, onClose }) {
       const [selectedStage, setSelectedStage] = useState(0);
@@ -1607,510 +1257,100 @@
         </div>
       );
     }
-
-  
-  const context = CONTEXTS[activeContext];
-  
-  return (
-    <div>
-      {/* Navigation - UNCHANGED */}
-      <nav style={{
-        position: 'fixed',
-        top: 0,
-        left: 0,
-        right: 0,
-        zIndex: 100,
-        padding: '16px 32px',
-        display: 'flex',
-        justifyContent: 'space-between',
-        alignItems: 'center',
-        background: scrolled ? 'rgba(25, 43, 69, 0.98)' : 'transparent',
-        backdropFilter: scrolled ? 'blur(12px)' : 'none',
-        transition: 'all 0.3s',
-        borderBottom: scrolled ? '1px solid rgba(255,255,255,0.1)' : 'none'
-      }}>
-        <img 
-          src="logo_light.png" 
-          alt="FATHOM" 
-          style={{ 
-            height: '28px',
-            opacity: logoVisible ? 1 : 0,
-            transform: logoVisible ? 'translateY(0)' : 'translateY(-8px)',
-            transition: 'opacity 0.4s ease, transform 0.4s ease'
-          }} 
-        />
-        <div className="nav-links" style={{ display: 'flex', gap: '40px', alignItems: 'center' }}>
-          <a href="#features" style={{ color: 'rgba(255,255,255,0.8)', textDecoration: 'none', fontSize: '14px', fontWeight: 500 }}>Features</a>
-          <a href="#how-it-works" style={{ color: 'rgba(255,255,255,0.8)', textDecoration: 'none', fontSize: '14px', fontWeight: 500 }}>How It Works</a>
-          <a href="#templates" style={{ color: 'rgba(255,255,255,0.8)', textDecoration: 'none', fontSize: '14px', fontWeight: 500 }}>Templates</a>
-          <a href="#use-cases" style={{ color: 'rgba(255,255,255,0.8)', textDecoration: 'none', fontSize: '14px', fontWeight: 500 }}>Use Cases</a>
-          <button onClick={onGetStarted} className="btn btn-light" style={{ padding: '10px 24px' }}>
-            Sign In
-          </button>
-        </div>
-      </nav>
+    
+    function LandingPage({ onGetStarted }) {
+      const [scrolled, setScrolled] = useState(false);
+      const [logoVisible, setLogoVisible] = useState(false);
       
-      {/* Hero Section - ENHANCED */}
-      <section className="hero-bg" style={{ minHeight: '100vh', display: 'flex', flexDirection: 'column', justifyContent: 'center', padding: '120px 24px 60px' }}>
-        <div className="container" style={{ position: 'relative', zIndex: 1 }}>
-          <div className="hero-content" style={{ maxWidth: '720px', marginBottom: '48px' }}>
-            {/* Large Hero Logo - UNCHANGED */}
-            <img 
-              src="logo_light.png" 
-              alt="FATHOM" 
-              className="hero-logo"
-              style={{ 
-                height: '80px',
-                marginBottom: '48px'
-              }} 
-            />
-            
-            {/* NEW: Context Switcher */}
-            <div style={{
-              display: 'flex',
-              justifyContent: 'flex-start',
-              marginBottom: '32px'
-            }}>
-              <div style={{
-                display: 'inline-flex',
-                gap: 0,
-                background: 'rgba(255, 255, 255, 0.08)',
-                border: '1px solid rgba(255, 255, 255, 0.15)',
-                borderRadius: '12px',
-                padding: '6px',
-                backdropFilter: 'blur(10px)'
-              }}>
-                {Object.keys(CONTEXTS).map(ctx => (
-                  <button
-                    key={ctx}
-                    onClick={() => handleContextChange(ctx)}
-                    style={{
-                      padding: '12px 24px',
-                      background: activeContext === ctx ? 'rgba(255,255,255,0.2)' : 'transparent',
-                      border: 'none',
-                      borderRadius: '8px',
-                      color: activeContext === ctx ? '#FFF' : 'rgba(255,255,255,0.6)',
-                      fontSize: '14px',
-                      fontWeight: 500,
-                      cursor: 'pointer',
-                      transition: 'all 0.3s cubic-bezier(0.4, 0, 0.2, 1)',
-                      fontFamily: 'var(--font-display)',
-                      textTransform: 'capitalize',
-                      boxShadow: activeContext === ctx ? '0 2px 8px rgba(0,0,0,0.2)' : 'none',
-                      transform: activeContext === ctx ? 'scale(1.02)' : 'scale(1)'
-                    }}
-                  >
-                    {CONTEXTS[ctx].icon} {ctx}
-                  </button>
-                ))}
-              </div>
-            </div>
-            
-            {/* NEW: Industry Pills */}
-            <div style={{
-              display: 'flex',
-              gap: '8px',
-              flexWrap: 'wrap',
-              marginBottom: '40px'
-            }}>
-              {['All', 'Financial Services', 'Professional Services', 'SaaS & Tech', 'Construction'].map(ind => {
-                const slug = ind.toLowerCase().replace(/ & /g, '-').replace(/ /g, '-');
-                return (
-                  <button
-                    key={ind}
-                    onClick={() => setActiveIndustry(slug)}
-                    style={{
-                      padding: '8px 16px',
-                      background: activeIndustry === slug 
-                        ? 'rgba(255,255,255,0.2)' 
-                        : 'rgba(255,255,255,0.06)',
-                      border: `1px solid ${activeIndustry === slug
-                        ? 'rgba(255,255,255,0.3)'
-                        : 'rgba(255,255,255,0.12)'}`,
-                      borderRadius: '20px',
-                      color: activeIndustry === slug
-                        ? '#FFF'
-                        : 'rgba(255,255,255,0.6)',
-                      fontSize: '13px',
-                      fontWeight: 500,
-                      cursor: 'pointer',
-                      transition: 'all 0.2s',
-                      fontFamily: 'var(--font-body)'
-                    }}
-                  >
-                    {ind}
-                  </button>
-                );
-              })}
-            </div>
-            
-            {/* Dynamic Badge */}
-            <div 
-              className={`hero-badge ${isTransitioning ? 'context-content-exit' : 'context-content'}`}
-              style={{ 
-                display: 'inline-block',
-                padding: '10px 20px', 
-                background: 'rgba(91, 138, 154, 0.2)', 
-                borderRadius: '24px', 
-                marginBottom: '28px',
-                fontSize: '13px',
-                color: 'var(--steel-300)',
-                fontWeight: 500,
-                letterSpacing: '0.5px'
-              }}
-            >
-              {context.badge}
-            </div>
-            
-            {/* Dynamic Headline */}
-            <h1 
-              className={`hero-headline ${isTransitioning ? 'context-content-exit' : 'context-content'}`}
-              style={{ 
-                fontSize: '60px', 
-                fontWeight: 300, 
-                color: '#FFF', 
-                marginBottom: '24px',
-                lineHeight: 1.08,
-                letterSpacing: '-1.5px'
-              }}
-            >
-              {context.headline}
-            </h1>
-            
-            {/* Dynamic Subhead */}
-            <p 
-              className={`hero-subhead ${isTransitioning ? 'context-content-exit' : 'context-content'}`}
-              style={{ 
-                fontSize: '20px', 
-                color: 'var(--slate-300)', 
-                marginBottom: '40px',
-                lineHeight: 1.7,
-                maxWidth: '560px'
-              }}
-            >
-              {context.subhead}
-            </p>
-            
-            {/* Hero Buttons */}
-            <div className="hero-buttons" style={{ display: 'flex', gap: '16px', flexWrap: 'wrap' }}>
-              <button onClick={onGetStarted} className="btn btn-primary" style={{ padding: '18px 36px', fontSize: '16px' }}>
-                Get Started Free
-                <span style={{ marginLeft: '4px' }}>→</span>
-              </button>
-              <a href="#features" className="btn btn-secondary" style={{ padding: '18px 36px', background: 'transparent', borderColor: 'rgba(255,255,255,0.3)', color: '#FFF' }}>
-                See How It Works
-              </a>
-              <button 
-                onClick={() => setShowDemo(true)}
-                className="btn btn-secondary"
-                style={{ padding: '18px 36px', background: 'transparent', borderColor: 'rgba(255,255,255,0.3)', color: '#FFF' }}
-              >
-                📊 Interactive Demo
-              </button>
-            </div>
-          </div>
-          
-          {/* Benefits Bar - UNCHANGED */}
-          <div style={{ 
-            display: 'flex', 
-            justifyContent: 'center', 
-            gap: '40px', 
-            flexWrap: 'wrap',
-            borderTop: '1px solid rgba(255,255,255,0.1)', 
-            marginTop: '40px',
-            paddingTop: '32px'
-          }}>
-            <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
-              <span style={{ color: 'var(--steel-400)', fontSize: '18px' }}>✓</span>
-              <span style={{ color: 'var(--steel-300)', fontSize: '15px' }}>Map any journey in minutes</span>
-            </div>
-            <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
-              <span style={{ color: 'var(--steel-400)', fontSize: '18px' }}>✓</span>
-              <span style={{ color: 'var(--steel-300)', fontSize: '15px' }}>See true costs, not estimates</span>
-            </div>
-            <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
-              <span style={{ color: 'var(--steel-400)', fontSize: '18px' }}>✓</span>
-              <span style={{ color: 'var(--steel-300)', fontSize: '15px' }}>Find waste before you fix it</span>
-            </div>
-          </div>
-        </div>
-      </section>
+      // NEW: Context and industry state
+      const [activeContext, setActiveContext] = useState('journeys');
+      const [activeIndustry, setActiveIndustry] = useState('all');
+      const [showDemo, setShowDemo] = useState(false);
+      const [isTransitioning, setIsTransitioning] = useState(false);
       
-      {/* 
-        ALL OTHER SECTIONS REMAIN EXACTLY AS THEY ARE IN YOUR ORIGINAL:
-        - Problem vs Solution Visual
-        - Features Section
-        - How It Works
-        - Visual Journey Editor Showcase
-        - Templates
-        - Use Cases
-        - Social Proof
-        - Pricing
-        - FAQ
-        - CTA
-        - Footer
-        
-        COPY THEM ALL FROM YOUR ORIGINAL FILE (lines ~1156-5308)
-      */}
+      // URL deep linking
+      useEffect(() => {
+        const params = new URLSearchParams(window.location.search);
+        const context = params.get('context');
+        const industry = params.get('industry');
+        if (context && ['journeys', 'projects', 'events'].includes(context)) {
+          setActiveContext(context);
+        }
+        if (industry) {
+          setActiveIndustry(industry);
+        }
+      }, []);
       
-      {/* NEW: Demo Modal */}
-      {showDemo && (
-        <InteractiveDemo 
-          context={activeContext} 
-          onClose={() => setShowDemo(false)} 
-        />
-      )}
-    </div>
-  );
-}
-
-// NEW: Interactive Demo Component (add BEFORE LandingPage)
-function InteractiveDemo({ context, onClose }) {
-  const [selectedStage, setSelectedStage] = useState(0);
-  
-  const demoData = {
-    journeys: {
-      title: 'Client Onboarding Journey',
-      stages: [
-        {
-          name: 'Initial Contact',
-          steps: [
-            { name: 'Enquiry received', time: 15, cost: 12, friction: 'low' },
-            { name: 'Qualification call', time: 30, cost: 45, friction: 'low' },
-            { name: 'Information pack sent', time: 20, cost: 16, friction: 'low' }
-          ]
+      // Update URL when context/industry changes
+      useEffect(() => {
+        const params = new URLSearchParams();
+        params.set('context', activeContext);
+        params.set('industry', activeIndustry);
+        window.history.replaceState({}, '', `${window.location.pathname}?${params}`);
+      }, [activeContext, activeIndustry]);
+      
+      useEffect(() => {
+        const handleScroll = () => {
+          const scrollY = window.scrollY;
+          setScrolled(scrollY > 50);
+          setLogoVisible(scrollY > 200);
+        };
+        window.addEventListener('scroll', handleScroll);
+        return () => window.removeEventListener('scroll', handleScroll);
+      }, []);
+      
+      // Context change handler with transition
+      const handleContextChange = (newContext) => {
+        if (newContext === activeContext) return;
+        setIsTransitioning(true);
+        setTimeout(() => {
+          setActiveContext(newContext);
+          setIsTransitioning(false);
+        }, 150);
+      };
+      
+      // Context configurations
+      const CONTEXTS = {
+        journeys: {
+          badge: 'JOURNEY INTELLIGENCE PLATFORM',
+          headline: React.createElement(React.Fragment, null,
+            "See what your journeys ",
+            React.createElement("br"),
+            React.createElement("span", { style: { color: 'var(--steel-400)', fontWeight: 600 } }, "really cost")
+          ),
+          subhead: 'Map operational processes with precision. Capture ground-truth data from the people who do the work. Transform assumptions into actionable insights.',
+          icon: '🗺️',
+          color: 'var(--steel-500)'
         },
-        {
-          name: 'KYC & Compliance',
-          steps: [
-            { name: 'ID verification', time: 30, cost: 75, friction: 'medium' },
-            { name: 'AML screening', time: 45, cost: 95, friction: 'high' },
-            { name: 'Source of wealth check', time: 120, cost: 180, friction: 'high' }
-          ]
+        projects: {
+          badge: 'PROJECT INTELLIGENCE PLATFORM',
+          headline: React.createElement(React.Fragment, null,
+            "Know what delivery ",
+            React.createElement("br"),
+            React.createElement("span", { style: { color: 'var(--amber-400)', fontWeight: 600 } }, "really costs")
+          ),
+          subhead: 'Quantify project work with milestone-based cost tracking. From construction tenders to software implementations, see the true cost of delivery.',
+          icon: '📋',
+          color: 'var(--amber-500)'
         },
-        {
-          name: 'Account Setup',
-          steps: [
-            { name: 'Platform account creation', time: 45, cost: 85, friction: 'medium' },
-            { name: 'Initial investment', time: 60, cost: 120, friction: 'low' }
-          ]
+        events: {
+          badge: 'EVENT INTELLIGENCE PLATFORM',
+          headline: React.createElement(React.Fragment, null,
+            "Understand peak load ",
+            React.createElement("br"),
+            React.createElement("span", { style: { color: 'var(--success)', fontWeight: 600 } }, "operations")
+          ),
+          subhead: 'Model one-time or seasonal events with peak capacity planning. From matchday operations to tax season surges, quantify what it takes.',
+          icon: '⚡',
+          color: 'var(--success)'
         }
-      ]
-    },
-    projects: {
-      title: 'Construction Tender Response',
-      stages: [
-        {
-          name: 'Tender Analysis',
-          steps: [
-            { name: 'Document review', time: 480, cost: 1240, friction: 'medium' },
-            { name: 'Site visit', time: 240, cost: 840, friction: 'low' },
-            { name: 'Risk assessment', time: 360, cost: 1080, friction: 'high' }
-          ]
-        },
-        {
-          name: 'Pricing & Planning',
-          steps: [
-            { name: 'Cost estimation', time: 720, cost: 2160, friction: 'medium' },
-            { name: 'Subcontractor quotes', time: 480, cost: 960, friction: 'high' }
-          ]
-        }
-      ]
-    },
-    events: {
-      title: 'Tax Season Surge (Week 1)',
-      stages: [
-        {
-          name: 'Client Intake',
-          steps: [
-            { name: 'Document collection (3x volume)', time: 1440, cost: 2880, friction: 'high' },
-            { name: 'Data entry (3x volume)', time: 960, cost: 1440, friction: 'medium' }
-          ]
-        },
-        {
-          name: 'Processing',
-          steps: [
-            { name: 'Tax return preparation (3.5x)', time: 2520, cost: 5040, friction: 'high' },
-            { name: 'Review queue (2.5x)', time: 1200, cost: 3000, friction: 'medium' }
-          ]
-        }
-      ]
-    }
-  };
-  
-  const data = demoData[context];
-  const totalCost = data.stages.reduce((sum, stage) => 
-    sum + stage.steps.reduce((stageSum, step) => stageSum + step.cost, 0), 0
-  );
-  const totalTime = data.stages.reduce((sum, stage) => 
-    sum + stage.steps.reduce((stageSum, step) => stageSum + step.time, 0), 0
-  );
-  
-  const frictionColors = {
-    low: 'var(--success)',
-    medium: 'var(--amber-500)',
-    high: 'var(--error)'
-  };
-  
-  return (
-    <div className="modal-overlay" onClick={onClose}>
-      <div className="modal" onClick={e => e.stopPropagation()} style={{ maxWidth: '600px' }}>
-        <div style={{ padding: '40px' }}>
-          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '24px' }}>
-            <h2 style={{ fontSize: '24px', fontWeight: 400, color: 'var(--navy-700)' }}>
-              Interactive Demo
-            </h2>
-            <button 
-              onClick={onClose}
-              style={{ 
-                background: 'none', 
-                border: 'none', 
-                fontSize: '28px', 
-                color: 'var(--slate-400)', 
-                cursor: 'pointer',
-                lineHeight: 1,
-                padding: '0'
-              }}
-            >
-              ×
-            </button>
-          </div>
-          
-          <h3 style={{ fontSize: '18px', fontWeight: 600, color: 'var(--steel-600)', marginBottom: '16px' }}>
-            {data.title}
-          </h3>
-          
-          {/* Summary Metrics */}
-          <div style={{ 
-            marginBottom: '24px', 
-            padding: '20px', 
-            background: 'var(--slate-50)', 
-            borderRadius: '12px',
-            display: 'flex',
-            gap: '32px',
-            flexWrap: 'wrap'
-          }}>
-            <div>
-              <div style={{ fontSize: '12px', color: 'var(--slate-500)', marginBottom: '4px' }}>Total Time</div>
-              <div style={{ fontSize: '20px', fontWeight: 600, color: 'var(--navy-700)' }}>
-                {Math.round(totalTime / 60)}h {totalTime % 60}m
-              </div>
-            </div>
-            <div>
-              <div style={{ fontSize: '12px', color: 'var(--slate-500)', marginBottom: '4px' }}>Total Cost</div>
-              <div style={{ fontSize: '20px', fontWeight: 600, color: 'var(--navy-700)' }}>
-                £{totalCost.toLocaleString()}
-              </div>
-            </div>
-            <div>
-              <div style={{ fontSize: '12px', color: 'var(--slate-500)', marginBottom: '4px' }}>Stages</div>
-              <div style={{ fontSize: '20px', fontWeight: 600, color: 'var(--navy-700)' }}>
-                {data.stages.length}
-              </div>
-            </div>
-          </div>
-          
-          {/* Stage List */}
-          {data.stages.map((stage, idx) => (
-            <div key={idx} style={{ marginBottom: '12px' }}>
-              <div 
-                onClick={() => setSelectedStage(idx)}
-                style={{
-                  padding: '16px',
-                  background: selectedStage === idx ? 'var(--steel-100)' : 'var(--slate-50)',
-                  borderRadius: '12px',
-                  cursor: 'pointer',
-                  border: `2px solid ${selectedStage === idx ? 'var(--steel-500)' : 'transparent'}`,
-                  transition: 'all 0.2s'
-                }}
-              >
-                <div style={{ 
-                  display: 'flex', 
-                  justifyContent: 'space-between', 
-                  alignItems: 'center',
-                  marginBottom: selectedStage === idx ? '12px' : '0'
-                }}>
-                  <div style={{ fontWeight: 600, color: 'var(--navy-700)' }}>
-                    {idx + 1}. {stage.name}
-                  </div>
-                  <div style={{ fontSize: '13px', color: 'var(--slate-500)' }}>
-                    {stage.steps.length} steps
-                  </div>
-                </div>
-                
-                {selectedStage === idx && (
-                  <div style={{ marginTop: '12px' }}>
-                    {stage.steps.map((step, stepIdx) => (
-                      <div 
-                        key={stepIdx} 
-                        style={{ 
-                          padding: '12px', 
-                          background: '#FFF', 
-                          borderRadius: '8px', 
-                          marginBottom: '8px',
-                          display: 'flex',
-                          justifyContent: 'space-between',
-                          alignItems: 'center',
-                          borderLeft: `3px solid ${frictionColors[step.friction]}`
-                        }}
-                      >
-                        <div style={{ fontSize: '14px', color: 'var(--slate-700)' }}>
-                          {step.name}
-                        </div>
-                        <div style={{ 
-                          display: 'flex', 
-                          gap: '12px', 
-                          fontSize: '13px', 
-                          color: 'var(--slate-500)',
-                          alignItems: 'center'
-                        }}>
-                          <span>⏱️ {step.time}min</span>
-                          <span>💰 £{step.cost}</span>
-                          <span style={{ 
-                            fontSize: '10px',
-                            padding: '2px 8px',
-                            borderRadius: '4px',
-                            background: frictionColors[step.friction],
-                            color: '#FFF',
-                            fontWeight: 600,
-                            textTransform: 'uppercase'
-                          }}>
-                            {step.friction}
-                          </span>
-                        </div>
-                      </div>
-                    ))}
-                  </div>
-                )}
-              </div>
-            </div>
-          ))}
-          
-          {/* CTA */}
-          <div style={{ 
-            marginTop: '24px', 
-            padding: '20px', 
-            background: 'var(--slate-50)', 
-            borderRadius: '12px', 
-            textAlign: 'center' 
-          }}>
-            <p style={{ color: 'var(--slate-600)', marginBottom: '16px', fontSize: '14px' }}>
-              This is just one example. Build your own with real data.
-            </p>
-            <button onClick={onClose} className="btn btn-primary" style={{ width: '100%' }}>
-              Get Started Free
-            </button>
-          </div>
-        </div>
-      </div>
-    </div>
-  );
-}
-
+      };
+      
+      const context = CONTEXTS[activeContext];
       
       return (
         <div>
-          {/* Navigation */}
+          {/* Navigation - UNCHANGED */}
           <nav style={{
             position: 'fixed',
             top: 0,
@@ -2146,9 +1386,7 @@ function InteractiveDemo({ context, onClose }) {
               </button>
             </div>
           </nav>
-          
-          {/* Hero Section */}
-                   {/* Hero Section - ENHANCED VERSION */}
+          {/* Hero Section - ENHANCED */}
           <section className="hero-bg" style={{ minHeight: '100vh', display: 'flex', flexDirection: 'column', justifyContent: 'center', padding: '120px 24px 60px' }}>
             <div className="container" style={{ position: 'relative', zIndex: 1 }}>
               <div className="hero-content" style={{ maxWidth: '720px', marginBottom: '48px' }}>
@@ -2289,7 +1527,7 @@ function InteractiveDemo({ context, onClose }) {
                   {context.subhead}
                 </p>
                 
-                {/* Hero Buttons with NEW Demo button */}
+                {/* Hero Buttons */}
                 <div className="hero-buttons" style={{ display: 'flex', gap: '16px', flexWrap: 'wrap' }}>
                   <button onClick={onGetStarted} className="btn btn-primary" style={{ padding: '18px 36px', fontSize: '16px' }}>
                     Get Started Free
@@ -2333,8 +1571,6 @@ function InteractiveDemo({ context, onClose }) {
               </div>
             </div>
           </section>
-
-          
           {/* Problem vs Solution Visual */}
           <section className="section" style={{ background: '#FFF' }}>
             <div className="container">
@@ -3640,18 +2876,9 @@ function InteractiveDemo({ context, onClose }) {
               </div>
             </div>
           </footer>
-                  
-          {/* NEW: Demo Modal */}
-          {showDemo && (
-            <InteractiveDemo 
-              context={activeContext} 
-              onClose={() => setShowDemo(false)} 
-            />
-          )}
         </div>
       );
     }
-
     
     // ============================================
     // LOGIN MODAL
@@ -6490,7 +5717,14 @@ function InteractiveDemo({ context, onClose }) {
                 </>
               )}
             </div>
-          </div>
+          
+          {/* NEW: Demo Modal */}
+          {showDemo && (
+            <InteractiveDemo 
+              context={activeContext} 
+              onClose={() => setShowDemo(false)} 
+            />
+          )}
         </div>
       );
     }
