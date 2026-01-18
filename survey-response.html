@@ -39,6 +39,38 @@
     
     .header p { font-size: 14px; opacity: 0.8; }
     
+    /* Progress Bar */
+    .progress-container {
+      background: #FFF;
+      border-radius: 12px;
+      padding: 20px;
+      margin-bottom: 24px;
+      box-shadow: 0 2px 8px rgba(25, 43, 69, 0.08);
+    }
+    
+    .progress-text {
+      font-size: 13px;
+      color: #6E7B8C;
+      margin-bottom: 12px;
+      text-align: center;
+      font-weight: 600;
+    }
+    
+    .progress-bar-bg {
+      width: 100%;
+      height: 12px;
+      background: #E4E7EB;
+      border-radius: 6px;
+      overflow: hidden;
+    }
+    
+    .progress-bar-fill {
+      height: 100%;
+      background: linear-gradient(90deg, #5B8A9A 0%, #2D8A6E 100%);
+      border-radius: 6px;
+      transition: width 0.3s ease;
+    }
+    
     .card {
       background: #FFF;
       border-radius: 12px;
@@ -103,67 +135,63 @@
       border-color: #5B8A9A;
     }
     
-    .form-textarea {
-      resize: vertical;
-      min-height: 100px;
-      font-family: inherit;
-    }
-    
     .hint {
       font-size: 12px;
-      color: #6E7B8C;
-      margin-top: 6px;
+      color: #8A95A5;
+      margin-top: 4px;
     }
     
     .btn {
-      width: 100%;
-      padding: 16px 32px;
       background: #5B8A9A;
       color: #FFF;
       border: none;
+      padding: 14px 28px;
       border-radius: 8px;
-      font-size: 16px;
+      font-size: 15px;
       font-weight: 600;
       cursor: pointer;
-      transition: all 0.2s;
-      margin-top: 24px;
+      transition: background 0.2s;
     }
     
-    .btn:hover:not(:disabled) {
-      background: #4A7485;
-      transform: translateY(-1px);
-    }
-    
+    .btn:hover { background: #4A7485; }
     .btn:disabled {
-      background: #C8D5E2;
+      background: #C8CED6;
       cursor: not-allowed;
     }
     
+    .btn-secondary {
+      background: #F4F5F7;
+      color: #6E7B8C;
+      margin-right: 12px;
+    }
+    
+    .btn-secondary:hover {
+      background: #E4E7EB;
+    }
+    
+    .button-group {
+      display: flex;
+      justify-content: space-between;
+      gap: 12px;
+    }
+    
     .message {
-      padding: 20px;
-      border-radius: 8px;
-      margin-bottom: 20px;
-      text-align: center;
       display: none;
+      background: #FFF;
+      border-radius: 12px;
+      padding: 32px;
+      text-align: center;
+      box-shadow: 0 2px 8px rgba(25, 43, 69, 0.08);
     }
     
     .message.visible { display: block; }
-    
-    .success {
-      background: #D4EDE5;
-      border: 2px solid #2D8A6E;
-      color: #2D8A6E;
-    }
-    
-    .error {
-      background: #F5E0E3;
-      border: 2px solid #B84A5A;
-      color: #B84A5A;
-    }
+    .message.error { border-left: 4px solid #B84A5A; }
+    .message.success { border-left: 4px solid #2D8A6E; }
     
     .loading {
       text-align: center;
-      padding: 40px;
+      padding: 60px 20px;
+      color: #6E7B8C;
     }
     
     .spinner {
@@ -180,14 +208,129 @@
       0% { transform: rotate(0deg); }
       100% { transform: rotate(360deg); }
     }
+    
+    /* Step List */
+    .step-list {
+      margin-top: 24px;
+      border-top: 1px solid #E4E7EB;
+      padding-top: 16px;
+    }
+    
+    .step-list-header {
+      font-size: 12px;
+      font-weight: 600;
+      color: #6E7B8C;
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+      margin-bottom: 12px;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+    }
+    
+    .step-list-items {
+      display: none;
+    }
+    
+    .step-list-items.visible {
+      display: block;
+    }
+    
+    .step-item {
+      padding: 8px 12px;
+      border-radius: 6px;
+      margin-bottom: 4px;
+      font-size: 13px;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+    
+    .step-item.completed {
+      background: #D4EDE5;
+      color: #1E6B54;
+    }
+    
+    .step-item.current {
+      background: #E1EEF2;
+      color: #3A6070;
+      font-weight: 600;
+    }
+    
+    .step-item.upcoming {
+      background: #F9FAFB;
+      color: #8A95A5;
+    }
+    
+    .step-number {
+      width: 24px;
+      height: 24px;
+      border-radius: 50%;
+      background: currentColor;
+      color: #FFF;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 11px;
+      font-weight: 700;
+      flex-shrink: 0;
+    }
+    
+    .completion-screen {
+      text-align: center;
+      padding: 40px 20px;
+    }
+    
+    .completion-icon {
+      font-size: 64px;
+      margin-bottom: 16px;
+    }
+    
+    .completion-screen h2 {
+      font-size: 28px;
+      color: #192B45;
+      margin-bottom: 12px;
+    }
+    
+    .completion-screen p {
+      font-size: 16px;
+      color: #6E7B8C;
+      margin-bottom: 24px;
+    }
+    
+    .completion-stats {
+      display: flex;
+      gap: 24px;
+      justify-content: center;
+      margin: 32px 0;
+      flex-wrap: wrap;
+    }
+    
+    .stat {
+      text-align: center;
+    }
+    
+    .stat-value {
+      font-size: 32px;
+      font-weight: 700;
+      color: #5B8A9A;
+    }
+    
+    .stat-label {
+      font-size: 12px;
+      color: #6E7B8C;
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+      margin-top: 4px;
+    }
   </style>
 </head>
 <body>
-
   <div class="container">
     <div class="header">
       <h1>FATHOM</h1>
-      <p>Journey Step Feedback</p>
+      <p>Journey Intelligence Platform</p>
     </div>
 
     <div id="loading" class="loading">
@@ -196,14 +339,35 @@
     </div>
 
     <div id="content" style="display: none;">
+      <!-- Progress Bar (multi-step only) -->
+      <div id="progressContainer" style="display: none;" class="progress-container">
+        <div class="progress-text" id="progressText">Step 1 of 10</div>
+        <div class="progress-bar-bg">
+          <div class="progress-bar-fill" id="progressBar" style="width: 10%;"></div>
+        </div>
+      </div>
+
+      <!-- Journey Info -->
       <div class="card">
         <div class="label">Journey</div>
         <div class="title" id="journeyTitle">Loading...</div>
         <div class="meta" id="journeyMeta"></div>
         
         <div class="focus-step">
-          <div class="label">Focus Step</div>
+          <div class="label">Current Step</div>
           <div class="step-name" id="stepName">Loading...</div>
+          <div class="meta" id="stageName" style="margin-top: 8px;"></div>
+        </div>
+        
+        <!-- Step List (multi-step only) -->
+        <div id="stepList" class="step-list" style="display: none;">
+          <div class="step-list-header" onclick="toggleStepList()">
+            <span>View All Steps (<span id="stepListCount">0</span>)</span>
+            <span id="stepListToggle">▼</span>
+          </div>
+          <div class="step-list-items" id="stepListItems">
+            <!-- Populated dynamically -->
+          </div>
         </div>
       </div>
 
@@ -211,9 +375,8 @@
         <p id="errorText"></p>
       </div>
 
-      <div id="successMsg" class="message success">
-        <h2>✓ Thank you!</h2>
-        <p>Your feedback has been submitted successfully.</p>
+      <div id="successMsg" class="message success" style="display: none;">
+        <!-- Populated dynamically -->
       </div>
 
       <form id="surveyForm" class="card">
@@ -241,29 +404,42 @@
           <div class="hint">Suggestions for improvement</div>
         </div>
 
-        <button type="submit" id="submitBtn" class="btn">Submit Feedback</button>
+        <div class="button-group">
+          <div>
+            <button type="button" id="skipBtn" class="btn btn-secondary" style="display: none;">Skip This Step</button>
+          </div>
+          <button type="submit" id="submitBtn" class="btn">Submit Feedback</button>
+        </div>
       </form>
     </div>
   </div>
 
   <script>
     (function() {
-      // CORRECTED Supabase credentials (matching responses-review.html)
-      const SUPABASE_URL = 'https://ktctvaeulualihczwnrl.supabase.co';
-      const SUPABASE_ANON_KEY = 'sb_publishable_NlZjP1W6SO7j7jrbv8gARA_HgZlRxLY';
+      const SUPABASE_URL = 'https://ktctvaeuluallhczwnrl.supabase.co';
+      const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Imt0Y3R2YWV1bHVhbGxoY3p3bnJsIiwicm9sZSI6ImFub24iLCJpYXQiOjE3MzY5NTU4MTQsImV4cCI6MjA1MjUzMTgxNH0.ts4wMYOKiGfUgJ32zZ93wRlGZY_BKmrjCbqE__kzFzQ';
+      const EDGE_FUNCTION_URL = 'https://ktctvaeuluallhczwnrl.supabase.co/functions/v1/submit-survey';
 
-      // Create Supabase client
-      const supabase = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY, {
-        auth: {
-          persistSession: false,
-          autoRefreshToken: false
-        },
-        db: {
-          schema: 'public'
-        }
-      });
+      const supabase = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
       
       let tokenData = null;
+      let isBulkSurvey = false;
+      let currentStepIndex = 0;
+      let completedStepIds = [];
+      let progressKey = null;
+
+      // Toggle step list visibility
+      window.toggleStepList = function() {
+        const items = document.getElementById('stepListItems');
+        const toggle = document.getElementById('stepListToggle');
+        if (items.classList.contains('visible')) {
+          items.classList.remove('visible');
+          toggle.textContent = '▼';
+        } else {
+          items.classList.add('visible');
+          toggle.textContent = '▲';
+        }
+      };
 
       document.addEventListener('DOMContentLoaded', async () => {
         try {
@@ -288,43 +464,141 @@
             return;
           }
 
-          // Test Supabase connection
-          console.log('→ Testing Supabase connection...');
-          try {
-            const { error: testError } = await supabase
-              .from('survey_responses')
-              .select('id')
-              .limit(1);
+          // Detect survey type
+          isBulkSurvey = tokenData.type === 'bulk' && tokenData.stepIds && tokenData.stepIds.length > 1;
+          
+          if (isBulkSurvey) {
+            console.log('✓ Multi-step survey detected:', tokenData.stepIds.length, 'steps');
+            progressKey = `survey-progress-${tokenData.mapId}-${tokenData.recipientEmail}`;
             
-            if (testError) {
-              console.error('❌ Supabase connection test failed:', testError);
-              showError(`Cannot connect to database: ${testError.message}. Please check your internet connection.`);
+            // Load progress
+            const savedProgress = localStorage.getItem(progressKey);
+            if (savedProgress) {
+              completedStepIds = JSON.parse(savedProgress);
+              currentStepIndex = completedStepIds.length;
+              console.log('✓ Progress loaded:', currentStepIndex, '/', tokenData.stepIds.length, 'completed');
+            }
+            
+            // Check if already complete
+            if (currentStepIndex >= tokenData.stepIds.length) {
+              showCompletion();
               return;
             }
-            console.log('✓ Supabase connection OK');
-          } catch (connError) {
-            console.error('❌ Connection error:', connError);
-            showError('Cannot connect to database. This might be a DNS or network issue.');
-            return;
+            
+            renderMultiStep();
+          } else {
+            console.log('✓ Single-step survey');
+            renderSingleStep();
           }
-
-          await loadJourney();
 
           document.getElementById('loading').style.display = 'none';
           document.getElementById('content').style.display = 'block';
 
         } catch (error) {
           console.error('Init error:', error);
-          showError('Failed to load survey.');
+          showError('Failed to load survey: ' + error.message);
         }
       });
 
-      async function loadJourney() {
+      function renderSingleStep() {
         document.getElementById('journeyTitle').textContent = 'Survey Feedback';
         document.getElementById('stepName').textContent = tokenData.stepId || 'Step';
+        document.getElementById('journeyMeta').textContent = `Your role: ${tokenData.personaId}`;
         
-        if (tokenData.personaId) {
-          document.getElementById('journeyMeta').textContent = `Your role: ${tokenData.personaId}`;
+        const submitBtn = document.getElementById('submitBtn');
+        submitBtn.textContent = 'Submit Feedback';
+      }
+
+      function renderMultiStep() {
+        const currentStepDetail = tokenData.stepDetails[currentStepIndex];
+        const totalSteps = tokenData.stepIds.length;
+        const progress = ((currentStepIndex + 1) / totalSteps) * 100;
+        
+        // Show progress bar
+        document.getElementById('progressContainer').style.display = 'block';
+        document.getElementById('progressText').textContent = `Step ${currentStepIndex + 1} of ${totalSteps}`;
+        document.getElementById('progressBar').style.width = `${progress}%`;
+        
+        // Set journey info
+        document.getElementById('journeyTitle').textContent = 'Multi-Step Survey';
+        document.getElementById('journeyMeta').textContent = `Your role: ${tokenData.personaId} · ${totalSteps} steps total`;
+        document.getElementById('stepName').textContent = currentStepDetail.name;
+        document.getElementById('stageName').textContent = `Stage: ${currentStepDetail.stageName}`;
+        
+        // Show skip button
+        document.getElementById('skipBtn').style.display = 'inline-block';
+        
+        // Update submit button
+        const submitBtn = document.getElementById('submitBtn');
+        if (currentStepIndex < totalSteps - 1) {
+          submitBtn.textContent = 'Save & Next →';
+        } else {
+          submitBtn.textContent = 'Submit Final Step';
+        }
+        
+        // Render step list
+        renderStepList();
+      }
+
+      function renderStepList() {
+        const stepListContainer = document.getElementById('stepList');
+        const stepListItems = document.getElementById('stepListItems');
+        const stepListCount = document.getElementById('stepListCount');
+        
+        stepListContainer.style.display = 'block';
+        stepListCount.textContent = tokenData.stepIds.length;
+        
+        stepListItems.innerHTML = '';
+        
+        tokenData.stepDetails.forEach((step, index) => {
+          const isCompleted = completedStepIds.includes(step.id);
+          const isCurrent = index === currentStepIndex;
+          const isUpcoming = index > currentStepIndex;
+          
+          let statusClass = 'upcoming';
+          let icon = '○';
+          if (isCompleted) {
+            statusClass = 'completed';
+            icon = '✓';
+          } else if (isCurrent) {
+            statusClass = 'current';
+            icon = '●';
+          }
+          
+          const item = document.createElement('div');
+          item.className = `step-item ${statusClass}`;
+          item.innerHTML = `
+            <span class="step-number" style="background: ${isCompleted ? '#2D8A6E' : isCurrent ? '#5B8A9A' : '#C8CED6'};">${icon}</span>
+            <span>${step.stageName} → ${step.name}</span>
+          `;
+          
+          stepListItems.appendChild(item);
+        });
+      }
+
+      document.getElementById('skipBtn').addEventListener('click', () => {
+        if (confirm('Skip this step? You can always come back to it later.')) {
+          handleSkip();
+        }
+      });
+
+      function handleSkip() {
+        const currentStepId = tokenData.stepDetails[currentStepIndex].id;
+        
+        // Mark as completed (skipped)
+        completedStepIds.push(currentStepId);
+        localStorage.setItem(progressKey, JSON.stringify(completedStepIds));
+        
+        // Move to next step
+        currentStepIndex++;
+        
+        if (currentStepIndex >= tokenData.stepIds.length) {
+          showCompletion();
+        } else {
+          // Clear form
+          document.getElementById('surveyForm').reset();
+          renderMultiStep();
+          window.scrollTo(0, 0);
         }
       }
 
@@ -339,56 +613,126 @@
         btn.textContent = 'Submitting...';
 
         try {
-          // Prepare the response data
-          const responseData = {
-            map_id: tokenData.mapId && tokenData.mapId !== 'demo' && tokenData.mapId !== 'unknown' ? tokenData.mapId : null,
-            step_id: tokenData.stepId,
-            persona_id: tokenData.personaId,
-            respondent_email: tokenData.recipientEmail,
-            scope: tokenData.scope || 'full',
-            description: document.getElementById('description').value.trim() || null,
-            time_estimate: document.getElementById('timeEstimate').value ? parseInt(document.getElementById('timeEstimate').value) : null,
-            pain_points: document.getElementById('painPoints').value.trim() || null,
-            improvements: document.getElementById('improvements').value.trim() || null,
-            review_status: 'pending',
-            submitted_at: new Date().toISOString()
-          };
+          const currentStepId = isBulkSurvey 
+            ? tokenData.stepDetails[currentStepIndex].id 
+            : tokenData.stepId;
 
-          const hasContent = responseData.description || responseData.time_estimate || 
-                            responseData.pain_points || responseData.improvements;
+          const feedback = [{
+            stepId: currentStepId,
+            description: document.getElementById('description').value.trim(),
+            timeEstimate: document.getElementById('timeEstimate').value,
+            painPoints: document.getElementById('painPoints').value.trim(),
+            improvements: document.getElementById('improvements').value.trim()
+          }];
+
+          const hasContent = feedback[0].description || feedback[0].timeEstimate || 
+                            feedback[0].painPoints || feedback[0].improvements;
 
           if (!hasContent) {
-            showError('Please fill in at least one field.');
+            showError('Please fill in at least one field, or click "Skip This Step".');
             btn.disabled = false;
-            btn.textContent = 'Submit Feedback';
+            btn.textContent = isBulkSurvey ? 'Save & Next →' : 'Submit Feedback';
             return;
           }
 
-          console.log('→ Submitting directly to Supabase');
-          console.log('→ Data:', responseData);
+          console.log('→ Submitting to:', EDGE_FUNCTION_URL);
+          console.log('→ Payload:', { token: tokenData, feedback });
 
-          // Insert the response (duplicate check removed for now)
-          const { data: insertData, error: insertError } = await supabase
-            .from('survey_responses')
-            .insert([responseData])
-            .select();
+          const response = await fetch(EDGE_FUNCTION_URL, {
+            method: 'POST',
+            headers: {
+              'Content-Type': 'application/json',
+              'Authorization': `Bearer ${SUPABASE_ANON_KEY}`
+            },
+            body: JSON.stringify({ token: tokenData, feedback })
+          });
 
-          if (insertError) {
-            console.error('Insert error:', insertError);
-            throw new Error(insertError.message);
+          console.log('← Status:', response.status);
+          const result = await response.json();
+          console.log('← Result:', result);
+
+          if (!response.ok) {
+            throw new Error(result.error || 'Submission failed');
           }
 
-          console.log('✓ Success!', insertData);
-          document.getElementById('surveyForm').style.display = 'none';
-          document.getElementById('successMsg').classList.add('visible');
+          console.log('✓ Success!');
+
+          if (isBulkSurvey) {
+            // Mark as completed
+            completedStepIds.push(currentStepId);
+            localStorage.setItem(progressKey, JSON.stringify(completedStepIds));
+            
+            // Move to next step
+            currentStepIndex++;
+            
+            if (currentStepIndex >= tokenData.stepIds.length) {
+              // All done!
+              showCompletion();
+            } else {
+              // Next step
+              document.getElementById('surveyForm').reset();
+              renderMultiStep();
+              btn.disabled = false;
+              window.scrollTo(0, 0);
+            }
+          } else {
+            // Single-step: show success
+            document.getElementById('surveyForm').style.display = 'none';
+            document.getElementById('successMsg').innerHTML = `
+              <div class="completion-icon">✓</div>
+              <h2>Thank you!</h2>
+              <p>Your feedback has been submitted successfully.</p>
+            `;
+            document.getElementById('successMsg').style.display = 'block';
+          }
 
         } catch (error) {
           console.error('✗ Error:', error);
-          showError(error.message || 'Submission failed');
+          showError(error.message);
           btn.disabled = false;
-          btn.textContent = 'Submit Feedback';
+          btn.textContent = isBulkSurvey 
+            ? (currentStepIndex < tokenData.stepIds.length - 1 ? 'Save & Next →' : 'Submit Final Step')
+            : 'Submit Feedback';
         }
       });
+
+      function showCompletion() {
+        document.getElementById('surveyForm').style.display = 'none';
+        document.getElementById('progressContainer').style.display = 'none';
+        document.getElementById('stepList').style.display = 'none';
+        
+        const totalSteps = tokenData.stepIds.length;
+        const completedCount = completedStepIds.length;
+        
+        document.getElementById('successMsg').innerHTML = `
+          <div class="completion-screen">
+            <div class="completion-icon">🎉</div>
+            <h2>Survey Complete!</h2>
+            <p>Thank you for taking the time to provide feedback.</p>
+            
+            <div class="completion-stats">
+              <div class="stat">
+                <div class="stat-value">${completedCount}</div>
+                <div class="stat-label">Steps Completed</div>
+              </div>
+              <div class="stat">
+                <div class="stat-value">${totalSteps}</div>
+                <div class="stat-label">Total Steps</div>
+              </div>
+            </div>
+            
+            <p style="color: #6E7B8C; font-size: 14px;">
+              Your insights will help improve our processes. You can now close this page.
+            </p>
+          </div>
+        `;
+        document.getElementById('successMsg').style.display = 'block';
+        
+        // Clear progress
+        if (progressKey) {
+          localStorage.removeItem(progressKey);
+        }
+      }
 
       function showError(message) {
         document.getElementById('errorText').textContent = message;
