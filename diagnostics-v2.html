@@ -1,0 +1,766 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>FATHOM System Diagnostics</title>
+  
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+  
+  <style>
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+    
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+      background: #F4F5F7;
+      padding: 20px;
+      color: #1A2332;
+    }
+    
+    .container {
+      max-width: 1200px;
+      margin: 0 auto;
+    }
+    
+    .header {
+      background: linear-gradient(135deg, #192B45 0%, #111E2E 100%);
+      color: white;
+      padding: 32px;
+      border-radius: 12px;
+      margin-bottom: 24px;
+      text-align: center;
+    }
+    
+    .header h1 {
+      font-size: 32px;
+      font-weight: 700;
+      letter-spacing: 2px;
+      margin-bottom: 8px;
+    }
+    
+    .header p {
+      opacity: 0.8;
+      font-size: 14px;
+    }
+    
+    .test-group {
+      background: white;
+      border-radius: 12px;
+      padding: 24px;
+      margin-bottom: 20px;
+      box-shadow: 0 2px 8px rgba(25, 43, 69, 0.08);
+    }
+    
+    .test-group h2 {
+      font-size: 20px;
+      font-weight: 700;
+      color: #192B45;
+      margin-bottom: 16px;
+      padding-bottom: 12px;
+      border-bottom: 2px solid #E4E7EB;
+    }
+    
+    .test-item {
+      display: flex;
+      align-items: center;
+      padding: 12px 0;
+      border-bottom: 1px solid #E4E7EB;
+    }
+    
+    .test-item:last-child {
+      border-bottom: none;
+    }
+    
+    .test-status {
+      width: 32px;
+      height: 32px;
+      border-radius: 50%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 18px;
+      margin-right: 16px;
+      flex-shrink: 0;
+    }
+    
+    .status-pending {
+      background: #E4E7EB;
+    }
+    
+    .status-running {
+      background: #5B8A9A;
+      animation: pulse 1.5s ease-in-out infinite;
+    }
+    
+    .status-success {
+      background: #D4EDE5;
+      color: #2D8A6E;
+    }
+    
+    .status-error {
+      background: #F5E0E3;
+      color: #B84A5A;
+    }
+    
+    .status-warning {
+      background: #FAF0D6;
+      color: #C4942A;
+    }
+    
+    @keyframes pulse {
+      0%, 100% { opacity: 1; }
+      50% { opacity: 0.5; }
+    }
+    
+    .test-info {
+      flex: 1;
+    }
+    
+    .test-name {
+      font-weight: 600;
+      font-size: 15px;
+      margin-bottom: 4px;
+    }
+    
+    .test-detail {
+      font-size: 13px;
+      color: #6E7B8C;
+      font-family: 'Monaco', 'Courier New', monospace;
+    }
+    
+    .test-result {
+      margin-left: 16px;
+      padding: 8px 12px;
+      background: #F4F5F7;
+      border-radius: 6px;
+      font-size: 12px;
+      font-family: 'Monaco', 'Courier New', monospace;
+      max-width: 200px;
+      overflow: hidden;
+      text-overflow: ellipsis;
+      white-space: nowrap;
+    }
+    
+    .action-buttons {
+      display: flex;
+      gap: 12px;
+      margin-top: 24px;
+    }
+    
+    .btn {
+      padding: 12px 24px;
+      border-radius: 8px;
+      font-weight: 600;
+      font-size: 14px;
+      border: none;
+      cursor: pointer;
+      transition: all 0.2s;
+    }
+    
+    .btn-primary {
+      background: linear-gradient(135deg, #5B8A9A 0%, #4A7485 100%);
+      color: white;
+    }
+    
+    .btn-primary:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 4px 12px rgba(91, 138, 154, 0.3);
+    }
+    
+    .btn-secondary {
+      background: #E4E7EB;
+      color: #1A2332;
+    }
+    
+    .btn-secondary:hover {
+      background: #C8CED6;
+    }
+    
+    .error-details {
+      background: #FFF5F5;
+      border: 1px solid #F5E0E3;
+      border-radius: 8px;
+      padding: 16px;
+      margin-top: 12px;
+      font-size: 13px;
+      color: #B84A5A;
+      font-family: 'Monaco', 'Courier New', monospace;
+      display: none;
+    }
+    
+    .summary {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+      gap: 16px;
+      margin-bottom: 24px;
+    }
+    
+    .summary-card {
+      background: white;
+      border-radius: 12px;
+      padding: 20px;
+      box-shadow: 0 2px 8px rgba(25, 43, 69, 0.08);
+      text-align: center;
+    }
+    
+    .summary-value {
+      font-size: 36px;
+      font-weight: 700;
+      margin-bottom: 8px;
+    }
+    
+    .summary-label {
+      font-size: 12px;
+      color: #6E7B8C;
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+      font-weight: 600;
+    }
+    
+    .code-block {
+      background: #1A2332;
+      color: #E4E7EB;
+      padding: 16px;
+      border-radius: 8px;
+      font-family: 'Monaco', 'Courier New', monospace;
+      font-size: 12px;
+      overflow-x: auto;
+      margin-top: 12px;
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <div class="header">
+      <h1>FATHOM</h1>
+      <p>System Diagnostics & Connection Test</p>
+    </div>
+    
+    <div class="summary" id="summary">
+      <div class="summary-card">
+        <div class="summary-value" id="totalTests">0</div>
+        <div class="summary-label">Total Tests</div>
+      </div>
+      <div class="summary-card">
+        <div class="summary-value" style="color: #2D8A6E;" id="passedTests">0</div>
+        <div class="summary-label">Passed</div>
+      </div>
+      <div class="summary-card">
+        <div class="summary-value" style="color: #B84A5A;" id="failedTests">0</div>
+        <div class="summary-label">Failed</div>
+      </div>
+      <div class="summary-card">
+        <div class="summary-value" style="color: #C4942A;" id="warningTests">0</div>
+        <div class="summary-label">Warnings</div>
+      </div>
+    </div>
+    
+    <!-- Configuration Test -->
+    <div class="test-group">
+      <h2>1. Configuration & URLs</h2>
+      <div id="configTests"></div>
+    </div>
+    
+    <!-- Supabase Connection -->
+    <div class="test-group">
+      <h2>2. Supabase Connection</h2>
+      <div id="supabaseTests"></div>
+    </div>
+    
+    <!-- Database Schema -->
+    <div class="test-group">
+      <h2>3. Database Schema</h2>
+      <div id="schemaTests"></div>
+    </div>
+    
+    <!-- Edge Functions -->
+    <div class="test-group">
+      <h2>4. Edge Functions</h2>
+      <div id="edgeFunctionTests"></div>
+    </div>
+    
+    <!-- Authentication -->
+    <div class="test-group">
+      <h2>5. Authentication</h2>
+      <div id="authTests"></div>
+    </div>
+    
+    <!-- Data Access -->
+    <div class="test-group">
+      <h2>6. Data Access (RLS)</h2>
+      <div id="dataTests"></div>
+    </div>
+    
+    <div class="action-buttons">
+      <button class="btn btn-primary" onclick="runAllTests()">▶ Run All Tests</button>
+      <button class="btn btn-secondary" onclick="location.reload()">↻ Refresh Page</button>
+      <button class="btn btn-secondary" onclick="exportResults()">📥 Export Results</button>
+    </div>
+  </div>
+  
+  <script>
+    // Configuration
+    const CONFIG = {
+      SUPABASE_URL: 'https://ktctvaeuluallhczwnrl.supabase.co',
+      SUPABASE_ANON_KEY: 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Imt0Y3R2YWV1bHVhbGxoY3p3bnJsIiwicm9sZSI6ImFub24iLCJpYXQiOjE3MzY4NTQ5NzAsImV4cCI6MjA1MjQzMDk3MH0.gL_JqmZ8o9Bn55QxSU6VczKTJTpWu6bEMNr_BHMIg4c',
+      SUBMIT_SURVEY_URL: 'https://ktctvaeuluallhczwnrl.supabase.co/functions/v1/submit-survey',
+      SEND_EMAIL_URL: 'https://ktctvaeuluallhczwnrl.supabase.co/functions/v1/send-survey-email'
+    };
+    
+    let supabaseClient;
+    let testResults = {
+      total: 0,
+      passed: 0,
+      failed: 0,
+      warnings: 0
+    };
+    
+    // Test utilities
+    function addTest(container, name, detail = '') {
+      const testId = `test-${Date.now()}-${Math.random()}`;
+      const html = `
+        <div class="test-item" id="${testId}">
+          <div class="test-status status-pending">⏳</div>
+          <div class="test-info">
+            <div class="test-name">${name}</div>
+            ${detail ? `<div class="test-detail">${detail}</div>` : ''}
+          </div>
+          <div class="test-result" style="display: none;"></div>
+        </div>
+        <div class="error-details" id="${testId}-error"></div>
+      `;
+      document.getElementById(container).innerHTML += html;
+      testResults.total++;
+      updateSummary();
+      return testId;
+    }
+    
+    function updateTest(testId, status, result = '', error = '') {
+      const testItem = document.getElementById(testId);
+      if (!testItem) return;
+      
+      const statusEl = testItem.querySelector('.test-status');
+      const resultEl = testItem.querySelector('.test-result');
+      const errorEl = document.getElementById(`${testId}-error`);
+      
+      // Update status icon
+      statusEl.classList.remove('status-pending', 'status-running', 'status-success', 'status-error', 'status-warning');
+      
+      if (status === 'running') {
+        statusEl.classList.add('status-running');
+        statusEl.textContent = '⏳';
+      } else if (status === 'success') {
+        statusEl.classList.add('status-success');
+        statusEl.textContent = '✓';
+        testResults.passed++;
+      } else if (status === 'error') {
+        statusEl.classList.add('status-error');
+        statusEl.textContent = '✗';
+        testResults.failed++;
+      } else if (status === 'warning') {
+        statusEl.classList.add('status-warning');
+        statusEl.textContent = '⚠';
+        testResults.warnings++;
+      }
+      
+      // Update result
+      if (result) {
+        resultEl.textContent = result;
+        resultEl.style.display = 'block';
+      }
+      
+      // Update error
+      if (error) {
+        errorEl.textContent = error;
+        errorEl.style.display = 'block';
+      }
+      
+      updateSummary();
+    }
+    
+    function updateSummary() {
+      document.getElementById('totalTests').textContent = testResults.total;
+      document.getElementById('passedTests').textContent = testResults.passed;
+      document.getElementById('failedTests').textContent = testResults.failed;
+      document.getElementById('warningTests').textContent = testResults.warnings;
+    }
+    
+    // Test functions
+    async function testConfiguration() {
+      // Test 1: URL Format
+      let testId = addTest('configTests', 'Supabase URL Format', CONFIG.SUPABASE_URL);
+      updateTest(testId, 'running');
+      try {
+        const url = new URL(CONFIG.SUPABASE_URL);
+        if (url.hostname.includes('supabaseClient.co')) {
+          updateTest(testId, 'success', '✓ Valid');
+        } else {
+          updateTest(testId, 'warning', 'Non-standard domain');
+        }
+      } catch (e) {
+        updateTest(testId, 'error', 'Invalid URL', e.message);
+      }
+      
+      // Test 2: Anon Key Format
+      testId = addTest('configTests', 'Anon Key Format', 'JWT token');
+      updateTest(testId, 'running');
+      try {
+        const parts = CONFIG.SUPABASE_ANON_KEY.split('.');
+        if (parts.length === 3) {
+          const payload = JSON.parse(atob(parts[1]));
+          updateTest(testId, 'success', `Role: ${payload.role}`);
+        } else {
+          updateTest(testId, 'error', 'Invalid JWT format');
+        }
+      } catch (e) {
+        updateTest(testId, 'error', 'Cannot parse', e.message);
+      }
+      
+      // Test 3: Edge Function URLs
+      testId = addTest('configTests', 'Submit Survey URL', CONFIG.SUBMIT_SURVEY_URL);
+      updateTest(testId, 'running');
+      if (CONFIG.SUBMIT_SURVEY_URL.includes('/functions/v1/')) {
+        updateTest(testId, 'success', '✓ Valid');
+      } else {
+        updateTest(testId, 'error', 'Invalid format');
+      }
+      
+      testId = addTest('configTests', 'Send Email URL', CONFIG.SEND_EMAIL_URL);
+      updateTest(testId, 'running');
+      if (CONFIG.SEND_EMAIL_URL.includes('/functions/v1/')) {
+        updateTest(testId, 'success', '✓ Valid');
+      } else {
+        updateTest(testId, 'warning', 'May not be deployed');
+      }
+    }
+    
+    async function testSupabaseConnection() {
+      // Test 1: Initialize Client
+      let testId = addTest('supabaseTests', 'Initialize Supabase Client', 'window.supabaseClient.createClient()');
+      updateTest(testId, 'running');
+      try {
+        supabaseClient = window.supabase.createClient(CONFIG.SUPABASE_URL, CONFIG.SUPABASE_ANON_KEY);
+        updateTest(testId, 'success', '✓ Initialized');
+      } catch (e) {
+        updateTest(testId, 'error', 'Failed', e.message);
+        return; // Can't continue without client
+      }
+      
+      // Test 2: Network Connectivity
+      testId = addTest('supabaseTests', 'Network Connectivity', 'Ping Supabase');
+      updateTest(testId, 'running');
+      try {
+        const response = await fetch(CONFIG.SUPABASE_URL + '/rest/v1/', {
+          headers: {
+            'apikey': CONFIG.SUPABASE_ANON_KEY
+          }
+        });
+        if (response.ok || response.status === 404) {
+          updateTest(testId, 'success', `HTTP ${response.status}`);
+        } else {
+          updateTest(testId, 'error', `HTTP ${response.status}`);
+        }
+      } catch (e) {
+        updateTest(testId, 'error', 'Network error', e.message);
+      }
+      
+      // Test 3: Auth Status
+      testId = addTest('supabaseTests', 'Current Session', 'Check if logged in');
+      updateTest(testId, 'running');
+      try {
+        const { data: { session } } = await supabaseClient.auth.getSession();
+        if (session) {
+          updateTest(testId, 'success', `User: ${session.user.email}`);
+        } else {
+          updateTest(testId, 'warning', 'Not logged in');
+        }
+      } catch (e) {
+        updateTest(testId, 'error', 'Auth error', e.message);
+      }
+    }
+    
+    async function testDatabaseSchema() {
+      if (!supabaseClient) {
+        addTest('schemaTests', 'Supabase not initialized', '⚠ Skipping schema tests');
+        return;
+      }
+      
+      const tables = [
+        'users',
+        'organisations',
+        'journey_maps',
+        'survey_invitations',
+        'survey_responses',
+        'survey_campaigns',
+        'email_log',
+        'survey_reminders'
+      ];
+      
+      for (const table of tables) {
+        const testId = addTest('schemaTests', `Table: ${table}`, 'SELECT count(*)');
+        updateTest(testId, 'running');
+        try {
+          const { data, error, count } = await supabase
+            .from(table)
+            .select('*', { count: 'exact', head: true });
+          
+          if (error) {
+            if (error.code === 'PGRST116') {
+              updateTest(testId, 'error', 'Not found', 'Table does not exist');
+            } else if (error.message.includes('permission')) {
+              updateTest(testId, 'warning', 'No access', 'RLS may be blocking');
+            } else {
+              updateTest(testId, 'error', 'Error', error.message);
+            }
+          } else {
+            updateTest(testId, 'success', `${count || 0} rows`);
+          }
+        } catch (e) {
+          updateTest(testId, 'error', 'Exception', e.message);
+        }
+      }
+    }
+    
+    async function testEdgeFunctions() {
+      // Test 1: Submit Survey Function
+      let testId = addTest('edgeFunctionTests', 'submit-survey', 'Test with mock data');
+      updateTest(testId, 'running');
+      try {
+        const response = await fetch(CONFIG.SUBMIT_SURVEY_URL, {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+            'Authorization': `Bearer ${CONFIG.SUPABASE_ANON_KEY}`
+          },
+          body: JSON.stringify({
+            token: { 
+              mapId: 'test',
+              stepId: 'test',
+              personaId: 'test',
+              recipientEmail: 'test@test.com'
+            },
+            feedback: {
+              description: 'Test'
+            }
+          })
+        });
+        
+        if (response.ok) {
+          updateTest(testId, 'success', `HTTP ${response.status}`);
+        } else if (response.status === 400) {
+          updateTest(testId, 'warning', 'Validation error (expected)');
+        } else {
+          const text = await response.text();
+          updateTest(testId, 'error', `HTTP ${response.status}`, text);
+        }
+      } catch (e) {
+        updateTest(testId, 'error', 'Network error', e.message);
+      }
+      
+      // Test 2: Send Email Function
+      testId = addTest('edgeFunctionTests', 'send-survey-email', 'Test with mock data');
+      updateTest(testId, 'running');
+      try {
+        const response = await fetch(CONFIG.SEND_EMAIL_URL, {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+            'Authorization': `Bearer ${CONFIG.SUPABASE_ANON_KEY}`
+          },
+          body: JSON.stringify({
+            type: 'survey_invite',
+            to: 'test@test.com',
+            surveyUrl: 'https://test.com',
+            mapTitle: 'Test'
+          })
+        });
+        
+        if (response.ok) {
+          updateTest(testId, 'success', `HTTP ${response.status}`);
+        } else if (response.status === 400) {
+          updateTest(testId, 'warning', 'Validation error');
+        } else if (response.status === 404) {
+          updateTest(testId, 'error', 'Not deployed', 'Function not found');
+        } else {
+          const text = await response.text();
+          updateTest(testId, 'error', `HTTP ${response.status}`, text);
+        }
+      } catch (e) {
+        updateTest(testId, 'error', 'Network error', e.message);
+      }
+    }
+    
+    async function testAuthentication() {
+      if (!supabaseClient) return;
+      
+      // Test 1: Session
+      let testId = addTest('authTests', 'Current Session', 'auth.getSession()');
+      updateTest(testId, 'running');
+      try {
+        const { data: { session }, error } = await supabaseClient.auth.getSession();
+        if (error) {
+          updateTest(testId, 'error', 'Auth error', error.message);
+        } else if (session) {
+          updateTest(testId, 'success', `✓ Logged in as ${session.user.email}`);
+        } else {
+          updateTest(testId, 'warning', 'Not logged in', 'Some tests require authentication');
+        }
+      } catch (e) {
+        updateTest(testId, 'error', 'Exception', e.message);
+      }
+      
+      // Test 2: User Profile
+      testId = addTest('authTests', 'User Profile', 'FROM users');
+      updateTest(testId, 'running');
+      try {
+        const { data: { session } } = await supabaseClient.auth.getSession();
+        if (!session) {
+          updateTest(testId, 'warning', 'Not logged in');
+          return;
+        }
+        
+        const { data, error } = await supabase
+          .from('users')
+          .select('*')
+          .eq('id', session.user.id)
+          .single();
+        
+        if (error) {
+          updateTest(testId, 'error', 'Query failed', error.message);
+        } else if (data) {
+          updateTest(testId, 'success', `Org: ${data.organisation_id ? '✓' : '✗'}`);
+        } else {
+          updateTest(testId, 'warning', 'No profile');
+        }
+      } catch (e) {
+        updateTest(testId, 'error', 'Exception', e.message);
+      }
+    }
+    
+    async function testDataAccess() {
+      if (!supabaseClient) return;
+      
+      const { data: { session } } = await supabaseClient.auth.getSession();
+      if (!session) {
+        addTest('dataTests', '⚠ Login required', 'These tests need authentication');
+        return;
+      }
+      
+      // Test 1: Journey Maps
+      let testId = addTest('dataTests', 'Read journey_maps', 'SELECT *');
+      updateTest(testId, 'running');
+      try {
+        const { data, error } = await supabase
+          .from('journey_maps')
+          .select('*')
+          .limit(1);
+        
+        if (error) {
+          updateTest(testId, 'error', 'Access denied', error.message);
+        } else {
+          updateTest(testId, 'success', `${data.length} accessible`);
+        }
+      } catch (e) {
+        updateTest(testId, 'error', 'Exception', e.message);
+      }
+      
+      // Test 2: Survey Responses
+      testId = addTest('dataTests', 'Read survey_responses', 'SELECT *');
+      updateTest(testId, 'running');
+      try {
+        const { data, error, count } = await supabase
+          .from('survey_responses')
+          .select('*', { count: 'exact', head: true });
+        
+        if (error) {
+          updateTest(testId, 'error', 'Access denied', error.message);
+        } else {
+          updateTest(testId, 'success', `${count || 0} rows`);
+        }
+      } catch (e) {
+        updateTest(testId, 'error', 'Exception', e.message);
+      }
+      
+      // Test 3: Email Log
+      testId = addTest('dataTests', 'Read email_log', 'SELECT *');
+      updateTest(testId, 'running');
+      try {
+        const { data, error, count } = await supabase
+          .from('email_log')
+          .select('*', { count: 'exact', head: true });
+        
+        if (error) {
+          if (error.code === 'PGRST116') {
+            updateTest(testId, 'warning', 'Table not found', 'Phase 4 migration not run?');
+          } else {
+            updateTest(testId, 'error', 'Access denied', error.message);
+          }
+        } else {
+          updateTest(testId, 'success', `${count || 0} rows`);
+        }
+      } catch (e) {
+        updateTest(testId, 'error', 'Exception', e.message);
+      }
+    }
+    
+    async function runAllTests() {
+      // Reset
+      testResults = { total: 0, passed: 0, failed: 0, warnings: 0 };
+      document.getElementById('configTests').innerHTML = '';
+      document.getElementById('supabaseTests').innerHTML = '';
+      document.getElementById('schemaTests').innerHTML = '';
+      document.getElementById('edgeFunctionTests').innerHTML = '';
+      document.getElementById('authTests').innerHTML = '';
+      document.getElementById('dataTests').innerHTML = '';
+      
+      // Run tests in sequence
+      await testConfiguration();
+      await testSupabaseConnection();
+      await testDatabaseSchema();
+      await testEdgeFunctions();
+      await testAuthentication();
+      await testDataAccess();
+      
+      // Show summary
+      const passRate = testResults.total > 0 
+        ? Math.round((testResults.passed / testResults.total) * 100) 
+        : 0;
+      
+      console.log('=== TEST SUMMARY ===');
+      console.log(`Total: ${testResults.total}`);
+      console.log(`Passed: ${testResults.passed}`);
+      console.log(`Failed: ${testResults.failed}`);
+      console.log(`Warnings: ${testResults.warnings}`);
+      console.log(`Pass Rate: ${passRate}%`);
+    }
+    
+    function exportResults() {
+      const results = {
+        timestamp: new Date().toISOString(),
+        config: CONFIG,
+        results: testResults,
+        tests: []
+      };
+      
+      document.querySelectorAll('.test-item').forEach(item => {
+        const name = item.querySelector('.test-name').textContent;
+        const status = item.querySelector('.test-status').textContent;
+        const result = item.querySelector('.test-result').textContent;
+        results.tests.push({ name, status, result });
+      });
+      
+      const blob = new Blob([JSON.stringify(results, null, 2)], { type: 'application/json' });
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement('a');
+      a.href = url;
+      a.download = `fathom-diagnostics-${Date.now()}.json`;
+      a.click();
+    }
+    
+    // Auto-run on load
+    window.addEventListener('load', () => {
+      setTimeout(runAllTests, 500);
+    });
+  </script>
+</body>
+</html>
