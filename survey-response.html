@@ -638,14 +638,16 @@
           console.log('→ Submitting to:', EDGE_FUNCTION_URL);
           console.log('→ Payload:', { token: tokenData, feedback });
 
-          const response = await fetch(EDGE_FUNCTION_URL, {
-            method: 'POST',
-            headers: {
-              'Content-Type': 'application/json',
-              'Authorization': `Bearer ${SUPABASE_ANON_KEY}`
-            },
-            body: JSON.stringify({ token: tokenData, feedback })
-          });
+          const response = await fetch(
+            'https://ktctvaeuluallhczwnrl.supabase.co/functions/v1/submit-survey',
+            {
+              method: 'POST',
+              headers: {
+                'Content-Type': 'application/json',
+              },
+              body: JSON.stringify(submissionData)
+            }
+          );
 
           console.log('← Status:', response.status);
           const result = await response.json();
